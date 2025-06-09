@@ -1,5 +1,6 @@
 // ...existing imports...
 import Organization from "../models/Organization";
+import { Request, Response, NextFunction } from 'express';
 
 // Get info for an invitation token (for registration page)
 export async function getInvitationInfo(req: Request, res: Response, next: NextFunction) {
