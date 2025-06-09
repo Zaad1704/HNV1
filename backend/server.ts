@@ -16,10 +16,10 @@ if (!MONGO_URI) {
   throw new Error('FATAL ERROR: MONGO_URI must be defined in your .env file');
 }
 
+// This check ensures the app only starts if a secret is available
 if (!JWT_SECRET) {
   throw new Error('FATAL ERROR: JWT_SECRET must be defined in your .env file');
 }
-
 
 // --- Database Connection and Server Start ---
 mongoose.connect(MONGO_URI)
