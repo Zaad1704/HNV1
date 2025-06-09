@@ -15,12 +15,8 @@ if (!MONGO_URI) {
 }
 
 // Connect to MongoDB and start the server
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false
-})
+// AFTER (in server.ts)
+mongoose.connect(MONGO_URI)
 .then(() => {
   console.log('Connected to MongoDB');
   app.listen(PORT, () => {
