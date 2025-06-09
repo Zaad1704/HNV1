@@ -1,6 +1,7 @@
 // ...existing code...
 import OrgInvitation from "../models/OrgInvitation";
 import Organization from "../models/Organization";
+import { Request, Response, NextFunction } from 'express';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
