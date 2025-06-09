@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 export async function getOrgProperties(req, res, next) {
   try {
     const orgId = req.organizationId;
