@@ -1,7 +1,5 @@
-// backend/controllers/propertyController.ts
-
 import { Request, Response, NextFunction } from 'express';
-// FIX: The import path must match the filename exactly, including capitalization.
+// FIX: Corrected the import path to match the filename 'Property.ts'
 import Property from '../models/Property'; 
 
 export async function getOrgProperties(req: Request, res: Response, next: NextFunction) {
