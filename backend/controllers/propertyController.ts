@@ -1,10 +1,22 @@
+// ADDED: Import for the Property model
+import Property from '../models/propertyModel'; 
 import { Request, Response, NextFunction } from 'express';
-export async function getOrgProperties(req, res, next) {
+
+// FIX: Added the types to the function parameters
+export async function getOrgProperties(req: Request, res: Response, next: NextFunction) {
   try {
-    const orgId = req.organizationId;
+    // This now relies on the custom type definition update in Part 2
+    const orgId = req.organizationId; 
     const properties = await Property.find({ organizationId: orgId });
     res.json(properties);
   } catch (err) {
     next(err);
   }
 }
+
+// You will likely need other functions in this file, for example:
+/*
+export async function createProperty(req: Request, res: Response, next: NextFunction) {
+  // ... your code
+}
+*/
