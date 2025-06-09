@@ -29,7 +29,9 @@ export async function subscribe(req: Request<{}, {}, SubscribeBody>, res: Respon
     const orgId = req.user.orgId;
     const userEmail = req.user.email;
 
+    // This now works because createSubscription2CO returns the data we need
     const subData = await createSubscription2CO(orgId, planId, userEmail);
+    
     const sub = await Subscription.create({
       orgId,
       plan: subData.plan,
