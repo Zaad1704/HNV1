@@ -1,5 +1,6 @@
 // ADDED: Import for the Property model
-import Property from '../models/propertyModel'; 
+// CORRECT
+import Property from '../models/Property';
 import { Request, Response, NextFunction } from 'express';
 
 // FIX: Added the types to the function parameters
