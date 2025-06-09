@@ -1,12 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import Property from '../models/Property'; 
+import mongoose from 'mongoose';
 
-export async function getOrgProperties(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = req.organizationId; 
-    const properties = await Property.find({ organizationId: orgId });
-    res.json(properties);
-  } catch (err) {
-    next(err);
-  }
-}
+const PropertySchema = new mongoose.Schema({
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  // Add other property fields here, e.g.:
+  address: { type: String, required: true },
+  // etc.
+});
+
+const Property = mongoose.model('Property', PropertySchema);
+
+export default Property;
