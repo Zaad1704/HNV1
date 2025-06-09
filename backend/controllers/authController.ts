@@ -1,5 +1,6 @@
 // --- FIXES ARE HERE ---
-import User from '../models/userModel'; // <-- FIX: Import the User model
+// CORRECT
+import User from '../models/User'; // <-- FIX: Import the User model
 import OrgInvitation from '../models/OrgInvitation';
 import Organization from '../models/Organization';
 import { Request, Response, NextFunction } from 'express';
