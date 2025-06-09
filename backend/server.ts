@@ -1,5 +1,3 @@
-// backend/server.ts
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { app } from './app';
@@ -21,14 +19,19 @@ if (!JWT_SECRET) {
   throw new Error('FATAL ERROR: JWT_SECRET must be defined in your .env file');
 }
 
+let server: any = null;
+
 // --- Database Connection and Server Start ---
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
   })
   .catch(err => {
     console.error('Database connection error:', err);
   });
+
+// Export the app (and/or server) for testing
+export { app, server };
