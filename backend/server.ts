@@ -2,22 +2,20 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { app } from './app'; // Correctly import the named 'app' export
+import { app } from './app';
 
 // Load environment variables from .env file
 dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI;
-const JWT_SECRET = process.env.JWT_SECRET; // <-- ADDED: Get the JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // --- Environment Variable Checks ---
-// Your application should not start without the necessary configuration
 if (!MONGO_URI) {
   throw new Error('FATAL ERROR: MONGO_URI must be defined in your .env file');
 }
 
-// FIX: Add a check for the JWT_SECRET
 if (!JWT_SECRET) {
   throw new Error('FATAL ERROR: JWT_SECRET must be defined in your .env file');
 }
@@ -25,12 +23,12 @@ if (!JWT_SECRET) {
 
 // --- Database Connection and Server Start ---
 mongoose.connect(MONGO_URI)
-.then(() => {
-  console.log('Connected to MongoDB');
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  .then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Database connection error:', err);
   });
-})
-.catch(err => {
-  console.error('Database connection error:', err);
-});
