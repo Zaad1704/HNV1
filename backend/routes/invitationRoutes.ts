@@ -1,0 +1,3 @@
+import { getInvitationInfo } from "../controllers/invitationController";
+// ...existing imports...
+router.get("/info/:token", getInvitationInfo);
