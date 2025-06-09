@@ -1,14 +1,20 @@
-import { Router } from "express";
-import { authenticate } from "../middleware/authenticate";
-import { orgContext } from "../middleware/orgContext";
-import { getOrgProperties } from "../controllers/propertyController";
-import { orgStats } from "../controllers/orgController";
+import mongoose, { Document, Schema } from "mongoose";
 
-const router = Router();
+export interface PropertyDocument extends Document {
+  organizationId: mongoose.Types.ObjectId;
+  // Add other fields as needed, for example:
+  name: string;
+  address?: string;
+  // etc.
+}
 
-router.use(authenticate, orgContext);
+const PropertySchema = new Schema<PropertyDocument>({
+  organizationId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
+  name: { type: String, required: true },
+  address: { type: String }
+  // Define other fields as needed
+});
 
-router.get("/properties", getOrgProperties);
-router.get("/:orgId/stats", orgStats);
+const Property = mongoose.model<PropertyDocument>("Property", PropertySchema);
 
-export default router;
+export default Property;
