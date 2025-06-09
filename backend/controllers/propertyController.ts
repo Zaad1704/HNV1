@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-// FIX: Corrected the import path to match the filename 'Property.ts'
+// THIS IS THE FINAL FIX: The import path must match your filename, "Property.ts"
 import Property from '../models/Property'; 
 
 export async function getOrgProperties(req: Request, res: Response, next: NextFunction) {
