@@ -1,18 +1,15 @@
-// backend/controllers/authController.ts
-
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import User from '../models/User'; 
+import User from '../models/User';
 import OrgInvitation from '../models/OrgInvitation';
 
-// ... (Your existing register function should be here) ...
+// (Your register function should be here...)
 export async function register(req: Request, res: Response, next: NextFunction) {
-  // ... your existing register code
+  // ... your existing, correct register code
 }
 
-
-// FIX: Added the missing 'login' function and exported it.
+// Login function
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
@@ -34,7 +31,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     // Create and sign a JWT
     const token = jwt.sign(
       { id: user._id, role: user.role, orgId: user.organizationId },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET!, // <-- FIX: Added '!' to assert the secret exists
       { expiresIn: '1d' }
     );
 
