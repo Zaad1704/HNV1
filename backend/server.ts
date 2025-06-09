@@ -9,13 +9,21 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET; // <-- ADDED: Get the JWT Secret
 
+// --- Environment Variable Checks ---
+// Your application should not start without the necessary configuration
 if (!MONGO_URI) {
-  throw new Error('MONGO_URI must be defined in your .env file');
+  throw new Error('FATAL ERROR: MONGO_URI must be defined in your .env file');
 }
 
-// Connect to MongoDB and start the server
-// AFTER (in server.ts)
+// FIX: Add a check for the JWT_SECRET
+if (!JWT_SECRET) {
+  throw new Error('FATAL ERROR: JWT_SECRET must be defined in your .env file');
+}
+
+
+// --- Database Connection and Server Start ---
 mongoose.connect(MONGO_URI)
 .then(() => {
   console.log('Connected to MongoDB');
