@@ -1,5 +1,6 @@
 // ...existing imports...
 import User from "../models/User";
+import { Request, Response, NextFunction } from 'express';
 
 // Per-org stats for dashboard
 export async function orgStats(req: Request, res: Response, next: NextFunction) {
