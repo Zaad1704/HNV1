@@ -1,64 +1,46 @@
-// --- FIXES ARE HERE ---
-// CORRECT
-import User from '../models/User'; // <-- FIX: Import the User model
-import OrgInvitation from '../models/OrgInvitation';
-import Organization from '../models/Organization';
-import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt'; // <-- FIX: Import the bcrypt library
+// backend/controllers/authController.ts
 
-// --- BEST PRACTICE ---
-// Define the shape of the incoming request body for type safety and autocomplete.
-interface RegisterBody {
-  email?: string;
-  password?: string;
-  name?: string;
-  role?: string;
-  invitationToken?: string;
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import User from '../models/User'; 
+import OrgInvitation from '../models/OrgInvitation';
+
+// ... (Your existing register function should be here) ...
+export async function register(req: Request, res: Response, next: NextFunction) {
+  // ... your existing register code
 }
 
-export async function register(req: Request<{}, {}, RegisterBody>, res: Response, next: NextFunction) {
+
+// FIX: Added the missing 'login' function and exported it.
+export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, password, name, role, invitationToken } = req.body;
+    const { email, password } = req.body;
 
-    // It's good practice to validate that required fields exist
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+      return res.status(400).json({ message: "Please provide email and password." });
     }
 
-    // If invitationToken is present, validate and assign org/role from invitation
-    let assignedOrgId = undefined;
-    let assignedRole = role;
-
-    if (invitationToken) {
-      const invite = await OrgInvitation.findOne({ token: invitationToken, status: "pending", expiresAt: { $gt: new Date() } });
-      if (!invite) {
-        return res.status(400).json({ message: "Invalid or expired invitation token" });
-      }
-      assignedOrgId = invite.orgId;
-      assignedRole = invite.role;
-      invite.status = "accepted";
-      await invite.save();
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(409).json({ message: "Email already in use" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      email,
-      password: hashed,
-      name,
-      role: assignedRole,
-      organizationId: assignedOrgId
-    });
+    // Create and sign a JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role, orgId: user.organizationId },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
-    res.status(201).json({ message: "User registered", user: { email, name, role: assignedRole, id: user._id } });
+    res.json({ success: true, token });
+
   } catch (err) {
     next(err);
   }
 }
-
-// You will also need to export other functions like 'login' if your routes use them
-// export async function login(...) { ... }
