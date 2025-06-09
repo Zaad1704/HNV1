@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Subscription from "../models/Subscription";
 import { billingPlans, createSubscriptionMock } from "../services/billingService";
+import { Request, Response, NextFunction } from 'express';
 
 // List available plans
 export async function getPlans(_req: Request, res: Response) {
