@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import CMSContent from "../models/CMSContent";
+import { Request, Response, NextFunction } from 'express';
 
 // Get all content (for SuperAdmin)
 export async function getAllContent(_req: Request, res: Response, next: NextFunction) {
