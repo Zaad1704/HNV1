@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-// THE ONLY FIX NEEDED IS THIS LINE:
 import Property from '../models/Property'; 
 
 export async function getOrgProperties(req: Request, res: Response, next: NextFunction) {
