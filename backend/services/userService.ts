@@ -1,10 +1,9 @@
-// services/userService.ts
+// backend/services/userService.ts
 
-import User from '../models/User'; // Assuming you need the User model here
-import bcrypt from 'bcrypt';     // Assuming you'll handle password hashing here
+import User from '../models/User';
+import bcrypt from 'bcrypt';
 
-// FIX: Define the RegisterDTO interface at the top of the file.
-// This tells TypeScript what properties the 'data' object will have.
+// Definition for the Register Data Transfer Object
 export interface RegisterDTO {
   email?: string;
   password?: string;
@@ -14,7 +13,6 @@ export interface RegisterDTO {
 }
 
 export async function registerUser(data: RegisterDTO) {
-  // Example of business logic that would go inside this function
   if (!data.email || !data.password) {
     throw new Error('Email and password are required');
   }
@@ -26,9 +24,7 @@ export async function registerUser(data: RegisterDTO) {
     password: hashedPassword,
   });
 
-  // It's good practice to not return the password hash
-  const userObject = newUser.toObject();
-  delete userObject.password;
-
-  return userObject;
+  // FIX: This is a safer way to return the user object without the password
+  const { password, ...userData } = newUser.toObject();
+  return userData;
 }
