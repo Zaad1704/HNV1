@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/User";
+import { Request, Response, NextFunction } from 'express';
 
 // Get current user info
 export async function getProfile(req: Request, res: Response, next: NextFunction) {
