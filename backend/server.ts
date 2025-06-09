@@ -33,5 +33,6 @@ mongoose.connect(MONGO_URI)
     console.error('Database connection error:', err);
   });
 
-// Export the app (and/or server) for testing
+// Named and default export for compatibility with tests and imports
 export { app, server };
+export default app;
