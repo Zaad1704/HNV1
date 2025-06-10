@@ -1,5 +1,5 @@
 import axios from 'axios';
-import useAuthStore from '../store/authStore';
+import { useAuthStore } from '../store/authStore'; // Corrected import with curly braces
 
 // Use the environment variable for the base URL in production.
 // This allows your code to work both locally and when deployed.
