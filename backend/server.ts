@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Import API Route Files ---
-// Note: A developer would need to update these imported files to be TypeScript compatible as well.
+// --- Import API Route Files (with .ts extension assumed) ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -14,13 +13,10 @@ import userRoutes from './routes/userRoutes';
 import subscriptionsRoutes from './routes/subscriptionsRoutes';
 import auditRoutes from './routes/auditRoutes';
 
-// Load environment variables
 dotenv.config();
 
-// Initialize Express app
 const app: Express = express();
 
-// --- Connect to Database ---
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
@@ -29,7 +25,6 @@ const connectDB = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected...');
   } catch (err: unknown) {
-    // Correctly handle the 'unknown' error type
     if (err instanceof Error) {
         console.error(err.message);
     } else {
@@ -40,17 +35,13 @@ const connectDB = async () => {
 };
 connectDB();
 
-// --- Core Middleware ---
-
-// ** CORS CONFIGURATION **
 const allowedOrigins: string[] = [
-  'http://localhost:3000', // For local development
-  'https://hnv-1-frontend.onrender.com' // Your live frontend URL
+  'http://localhost:3000',
+  'https://hnv-1-frontend.onrender.com'
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -72,14 +63,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/audit', auditRoutes);
 
-// A simple health-check route with proper types
 app.get('/api', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
 
-// --- Start Server ---
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
-// Export the app to make it a module, fixing the test file import error
 export default app;
