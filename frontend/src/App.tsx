@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import useAuthStore from './store/authStore';
+import { useAuthStore } from './store/authStore'; // Corrected import
 
 // --- Import All Page Components ---
 // Public Pages
