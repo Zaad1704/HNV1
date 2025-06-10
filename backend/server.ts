@@ -3,15 +3,17 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Import API Route Files (now expecting .ts files) ---
+// --- Corrected Import API Route Files (based on your repository) ---
 import authRoutes from './routes/authRoutes';
+import adminRoutes from './routes/adminRoutes';
+import billingRoutes from './routes/billingRoutes';
+import invitationRoutes from './routes/invitationRoutes';
+import orgRoutes from './routes/orgRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
-import propertiesRoutes from './routes/propertiesRoutes';
-import tenantsRoutes from './routes/tenantsRoutes';
-import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
-import auditRoutes from './routes/auditRoutes';
+// The 'index.ts' file is likely the main entry for your routes, let's use that.
+import allApiRoutes from './routes/index'; 
+
 
 dotenv.config();
 
@@ -53,17 +55,13 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-// --- Mount API Routes ---
-app.use('/api/auth', authRoutes);
-app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/properties', propertiesRoutes);
-app.use('/api/tenants', tenantsRoutes);
-app.use('/api/payments', paymentsRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes);
-app.use('/api/audit', auditRoutes);
+// --- Mount API Routes (using the files from your repository) ---
+// The main router file is likely index.ts, which handles all sub-routes.
+app.use('/api', allApiRoutes);
 
-app.get('/api', (req: Request, res: Response) => {
+
+// A simple health-check route
+app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
 
