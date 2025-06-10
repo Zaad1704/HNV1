@@ -1,48 +1,88 @@
-import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+import React, { useEffect, useState, useMemo } from "react";
+import apiClient from "../api/client"; // Corrected: Import the default export
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 type User = {
-  _id: string;
-  email: string;
+  id: string;
   name: string;
+  email: string;
   role: string;
-  organizationId?: string;
+  organization: {
+    name: string;
+  };
 };
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    api.get("/users").then(res => setUsers(res.data));
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.get("/admin/users");
+        setUsers(response.data);
+      } catch (err) {
+        setError("Failed to fetch users.");
+      }
+    };
+    fetchUsers();
   }, []);
 
+  const filteredUsers = useMemo(() => {
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  if (error) {
+    return (
+      <div className="flex">
+        <AdminSidebar />
+        <div className="flex-1 p-4">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <AdminSidebar />
-      <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-4">User Management</h2>
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th className="border p-2">Name</th>
-              <th className="border p-2">Email</th>
-              <th className="border p-2">Role</th>
-              <th className="border p-2">Organization</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user._id}>
-                <td className="border p-2">{user.name}</td>
-                <td className="border p-2">{user.email}</td>
-                <td className="border p-2">{user.role}</td>
-                <td className="border p-2">{user.organizationId || "—"}</td>
+      <div className="flex-1 p-4">
+        <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
+        <input
+          type="text"
+          placeholder="Search users..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="mb-4 p-2 border rounded w-full"
+        />
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left">Name</th>
+                <th className="text-left">Email</th>
+                <th className="text-left">Role</th>
+                <th className="text-left">Organization</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </main>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.role}</td>
+                  <td>{user.organization.name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
