@@ -1,79 +1,77 @@
-import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
-import AdminSidebar from "../components/admin/AdminSidebar";
+import React, { useState, useMemo, useEffect } from 'react';
+import apiClient from '../api/apiClient'; // We will build the API endpoint for this next
 
-type Org = {
-  _id: string;
-  name: string;
-  status: string;
-  ownerId: string;
-  createdAt: string;
-};
+const AdminOrganizationsPage = () => {
+    // This data would be fetched from a dedicated backend API: GET /api/super-admin/organizations
+    const [organizations, setOrganizations] = useState([
+        { id: 'org_01', name: 'Alice\'s Agency', owner: 'Agent Alice', plan: 'Agent Pro', userCount: 5, status: 'Active' },
+        { id: 'org_02', name: 'Bob\'s Properties', owner: 'Landlord Bob', plan: 'Landlord Basic', userCount: 2, status: 'Active' },
+        { id: 'org_03', name: 'Charlie\'s Holdings', owner: 'Inactive Charlie', plan: 'Free', userCount: 1, status: 'Inactive' },
+        { id: 'org_04', name: 'Dave\'s Dwellings', owner: 'Agent Dave', plan: 'Agent Pro', userCount: 12, status: 'Active' },
+        { id: 'org_05', name: 'HNV Global Headquarters', owner: 'Super Administrator', plan: 'Super Admin', userCount: 1, status: 'Active' },
+    ]);
+    const [loading, setLoading] = useState(false); // Will be set to true when we fetch real data
+    const [error, setError] = useState('');
 
-const AdminOrganizationsPage: React.FC = () => {
-  const [orgs, setOrgs] = useState<Org[]>([]);
-  const [loading, setLoading] = useState(true);
+    const getStatusClass = (status) => {
+        return status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-600/50 text-slate-400';
+    };
+    
+    const getPlanClass = (plan) => {
+        if (plan.includes('Agent')) return 'bg-sky-500/20 text-sky-400';
+        if (plan.includes('Landlord')) return 'bg-pink-500/20 text-pink-400';
+        if (plan.includes('Admin')) return 'bg-amber-500/20 text-amber-400';
+        return 'bg-slate-600/50 text-slate-400';
+    };
 
-  useEffect(() => {
-    api.get("/admin/organizations").then(res => {
-      setOrgs(res.data);
-      setLoading(false);
-    });
-  }, []);
+    if (loading) return <div className="text-white text-center p-8">Loading organizations...</div>;
+    if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
 
-  const handleSuspend = async (orgId: string, status: "active" | "suspended") => {
-    await api.post("/admin/organizations/status", { orgId, status });
-    setOrgs(orgs.map(org => org._id === orgId ? { ...org, status } : org));
-  };
+    return (
+        <div className="text-white">
+            <h1 className="text-4xl font-bold mb-8">Manage All Organizations</h1>
 
-  if (loading) return <div className="p-8">Loading...</div>;
-
-  return (
-    <div className="flex min-h-screen">
-      <AdminSidebar />
-      <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-4">Organizations</h2>
-        <table className="w-full border">
-          <thead>
-            <tr>
-              <th className="border p-2">Name</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2">Owner</th>
-              <th className="border p-2">Created</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orgs.map(org => (
-              <tr key={org._id}>
-                <td className="border p-2">{org.name}</td>
-                <td className="border p-2">{org.status}</td>
-                <td className="border p-2">{org.ownerId}</td>
-                <td className="border p-2">{new Date(org.createdAt).toLocaleDateString()}</td>
-                <td className="border p-2">
-                  {org.status === "active" ? (
-                    <button
-                      className="bg-yellow-600 text-white px-2 py-1 rounded"
-                      onClick={() => handleSuspend(org._id, "suspended")}
-                    >
-                      Suspend
-                    </button>
-                  ) : (
-                    <button
-                      className="bg-green-600 text-white px-2 py-1 rounded"
-                      onClick={() => handleSuspend(org._id, "active")}
-                    >
-                      Activate
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </main>
-    </div>
-  );
+            {/* Organizations Table */}
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-900">
+                            <tr>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Organization Name</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Owner</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Subscription Plan</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Users</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Status</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700">
+                            {organizations.map(org => (
+                                <tr key={org.id} className="hover:bg-slate-800 transition-colors">
+                                    <td className="p-4 font-bold text-white">{org.name}</td>
+                                    <td className="p-4 text-slate-300">{org.owner}</td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPlanClass(org.plan)}`}>
+                                            {org.plan}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-slate-300">{org.userCount}</td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(org.status)}`}>
+                                            {org.status}
+                                        </span>
+                                    </td>
+                                    <td className="p-4">
+                                        <button className="font-medium text-blue-400 hover:text-blue-300">View</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default AdminOrganizationsPage;
