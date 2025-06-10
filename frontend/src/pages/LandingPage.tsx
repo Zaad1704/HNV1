@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation, I18nextProvider } from 'react-i18next';
-import i18n from '../../services/i18n'; // Import the centralized i18n configuration
+import i18n from '../services/i18n'; // Corrected import path
 
 // --- Component ---
 const LandingPageContent = () => {
