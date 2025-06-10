@@ -1,62 +1,69 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client"; // Corrected: Import the default export
 import AdminSidebar from "../components/admin/AdminSidebar";
 
-type ContentMap = { [key: string]: string };
+type Content = {
+  id: string;
+  page: string;
+  title: string;
+  content: string;
+};
 
 const AdminContentPage: React.FC = () => {
-  const [content, setContent] = useState<ContentMap>({});
-  const [saving, setSaving] = useState(false);
+  const [content, setContent] = useState<Content[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get("/admin/content").then(res => setContent(res.data));
+    const fetchContent = async () => {
+      try {
+        const response = await apiClient.get("/admin/content");
+        setContent(response.data);
+      } catch (err) {
+        setError("Failed to fetch content.");
+      }
+    };
+    fetchContent();
   }, []);
 
-  const handleChange = (key: string, value: string) => {
-    setContent({ ...content, [key]: value });
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    await api.put("/admin/content", content);
-    setSaving(false);
-    alert("Content updated.");
-  };
+  if (error) {
+    return (
+      <div className="flex">
+        <AdminSidebar />
+        <div className="flex-1 p-4">
+          <div className="text-red-500">{error}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <AdminSidebar />
-      <main className="flex-1 p-8">
-        <h2 className="text-2xl font-bold mb-4">Content Management</h2>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            handleSave();
-          }}
-          className="max-w-lg"
-        >
-          <label className="block mb-2 font-semibold">Home Page Title</label>
-          <input
-            className="border p-2 w-full mb-4"
-            value={content.homeTitle || ""}
-            onChange={e => handleChange("homeTitle", e.target.value)}
-          />
-          <label className="block mb-2 font-semibold">Home Page Description</label>
-          <textarea
-            className="border p-2 w-full mb-4"
-            rows={4}
-            value={content.homeDescription || ""}
-            onChange={e => handleChange("homeDescription", e.target.value)}
-          />
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            type="submit"
-            disabled={saving}
-          >
-            Save
-          </button>
-        </form>
-      </main>
+      <div className="flex-1 p-4">
+        <h1 className="text-2xl font-bold mb-4">Content Management</h1>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left">Page</th>
+                <th className="text-left">Title</th>
+                <th className="text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {content.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.page}</td>
+                  <td>{item.title}</td>
+                  <td>
+                    <button className="text-blue-500">Edit</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
