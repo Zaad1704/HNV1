@@ -2,17 +2,17 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
-// Import the page and layout components with their full file extensions
-import LoginPage from './pages/LoginPage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
-import DashboardLayout from './components/layout/DashboardLayout.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.jsx';
-import PropertiesPage from './pages/PropertiesPage.jsx';
-import TenantsPage from './pages/TenantsPage.jsx';
-import PaymentsPage from './pages/PaymentsPage.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
-import AuditLogPage from './pages/AuditLogPage.jsx';
+// Import the page and layout components with the .tsx extension
+import LoginPage from './pages/LoginPage.tsx';
+import RegisterPage from './pages/RegisterPage.tsx';
+import DashboardLayout from './components/layout/DashboardLayout.tsx';
+import DashboardPage from './pages/DashboardPage.tsx';
+import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.tsx';
+import PropertiesPage from './pages/PropertiesPage.tsx';
+import TenantsPage from './pages/TenantsPage.tsx';
+import PaymentsPage from './pages/PaymentsPage.tsx';
+import SettingsPage from './pages/SettingsPage.tsx';
+import AuditLogPage from './pages/AuditLogPage.tsx';
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
