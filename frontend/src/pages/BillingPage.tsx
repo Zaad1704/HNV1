@@ -1,36 +1,58 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client"; // Corrected: Import the default export
 
 const BillingPage: React.FC = () => {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [sub, setSub] = useState<any>(null);
+  const [billingInfo, setBillingInfo] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get("/billing/plans").then(res => setPlans(res.data));
-    api.get("/billing/history").then(res => setSub(res.data[0]));
+    const fetchBillingInfo = async () => {
+      try {
+        const response = await apiClient.get("/billing");
+        setBillingInfo(response.data);
+      } catch (err) {
+        setError("Failed to fetch billing information.");
+      }
+    };
+    fetchBillingInfo();
   }, []);
 
-  const handleSubscribe = async (planId: string) => {
-    await api.post("/billing/subscribe", { planId });
-    alert("Subscription started! (In production, you'll be redirected to 2Checkout.)");
-  };
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!billingInfo) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl mb-4">Subscription</h1>
-      {sub && <div className="mb-4">Current Plan: <b>{sub.plan}</b></div>}
-      <h2 className="text-xl mb-2">Available Plans</h2>
-      <ul>
-        {plans.map(plan => (
-          <li key={plan.id} className="mb-2">
-            <b>{plan.name}</b> - ${plan.price}/mo
-            <button className="ml-4 p-1 bg-blue-600 text-white rounded" onClick={() => handleSubscribe(plan.id)}>
-              Subscribe
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Billing Information</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <p>
+          <strong>Plan:</strong> {billingInfo.plan}
+        </p>
+        <p>
+          <strong>Status:</strong> {billingInfo.status}
+        </p>
+        <p>
+          <strong>Next Billing Date:</strong>{" "}
+          {new Date(billingInfo.nextBillingDate).toLocaleDateString()}
+        </p>
+        <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md">
+          Manage Subscription
+        </button>
+      </div>
     </div>
   );
 };
+
 export default BillingPage;
