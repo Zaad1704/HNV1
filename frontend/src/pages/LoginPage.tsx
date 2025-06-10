@@ -1,53 +1,33 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { api } from "../api/client";
-import { useAuthStore } from "../store/authStore";
+import React from 'react';
+// We are not importing any hooks or other libraries for this test.
 
-const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const setUser = useAuthStore((s) => s.setUser);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      setUser(res.data.user);
-      localStorage.setItem("token", res.data.token); // Optionally use cookies in prod
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to login");
-    }
-  };
-
+const LoginPage = () => {
+  // This is a simplified version with no state or logic.
+  // It only returns the visual JSX to see if the component itself can be rendered.
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form className="w-80 p-6 bg-white rounded shadow" onSubmit={handleSubmit}>
-        <h2 className="text-2xl mb-4">Login</h2>
-        {error && <div className="mb-2 text-red-500">{error}</div>}
-        <input
-          className="w-full mb-3 p-2 border rounded"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="w-full mb-3 p-2 border rounded"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-        />
-        <button className="w-full p-2 bg-blue-600 text-white rounded" type="submit">
-          Login
-        </button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-slate-100">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mt-4">Login Page</h1>
+          <p className="text-gray-500 mt-2">This is a test to see if the page renders.</p>
+        </div>
+
+        <form className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
+            <input type="email" id="email" required className="mt-1 block w-full px-4 py-3 bg-gray-100 rounded-lg"/>
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <input type="password" id="password" required className="mt-1 block w-full px-4 py-3 bg-gray-100 rounded-lg"/>
+          </div>
+          <div>
+            <button type="submit" className="w-full flex justify-center py-3 px-4 border rounded-lg text-white bg-indigo-600">
+              Sign In
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
