@@ -1,55 +1,60 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client"; // Corrected: Import the default export
 
 type Org = {
-  _id: string;
+  id: string;
   name: string;
-  status: string;
-  createdAt: string;
+  owner: string;
 };
 
 const OrganizationPage: React.FC = () => {
-  const [orgs, setOrgs] = useState<Org[]>([]);
-  const [name, setName] = useState("");
-  const [msg, setMsg] = useState("");
+  const [org, setOrg] = useState<Org | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get("/org").then(res => setOrgs(res.data));
+    const fetchOrg = async () => {
+      try {
+        const response = await apiClient.get("/organization");
+        setOrg(response.data);
+      } catch (err) {
+        setError("Failed to fetch organization data.");
+      }
+    };
+    fetchOrg();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await api.post("/org", { name });
-    setMsg("Organization created!");
-    setName("");
-    const res = await api.get("/org");
-    setOrgs(res.data);
-  };
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!org) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8">
-      <h2 className="text-2xl mb-4">My Organizations</h2>
-      <ul className="mb-4">
-        {orgs.map(org => (
-          <li key={org._id} className="mb-2 border p-2 rounded">
-            <b>{org.name}</b> — {org.status}
-          </li>
-        ))}
-      </ul>
-      <form onSubmit={handleCreate} className="flex gap-2">
-        <input
-          className="border p-2"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Organization Name"
-          required
-        />
-        <button className="bg-blue-600 text-white px-3 py-1 rounded" type="submit">
-          Create
-        </button>
-      </form>
-      {msg && <div className="text-green-600 mt-2">{msg}</div>}
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Organization Details</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <p>
+          <strong>ID:</strong> {org.id}
+        </p>
+        <p>
+          <strong>Name:</strong> {org.name}
+        </p>
+        <p>
+          <strong>Owner:</strong> {org.owner}
+        </p>
+      </div>
     </div>
   );
 };
+
 export default OrganizationPage;
