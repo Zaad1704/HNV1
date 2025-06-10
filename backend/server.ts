@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Import API Route Files (with .ts extension assumed) ---
+// --- Import API Route Files (now expecting .ts files) ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
