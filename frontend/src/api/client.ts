@@ -1,21 +1,32 @@
-import axios from "axios";
-import { useOrgStore } from "../store/orgStore";
+import axios from 'axios';
+import useAuthStore from '../store/authStore';
 
-// Create axios instance
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true
+// Use the environment variable for the base URL in production.
+// This allows your code to work both locally and when deployed.
+// The '/api' fallback is for local development with a proxy.
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+// Create a new Axios instance with the correct base URL
+const apiClient = axios.create({
+  baseURL: baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Interceptor: attach X-Org-Id from Zustand store
-api.interceptors.request.use(
+// --- Axios Interceptor ---
+// This automatically adds the authentication token to every request.
+apiClient.interceptors.request.use(
   (config) => {
-    const org = useOrgStore.getState().currentOrg;
-    if (org && org._id) {
-      config.headers = config.headers || {};
-      config.headers["X-Org-Id"] = org._id;
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
+
+export default apiClient;
