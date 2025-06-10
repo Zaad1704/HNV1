@@ -2,17 +2,17 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
-// Import the page and layout components
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardLayout from './components/layout/DashboardLayout';
-import DashboardPage from './pages/DashboardPage';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
-import PropertiesPage from './pages/PropertiesPage';
-import TenantsPage from './pages/TenantsPage';
-import PaymentsPage from './pages/PaymentsPage';
-import SettingsPage from './pages/SettingsPage';
-import AuditLogPage from './pages/AuditLogPage';
+// Import the page and layout components with their full file extensions
+import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
+import DashboardLayout from './components/layout/DashboardLayout.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
+import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.jsx';
+import PropertiesPage from './pages/PropertiesPage.jsx';
+import TenantsPage from './pages/TenantsPage.jsx';
+import PaymentsPage from './pages/PaymentsPage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
+import AuditLogPage from './pages/AuditLogPage.jsx';
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
