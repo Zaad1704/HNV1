@@ -1,36 +1,56 @@
 import React, { useEffect, useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client"; // Corrected: Import the default export
 import { useAuthStore } from "../store/authStore";
 
 const ProfilePage: React.FC = () => {
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/users/me", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setProfile(res.data);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load profile");
+      if (user) {
+        try {
+          const response = await apiClient.get(`/users/${user.id}`);
+          setProfile(response.data);
+        } catch (err) {
+          setError("Failed to fetch profile data.");
+        }
       }
     };
     fetchProfile();
-  }, []);
+  }, [user]);
 
-  if (error) return <div className="p-4 text-red-600">{error}</div>;
-  if (!profile) return <div className="p-4">Loading...</div>;
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 max-w-lg mx-auto">
-      <h2 className="text-2xl mb-4">Profile</h2>
-      <div><b>Name:</b> {profile.name}</div>
-      <div><b>Email:</b> {profile.email}</div>
-      <div><b>Role:</b> {profile.role}</div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Your Profile</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <p>
+          <strong>Name:</strong> {profile.name}
+        </p>
+        <p>
+          <strong>Email:</strong> {profile.email}
+        </p>
+        <p>
+          <strong>Role:</strong> {profile.role}
+        </p>
+      </div>
     </div>
   );
 };
