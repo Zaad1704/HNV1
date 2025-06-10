@@ -1,21 +1,15 @@
-// frontend/src/main.tsx
-
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom"; // Make sure BrowserRouter is here
+import { BrowserRouter } from "react-router-dom";
+import { LangProvider } from "./contexts/LanguageContext";
 import App from "./App";
 import "./index.css";
-
-const queryClient = new QueryClient();
-
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      {/* FIX: BrowserRouter wraps your entire App here */}
+    <LangProvider>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </QueryClientProvider>
+    </LangProvider>
   </React.StrictMode>
 );
