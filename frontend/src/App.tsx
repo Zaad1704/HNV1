@@ -1,27 +1,23 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
-import HomePage from "./pages/HomePage";
-import OrganizationDashboardPage from "./pages/OrganizationDashboardPage";
-import AcceptInvitePage from "./pages/AcceptInvitePage";
-import ProtectedRoute from './components/ProtectedRoute';
-
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import LandingPage from "./pages/LandingPage";
+// import AboutPage, ServicesPage, ContactPage, etc. as you build them!
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route 
-        path="/org/dashboard" 
-        element={
-          <ProtectedRoute>
-            <OrganizationDashboardPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/invite/:token" element={<AcceptInvitePage />} />
-      <Route path="*" element={<div>404 - Page Not Found</div>} />
-    </Routes>
+    <>
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          {/* <Route path="/about" element={<AboutPage />} /> */}
+          {/* <Route path="/services" element={<ServicesPage />} /> */}
+          {/* <Route path="/contact" element={<ContactPage />} /> */}
+        </Routes>
+      </main>
+      <Footer />
+    </>
   );
 }
-
 export default App;
