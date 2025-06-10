@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client";
 
 export function useUsers() {
   const [users, setUsers] = useState<any[]>([]);
