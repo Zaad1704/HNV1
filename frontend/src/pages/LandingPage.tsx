@@ -9,13 +9,34 @@ const LandingPageContent = () => {
   const { t, i18n } = useTranslation();
   
   const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  // --- PWA Installation Logic ---
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+    });
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      // We've used the prompt, and can't use it again, throw it away
+      setDeferredPrompt(null);
+    }
+  };
   
-  // Simulate IP-based geolocation on initial load
+  // --- Language & Currency Logic ---
   useEffect(() => {
     const fetchLocation = async () => {
-      // In a real app, you would use a service like geo.ipify.org
-      // For this demonstration, we'll simulate it.
-      const simulatedLocation = 'BD'; // Change to 'US', 'ES', or other to test
+      const simulatedLocation = 'BD'; // Change to 'US', 'ES', etc. to test
       
       if (simulatedLocation === 'BD') {
         i18n.changeLanguage('bn');
@@ -33,14 +54,9 @@ const LandingPageContent = () => {
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
-    // Adjust currency based on language choice for this demo
-    if (lng === 'bn') {
-      setCurrency({ code: 'BDT', symbol: '৳', rate: 117 });
-    } else if (lng === 'es') {
-      setCurrency({ code: 'EUR', symbol: '€', rate: 0.92 });
-    } else {
-      setCurrency({ code: 'USD', symbol: '$', rate: 1 });
-    }
+    if (lng === 'bn') setCurrency({ code: 'BDT', symbol: '৳', rate: 117 });
+    else if (lng === 'es') setCurrency({ code: 'EUR', symbol: '€', rate: 0.92 });
+    else setCurrency({ code: 'USD', symbol: '$', rate: 1 });
   };
   
   const scrollToSection = (id) => {
@@ -68,18 +84,24 @@ const LandingPageContent = () => {
     <>
       <div className="bg-slate-900 text-slate-200">
         <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <img src="https://placehold.co/40x40/3b82f6/ffffff?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
-              <span className="text-xl md:text-2xl font-bold text-white">HNV Properties</span>
+              <span className="text-lg md:text-xl font-bold text-white">HNV Property Management Solutions</span>
             </div>
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden lg:flex items-center space-x-8">
               <button onClick={() => scrollToSection('features')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.features')}</button>
               <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.about')}</button>
               <button onClick={() => scrollToSection('pricing')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.pricing')}</button>
               <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.contact')}</button>
             </nav>
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
+              {deferredPrompt && (
+                <button onClick={handleInstallClick} className="text-slate-300 hover:text-white font-semibold flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Install App</span>
+                </button>
+              )}
               <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
                   <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>EN</button>
                   <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>BN</button>
@@ -90,18 +112,33 @@ const LandingPageContent = () => {
                 {t('header.getStarted')}
               </Link>
             </div>
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-slate-300 focus:outline-none">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
               </button>
             </div>
           </div>
           {isMenuOpen && (
-            <div className="md:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
+            <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
               <button onClick={() => scrollToSection('features')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</button>
               <button onClick={() => scrollToSection('about')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</button>
               <button onClick={() => scrollToSection('pricing')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</button>
               <button onClick={() => scrollToSection('contact')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</button>
+              <hr className="my-2 border-slate-700" />
+              <div className="flex items-center space-x-4 py-2">
+                 <span className="text-sm font-medium text-slate-400">Language:</span>
+                 <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
+                      <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>EN</button>
+                      <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>BN</button>
+                      <button onClick={() => changeLanguage('es')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'es' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>ES</button>
+                  </div>
+              </div>
+              {deferredPrompt && (
+                <button onClick={handleInstallClick} className="w-full text-left py-2 text-slate-300 hover:text-white font-semibold flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Install App</span>
+                </button>
+              )}
               <hr className="my-2 border-slate-700" />
               <Link to="/login" className="block py-2 text-slate-300 font-semibold hover:text-white">{t('header.login')}</Link>
               <Link to="/register" className="block w-full mt-2 text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg">{t('header.getStarted')}</Link>
@@ -253,7 +290,7 @@ const LandingPageContent = () => {
                         </div>
                          <div>
                             <h3 className="text-xl font-semibold text-white mb-2">{t('contact.emailTitle')}</h3>
-                            <p className="text-slate-400">info@hnvproperties.com<br/>support@hnvproperties.com</p>
+                            <p className="text-slate-400">info@hnvpropertymanagementsolutions.com<br/>support@hnvpropertymanagementsolutions.com</p>
                         </div>
                     </div>
                     <div>
