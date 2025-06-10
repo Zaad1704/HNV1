@@ -1,14 +1,19 @@
 import React from 'react';
-// We are not importing any other components for this test.
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// We are now re-importing the LoginPage to test it in isolation.
+import LoginPage from './pages/LoginPage.tsx';
 
 function App() {
-  // This is the simplest possible React component.
-  // It removes all routing and all other components to isolate the problem.
+  // This version re-introduces routing and only the Login Page.
+  // This will test if the routing library or the LoginPage component is causing the issue.
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', textAlign: 'center' }}>
-      <h1>Hello World!</h1>
-      <p>If you can see this message, the basic React application is working correctly.</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </Router>
   );
 }
 
