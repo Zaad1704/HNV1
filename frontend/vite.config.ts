@@ -3,10 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  build: {
-    rollupOptions: {
-      // Point to the correct entry file inside the public folder
-      input: 'public/index.html',
-    },
-  },
+  // Remove the 'build.rollupOptions.input' block entirely
 })
