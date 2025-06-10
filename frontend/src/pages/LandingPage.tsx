@@ -54,39 +54,39 @@ const LandingPageContent = () => {
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/10B981/FFFFFF?text=COO" }
   ];
 
-  const sectionBackgrounds = `
-    .hero-section { background-image: url('https://placehold.co/1920x1080/1e293b/ffffff?text=Cityscape'); }
-    .features-section { background-image: url('https://placehold.co/1920x1080/0f172a/ffffff?text=Modern+Office'); }
-    .about-section { background-image: url('https://placehold.co/1920x1080/1e293b/ffffff?text=Architecture'); }
-    .pricing-section { background-image: url('https://placehold.co/1920x1080/0f172a/ffffff?text=Financial+District'); }
-    .cta-section { background-image: url('https://placehold.co/1920x1080/1e293b/ffffff?text=Apartment+Keys'); }
-    .contact-section { background-image: url('https://placehold.co/1920x1080/0f172a/ffffff?text=City+at+Night'); }
-  `;
+  // The Super Admin will eventually be able to change these URLs from the dashboard.
+  const sectionBackgrounds = {
+    hero: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Modern+City')`,
+    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
+    about: `url('https://placehold.co/1920x1080/020617/f97316?text=Architectural+Detail')`,
+    pricing: `url('https://placehold.co/1920x1080/020617/ec4899?text=Glass+Building')`,
+    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Luxury+Living')`,
+    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
+  };
 
   return (
     <>
-      <style>{sectionBackgrounds}</style>
       <div className="bg-slate-900 text-slate-200">
-        <header className="bg-slate-900/70 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <img src="https://placehold.co/40x40/818cf8/1e293b?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
-              <span className="text-2xl font-bold text-white">HNV Properties</span>
+              <img src="https://placehold.co/40x40/3b82f6/ffffff?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
+              <span className="text-xl md:text-2xl font-bold text-white">HNV Properties</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <button onClick={() => scrollToSection('features')} className="text-slate-300 hover:text-white font-medium transition-colors">{t('header.features')}</button>
-              <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-white font-medium transition-colors">{t('header.about')}</button>
-              <button onClick={() => scrollToSection('pricing')} className="text-slate-300 hover:text-white font-medium transition-colors">{t('header.pricing')}</button>
-              <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-white font-medium transition-colors">{t('header.contact')}</button>
+              <button onClick={() => scrollToSection('features')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.features')}</button>
+              <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.about')}</button>
+              <button onClick={() => scrollToSection('pricing')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.pricing')}</button>
+              <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-blue-400 font-medium transition-colors">{t('header.contact')}</button>
             </nav>
             <div className="hidden md:flex items-center space-x-4">
               <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
-                  <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-indigo-500 text-white' : 'text-slate-400'}`}>EN</button>
-                  <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-indigo-500 text-white' : 'text-slate-400'}`}>BN</button>
-                  <button onClick={() => changeLanguage('es')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'es' ? 'bg-indigo-500 text-white' : 'text-slate-400'}`}>ES</button>
+                  <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>EN</button>
+                  <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>BN</button>
+                  <button onClick={() => changeLanguage('es')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'es' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>ES</button>
               </div>
               <Link to="/login" className="text-slate-300 font-semibold hover:text-white transition-colors">{t('header.login')}</Link>
-              <Link to="/register" className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-indigo-500/50 transition-all">
+              <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all">
                 {t('header.getStarted')}
               </Link>
             </div>
@@ -97,31 +97,31 @@ const LandingPageContent = () => {
             </div>
           </div>
           {isMenuOpen && (
-            <div className="md:hidden px-6 pt-2 pb-4 space-y-2">
+            <div className="md:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
               <button onClick={() => scrollToSection('features')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</button>
               <button onClick={() => scrollToSection('about')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</button>
               <button onClick={() => scrollToSection('pricing')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</button>
               <button onClick={() => scrollToSection('contact')} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</button>
               <hr className="my-2 border-slate-700" />
               <Link to="/login" className="block py-2 text-slate-300 font-semibold hover:text-white">{t('header.login')}</Link>
-              <Link to="/register" className="block w-full mt-2 text-center bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-lg">{t('header.getStarted')}</Link>
+              <Link to="/register" className="block w-full mt-2 text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg">{t('header.getStarted')}</Link>
             </div>
           )}
         </header>
 
         <main>
-          <section className="hero-section relative bg-cover bg-center text-white py-32 sm:py-48">
+          <section style={{backgroundImage: sectionBackgrounds.hero}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent"></div>
             <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
-                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
                 <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
-                <Link to="/register" className="bg-indigo-600 text-white font-bold py-4 px-10 rounded-lg text-lg hover:bg-indigo-500 transition-all shadow-lg hover:shadow-indigo-500/50 transform hover:scale-105">
+                <Link to="/register" className="bg-blue-600 text-white font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-blue-500 transition-all shadow-lg hover:shadow-blue-500/50 transform hover:scale-105">
                     {t('hero.cta')}
                 </Link>
             </div>
           </section>
 
-          <section id="features" className="features-section relative bg-cover bg-center py-20 text-white">
+          <section id="features" style={{backgroundImage: sectionBackgrounds.features}} className="relative bg-cover bg-center py-20 text-white">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
             <div className="container mx-auto px-6 relative z-10">
               <div className="text-center mb-16">
@@ -129,23 +129,23 @@ const LandingPageContent = () => {
                 <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-indigo-500 transition-all duration-300">
-                  <h3 className="text-xl font-bold text-indigo-400 mb-3">{t('features.card1Title')}</h3>
+                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3">{t('features.card1Title')}</h3>
                   <p className="text-slate-300">{t('features.card1Text')}</p>
                 </div>
-                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-indigo-500 transition-all duration-300">
-                  <h3 className="text-xl font-bold text-indigo-400 mb-3">{t('features.card2Title')}</h3>
+                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3">{t('features.card2Title')}</h3>
                   <p className="text-slate-300">{t('features.card2Text')}</p>
                 </div>
-                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-indigo-500 transition-all duration-300">
-                  <h3 className="text-xl font-bold text-indigo-400 mb-3">{t('features.card3Title')}</h3>
+                <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-emerald-500 transition-all duration-300">
+                  <h3 className="text-xl font-bold text-emerald-400 mb-3">{t('features.card3Title')}</h3>
                   <p className="text-slate-300">{t('features.card3Text')}</p>
                 </div>
               </div>
             </div>
           </section>
 
-          <section id="about" className="about-section relative bg-cover bg-center py-20 text-white">
+          <section id="about" style={{backgroundImage: sectionBackgrounds.about}} className="relative bg-cover bg-center py-20 text-white">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
             <div className="container mx-auto px-6 relative z-10">
                  <div className="text-center mb-16">
@@ -154,13 +154,13 @@ const LandingPageContent = () => {
                 </div>
                 <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
                     <div className="bg-slate-800/50 backdrop-blur-md p-8 rounded-2xl border border-slate-700">
-                        <h3 className="text-2xl font-bold text-indigo-400 mb-4">{t('about.missionTitle')}</h3>
+                        <h3 className="text-2xl font-bold text-orange-400 mb-4">{t('about.missionTitle')}</h3>
                         <p className="mb-8 text-slate-300 leading-relaxed">{t('about.missionText')}</p>
-                        <h3 className="text-2xl font-bold text-indigo-400 mb-4">{t('about.visionTitle')}</h3>
+                        <h3 className="text-2xl font-bold text-orange-400 mb-4">{t('about.visionTitle')}</h3>
                         <p className="text-slate-300 leading-relaxed">{t('about.visionText')}</p>
                     </div>
                      <div className="rounded-2xl overflow-hidden shadow-xl">
-                        <img src="https://placehold.co/600x400/312e81/ffffff?text=Our+Vision" alt="Team Vision" className="w-full h-auto object-cover"/>
+                        <img src="https://placehold.co/600x400/0c0a09/fb923c?text=Our+Vision" alt="Team Vision" className="w-full h-auto object-cover"/>
                     </div>
                 </div>
                  <div className="text-center mt-20">
@@ -170,16 +170,16 @@ const LandingPageContent = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 max-w-5xl mx-auto">
                     {executives.map((exec, index) => (
                         <div key={index} className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:scale-105 border border-slate-700">
-                            <img src={exec.img} alt={exec.name} className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-indigo-500" />
+                            <img src={exec.img} alt={exec.name} className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-orange-500" />
                             <h3 className="text-xl font-semibold text-white">{exec.name}</h3>
-                            <p className="text-indigo-400 font-medium">{exec.title}</p>
+                            <p className="text-orange-400 font-medium">{exec.title}</p>
                         </div>
                     ))}
                 </div>
             </div>
           </section>
 
-          <section id="pricing" className="pricing-section relative bg-cover bg-center py-20 text-white">
+          <section id="pricing" style={{backgroundImage: sectionBackgrounds.pricing}} className="relative bg-cover bg-center py-20 text-white">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
             <div className="container mx-auto px-6 relative z-10">
                 <div className="text-center mb-16">
@@ -187,8 +187,8 @@ const LandingPageContent = () => {
                     <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('pricing.subtitle')}</p>
                 </div>
                 <div className="grid lg:grid-cols-2 gap-10 max-w-4xl mx-auto items-stretch">
-                    <div className="bg-slate-800/50 backdrop-blur-md border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl flex flex-col hover:scale-105 hover:border-indigo-400 transition-all duration-300">
-                        <h3 className="text-2xl font-bold text-indigo-400">{t('pricing.landlordPlan')}</h3>
+                    <div className="bg-slate-800/50 backdrop-blur-md border-2 border-pink-500 rounded-2xl p-8 shadow-2xl flex flex-col hover:scale-105 hover:border-pink-400 transition-all duration-300">
+                        <h3 className="text-2xl font-bold text-pink-400">{t('pricing.landlordPlan')}</h3>
                         <p className="text-slate-400 mt-2">{t('pricing.landlordDesc')}</p>
                         <div className="mt-6">
                             <span className="text-5xl font-extrabold text-white">{currency.symbol}{Math.round(10 * currency.rate)}</span>
@@ -200,7 +200,7 @@ const LandingPageContent = () => {
                             <li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature3')}</li>
                             <li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature4')}</li>
                         </ul>
-                        <Link to="/register" className="w-full text-center mt-10 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-indigo-500/50 transition-all">{t('pricing.cta')}</Link>
+                        <Link to="/register" className="w-full text-center mt-10 bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-pink-500/50 transition-all">{t('pricing.cta')}</Link>
                     </div>
                     <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-8 shadow-lg flex flex-col hover:scale-105 hover:border-slate-500 transition-all duration-300">
                         <h3 className="text-2xl font-bold text-white">{t('pricing.agentPlan')}</h3>
@@ -222,24 +222,24 @@ const LandingPageContent = () => {
             </div>
           </section>
 
-          <section className="cta-section relative bg-cover bg-center py-20">
+          <section style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
             <div className="container mx-auto px-6 text-center relative z-10">
                 <h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2>
                 <p className="mt-4 mb-8 text-slate-300 max-w-xl mx-auto">{t('cta.subtitle')}</p>
-                <Link to="/register" className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-indigo-500 shadow-lg hover:shadow-indigo-500/50">
+                <Link to="/register" className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-blue-500 shadow-lg hover:shadow-blue-500/50">
                     {t('cta.button')}
                 </Link>
             </div>
           </section>
         </main>
 
-       <footer id="contact" className="contact-section relative bg-cover bg-center text-gray-300 py-16">
+       <footer id="contact" style={{backgroundImage: sectionBackgrounds.contact}} className="relative bg-cover bg-center text-gray-300 py-16">
             <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm"></div>
             <div className="container mx-auto px-6 relative z-10">
                  <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-white">{t('contact.title')}</h2>
-                    <p className="text-indigo-300 mt-4 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
+                    <p className="text-blue-300 mt-4 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
                     <div className="space-y-8">
@@ -260,11 +260,11 @@ const LandingPageContent = () => {
                         <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-lg border border-slate-700">
                             <h3 className="text-xl font-semibold text-white mb-4">{t('contact.formTitle')}</h3>
                             <form className="space-y-4">
-                                <input type="text" placeholder={t('contact.nameLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                                <input type="email" placeholder={t('contact.emailLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                                <input type="text" placeholder={t('contact.subjectLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                                <textarea placeholder={t('contact.messageLabel')} rows="4" className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-                                <button type="submit" className="w-full py-3 bg-indigo-600 font-semibold rounded-lg hover:bg-indigo-500">{t('contact.submitButton')}</button>
+                                <input type="text" placeholder={t('contact.nameLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                                <input type="email" placeholder={t('contact.emailLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                                <input type="text" placeholder={t('contact.subjectLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                                <textarea placeholder={t('contact.messageLabel')} rows="4" className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                                <button type="submit" className="w-full py-3 bg-blue-600 font-semibold rounded-lg hover:bg-blue-500">{t('contact.submitButton')}</button>
                             </form>
                         </div>
                     </div>
