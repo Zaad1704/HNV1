@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
+import useAuthStore from './store/authStore';
 
 // --- Import All Page Components From Your Repository ---
 import LandingPage from './pages/LandingPage.tsx';
@@ -9,12 +9,17 @@ import RegisterPage from './pages/RegisterPage.tsx';
 import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
 
 // Authenticated User Pages
+import DashboardLayout from './components/layout/DashboardLayout.tsx';
 import DashboardPage from './pages/DashboardPage.tsx';
 import OrganizationPage from './pages/OrganizationPage.tsx';
 import UsersPage from './pages/UsersPage.tsx';
 import InviteUsersPage from './pages/InviteUsersPage.tsx';
 import BillingPage from './pages/BillingPage.tsx';
 import ProfilePage from './pages/ProfilePage.tsx';
+import PropertiesPage from './pages/PropertiesPage.tsx';
+import TenantsPage from './pages/TenantsPage.tsx';
+import AuditLogPage from './pages/AuditLogPage.tsx';
+
 
 // Super Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage.tsx';
@@ -52,24 +57,31 @@ function App() {
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
         {/* --- Protected User Routes --- */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+        {/* All routes inside here will use the DashboardLayout */}
+        <Route path="/" element={<ProtectedRoute />}>
+          <Route path="dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="properties" element={<PropertiesPage />} />
+            <Route path="tenants" element={<TenantsPage />} />
+            <Route path="audit-log" element={<AuditLogPage />} />
+          </Route>
+          {/* Standalone pages that still require login but might not need the full sidebar */}
           <Route path="/organization" element={<OrganizationPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/users/invite" element={<InviteUsersPage />} />
           <Route path="/billing" element={<BillingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        
 
         {/* --- Protected Super Admin Routes --- */}
         <Route path="/admin" element={<AdminRoute />}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="organizations" element={<AdminOrganizationsPage />} />
-            <Route path="billing" element={<AdminBillingPage />} />
-            <Route path="content" element={<AdminContentPage />} />
-            <Route path="site-editor" element={<SiteEditorPage />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="organizations" element={<AdminOrganizationsPage />} />
+          <Route path="billing" element={<AdminBillingPage />} />
+          <Route path="content" element={<AdminContentPage />} />
+          <Route path="site-editor" element={<SiteEditorPage />} />
         </Route>
 
         {/* Catch-all route for pages that don't exist */}
