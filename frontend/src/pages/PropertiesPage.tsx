@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/apiClient'; // Corrected import path
+import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 
 // Placeholder Icons
@@ -7,29 +7,42 @@ const AddIcon = () => <span>+</span>;
 const ListIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>;
 const MapIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3V4"></path></svg>;
 
+// --- Helper function to convert Geo Coordinates to Pixel Position ---
+// This function translates real-world longitude/latitude to a position on our map image.
+// A real map library like Leaflet or Mapbox would handle this automatically.
+const convertCoordsToPixels = (lon: number, lat: number) => {
+    // These are example bounds for a map centered on New York City
+    const mapBounds = {
+        top: 40.8128,    // North
+        bottom: 40.6128, // South
+        left: -74.1060,  // West
+        right: -73.9060  // East
+    };
+
+    const latPercent = (lat - mapBounds.bottom) / (mapBounds.top - mapBounds.bottom);
+    const lonPercent = (lon - mapBounds.left) / (mapBounds.right - mapBounds.left);
+
+    return {
+        top: `${(1 - latPercent) * 100}%`,
+        left: `${lonPercent * 100}%`
+    };
+};
+
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [view, setView] = useState<'list' | 'map'>('list'); // State to toggle between list and map
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
         setError('');
-        // We add simulated lat/lng for the map view. A real app would store this in the database.
         const response = await apiClient.get('/properties');
-        const propertiesWithCoords = response.data.data.map((prop: any) => ({
-          ...prop,
-          coords: {
-            top: `${Math.random() * 80 + 10}%`, // Random top position
-            left: `${Math.random() * 80 + 10}%`, // Random left position
-          }
-        }));
-        setProperties(propertiesWithCoords);
+        setProperties(response.data.data);
       } catch (err) {
         setError('Failed to fetch properties.');
         console.error(err);
@@ -42,14 +55,7 @@ const PropertiesPage = () => {
   }, []);
 
   const handlePropertyAdded = (newProperty: any) => {
-    const propertyWithCoords = {
-        ...newProperty,
-        coords: {
-            top: `${Math.random() * 80 + 10}%`,
-            left: `${Math.random() * 80 + 10}%`,
-        }
-    };
-    setProperties(prevProperties => [...prevProperties, propertyWithCoords]);
+    setProperties(prevProperties => [...prevProperties, newProperty]);
   };
 
   const getStatusClass = (status: string) => {
@@ -78,7 +84,7 @@ const PropertiesPage = () => {
                 properties.map((prop) => (
                   <tr key={prop._id} className="hover:bg-slate-800 transition-colors">
                     <td className="p-4 font-bold text-white">{prop.name}</td>
-                    <td className="p-4 text-slate-300">{`${prop.address.street}, ${prop.address.city}`}</td>
+                    <td className="p-4 text-slate-300">{prop.address.formattedAddress || `${prop.address.street}, ${prop.address.city}`}</td>
                     <td className="p-4 text-slate-300">{prop.numberOfUnits}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>
@@ -104,23 +110,31 @@ const PropertiesPage = () => {
   );
   
   const MapView = () => (
-    <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 p-4" style={{ height: '60vh' }}>
+    <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 p-4" style={{ height: '65vh' }}>
         <div className="w-full h-full bg-slate-900 rounded-lg relative overflow-hidden">
-            {/* This is a simulated map background. A real implementation would use a map library. */}
-            <img src="https://placehold.co/1200x800/1e293b/334155?text=Area+Map" className="w-full h-full object-cover opacity-20" alt="Map background" />
+            {/* A realistic map tile background. This could be dynamic in a full implementation. */}
+            <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-74.0060,40.7128,12,0/1200x800?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p0MG01MXRqMW45cjQzb2R6b21iN2M1ZCJ9.K9T1LhDYA6Sg5S-VEA42YQ" className="w-full h-full object-cover opacity-50" alt="Map background" />
             
-            {properties.map(prop => (
-                <div 
-                    key={prop._id} 
-                    className="absolute group"
-                    style={{ top: prop.coords.top, left: prop.coords.left }}
-                >
-                    <div className="w-3 h-3 bg-cyan-400 rounded-full cursor-pointer shadow-lg"></div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block p-2 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">
-                        {prop.name}
+            {properties.map(prop => {
+                // Don't render a pin if the property doesn't have coordinates
+                if (!prop.location?.coordinates || prop.location.coordinates.length < 2) return null;
+                
+                const [lon, lat] = prop.location.coordinates;
+                const { top, left } = convertCoordsToPixels(lon, lat);
+
+                return (
+                    <div 
+                        key={prop._id} 
+                        className="absolute group"
+                        style={{ top, left, transform: 'translate(-50%, -50%)' }}
+                    >
+                        <div className="w-3 h-3 bg-cyan-400 rounded-full cursor-pointer shadow-lg animate-pulse"></div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block p-2 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">
+                            {prop.name}
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     </div>
   );
