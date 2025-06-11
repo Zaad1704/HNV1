@@ -1,33 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import AddPropertyModal from '../components/common/AddPropertyModal';
+import AddPropertyModal from '../components/common/AddPropertyModal'; // Corrected import path
 
 // Placeholder Icons
 const AddIcon = () => <span>+</span>;
 const ListIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>;
 const MapIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3V4"></path></svg>;
 
-// --- Helper function to convert Geo Coordinates to Pixel Position ---
-// This function translates real-world longitude/latitude to a position on our map image.
-// A real map library like Leaflet or Mapbox would handle this automatically.
 const convertCoordsToPixels = (lon: number, lat: number) => {
-    // These are example bounds for a map centered on New York City
-    const mapBounds = {
-        top: 40.8128,    // North
-        bottom: 40.6128, // South
-        left: -74.1060,  // West
-        right: -73.9060  // East
-    };
-
+    const mapBounds = { top: 40.8128, bottom: 40.6128, left: -74.1060, right: -73.9060 };
     const latPercent = (lat - mapBounds.bottom) / (mapBounds.top - mapBounds.bottom);
     const lonPercent = (lon - mapBounds.left) / (mapBounds.right - mapBounds.left);
-
-    return {
-        top: `${(1 - latPercent) * 100}%`,
-        left: `${lonPercent * 100}%`
-    };
+    return { top: `${(1 - latPercent) * 100}%`, left: `${lonPercent * 100}%` };
 };
-
 
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<any[]>([]);
@@ -50,7 +35,6 @@ const PropertiesPage = () => {
         setLoading(false);
       }
     };
-
     fetchProperties();
   }, []);
 
@@ -87,21 +71,13 @@ const PropertiesPage = () => {
                     <td className="p-4 text-slate-300">{prop.address.formattedAddress || `${prop.address.street}, ${prop.address.city}`}</td>
                     <td className="p-4 text-slate-300">{prop.numberOfUnits}</td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>
-                        {prop.status}
-                      </span>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span>
                     </td>
-                    <td className="p-4">
-                      <button className="font-medium text-cyan-400 hover:text-cyan-300">Manage</button>
-                    </td>
+                    <td className="p-4"><button className="font-medium text-cyan-400 hover:text-cyan-300">Manage</button></td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan={5} className="p-8 text-center text-slate-400">
-                    You haven't added any properties yet. Click "Add Property" to get started.
-                  </td>
-                </tr>
+                <tr><td colSpan={5} className="p-8 text-center text-slate-400">You haven't added any properties yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -112,26 +88,15 @@ const PropertiesPage = () => {
   const MapView = () => (
     <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 p-4" style={{ height: '65vh' }}>
         <div className="w-full h-full bg-slate-900 rounded-lg relative overflow-hidden">
-            {/* A realistic map tile background. This could be dynamic in a full implementation. */}
             <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-74.0060,40.7128,12,0/1200x800?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p0MG01MXRqMW45cjQzb2R6b21iN2M1ZCJ9.K9T1LhDYA6Sg5S-VEA42YQ" className="w-full h-full object-cover opacity-50" alt="Map background" />
-            
             {properties.map(prop => {
-                // Don't render a pin if the property doesn't have coordinates
                 if (!prop.location?.coordinates || prop.location.coordinates.length < 2) return null;
-                
                 const [lon, lat] = prop.location.coordinates;
                 const { top, left } = convertCoordsToPixels(lon, lat);
-
                 return (
-                    <div 
-                        key={prop._id} 
-                        className="absolute group"
-                        style={{ top, left, transform: 'translate(-50%, -50%)' }}
-                    >
+                    <div key={prop._id} className="absolute group" style={{ top, left, transform: 'translate(-50%, -50%)' }}>
                         <div className="w-3 h-3 bg-cyan-400 rounded-full cursor-pointer shadow-lg animate-pulse"></div>
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block p-2 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">
-                            {prop.name}
-                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block p-2 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">{prop.name}</div>
                     </div>
                 );
             })}
@@ -139,18 +104,12 @@ const PropertiesPage = () => {
     </div>
   );
 
-
   if (loading) return <div className="text-white text-center p-8">Loading properties...</div>;
   if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
 
   return (
     <div className="text-white">
-      <AddPropertyModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
-        onPropertyAdded={handlePropertyAdded}
-      />
-
+      <AddPropertyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onPropertyAdded={handlePropertyAdded} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold">Manage Properties</h1>
         <div className="flex items-center gap-2">
@@ -158,16 +117,12 @@ const PropertiesPage = () => {
                 <button onClick={() => setView('list')} className={`p-2 rounded-md ${view === 'list' ? 'bg-cyan-600' : ''}`}><ListIcon /></button>
                 <button onClick={() => setView('map')} className={`p-2 rounded-md ${view === 'map' ? 'bg-cyan-600' : ''}`}><MapIcon /></button>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg hover:shadow-cyan-500/50 transition-all transform hover:scale-105"
-            >
+            <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg hover:shadow-cyan-500/50 transition-all transform hover:scale-105">
               <AddIcon />
               <span>Add Property</span>
             </button>
         </div>
       </div>
-
       {view === 'list' ? <ListView /> : <MapView />}
     </div>
   );
