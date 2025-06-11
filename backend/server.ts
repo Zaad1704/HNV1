@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Corrected Import API Route Files (based on your repository) ---
+// --- Import API Route Files (based on your repository) ---
 import authRoutes from './routes/authRoutes';
 import adminRoutes from './routes/adminRoutes';
 import billingRoutes from './routes/billingRoutes';
@@ -11,7 +11,8 @@ import invitationRoutes from './routes/invitationRoutes';
 import orgRoutes from './routes/orgRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import userRoutes from './routes/userRoutes';
-// The 'index.ts' file is likely the main entry for your routes, let's use that.
+import setupRoutes from './routes/setupRoutes'; // Import the new setup routes
+// The 'index.ts' file is likely the main entry for your other routes
 import allApiRoutes from './routes/index'; 
 
 
@@ -55,9 +56,11 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-// --- Mount API Routes (using the files from your repository) ---
-// The main router file is likely index.ts, which handles all sub-routes.
+// --- Mount API Routes ---
+// The main router for customer-facing APIs
 app.use('/api', allApiRoutes);
+// A special, separate route for the one-time setup
+app.use('/api/setup', setupRoutes);
 
 
 // A simple health-check route
