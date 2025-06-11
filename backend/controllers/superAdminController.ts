@@ -1,35 +1,39 @@
-// FILE: backend/controllers/superAdminController.ts
 import { Request, Response } from 'express';
 import SiteContent from '../models/SiteContent';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import auditService from '../services/auditService';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// Re-defining this interface here for clarity within this file
-interface AuthenticatedRequestForSuperAdmin extends Request {
-  user?: { id: string; organizationId: string; role: string; };
-}
-
+/**
+ * @desc    Get editable site content for a specific page.
+ * @route   GET /api/super-admin/content/:page
+ * @access  Private (Super Admin)
+ */
 export const getSiteContent = async (req: Request, res: Response) => {
   try {
     let content = await SiteContent.findOne({ page: req.params.page });
-
     if (!content) {
+      // If no content exists for this page yet, create a default entry
       content = await SiteContent.create({
         page: req.params.page,
         content: {
-          heroTitle: `Welcome to ${req.params.page} page!`,
-          heroSubtitle: 'This content is editable by the Super Admin.'
+          title: `Welcome to the ${req.params.page} page`,
+          subtitle: 'This content is editable by the Super Admin.'
         }
       });
     }
-
     res.status(200).json({ success: true, data: content });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
+/**
+ * @desc    Update site content for a specific page.
+ * @route   PUT /api/super-admin/content/:page
+ * @access  Private (Super Admin)
+ */
 export const updateSiteContent = async (req: Request, res: Response) => {
   try {
     const pageContent = await SiteContent.findOneAndUpdate(
@@ -37,13 +41,17 @@ export const updateSiteContent = async (req: Request, res: Response) => {
       { content: req.body, lastUpdated: Date.now() },
       { new: true, upsert: true, runValidators: true }
     );
-
     res.status(200).json({ success: true, data: pageContent });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
+/**
+ * @desc    Get a list of all users across all organizations.
+ * @route   GET /api/super-admin/users
+ * @access  Private (Super Admin)
+ */
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({}).populate('organizationId', 'name').select('-password');
@@ -53,21 +61,28 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * @desc    Get a list of all organizations.
+ * @route   GET /api/super-admin/organizations
+ * @access  Private (Super Admin)
+ */
 export const getAllOrganizations = async (req: Request, res: Response) => {
     try {
-        const organizations = await Organization.find({})
-            .populate('owner', 'name')
-            .select('-members');
-
+        const organizations = await Organization.find({}).populate('owner', 'name').select('-members');
         res.status(200).json({ success: true, count: organizations.length, data: organizations });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-export const updateOrganizationSubscription = async (req: AuthenticatedRequestForSuperAdmin, res: Response) => {
+/**
+ * @desc    Manually update an organization's subscription status.
+ * @route   POST /api/super-admin/organizations/:orgId/subscription
+ * @access  Private (Super Admin)
+ */
+export const updateOrganizationSubscription = async (req: AuthenticatedRequest, res: Response) => {
   const { orgId } = req.params;
-  const { action, durationDays } = req.body; 
+  const { action, durationDays } = req.body;
 
   if (!action || (action === 'activate' && !durationDays)) {
     return res.status(400).json({ success: false, message: 'Please provide an action and a duration for activation.' });
@@ -80,21 +95,21 @@ export const updateOrganizationSubscription = async (req: AuthenticatedRequestFo
     }
 
     if (action === 'activate') {
-      const endsAt = new Date();
-      endsAt.setDate(endsAt.getDate() + parseInt(durationDays, 10));
+      const renewalDate = new Date();
+      renewalDate.setDate(renewalDate.getDate() + parseInt(durationDays, 10));
       
       organization.subscription.status = 'active';
-      organization.subscription.endsAt = endsAt;
+      organization.subscription.renewalDate = renewalDate;
     } else if (action === 'deactivate') {
       organization.subscription.status = 'inactive';
-      organization.subscription.endsAt = new Date(); 
+      organization.subscription.renewalDate = undefined; // Clear renewal date
     } else {
       return res.status(400).json({ success: false, message: 'Invalid action.' });
     }
 
     await organization.save();
     
-    auditService.recordAction(req.user!.id, req.user!.organizationId, 'SUBSCRIPTION_MANUAL_UPDATE', {
+    auditService.recordAction(req.user!._id, req.user!.organizationId, 'SUBSCRIPTION_MANUAL_UPDATE', {
         targetOrgId: orgId,
         targetOrgName: organization.name,
         action: action,
@@ -106,4 +121,3 @@ export const updateOrganizationSubscription = async (req: AuthenticatedRequestFo
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
-
