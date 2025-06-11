@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 
-// Icons
+// Icons - In a real app, use a library like Lucide React for better icons
 const HomeIcon = () => <span>🏠</span>;
 const PropertiesIcon = () => <span>🏢</span>;
 const TenantsIcon = () => <span>👥</span>;
@@ -22,11 +22,15 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) {
+    // This is important for the initial load when auth state is being determined
+    return <div className="bg-slate-900 h-screen flex items-center justify-center text-white">Loading...</div>;
+  }
 
   const getLinkClass = (path: string) => {
-    return location.pathname === path
-      ? 'bg-blue-600 text-white'
+    // Check for exact match or if it's a sub-route
+    return location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))
+      ? 'bg-cyan-600 text-white'
       : 'text-slate-300 hover:bg-slate-700 hover:text-white';
   };
 
@@ -41,31 +45,31 @@ const DashboardLayout = () => {
           <Link to="/dashboard" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard')}`}>
             <HomeIcon /><span>Overview</span>
           </Link>
-          <Link to="/dashboard/properties" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/properties')}`}>
+          <Link to="/properties" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/properties')}`}>
             <PropertiesIcon /><span>Properties</span>
           </Link>
-           <Link to="/dashboard/tenants" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/tenants')}`}>
+           <Link to="/tenants" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/tenants')}`}>
             <TenantsIcon /><span>Tenants</span>
           </Link>
-           <Link to="/dashboard/payments" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/payments')}`}>
-            <PaymentsIcon /><span>Payments</span>
+           <Link to="/billing" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/billing')}`}>
+            <PaymentsIcon /><span>Billing</span>
           </Link>
-           <Link to="/dashboard/audit-log" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/audit-log')}`}>
+           <Link to="/audit-log" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/audit-log')}`}>
             <AuditIcon /><span>Audit Log</span>
           </Link>
           
           {user.role === 'Super Admin' && (
             <div className="pt-4 mt-4 border-t border-slate-700">
               <h3 className="px-4 text-xs font-semibold uppercase text-slate-500 mb-2">Admin Panel</h3>
-              <Link to="/admin/dashboard" className="flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white">
+              <Link to="/admin/dashboard" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/admin/dashboard')}`}>
                 <AdminIcon /><span>Super Admin</span>
               </Link>
             </div>
           )}
         </nav>
         <div className="p-4 border-t border-slate-700">
-           <Link to="/dashboard/settings" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/settings')}`}>
-            <SettingsIcon /><span>Settings</span>
+           <Link to="/profile" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/profile')}`}>
+            <SettingsIcon /><span>Profile & Settings</span>
           </Link>
           <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-2 font-semibold rounded-lg text-slate-300 hover:bg-red-800/50 hover:text-white">
             <LogoutIcon /><span>Logout</span>
