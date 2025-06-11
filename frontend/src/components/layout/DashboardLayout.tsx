@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 
-// Icons - In a real app, use a library like Lucide React for better icons
+// Icons
 const HomeIcon = () => <span>🏠</span>;
 const PropertiesIcon = () => <span>🏢</span>;
 const TenantsIcon = () => <span>👥</span>;
@@ -23,14 +23,12 @@ const DashboardLayout = () => {
   };
 
   if (!user) {
-    // This is important for the initial load when auth state is being determined
     return <div className="bg-slate-900 h-screen flex items-center justify-center text-white">Loading...</div>;
   }
 
   const getLinkClass = (path: string) => {
-    // Check for exact match or if it's a sub-route
     return location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))
-      ? 'bg-cyan-600 text-white'
+      ? 'bg-blue-600 text-white'
       : 'text-slate-300 hover:bg-slate-700 hover:text-white';
   };
 
@@ -45,7 +43,7 @@ const DashboardLayout = () => {
           <Link to="/dashboard" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard')}`}>
             <HomeIcon /><span>Overview</span>
           </Link>
-          <Link to="/properties" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/properties')}`}>
+          <Link to="/dashboard/properties" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/dashboard/properties')}`}>
             <PropertiesIcon /><span>Properties</span>
           </Link>
            <Link to="/tenants" className={`flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors ${getLinkClass('/tenants')}`}>
