@@ -1,20 +1,32 @@
-import mongoose, { Document, Schema } from "mongoose";
+// FILE: backend/models/Organization.ts
+import mongoose, { Schema, Document, model } from 'mongoose';
 
 export interface IOrganization extends Document {
   name: string;
-  ownerId: string;
-  status: "active" | "suspended";
+  owner: mongoose.Schema.Types.ObjectId;
+  members: mongoose.Schema.Types.ObjectId[];
+  subscription: {
+    plan: string;
+    status: string;
+    tcoCustomerId?: string;
+    subscriptionId?: string;
+    endsAt?: Date;
+  };
   createdAt: Date;
-  updatedAt: Date;
 }
 
-const OrganizationSchema = new Schema<IOrganization>(
-  {
-    name: { type: String, required: true },
-    ownerId: { type: String, required: true }, // SuperAdmin or Landlord
-    status: { type: String, enum: ["active", "suspended"], default: "active" }
+const OrganizationSchema: Schema<IOrganization> = new Schema({
+  name: { type: String, required: true },
+  owner: { type: Schema.Types.ObjectId, ref: 'User' },
+  members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  subscription: {
+    plan: { type: String, default: 'Free' },
+    status: { type: String, default: 'trialing' },
+    tcoCustomerId: String,
+    subscriptionId: String,
+    endsAt: Date,
   },
-  { timestamps: true }
-);
+  createdAt: { type: Date, default: Date.now },
+});
 
-export default mongoose.model<IOrganization>("Organization", OrganizationSchema);
+export default model<IOrganization>('Organization', OrganizationSchema);
