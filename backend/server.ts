@@ -55,7 +55,7 @@ app.use(express.json());
 // --- Mount API Routes ---
 // The main router file handles all standard API routes.
 app.use('/api', allApiRoutes);
-// The special setup route is mounted separately.
+// The special setup route is mounted separately for security.
 app.use('/api/setup', setupRoutes);
 
 
