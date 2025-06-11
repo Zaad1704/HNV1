@@ -1,21 +1,22 @@
 import { Request, Response } from 'express';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// This helper function would ideally be in a shared utility file
-const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
+// This helper function can be shared or defined where needed.
+// It creates a JWT and sends it in the response.
+const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
 };
 
 /**
- * @desc    Get user profile for the currently logged-in user
+ * @desc    Get profile for the currently logged-in user
  * @route   GET /api/users/profile
  * @access  Private
  */
 export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
-    // The user object is attached to the request by the 'protect' middleware.
-    // We assume the middleware has already fetched the user.
+    // The 'protect' middleware already fetches the user and attaches it to the request.
+    // We just need to send it back.
     if (!req.user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -34,6 +35,7 @@ export const updateUserDetails = async (req: AuthenticatedRequest, res: Response
         return res.status(400).json({ success: false, message: 'Name is required' });
     }
 
+    // Find the user by the ID from the token and update their name
     const user = await User.findByIdAndUpdate(
       req.user!.id, 
       { name }, 
@@ -67,7 +69,7 @@ export const updateUserPassword = async (req: AuthenticatedRequest, res: Respons
         return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Check if the provided current password matches the one in the database
+    // Use the method defined in the User model to check the password
     const isMatch = await user.matchPassword(currentPassword);
 
     if (!isMatch) {
