@@ -80,20 +80,18 @@ const LandingPageContent = () => {
       { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
+  
+  const sectionBackgrounds = {
+    hero: `url('https://placehold.co/1920x1080/020617/a5b4fc?text=Modern+City')`,
+    features: `url('https://placehold.co/1920x1080/020617/6ee7b7?text=Sleek+Interior')`,
+    about: `url('https://placehold.co/1920x1080/020617/fb923c?text=Architecture')`,
+    pricing: `url('https://placehold.co/1920x1080/020617/f472b6?text=Glass+Building')`,
+    cta: `url('https://placehold.co/1920x1080/020617/c084fc?text=Luxury+Living')`,
+    contact: `url('https://placehold.co/1920x1080/020617/818cf8?text=Global+Network')`
+  };
 
   return (
     <div className="bg-slate-900 text-slate-200">
-      <style>
-        {/* These background URLs will be editable from the Super Admin CMS */}
-        {`
-          .hero-section { background-image: url('https://placehold.co/1920x1080/020617/a5b4fc?text=Modern+City'); }
-          .features-section { background-image: url('https://placehold.co/1920x1080/020617/6ee7b7?text=Sleek+Interior'); }
-          .about-section { background-image: url('https://placehold.co/1920x1080/020617/fb923c?text=Architecture'); }
-          .pricing-section { background-image: url('https://placehold.co/1920x1080/020617/f472b6?text=Glass+Building'); }
-          .cta-section { background-image: url('https://placehold.co/1920x1080/020617/c084fc?text=Luxury+Living'); }
-          .contact-section { background-image: url('https://placehold.co/1920x1080/020617/818cf8?text=Global+Network'); }
-        `}
-      </style>
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
