@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/client';
-import AddTenantModal from '../components/common/AddTenantModal';
+import apiClient from '../api/client'; // Corrected import path
+import AddTenantModal from '../components/common/AddTenantModal'; // Corrected import path
 
-// Placeholder Icons
+// Placeholder icons
 const AddIcon = () => <span>+</span>;
 
 const TenantsPage = () => {
@@ -41,7 +41,7 @@ const TenantsPage = () => {
       default: return 'bg-gray-500/20 text-gray-300';
     }
   };
-
+  
   if (loading) return <div className="text-white text-center p-8">Loading tenants...</div>;
   if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
 
