@@ -1,22 +1,29 @@
-import nodemailer from "nodemailer";
+// FILE: backend/services/emailService.ts
+import nodemailer from 'nodemailer';
 
-const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS } = process.env;
+class EmailService {
+  private transporter: nodemailer.Transporter;
 
-const transporter = nodemailer.createTransport({
-  host: EMAIL_HOST,
-  port: Number(EMAIL_PORT),
-  secure: true,
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
-  },
-});
+  constructor() {
+    // In a real app, these would come from process.env
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'YOUR_ETHEREAL_USER', // Replace with Ethereal credentials or other provider
+        pass: 'YOUR_ETHEREAL_PASSWORD',
+      },
+    });
+  }
 
-export async function sendEmail(to: string, subject: string, html: string) {
-  await transporter.sendMail({
-    from: `"HNV SaaS Platform" <${EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  async sendOtpEmail(to: string, otp: string) {
+    const subject = 'Your Verification Code';
+    const html = `<p>Your verification code is: <strong>${otp}</strong></p>`;
+    console.log(`Sending OTP ${otp} to ${to}`);
+    // await this.transporter.sendMail({ from: '"HNV" <no-reply@hnv.com>', to, subject, html });
+  }
 }
+
+export default new EmailService();
+
