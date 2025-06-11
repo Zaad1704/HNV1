@@ -8,8 +8,6 @@ const ListIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor
 const MapIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3V4"></path></svg>;
 
 // --- Helper function to convert Geo Coordinates to Pixel Position ---
-// This function translates real-world longitude/latitude to a position on our map image.
-// A real map library like Leaflet or Mapbox would handle this automatically.
 const convertCoordsToPixels = (lon: number, lat: number) => {
     // These are example bounds for a map centered on New York City
     const mapBounds = {
@@ -112,16 +110,12 @@ const PropertiesPage = () => {
   const MapView = () => (
     <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 p-4" style={{ height: '65vh' }}>
         <div className="w-full h-full bg-slate-900 rounded-lg relative overflow-hidden">
-            {/* A realistic map tile background. This could be dynamic in a full implementation. */}
             <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-74.0060,40.7128,12,0/1200x800?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p0MG01MXRqMW45cjQzb2R6b21iN2M1ZCJ9.K9T1LhDYA6Sg5S-VEA42YQ" className="w-full h-full object-cover opacity-50" alt="Map background" />
             
             {properties.map(prop => {
-                // Don't render a pin if the property doesn't have coordinates
                 if (!prop.location?.coordinates || prop.location.coordinates.length < 2) return null;
-                
                 const [lon, lat] = prop.location.coordinates;
                 const { top, left } = convertCoordsToPixels(lon, lat);
-
                 return (
                     <div 
                         key={prop._id} 
