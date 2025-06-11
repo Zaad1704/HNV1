@@ -7,13 +7,16 @@ class EmailService {
       host: "smtp.ethereal.email",
       port: 587,
       secure: false,
-      auth: { user: process.env.ETHEREAL_USER, pass: process.env.ETHEREAL_PASS },
+      auth: {
+        user: process.env.ETHEREAL_USER || 'your_ethereal_user',
+        pass: process.env.ETHEREAL_PASS || 'your_ethereal_password'
+      },
     });
   }
-  async sendOtpEmail(to: string, otp: string) {
-    const subject = 'Your Verification Code for HNV SaaS';
-    const html = `<p>Your verification code is: <strong>${otp}</strong>.</p>`;
-    console.log(`Simulating OTP email to ${to} with code ${otp}`);
+  async sendEmail(to: string, subject: string, html: string) {
+    console.log(`Simulating sending email to ${to}`);
+    // In production, uncomment the line below
+    // await this.transporter.sendMail({ from: '"HNV" <no-reply@hnv.com>', to, subject, html });
   }
 }
 export default new EmailService();
