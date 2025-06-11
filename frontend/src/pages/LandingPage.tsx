@@ -30,37 +30,31 @@ const LandingPageContent = () => {
   
   // --- Language & Currency Logic ---
   useEffect(() => {
-    const fetchLocation = async () => {
-      // In a real app, use a service like geo.ipify.org
-      // For this demo, we simulate IP detection. Default is English/USD.
-      const simulatedLocation = 'US'; // Change to 'BD', 'ES' to test IP detection
-      
-      let lang = 'en';
-      let curr = { code: 'USD', symbol: '$', rate: 1 };
+    const fetchUserLocale = async () => {
+        // In a real app, use an IP geolocation API. For now, we simulate.
+        const simulatedLocation = 'BD'; // Test with 'BD', 'ES', or 'US'
+        let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
 
-      if (simulatedLocation === 'BD') {
-        lang = 'bn';
-        curr = { code: 'BDT', symbol: '৳', rate: 117 };
-      } else if (simulatedLocation === 'ES') {
-        lang = 'es';
-        curr = { code: 'EUR', symbol: '€', rate: 0.92 };
-      }
-      
-      // Suggest language change but default to English.
-      if (lang !== 'en') {
-        if (window.confirm(`We've detected you're in ${simulatedLocation}. Would you like to switch to your local language?`)) {
-          i18n.changeLanguage(lang);
-          setCurrency(curr);
-        } else {
-            i18n.changeLanguage('en');
-            setCurrency({ code: 'USD', symbol: '$', rate: 1 });
+        if (simulatedLocation === 'BD') {
+            lang = 'bn';
+            curr = { code: 'BDT', symbol: '৳', rate: 117 };
+        } else if (simulatedLocation === 'ES') {
+            lang = 'es';
+            curr = { code: 'EUR', symbol: '€', rate: 0.92 };
         }
-      } else {
+        
+        // Default to English, then ask to switch if a different locale is detected.
         i18n.changeLanguage('en');
         setCurrency({ code: 'USD', symbol: '$', rate: 1 });
-      }
+
+        if (lang !== 'en') {
+            if (window.confirm(`We've detected you might be in ${simulatedLocation}. Would you like to switch to your local language?`)) {
+                i18n.changeLanguage(lang);
+                setCurrency(curr);
+            }
+        }
     };
-    fetchLocation();
+    fetchUserLocale();
   }, [i18n]);
 
   const changeLanguage = (lng: string) => {
@@ -80,7 +74,8 @@ const LandingPageContent = () => {
       { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
-  
+
+  // The Super Admin will eventually be able to change these URLs from the dashboard.
   const sectionBackgrounds = {
     hero: `url('https://placehold.co/1920x1080/020617/a5b4fc?text=Modern+City')`,
     features: `url('https://placehold.co/1920x1080/020617/6ee7b7?text=Sleek+Interior')`,
