@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/apiClient';
+import apiClient from '../api/apiClient'; // Corrected import path
 import AddPropertyModal from '../components/common/AddPropertyModal';
 
 // Placeholder Icons
