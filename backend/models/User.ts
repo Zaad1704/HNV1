@@ -43,7 +43,7 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
 
 // Method to get JWT
 UserSchema.methods.getSignedJwtToken = function(): string {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET!, {
+  return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   });
 };
