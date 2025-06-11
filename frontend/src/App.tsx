@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import useAuthStore from './store/authStore';
+import { useAuthStore } from './store/authStore';
 
 // --- Import All Page Components From Your Repository ---
 import LandingPage from './pages/LandingPage.tsx';
