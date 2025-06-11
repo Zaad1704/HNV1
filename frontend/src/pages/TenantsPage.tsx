@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/client'; // Corrected import path
+import apiClient from '../api/client';
 import AddTenantModal from '../components/common/AddTenantModal'; // Corrected import path
 
 // Placeholder icons
@@ -30,6 +30,8 @@ const TenantsPage = () => {
   }, []);
 
   const handleTenantAdded = (newTenant: any) => {
+    // A more robust implementation might re-fetch or find the property name
+    // For now, we add the new tenant and the page will show 'N/A' for property until refresh.
     setTenants(prevTenants => [...prevTenants, newTenant]);
   };
 
