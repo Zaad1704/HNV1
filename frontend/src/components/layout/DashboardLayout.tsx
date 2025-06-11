@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore'; // Corrected import with curly braces
 
-// Icons
+// Icons - In a real app, use a library like Lucide React for better icons
 const HomeIcon = () => <span>🏠</span>;
 const PropertiesIcon = () => <span>🏢</span>;
 const TenantsIcon = () => <span>👥</span>;
@@ -23,10 +23,12 @@ const DashboardLayout = () => {
   };
 
   if (!user) {
+    // This is important for the initial load when auth state is being determined
     return <div className="bg-slate-900 h-screen flex items-center justify-center text-white">Loading...</div>;
   }
 
   const getLinkClass = (path: string) => {
+    // Check for exact match or if it's a sub-route
     return location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))
       ? 'bg-blue-600 text-white'
       : 'text-slate-300 hover:bg-slate-700 hover:text-white';
