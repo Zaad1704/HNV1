@@ -3,17 +3,13 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Import API Route Files (based on your repository) ---
-import authRoutes from './routes/authRoutes';
-import adminRoutes from './routes/adminRoutes';
-import billingRoutes from './routes/billingRoutes';
-import invitationRoutes from './routes/invitationRoutes';
-import orgRoutes from './routes/orgRoutes';
-import superAdminRoutes from './routes/superAdminRoutes';
-import userRoutes from './routes/userRoutes';
-import setupRoutes from './routes/setupRoutes'; // Import the new setup routes
-// The 'index.ts' file is likely the main entry for your other routes
+// --- Main Route Handler ---
+// We import the main router from 'index.ts' which should handle all other routes.
 import allApiRoutes from './routes/index'; 
+
+// --- Special Setup Route ---
+// This is imported separately because it serves a special, one-time purpose.
+import setupRoutes from './routes/setupRoutes';
 
 
 dotenv.config();
@@ -57,9 +53,9 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // --- Mount API Routes ---
-// The main router for customer-facing APIs
+// The main router file handles all standard API routes.
 app.use('/api', allApiRoutes);
-// A special, separate route for the one-time setup
+// The special setup route is mounted separately.
 app.use('/api/setup', setupRoutes);
 
 
