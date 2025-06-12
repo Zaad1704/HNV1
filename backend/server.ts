@@ -3,14 +3,16 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Main Route Handler ---
-// We import the main router from 'index.ts' which should handle all other routes.
-import allApiRoutes from './routes/index'; 
-
-// --- Special Setup Route ---
-// This is imported separately because it serves a special, one-time purpose.
+// --- Import API Route Files ---
+import authRoutes from './routes/authRoutes';
+import superAdminRoutes from './routes/superAdminRoutes';
+import propertiesRoutes from './routes/propertiesRoutes';
+import tenantsRoutes from './routes/tenantsRoutes'; // Import the new tenant routes
+import paymentsRoutes from './routes/paymentsRoutes';
+import userRoutes from './routes/userRoutes';
+import subscriptionsRoutes from './routes/subscriptionsRoutes';
+import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
-
 
 dotenv.config();
 
@@ -53,9 +55,14 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // --- Mount API Routes ---
-// The main router file handles all standard API routes.
-app.use('/api', allApiRoutes);
-// The special setup route is mounted separately for security.
+app.use('/api/auth', authRoutes);
+app.use('/api/super-admin', superAdminRoutes);
+app.use('/api/properties', propertiesRoutes);
+app.use('/api/tenants', tenantsRoutes); // Mount the tenant routes
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes);
+app.use('/api/audit', auditRoutes);
 app.use('/api/setup', setupRoutes);
 
 
