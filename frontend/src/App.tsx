@@ -1,13 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
+// We are temporarily removing the auth store import to isolate the error
+// import { useAuthStore } from './store/authStore';
 
 // --- We will only import the public pages for this test ---
 import LandingPage from './pages/LandingPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
-// We are temporarily removing the real DashboardLayout and DashboardPage imports
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
@@ -21,10 +21,9 @@ const DashboardPlaceholder = () => (
 
 
 // --- Route Protection Component ---
-// We are testing if this component is the source of the issue.
+// This is our final test. We are removing the call to useAuthStore completely.
 const ProtectedRoute = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  // For this test, let's assume the user is always authenticated to isolate routing issues.
+  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated); // Temporarily commented out
   const isAuthForTest = true; 
   
   return isAuthForTest ? <Outlet /> : <Navigate to="/login" replace />;
@@ -41,7 +40,7 @@ function App() {
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         
         {/* --- Protected Route Test --- */}
-        {/* We are now using a very simple placeholder inside the protected route */}
+        {/* We are testing if the app renders when the auth store is not called */}
         <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPlaceholder />} />
         </Route>
