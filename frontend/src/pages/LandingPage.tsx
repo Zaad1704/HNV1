@@ -10,7 +10,7 @@ const LandingPageContent = () => {
   const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  // All the logic for PWA, language, etc. remains here...
+  // --- PWA Installation Logic ---
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -27,10 +27,11 @@ const LandingPageContent = () => {
       setDeferredPrompt(null);
     }
   };
-
+  
+  // --- Language & Currency Logic ---
   useEffect(() => {
     const fetchUserLocale = async () => {
-        const simulatedCountry = 'US';
+        const simulatedCountry = 'US'; // Test with 'BD', 'ES', etc.
         let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
         let localLanguageName = 'English';
         if (simulatedCountry === 'BD') {
@@ -63,9 +64,42 @@ const LandingPageContent = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setIsMenuOpen(false);
   };
+
+  const executives = [
+      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://placehold.co/150x150/9333ea/ffffff?text=CEO" },
+      { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
+      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
+  ];
   
+  // This object holds the background images and must be defined within the component
+  const sectionBackgrounds = {
+    hero: `url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living')`,
+    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
+    about: `url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture')`,
+    pricing: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building')`,
+    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys')`,
+    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
+  };
+
   return (
     <div className="bg-slate-900 text-slate-200">
+      <style>
+        {`
+          html { scroll-behavior: smooth; }
+          .section-bg {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+          }
+          .section-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8));
+            backdrop-filter: blur(4px);
+          }
+        `}
+      </style>
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
@@ -97,25 +131,73 @@ const LandingPageContent = () => {
         </div>
         {isMenuOpen && (
           <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
-            {/* Mobile menu content... */}
+            <a href="#features" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</a>
+            <a href="#about" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</a>
+            <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</a>
+            <a href="#contact" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</a>
+            <hr className="my-2 border-slate-700" />
+            <div className="flex items-center justify-between py-2">
+               <span className="text-sm font-medium text-slate-400">Language:</span>
+               <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
+                    <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>EN</button>
+                    <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>BN</button>
+                    <button onClick={() => changeLanguage('es')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'es' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>ES</button>
+                </div>
+            </div>
+             {deferredPrompt && (
+                <button onClick={handleInstallClick} className="w-full text-left py-2 text-slate-300 hover:text-white font-semibold flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>{t('header.installApp')}</span>
+                </button>
+              )}
+            <hr className="my-2 border-slate-700" />
+            <Link to="/login" className="block py-2 text-slate-300 font-semibold hover:text-white">{t('header.login')}</Link>
+            <Link to="/register" className="block w-full mt-2 text-center bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold py-2 px-4 rounded-lg">{t('header.getStarted')}</Link>
           </div>
         )}
       </header>
 
-      {/* For this test, all main content is commented out. If this page loads with just the header,
-          we know the problem is in one of the sections below. */}
-      
-      {/* <main>
-        <section id="hero"> ... </section>
-        <section id="features"> ... </section>
-        <section id="about"> ... </section>
-        <section id="pricing"> ... </section>
-        <section id="cta"> ... </section>
+      <main>
+        <section id="hero" style={{backgroundImage: sectionBackgrounds.hero}} className="section-bg py-24 sm:py-40">
+          <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
+            <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
+            <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-400/50 transform hover:scale-105">
+                {t('hero.cta')}
+            </Link>
+          </div>
+        </section>
+        
+        <section id="features" style={{backgroundImage: sectionBackgrounds.features}} className="section-bg py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
+              <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card1Title')}</h3>
+                <p className="text-slate-300">{t('features.card1Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card2Title')}</h3>
+                <p className="text-slate-300">{t('features.card2Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card3Title')}</h3>
+                <p className="text-slate-300">{t('features.card3Text')}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
       
-      <footer id="contact"> ... </footer> 
-      */}
-
+       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
+           <div className="container mx-auto px-6 relative z-10">
+               {/* Footer Content */}
+           </div>
+      </footer>
     </div>
   );
 };
