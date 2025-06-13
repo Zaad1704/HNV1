@@ -1,18 +1,32 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+// FILE: backend/middleware/authenticate.ts
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import User, { IUser } from '../models/User';
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
-
-export function authenticate(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) return res.status(401).json({ message: "No token" });
-
-  const token = authHeader.split(" ")[1];
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
-    req.user = payload;
-    next();
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
-  }
+export interface AuthenticatedRequest extends Request {
+  user?: IUser;
 }
+
+export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) return res.status(401).json({ message: 'Not authorized' });
+
+  try {
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    req.user = await User.findById(decoded.id).select('-password');
+    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+};
+
+export const authorize = (...roles: string[]) => (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ message: `User role ${req.user?.role} is not authorized` });
+  }
+  next();
+};
