@@ -104,7 +104,7 @@ export const requestDataExport = async (req: AuthenticatedRequest, res: Response
         };
         await organization.save();
         
-        auditService.recordAction(req.user!._id, req.user!.organizationId, 'DATA_EXPORT_REQUEST');
+        auditService.recordAction(req.user!._id, req.user!.organizationId, 'DATA_EXPORT_REQUEST', {});
         
         res.status(200).json({ success: true, message: "Your data export request has been received. You will receive an email with a download link within 24 hours." });
 
@@ -137,7 +137,7 @@ export const requestAccountDeletion = async (req: AuthenticatedRequest, res: Res
         };
         await organization.save();
 
-        auditService.recordAction(req.user!._id, req.user!.organizationId, 'ACCOUNT_DELETION_REQUEST');
+        auditService.recordAction(req.user!._id, req.user!.organizationId, 'ACCOUNT_DELETION_REQUEST', {});
         
         res.status(200).json({ success: true, message: "Your account deletion request has been received. The account will be permanently deleted after a 14-day grace period." });
 
