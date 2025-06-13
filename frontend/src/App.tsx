@@ -2,48 +2,21 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
-// --- Import All Page Components From Your Repository ---
+// --- Import a minimal set of components for this test ---
 import LandingPage from './pages/LandingPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
-
-// Authenticated User Pages
-import DashboardLayout from './components/layout/DashboardLayout.tsx';
-import DashboardPage from './pages/DashboardPage.tsx';
-import OrganizationPage from './pages/OrganizationPage.tsx';
-import UsersPage from './pages/UsersPage.tsx';
-import InviteUsersPage from './pages/InviteUsersPage.tsx';
-import BillingPage from './pages/BillingPage.tsx';
-import ProfilePage from './pages/ProfilePage.tsx';
-import PropertiesPage from './pages/PropertiesPage.tsx';
-import TenantsPage from './pages/TenantsPage.tsx';
-import AuditLogPage from './pages/AuditLogPage.tsx';
-
-
-// Super Admin Pages
-import AdminDashboardPage from './pages/AdminDashboardPage.tsx';
-import AdminUsersPage from './pages/AdminUsersPage.tsx';
-import AdminOrganizationsPage from './pages/AdminOrganizationsPage.tsx';
-import AdminBillingPage from './pages/AdminBillingPage.tsx';
-import AdminContentPage from './pages/AdminContentPage.tsx';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.tsx';
+import DashboardLayout from './components/layout/DashboardLayout.tsx'; // Re-introducing the layout
+import DashboardPage from './pages/DashboardPage.tsx'; // Re-introducing the main dashboard page
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
-// --- Route Protection Components ---
+// --- Route Protection Component ---
+// We will test if this logic is causing the issue.
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
-
-const AdminRoute = () => {
-  const { isAuthenticated, user } = useAuthStore((state) => ({
-    isAuthenticated: state.isAuthenticated,
-    user: state.user,
-  }));
-  const isAdmin = isAuthenticated && user?.role === 'Super Admin';
-  return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
 function App() {
@@ -55,38 +28,16 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-
-        {/* --- Protected User Routes --- */}
-        {/* All routes inside here will use the DashboardLayout */}
-        <Route path="/" element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="properties" element={<PropertiesPage />} />
-            <Route path="tenants" element={<TenantsPage />} />
-            <Route path="audit-log" element={<AuditLogPage />} />
-            <Route path="settings" element={<ProfilePage />} /> 
-          </Route>
-          {/* Standalone pages that still require login but might not need the full sidebar */}
-          <Route path="/organization" element={<OrganizationPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/users/invite" element={<InviteUsersPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
         
-
-        {/* --- Protected Super Admin Routes --- */}
-        <Route path="/admin" element={<AdminRoute />}>
-          {/* You might want a separate AdminLayout component here */}
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="organizations" element={<AdminOrganizationsPage />} />
-          <Route path="billing" element={<AdminBillingPage />} />
-          <Route path="content" element={<AdminContentPage />} />
-          <Route path="site-editor" element={<SiteEditorPage />} />
+        {/* --- Protected Route Test --- */}
+        {/* We are now adding back the protected route with just the dashboard */}
+        <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<DashboardPage />} />
+            </Route>
         </Route>
 
-        {/* Catch-all route for pages that don't exist */}
+        {/* All other routes are disabled for now */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
