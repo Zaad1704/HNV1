@@ -10,7 +10,7 @@ const LandingPageContent = () => {
   const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  // --- PWA Installation Logic ---
+  // PWA Installation Logic
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -28,10 +28,10 @@ const LandingPageContent = () => {
     }
   };
   
-  // --- Language & Currency Logic ---
+  // Language & Currency Logic
   useEffect(() => {
     const fetchUserLocale = async () => {
-        const simulatedCountry = 'US'; // Test with 'BD', 'ES', 'GB'
+        const simulatedCountry = 'US'; 
         let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
         let localLanguageName = 'English';
 
@@ -50,7 +50,7 @@ const LandingPageContent = () => {
 
         if (lang !== 'en') {
             setTimeout(() => {
-                if (window.confirm(`Switch to ${localLanguageName}?`)) {
+                if (window.confirm(`Want to see this page in ${localLanguageName}?`)) {
                     i18n.changeLanguage(lang);
                     setCurrency(curr);
                 }
@@ -67,30 +67,19 @@ const LandingPageContent = () => {
     else setCurrency({ code: 'USD', symbol: '$', rate: 1 });
   };
   
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setIsMenuOpen(false);
-  };
-
   const executives = [
       { name: "Jane Doe", title: "Chief Executive Officer", img: "https://placehold.co/150x150/9333ea/ffffff?text=CEO" },
       { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
-  
-  const sectionBackgrounds = {
-    hero: `url('https://placehold.co/1920x1080/020617/a5b4fc?text=Modern+City')`,
-    features: `url('https://placehold.co/1920x1080/020617/6ee7b7?text=Sleek+Interior')`,
-    about: `url('https://placehold.co/1920x1080/020617/fb923c?text=Architecture')`,
-    pricing: `url('https://placehold.co/1920x1080/020617/f472b6?text=Glass+Building')`,
-    cta: `url('https://placehold.co/1920x1080/020617/c084fc?text=Luxury+Living')`,
-    contact: `url('https://placehold.co/1920x1080/020617/818cf8?text=Global+Network')`
-  };
 
   return (
     <div className="bg-slate-900 text-slate-200">
       <style>
         {`
+          html {
+            scroll-behavior: smooth;
+          }
           .hero-section { background-image: url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living'); }
           .features-section { background-image: url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior'); }
           .about-section { background-image: url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture'); }
@@ -106,10 +95,10 @@ const LandingPageContent = () => {
             <span className="text-base sm:text-lg md:text-xl font-bold text-white whitespace-nowrap">HNV Property Management Solutions</span>
           </div>
           <nav className="hidden lg:flex items-center space-x-6">
-            <button onClick={() => scrollToSection('features')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.features')}</button>
-            <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.about')}</button>
-            <button onClick={() => scrollToSection('pricing')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.pricing')}</button>
-            <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.contact')}</button>
+            <a href="#features" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.features')}</a>
+            <a href="#about" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.about')}</a>
+            <a href="#pricing" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.pricing')}</a>
+            <a href="#contact" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.contact')}</a>
           </nav>
           <div className="hidden lg:flex items-center space-x-4">
             {deferredPrompt && (
@@ -130,6 +119,11 @@ const LandingPageContent = () => {
         </div>
         {isMenuOpen && (
           <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
+            <a href="#features" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</a>
+            <a href="#about" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</a>
+            <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</a>
+            <a href="#contact" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</a>
+            <hr className="my-2 border-slate-700" />
             <div className="flex items-center justify-between py-2">
                <span className="text-sm font-medium text-slate-400">Language:</span>
                <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
@@ -152,22 +146,21 @@ const LandingPageContent = () => {
       </header>
 
       <main>
-        <section style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
-           <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
-              <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
-              <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-400/50 transform hover:scale-105">
-                  {t('hero.cta')}
-              </Link>
+        {/* All content sections are now scroll-to targets */}
+        <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
+          <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
+            <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
+            <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-400/50 transform hover:scale-105">
+                {t('hero.cta')}
+            </Link>
           </div>
         </section>
-        
-        {/* All other sections will be added here */}
-
+        {/* ... All other sections ... */}
       </main>
       
-       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
-           {/* Footer content will be added here */}
+       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}}>
+          {/* ... Footer content ... */}
       </footer>
     </div>
   );
