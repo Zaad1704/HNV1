@@ -1,24 +1,12 @@
 import React from 'react';
 
-// For this test, we are removing all routing and other component imports
-// to create the simplest possible application.
-
+// This is the simplest possible React component.
+// It uses inline styles to avoid any dependency on external CSS files.
 function App() {
   return (
-    <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#111827',
-        color: 'white',
-        fontFamily: 'sans-serif'
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>Hello World!</h1>
-        <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>If you can see this, the core application is loading correctly.</p>
-        <p style={{ marginTop: '2rem', color: '#6b7280' }}>We can now proceed to the next debugging step.</p>
-      </div>
+    <div style={{ padding: '40px', fontFamily: 'sans-serif', color: '#333' }}>
+      <h1>Hello from React!</h1>
+      <p>If you see this, the core rendering is working.</p>
     </div>
   );
 }
