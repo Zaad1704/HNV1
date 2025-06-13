@@ -32,7 +32,7 @@ const SettingsPage = () => {
     try {
       await apiClient.put('/users/updatedetails', { name: profile.name });
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
-      // A more robust solution would refetch the user or update the token here
+      // In a real app, refetching user data or updating the JWT would be ideal here.
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
     } finally {
@@ -62,21 +62,34 @@ const SettingsPage = () => {
       setLoadingPassword(false);
     }
   };
-
-  const manageBilling = () => {
-    // This would redirect the user to the 2Checkout customer portal
-    alert('Redirecting to secure billing portal...');
+  
+  const handleDataRequest = async () => {
+      setMessage({ type: '', text: '' });
+      if (window.confirm('Are you sure you want to request a download of all your data? This process is irreversible.')) {
+          try {
+              const res = await apiClient.post('/users/request-data-export');
+              setMessage({ type: 'success', text: res.data.message });
+          } catch (err: any) {
+              setMessage({ type: 'error', text: err.response?.data?.message || 'Could not process your request.' });
+          }
+      }
   };
   
-  const handleDataRequest = () => {
-      alert('A request to download your data has been submitted. You will receive an email shortly.');
-  }
-  
-  const handleAccountDeletion = () => {
-      if(window.confirm('Are you sure you want to request account deletion? This action cannot be undone.')) {
-          alert('Your account is now scheduled for deletion.');
+  const handleAccountDeletion = async () => {
+      setMessage({ type: '', text: '' });
+      if (window.confirm('WARNING: Are you absolutely sure you want to request to delete your account and all associated data? This action cannot be undone.')) {
+           try {
+              const res = await apiClient.post('/users/request-account-deletion');
+              setMessage({ type: 'success', text: res.data.message });
+           } catch (err: any) {
+              setMessage({ type: 'error', text: err.response?.data?.message || 'Could not process your request.' });
+           }
       }
-  }
+  };
+
+  const manageBilling = () => {
+    alert('Redirecting to secure billing portal...');
+  };
 
   if (!user) return <div className="text-white text-center p-8">Loading settings...</div>;
 
