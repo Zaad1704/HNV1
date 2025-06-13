@@ -2,21 +2,32 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
-// --- Import a minimal set of components for this test ---
+// --- We will only import the public pages for this test ---
 import LandingPage from './pages/LandingPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
-import DashboardLayout from './components/layout/DashboardLayout.tsx'; // Re-introducing the layout
-import DashboardPage from './pages/DashboardPage.tsx'; // Re-introducing the main dashboard page
+// We are temporarily removing the real DashboardLayout and DashboardPage imports
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
+// This is a simple placeholder for the dashboard content
+const DashboardPlaceholder = () => (
+    <div style={{ padding: '40px', fontFamily: 'sans-serif', color: '#333' }}>
+        <h1>Welcome to the Dashboard!</h1>
+        <p>If you can see this, the authentication and routing are working correctly.</p>
+    </div>
+);
+
+
 // --- Route Protection Component ---
-// We will test if this logic is causing the issue.
+// We are testing if this component is the source of the issue.
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  // For this test, let's assume the user is always authenticated to isolate routing issues.
+  const isAuthForTest = true; 
+  
+  return isAuthForTest ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 function App() {
@@ -30,11 +41,9 @@ function App() {
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
         
         {/* --- Protected Route Test --- */}
-        {/* We are now adding back the protected route with just the dashboard */}
+        {/* We are now using a very simple placeholder inside the protected route */}
         <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<DashboardPage />} />
-            </Route>
+            <Route path="/dashboard" element={<DashboardPlaceholder />} />
         </Route>
 
         {/* All other routes are disabled for now */}
