@@ -1,52 +1,32 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-// We are temporarily removing the auth store import to isolate the error
-// import { useAuthStore } from './store/authStore';
-
-// --- We will only import the public pages for this test ---
-import LandingPage from './pages/LandingPage.tsx';
-import LoginPage from './pages/LoginPage.tsx';
-import RegisterPage from './pages/RegisterPage.tsx';
-import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
-
-const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // This is a simple placeholder for the dashboard content
 const DashboardPlaceholder = () => (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', color: '#333' }}>
-        <h1>Welcome to the Dashboard!</h1>
-        <p>If you can see this, the authentication and routing are working correctly.</p>
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#111827',
+        color: 'white',
+        fontFamily: 'sans-serif',
+        textAlign: 'center'
+    }}>
+      <div>
+        <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>Dashboard Test Page</h1>
+        <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>If you can see this, the routing is working correctly.</p>
+      </div>
     </div>
 );
 
-
-// --- Route Protection Component ---
-// This is our final test. We are removing the call to useAuthStore completely.
-const ProtectedRoute = () => {
-  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated); // Temporarily commented out
-  const isAuthForTest = true; 
-  
-  return isAuthForTest ? <Outlet /> : <Navigate to="/login" replace />;
-};
-
 function App() {
+  // This is the simplest possible routing setup to confirm the core libraries are working.
+  // It removes all protected routes and other pages for this one test.
   return (
     <Router>
       <Routes>
-        {/* --- Public Routes --- */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-        
-        {/* --- Protected Route Test --- */}
-        {/* We are testing if the app renders when the auth store is not called */}
-        <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPlaceholder />} />
-        </Route>
-
-        {/* All other routes are disabled for now */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="/" element={<DashboardPlaceholder />} />
       </Routes>
     </Router>
   );
