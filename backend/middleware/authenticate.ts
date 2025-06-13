@@ -30,3 +30,4 @@ export const authorize = (...roles: string[]) => (req: AuthenticatedRequest, res
   }
   next();
 };
+
