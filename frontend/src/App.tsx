@@ -1,93 +1,25 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
 
-// --- Import All Page Components From Your Repository ---
-import LandingPage from './pages/LandingPage.tsx';
-import LoginPage from './pages/LoginPage.tsx';
-import RegisterPage from './pages/RegisterPage.tsx';
-import AcceptInvitePage from './pages/AcceptInvitePage.tsx';
-
-// Authenticated User Pages
-import DashboardLayout from './components/layout/DashboardLayout.tsx';
-import DashboardPage from './pages/DashboardPage.tsx';
-import OrganizationPage from './pages/OrganizationPage.tsx';
-import UsersPage from './pages/UsersPage.tsx';
-import InviteUsersPage from './pages/InviteUsersPage.tsx';
-import BillingPage from './pages/BillingPage.tsx';
-import ProfilePage from './pages/ProfilePage.tsx';
-import PropertiesPage from './pages/PropertiesPage.tsx';
-import TenantsPage from './pages/TenantsPage.tsx';
-import AuditLogPage from './pages/AuditLogPage.tsx';
-
-
-// Super Admin Pages
-import AdminDashboardPage from './pages/AdminDashboardPage.tsx';
-import AdminUsersPage from './pages/AdminUsersPage.tsx';
-import AdminOrganizationsPage from './pages/AdminOrganizationsPage.tsx';
-import AdminBillingPage from './pages/AdminBillingPage.tsx';
-import AdminContentPage from './pages/AdminContentPage.tsx';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.tsx';
-
-const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
-
-// --- Route Protection Components ---
-const ProtectedRoute = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
-
-const AdminRoute = () => {
-  const { isAuthenticated, user } = useAuthStore((state) => ({
-    isAuthenticated: state.isAuthenticated,
-    user: state.user,
-  }));
-  const isAdmin = isAuthenticated && user?.role === 'Super Admin';
-  return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
-};
+// For this test, we are removing all routing and other component imports
+// to create the simplest possible application.
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* --- Public Routes --- */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-
-        {/* --- Protected User Routes --- */}
-        {/* All routes inside here will use the DashboardLayout */}
-        <Route path="/" element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="properties" element={<PropertiesPage />} />
-            <Route path="tenants" element={<TenantsPage />} />
-            <Route path="audit-log" element={<AuditLogPage />} />
-          </Route>
-          {/* Standalone pages that still require login but might not need the full sidebar */}
-          <Route path="/organization" element={<OrganizationPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/users/invite" element={<InviteUsersPage />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-        </Route>
-        
-
-        {/* --- Protected Super Admin Routes --- */}
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="organizations" element={<AdminOrganizationsPage />} />
-          <Route path="billing" element={<AdminBillingPage />} />
-          <Route path="content" element={<AdminContentPage />} />
-          <Route path="site-editor" element={<SiteEditorPage />} />
-        </Route>
-
-        {/* Catch-all route for pages that don't exist */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#111827',
+        color: 'white',
+        fontFamily: 'sans-serif'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>Hello World!</h1>
+        <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>If you can see this, the core application is loading correctly.</p>
+        <p style={{ marginTop: '2rem', color: '#6b7280' }}>We can now proceed to the next debugging step.</p>
+      </div>
+    </div>
   );
 }
 
