@@ -1,14 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
-import './index.css'; // This line imports all the Tailwind CSS styles
+import './index.css'; // Re-adding the stylesheet import
 
-// We will add React.StrictMode back in as it's a best practice
-// and we've confirmed it's not the source of the blank page issue.
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
-
+// This is the correct structure for rendering a React app.
+// We are re-introducing React.StrictMode as it is a best practice.
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+} else {
+  console.error("Fatal Error: The root element with id='root' was not found in the DOM.");
 }
