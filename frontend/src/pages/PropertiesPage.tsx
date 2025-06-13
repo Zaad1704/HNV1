@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import AddPropertyModal from '../components/common/AddPropertyModal'; // We will use the existing modal
+import AddPropertyModal from '../components/common/AddPropertyModal';
 
 // Placeholder Icons
 const AddIcon = () => <span>+</span>;
 const ListIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>;
 const MapIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3V4"></path></svg>;
 
+// --- Helper function to convert Geo Coordinates to Pixel Position ---
+const convertCoordsToPixels = (lon: number, lat: number) => {
+    // These are example bounds for a map centered on New York City
+    const mapBounds = {
+        top: 40.8128,    // North
+        bottom: 40.6128, // South
+        left: -74.1060,  // West
+        right: -73.9060  // East
+    };
+
+    const latPercent = (lat - mapBounds.bottom) / (mapBounds.top - mapBounds.bottom);
+    const lonPercent = (lon - mapBounds.left) / (mapBounds.right - mapBounds.left);
+
+    return {
+        top: `${(1 - latPercent) * 100}%`,
+        left: `${lonPercent * 100}%`
+    };
+};
+
+
 const PropertiesPage = () => {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [view, setView] = useState<'list' | 'map'>('list'); // State to toggle between list and map
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -38,12 +58,9 @@ const PropertiesPage = () => {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'bg-green-500/20 text-green-400';
-      case 'Under Renovation':
-        return 'bg-yellow-500/20 text-yellow-400';
-      default:
-        return 'bg-slate-600/50 text-slate-400';
+      case 'Active': return 'bg-green-500/20 text-green-400';
+      case 'Under Renovation': return 'bg-yellow-500/20 text-yellow-400';
+      default: return 'bg-slate-600/50 text-slate-400';
     }
   };
   
@@ -93,15 +110,13 @@ const PropertiesPage = () => {
   const MapView = () => (
     <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 p-4" style={{ height: '65vh' }}>
         <div className="w-full h-full bg-slate-900 rounded-lg relative overflow-hidden">
+            {/* A realistic map tile background. This could be dynamic in a full implementation. */}
             <img src="https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-74.0060,40.7128,12,0/1200x800?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p0MG01MXRqMW45cjQzb2R6b21iN2M1ZCJ9.K9T1LhDYA6Sg5S-VEA42YQ" className="w-full h-full object-cover opacity-50" alt="Map background" />
             
             {properties.map(prop => {
                 if (!prop.location?.coordinates || prop.location.coordinates.length < 2) return null;
                 const [lon, lat] = prop.location.coordinates;
-                // This is a simplified conversion. A real map library would handle this more accurately.
-                const top = `${(1 - ((lat - 40.6128) / (40.8128 - 40.6128))) * 100}%`;
-                const left = `${((lon - (-74.1060)) / (-73.9060 - (-74.1060))) * 100}%`;
-
+                const { top, left } = convertCoordsToPixels(lon, lat);
                 return (
                     <div 
                         key={prop._id} 
