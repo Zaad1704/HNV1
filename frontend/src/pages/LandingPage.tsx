@@ -10,7 +10,7 @@ const LandingPageContent = () => {
   const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  // PWA Installation Logic
+  // --- PWA Installation Logic ---
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -28,10 +28,10 @@ const LandingPageContent = () => {
     }
   };
   
-  // Language & Currency Logic
+  // --- Language & Currency Logic ---
   useEffect(() => {
     const fetchUserLocale = async () => {
-        const simulatedCountry = 'US'; 
+        const simulatedCountry = 'US'; // Test with 'BD', 'ES', etc.
         let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
         let localLanguageName = 'English';
 
@@ -67,11 +67,26 @@ const LandingPageContent = () => {
     else setCurrency({ code: 'USD', symbol: '$', rate: 1 });
   };
   
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setIsMenuOpen(false);
+  };
+
   const executives = [
       { name: "Jane Doe", title: "Chief Executive Officer", img: "https://placehold.co/150x150/9333ea/ffffff?text=CEO" },
       { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
+
+  // This object holds the background images and must be defined within the component
+  const sectionBackgrounds = {
+    hero: `url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living')`,
+    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
+    about: `url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture')`,
+    pricing: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building')`,
+    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys')`,
+    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
+  };
 
   return (
     <div className="bg-slate-900 text-slate-200">
@@ -80,12 +95,6 @@ const LandingPageContent = () => {
           html {
             scroll-behavior: smooth;
           }
-          .hero-section { background-image: url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living'); }
-          .features-section { background-image: url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior'); }
-          .about-section { background-image: url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture'); }
-          .pricing-section { background-image: url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building'); }
-          .cta-section { background-image: url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys'); }
-          .contact-section { background-image: url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network'); }
         `}
       </style>
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
@@ -146,7 +155,6 @@ const LandingPageContent = () => {
       </header>
 
       <main>
-        {/* All content sections are now scroll-to targets */}
         <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
           <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
@@ -156,11 +164,67 @@ const LandingPageContent = () => {
             </Link>
           </div>
         </section>
-        {/* ... All other sections ... */}
+        
+        <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
+              <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card1Title')}</h3>
+                <p className="text-slate-300">{t('features.card1Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card2Title')}</h3>
+                <p className="text-slate-300">{t('features.card2Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card3Title')}</h3>
+                <p className="text-slate-300">{t('features.card3Text')}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
       
-       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}}>
-          {/* ... Footer content ... */}
+       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
+           <div className="container mx-auto px-6 relative z-10">
+               <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold text-white">{t('contact.title')}</h2>
+                  <p className="text-cyan-300 mt-4 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                  <div className="space-y-8">
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.officeTitle')}</h3>
+                          <p className="text-slate-400">123 Property Lane, Suite 400<br/>Management City, MC 54321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.phoneTitle')}</h3>
+                          <p className="text-slate-400">General: (555) 123-4567<br/>Support: (555) 765-4321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.emailTitle')}</h3>
+                          <p className="text-slate-400">info@hnvpropertymanagementsolutions.com<br/>support@hnvpropertymanagementsolutions.com</p>
+                      </div>
+                  </div>
+                  <div>
+                      <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-lg border border-slate-700">
+                          <h3 className="text-xl font-semibold text-white mb-4">{t('contact.formTitle')}</h3>
+                          <form className="space-y-4">
+                              <input type="text" placeholder={t('contact.nameLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="email" placeholder={t('contact.emailLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="text" placeholder={t('contact.subjectLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <textarea placeholder={t('contact.messageLabel')} rows="4" className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none"></textarea>
+                              <button type="submit" className="w-full py-3 bg-cyan-600 font-semibold rounded-lg hover:bg-cyan-500">{t('contact.submitButton')}</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+          </div>
       </footer>
     </div>
   );
