@@ -1,3 +1,4 @@
+// FILE: backend/models/User.ts
 import mongoose, { Schema, Document, model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
