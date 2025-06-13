@@ -188,8 +188,84 @@ const LandingPageContent = () => {
           </div>
         </section>
 
+        <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+               <div className="text-center mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold">{t('about.title')}</h2>
+                  <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('about.subtitle')}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+                  <div className="bg-slate-800/50 backdrop-blur-md p-8 rounded-2xl border border-slate-700">
+                      <h3 className="text-2xl font-bold text-pink-400 mb-4">{t('about.missionTitle')}</h3>
+                      <p className="mb-8 text-slate-300 leading-relaxed">{t('about.missionText')}</p>
+                      <h3 className="text-2xl font-bold text-pink-400 mb-4">{t('about.visionTitle')}</h3>
+                      <p className="text-slate-300 leading-relaxed">{t('about.visionText')}</p>
+                  </div>
+                   <div className="rounded-2xl overflow-hidden shadow-xl">
+                      <img src="https://placehold.co/600x400/0f172a/ec4899?text=Our+Vision" alt="Team Vision" className="w-full h-auto object-cover"/>
+                  </div>
+              </div>
+               <div className="text-center mt-20">
+                  <h2 className="text-3xl font-bold">{t('about.teamTitle')}</h2>
+                  <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('about.teamSubtitle')}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 max-w-5xl mx-auto">
+                  {executives.map((exec, index) => (
+                      <div key={index} className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:scale-105 border border-slate-700">
+                          <img src={exec.img} alt={exec.name} className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-pink-500" />
+                          <h3 className="text-xl font-semibold text-white">{exec.name}</h3>
+                          <p className="text-pink-400 font-medium">{exec.title}</p>
+                      </div>
+                  ))}
+              </div>
+          </div>
+        </section>
+
+        <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+              <div className="text-center mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold">{t('pricing.title')}</h2>
+                  <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('pricing.subtitle')}</p>
+              </div>
+              <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+                  <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-8 shadow-lg flex flex-col hover:scale-105 hover:border-slate-500 transition-all duration-300">
+                      <h3 className="text-2xl font-bold text-slate-300">{t('pricing.trialPlan')}</h3>
+                      <p className="text-slate-400 mt-2">{t('pricing.trialDesc')}</p>
+                      <div className="mt-6"><span className="text-5xl font-extrabold text-white">{currency.symbol}0</span></div>
+                      <ul className="space-y-4 mt-8 text-slate-300 flex-grow"><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.featureTrial1')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.featureTrial2')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.featureTrial3')}</li></ul>
+                      <Link to="/register" className="w-full text-center mt-10 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">{t('pricing.cta')}</Link>
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-md border-2 border-blue-500 rounded-2xl p-8 shadow-2xl flex flex-col scale-105">
+                      <h3 className="text-2xl font-bold text-blue-400">{t('pricing.landlordPlan')}</h3>
+                      <p className="text-slate-400 mt-2">{t('pricing.landlordDesc')}</p>
+                      <div className="mt-6"><span className="text-5xl font-extrabold text-white">{currency.symbol}{Math.round(10 * currency.rate)}</span><span className="text-slate-400"> {t('pricing.perMonth')}</span></div>
+                      <ul className="space-y-4 mt-8 text-slate-300 flex-grow"><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature1')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature2')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature3')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature4')}</li></ul>
+                      <Link to="/register" className="w-full text-center mt-10 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all">{t('pricing.cta')}</Link>
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-2xl p-8 shadow-lg flex flex-col hover:scale-105 hover:border-slate-500 transition-all duration-300">
+                      <h3 className="text-2xl font-bold text-white">{t('pricing.agentPlan')}</h3>
+                      <p className="text-slate-400 mt-2">{t('pricing.agentDesc')}</p>
+                      <div className="mt-6"><span className="text-5xl font-extrabold text-white">{currency.symbol}{Math.round(25 * currency.rate)}</span><span className="text-slate-400"> {t('pricing.perMonth')}</span></div>
+                      <ul className="space-y-4 mt-8 text-slate-300 flex-grow"><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature5')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature6')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature7')}</li><li className="flex items-center"><span className="text-green-400 mr-3">✔</span>{t('pricing.feature8')}</li></ul>
+                      <Link to="/register" className="w-full text-center mt-10 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">{t('pricing.cta')}</Link>
+                  </div>
+              </div>
+               <p className="text-center text-xs text-slate-500 mt-4">{t('pricing.disclaimer')}</p>
+          </div>
+        </section>
+
+        <section style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+          <div className="container mx-auto px-6 text-center relative z-10">
+              <h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2>
+              <p className="mt-4 mb-8 text-slate-300 max-w-xl mx-auto">{t('cta.subtitle')}</p>
+              <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-8 rounded-lg text-lg hover:bg-yellow-400 shadow-lg hover:shadow-yellow-400/50">
+                  {t('cta.button')}
+              </Link>
+          </div>
+        </section>
       </main>
-      
+
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
            <div className="container mx-auto px-6 relative z-10">
                <div className="text-center mb-12">
