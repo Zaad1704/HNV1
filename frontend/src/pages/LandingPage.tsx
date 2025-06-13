@@ -31,19 +31,29 @@ const LandingPageContent = () => {
   // --- Language & Currency Logic ---
   useEffect(() => {
     const fetchUserLocale = async () => {
-        const simulatedCountry = 'US'; // Test with 'BD', 'ES', etc.
+        // In a real app, use a service like `https://ipapi.co/json/`
+        // For this demo, we simulate IP detection. Default is English/USD.
+        const simulatedCountry = 'BD'; // Test with 'BD', 'ES', 'US'
         let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
         let localLanguageName = 'English';
+
         if (simulatedCountry === 'BD') {
             lang = 'bn';
             curr = { code: 'BDT', symbol: '৳', rate: 117 };
             localLanguageName = 'বাংলা';
+        } else if (simulatedCountry === 'ES') {
+            lang = 'es';
+            curr = { code: 'EUR', symbol: '€', rate: 0.92 };
+            localLanguageName = 'Español';
         }
+        
+        // Default to English first
         i18n.changeLanguage('en');
         setCurrency({ code: 'USD', symbol: '$', rate: 1 });
+
         if (lang !== 'en') {
             setTimeout(() => {
-                if (window.confirm(`Switch to ${localLanguageName}?`)) {
+                if (window.confirm(`Want to see this page in ${localLanguageName}? / এই পৃষ্ঠাটি ${localLanguageName} ভাষায় দেখতে চান?`)) {
                     i18n.changeLanguage(lang);
                     setCurrency(curr);
                 }
@@ -70,42 +80,28 @@ const LandingPageContent = () => {
       { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
-  
-  // This object holds the background images and must be defined within the component
-  const sectionBackgrounds = {
-    hero: `url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living')`,
-    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
-    about: `url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture')`,
-    pricing: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building')`,
-    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys')`,
-    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
-  };
 
   return (
     <div className="bg-slate-900 text-slate-200">
       <style>
         {`
-          html { scroll-behavior: smooth; }
-          .section-bg {
-            position: relative;
-            background-size: cover;
-            background-position: center;
+          html {
+            scroll-behavior: smooth;
           }
-          .section-bg::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8));
-            backdrop-filter: blur(4px);
-          }
+          .hero-section { background-image: url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living'); }
+          .features-section { background-image: url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior'); }
+          .about-section { background-image: url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture'); }
+          .pricing-section { background-image: url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building'); }
+          .cta-section { background-image: url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys'); }
+          .contact-section { background-image: url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network'); }
         `}
       </style>
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+          <a href="#hero" className="flex items-center space-x-3">
             <img src="https://placehold.co/40x40/f59e0b/0f172a?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
             <span className="text-base sm:text-lg md:text-xl font-bold text-white whitespace-nowrap">HNV Property Management Solutions</span>
-          </div>
+          </a>
           <nav className="hidden lg:flex items-center space-x-6">
             <a href="#features" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.features')}</a>
             <a href="#about" className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.about')}</a>
@@ -130,11 +126,11 @@ const LandingPageContent = () => {
           </div>
         </div>
         {isMenuOpen && (
-          <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
-            <a href="#features" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</a>
-            <a href="#about" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</a>
-            <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</a>
-            <a href="#contact" onClick={() => setIsMenuOpen(false)} className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</a>
+          <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl" onClick={() => setIsMenuOpen(false)}>
+            <a href="#features" className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.features')}</a>
+            <a href="#about" className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.about')}</a>
+            <a href="#pricing" className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.pricing')}</a>
+            <a href="#contact" className="block w-full text-left py-2 text-slate-300 hover:text-white">{t('header.contact')}</a>
             <hr className="my-2 border-slate-700" />
             <div className="flex items-center justify-between py-2">
                <span className="text-sm font-medium text-slate-400">Language:</span>
@@ -158,7 +154,7 @@ const LandingPageContent = () => {
       </header>
 
       <main>
-        <section id="hero" style={{backgroundImage: sectionBackgrounds.hero}} className="section-bg py-24 sm:py-40">
+        <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
           <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
             <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
@@ -168,7 +164,7 @@ const LandingPageContent = () => {
           </div>
         </section>
         
-        <section id="features" style={{backgroundImage: sectionBackgrounds.features}} className="section-bg py-20 text-white">
+        <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
@@ -195,7 +191,38 @@ const LandingPageContent = () => {
       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
            <div className="container mx-auto px-6 relative z-10">
-               {/* Footer Content */}
+               <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold text-white">{t('contact.title')}</h2>
+                  <p className="text-cyan-300 mt-4 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                  <div className="space-y-8">
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.officeTitle')}</h3>
+                          <p className="text-slate-400">123 Property Lane, Suite 400<br/>Management City, MC 54321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.phoneTitle')}</h3>
+                          <p className="text-slate-400">General: (555) 123-4567<br/>Support: (555) 765-4321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.emailTitle')}</h3>
+                          <p className="text-slate-400">info@hnvpropertymanagementsolutions.com<br/>support@hnvpropertymanagementsolutions.com</p>
+                      </div>
+                  </div>
+                  <div>
+                      <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-lg border border-slate-700">
+                          <h3 className="text-xl font-semibold text-white mb-4">{t('contact.formTitle')}</h3>
+                          <form className="space-y-4">
+                              <input type="text" placeholder={t('contact.nameLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="email" placeholder={t('contact.emailLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="text" placeholder={t('contact.subjectLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <textarea placeholder={t('contact.messageLabel')} rows="4" className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none"></textarea>
+                              <button type="submit" className="w-full py-3 bg-cyan-600 font-semibold rounded-lg hover:bg-cyan-500">{t('contact.submitButton')}</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
            </div>
       </footer>
     </div>
