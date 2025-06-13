@@ -2,7 +2,9 @@ import { Router } from 'express';
 import {
   getProfile,
   updateUserDetails,
-  updateUserPassword
+  updateUserPassword,
+  requestDataExport,
+  requestAccountDeletion
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
 
@@ -19,5 +21,9 @@ router.put('/updatedetails', updateUserDetails);
 
 // Route to update the user's password
 router.put('/updatepassword', updateUserPassword);
+
+// Routes for data management and account deletion
+router.post('/request-data-export', requestDataExport);
+router.post('/request-account-deletion', requestAccountDeletion);
 
 export default router;
