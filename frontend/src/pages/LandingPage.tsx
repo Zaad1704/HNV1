@@ -78,7 +78,6 @@ const LandingPageContent = () => {
       { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
   
-  // This object holds the background images and must be defined within the component
   const sectionBackgrounds = {
     hero: `url('https://placehold.co/1920x1080/020617/a5b4fc?text=Modern+City')`,
     features: `url('https://placehold.co/1920x1080/020617/6ee7b7?text=Sleek+Interior')`,
@@ -90,24 +89,85 @@ const LandingPageContent = () => {
 
   return (
     <div className="bg-slate-900 text-slate-200">
+      <style>
+        {`
+          .hero-section { background-image: url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living'); }
+          .features-section { background-image: url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior'); }
+          .about-section { background-image: url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture'); }
+          .pricing-section { background-image: url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building'); }
+          .cta-section { background-image: url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys'); }
+          .contact-section { background-image: url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network'); }
+        `}
+      </style>
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
-          {/* Header content... */}
+        <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <img src="https://placehold.co/40x40/f59e0b/0f172a?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
+            <span className="text-base sm:text-lg md:text-xl font-bold text-white whitespace-nowrap">HNV Property Management Solutions</span>
+          </div>
+          <nav className="hidden lg:flex items-center space-x-6">
+            <button onClick={() => scrollToSection('features')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.features')}</button>
+            <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.about')}</button>
+            <button onClick={() => scrollToSection('pricing')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.pricing')}</button>
+            <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-yellow-400 font-medium transition-colors">{t('header.contact')}</button>
+          </nav>
+          <div className="hidden lg:flex items-center space-x-4">
+            {deferredPrompt && (
+              <button onClick={handleInstallClick} title={t('header.installApp')} className="text-slate-300 hover:text-white font-semibold flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-700">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              </button>
+            )}
+            <Link to="/login" className="text-slate-300 font-semibold hover:text-white transition-colors">{t('header.login')}</Link>
+            <Link to="/register" className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-yellow-400/50 transition-all">
+              {t('header.getStarted')}
+            </Link>
+          </div>
+          <div className="lg:hidden">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-slate-300 focus:outline-none">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+          </div>
+        </div>
+        {isMenuOpen && (
+          <div className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900/95 shadow-xl">
+            <div className="flex items-center justify-between py-2">
+               <span className="text-sm font-medium text-slate-400">Language:</span>
+               <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
+                    <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'en' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>EN</button>
+                    <button onClick={() => changeLanguage('bn')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'bn' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>BN</button>
+                    <button onClick={() => changeLanguage('es')} className={`px-2 py-1 text-xs font-bold rounded ${i18n.language === 'es' ? 'bg-yellow-500 text-slate-900' : 'text-slate-400'}`}>ES</button>
+                </div>
+            </div>
+             {deferredPrompt && (
+                <button onClick={handleInstallClick} className="w-full text-left py-2 text-slate-300 hover:text-white font-semibold flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>{t('header.installApp')}</span>
+                </button>
+              )}
+            <hr className="my-2 border-slate-700" />
+            <Link to="/login" className="block py-2 text-slate-300 font-semibold hover:text-white">{t('header.login')}</Link>
+            <Link to="/register" className="block w-full mt-2 text-center bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold py-2 px-4 rounded-lg">{t('header.getStarted')}</Link>
+          </div>
+        )}
       </header>
 
       <main>
         <section style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
-          {/* Hero content... */}
+           <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
+              <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
+              <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-400/50 transform hover:scale-105">
+                  {t('hero.cta')}
+              </Link>
+          </div>
         </section>
+        
+        {/* All other sections will be added here */}
 
-        <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
-          {/* Features content... */}
-        </section>
-
-        {/* ... Other sections using the same pattern ... */}
       </main>
-
-     <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
-          {/* Footer content... */}
+      
+       <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
+           {/* Footer content will be added here */}
       </footer>
     </div>
   );
