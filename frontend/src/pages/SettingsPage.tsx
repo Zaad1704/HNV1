@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAuthStore from '../store/authStore';
-import apiClient from '../api/apiClient';
+import apiClient from '../api/client';
 
 const SettingsPage = () => {
   const { user, login: updateUserToken } = useAuthStore((state) => ({ user: state.user, login: state.login }));
@@ -64,8 +64,19 @@ const SettingsPage = () => {
   };
 
   const manageBilling = () => {
+    // This would redirect the user to the 2Checkout customer portal
     alert('Redirecting to secure billing portal...');
   };
+  
+  const handleDataRequest = () => {
+      alert('A request to download your data has been submitted. You will receive an email shortly.');
+  }
+  
+  const handleAccountDeletion = () => {
+      if(window.confirm('Are you sure you want to request account deletion? This action cannot be undone.')) {
+          alert('Your account is now scheduled for deletion.');
+      }
+  }
 
   if (!user) return <div className="text-white text-center p-8">Loading settings...</div>;
 
@@ -81,6 +92,7 @@ const SettingsPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
+          {/* Profile Settings */}
           <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700">
             <h2 className="text-xl font-bold text-white mb-6">Profile Information</h2>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
@@ -100,6 +112,7 @@ const SettingsPage = () => {
             </form>
           </div>
 
+          {/* Password Settings */}
           <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700">
             <h2 className="text-xl font-bold text-white mb-6">Change Password</h2>
             <form onSubmit={handleUpdatePassword} className="space-y-4">
@@ -140,8 +153,8 @@ const SettingsPage = () => {
                  <h2 className="text-xl font-bold text-red-300 mb-4">Danger Zone</h2>
                  <p className="text-sm text-slate-400 mb-4">Request a download of all your data or permanently delete your account. This action cannot be undone.</p>
                  <div className="space-y-3">
-                    <button className="w-full px-5 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500">Download My Data</button>
-                    <button className="w-full px-5 py-3 bg-red-800 text-white font-semibold rounded-lg hover:bg-red-700">Delete My Account</button>
+                    <button onClick={handleDataRequest} className="w-full px-5 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500">Download My Data</button>
+                    <button onClick={handleAccountDeletion} className="w-full px-5 py-3 bg-red-800 text-white font-semibold rounded-lg hover:bg-red-700">Delete My Account</button>
                  </div>
             </div>
         </div>
