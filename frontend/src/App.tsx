@@ -1,25 +1,19 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// For this test, we are removing all routing and other component imports
-// to create the simplest possible application.
+// We are now re-importing only the LoginPage to test it in isolation.
+import LoginPage from './pages/LoginPage.tsx';
 
 function App() {
+  // This version re-introduces routing and only the Login Page.
+  // This will test if the routing library or the LoginPage component is the source of the crash.
   return (
-    <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#111827',
-        color: 'white',
-        fontFamily: 'sans-serif'
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>Hello World!</h1>
-        <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>If you can see this, the core application is loading correctly.</p>
-        <p style={{ marginTop: '2rem', color: '#6b7280' }}>We can now proceed to the next debugging step.</p>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </Router>
   );
 }
 
