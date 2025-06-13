@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import User, { IUser } from '../models/User';
 import Organization from '../models/Organization';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
@@ -34,9 +34,16 @@ export const updateUserDetails = async (req: AuthenticatedRequest, res: Response
     if (!name) {
         return res.status(400).json({ success: false, message: 'Name is required' });
     }
-    const user = await User.findByIdAndUpdate(req.user!.id, { name }, { new: true, runValidators: true }).select('-password');
+
+    const user = await User.findByIdAndUpdate(
+      req.user!.id, 
+      { name }, 
+      { new: true, runValidators: true }
+    ).select('-password');
+
     res.status(200).json({ success: true, data: user });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
@@ -49,21 +56,30 @@ export const updateUserDetails = async (req: AuthenticatedRequest, res: Response
 export const updateUserPassword = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
+
     if (!currentPassword || !newPassword) {
         return res.status(400).json({ success: false, message: 'Please provide both current and new passwords' });
     }
+
     const user = await User.findById(req.user!.id).select('+password');
+
     if (!user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }
+
     const isMatch = await user.matchPassword(currentPassword);
+
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Incorrect current password' });
     }
+
     user.password = newPassword;
     await user.save();
+    
     sendTokenResponse(user, 200, res);
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
