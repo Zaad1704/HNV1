@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import AddTenantModal from '../components/common/AddTenantModal'; // Corrected import path
+import AddTenantModal from '../components/common/AddTenantModal';
 
-// Placeholder icons
+// Placeholder Icons
 const AddIcon = () => <span>+</span>;
 
 const TenantsPage = () => {
@@ -30,8 +30,8 @@ const TenantsPage = () => {
   }, []);
 
   const handleTenantAdded = (newTenant: any) => {
-    // A more robust implementation might re-fetch or find the property name
-    // For now, we add the new tenant and the page will show 'N/A' for property until refresh.
+    // A more robust implementation might refetch or find the property name.
+    // For now, we add the new tenant, and the page will show 'N/A' for the property until refresh.
     setTenants(prevTenants => [...prevTenants, newTenant]);
   };
 
@@ -55,11 +55,11 @@ const TenantsPage = () => {
         onTenantAdded={handleTenantAdded}
       />
 
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold">Manage Tenants</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center space-x-2 px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg hover:shadow-cyan-500/50 transition-all transform hover:scale-105"
+          className="flex items-center space-x-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-lg shadow-lg hover:shadow-yellow-400/50 transition-all transform hover:scale-105"
         >
           <AddIcon />
           <span>Add Tenant</span>
@@ -91,7 +91,7 @@ const TenantsPage = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      <button className="font-medium text-cyan-400 hover:text-cyan-300">View Details</button>
+                      <button className="font-medium text-yellow-400 hover:text-yellow-300">View Details</button>
                     </td>
                   </tr>
                 ))
