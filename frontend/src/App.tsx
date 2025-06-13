@@ -1,29 +1,25 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
 
-// --- Import Only the Public Page Components ---
-import LandingPage from './pages/LandingPage.tsx';
-import LoginPage from './pages/LoginPage.tsx';
-import RegisterPage from './pages/RegisterPage.tsx';
-// We will add the other pages back in the next steps
-
-const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
+// For this test, we are removing all routing and other component imports
+// to create the simplest possible application.
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* --- Public Routes --- */}
-        {/* We are starting with only the routes we know are stable. */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        
-        {/* All other routes are temporarily disabled for this test. */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#111827',
+        color: 'white',
+        fontFamily: 'sans-serif'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 'bold' }}>Hello World!</h1>
+        <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>If you can see this, the core application is loading correctly.</p>
+        <p style={{ marginTop: '2rem', color: '#6b7280' }}>We can now proceed to the next debugging step.</p>
+      </div>
+    </div>
   );
 }
 
