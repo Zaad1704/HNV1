@@ -1,8 +1,7 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
-import bcrypt from 'bcrypt'; // FIX: Changed from 'bcryptjs' to 'bcrypt' which is in your package.json
+import bcrypt from 'bcrypt'; // FIX: Corrected import from bcryptjs
 import jwt from 'jsonwebtoken';
 
-// This interface now correctly matches the schema and methods
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -36,9 +35,9 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
 };
 
 UserSchema.methods.getSignedJwtToken = function(): string {
-  // FIX: Added a check to ensure JWT_SECRET is defined, which also resolves the TypeScript error
+  // FIX: Added check for JWT_SECRET to ensure it's defined and satisfy TypeScript
   if (!process.env.JWT_SECRET) {
-    throw new Error('JWT Secret not defined');
+    throw new Error('JWT Secret is not defined in environment variables.');
   }
   return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
