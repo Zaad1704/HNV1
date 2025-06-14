@@ -1,10 +1,10 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
 export interface IPayment extends Document {
-  tenantId: mongoose.Schema.Types.ObjectId;
-  propertyId: mongoose.Schema.Types.ObjectId;
-  organizationId: mongoose.Schema.Types.ObjectId;
-  recordedBy: mongoose.Schema.Types.ObjectId;
+  tenantId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  propertyId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  recordedBy: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
   amount: number;
   paymentDate: Date;
   status: 'Paid' | 'Pending' | 'Failed';
