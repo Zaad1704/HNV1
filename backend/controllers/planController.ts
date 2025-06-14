@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import auditService from '../services/auditService';
-import mongoose from 'mongoose'; // FIX: Import mongoose to use Types.ObjectId
+import mongoose from 'mongoose';
 
 // @desc    Get all subscription plans
 // @route   GET /api/plans
@@ -22,11 +22,12 @@ export const getPlans = async (req: Request, res: Response) => {
 export const createPlan = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const newPlan = await Plan.create(req.body);
+        // FIX: Cast newPlan._id to ObjectId before .toString()
         auditService.recordAction(
-            req.user!._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
-            req.user!.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+            req.user!._id as mongoose.Types.ObjectId,
+            req.user!.organizationId as mongoose.Types.ObjectId,
             'PLAN_CREATE',
-            { planId: newPlan._id.toString(), planName: newPlan.name }
+            { planId: (newPlan._id as mongoose.Types.ObjectId).toString(), planName: newPlan.name }
         );
         res.status(201).json({ success: true, data: newPlan });
     } catch (error: any) {
@@ -46,11 +47,12 @@ export const updatePlan = async (req: AuthenticatedRequest, res: Response) => {
         if (!plan) {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
+        // FIX: Cast plan._id to ObjectId before .toString()
         auditService.recordAction(
-            req.user!._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
-            req.user!.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+            req.user!._id as mongoose.Types.ObjectId,
+            req.user!.organizationId as mongoose.Types.ObjectId,
             'PLAN_UPDATE',
-            { planId: plan._id.toString(), planName: plan.name }
+            { planId: (plan._id as mongoose.Types.ObjectId).toString(), planName: plan.name }
         );
         res.status(200).json({ success: true, data: plan });
     } catch (error: any) {
@@ -68,11 +70,12 @@ export const deletePlan = async (req: AuthenticatedRequest, res: Response) => {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
         await plan.deleteOne();
+        // FIX: Cast plan._id to ObjectId before .toString()
         auditService.recordAction(
-            req.user!._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
-            req.user!.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+            req.user!._id as mongoose.Types.ObjectId,
+            req.user!.organizationId as mongoose.Types.ObjectId,
             'PLAN_DELETE',
-            { planId: plan._id.toString(), planName: plan.name }
+            { planId: (plan._id as mongoose.Types.ObjectId).toString(), planName: plan.name }
         );
         res.status(200).json({ success: true, data: {} });
     } catch (error) {
