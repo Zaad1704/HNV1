@@ -1,22 +1,44 @@
-import mongoose, { Document, Schema } from "mongoose";
+// backend/models/Subscription.ts
+
+import mongoose, { Document, Schema, model } from "mongoose";
 
 export interface ISubscription extends Document {
-  orgId: string;
-  plan: string;
-  status: "active" | "canceled" | "past_due";
-  renewalDate: Date;
-  externalId?: string; // 2Checkout subscription id
+  organizationId: mongoose.Types.ObjectId;
+  planId: mongoose.Types.ObjectId;
+  status: "trialing" | "active" | "canceled" | "past_due";
+  trialExpiresAt?: Date; // <-- NEW FIELD for the 7-day trial
+  currentPeriodEndsAt?: Date;
+  externalId?: string; // ID from the payment processor like 2Checkout or Stripe
 }
 
-const SubscriptionSchema = new Schema(
+const SubscriptionSchema = new Schema<ISubscription>(
   {
-    orgId: { type: String, required: true },
-    plan: { type: String, required: true },
-    status: { type: String, enum: ["active", "canceled", "past_due"], default: "active" },
-    renewalDate: { type: Date, required: true },
-    externalId: { type: String },
+    organizationId: { 
+      type: Schema.Types.ObjectId, 
+      ref: 'Organization',
+      required: true 
+    },
+    planId: { 
+      type: Schema.Types.ObjectId, 
+      ref: 'Plan',
+      required: true 
+    },
+    status: { 
+      type: String, 
+      enum: ["trialing", "active", "canceled", "past_due"], 
+      default: "trialing" 
+    },
+    trialExpiresAt: {
+      type: Date,
+    },
+    currentPeriodEndsAt: {
+      type: Date,
+    },
+    externalId: { 
+      type: String 
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model<ISubscription>("Subscription", SubscriptionSchema);
+export default model<ISubscription>("Subscription", SubscriptionSchema);
