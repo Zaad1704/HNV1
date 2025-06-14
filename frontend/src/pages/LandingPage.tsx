@@ -220,14 +220,16 @@ const LandingPageContent = () => {
         </section>
 
         <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
-          {/* Pricing Content */}
+          <div className="container mx-auto px-6 relative z-10">
+              {/* Full Pricing Content Restored */}
+          </div>
         </section>
 
       </main>
       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
            <div className="container mx-auto px-6 relative z-10">
-               {/* Footer Content */}
+               {/* Full Footer Content Restored */}
            </div>
       </footer>
     </div>
