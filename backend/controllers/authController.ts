@@ -7,7 +7,7 @@ import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import { IUser } from '../models/User';
-import mongoose from 'mongoose'; // FIX: Import mongoose to use Types.ObjectId
+import mongoose from 'mongoose';
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
@@ -30,21 +30,27 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
     const organization = new Organization({ name: `${name}'s Organization`, members: [] });
     const user = new User({ name, email, password, role, organizationId: organization._id });
-    organization.owner = user._id as mongoose.Types.ObjectId; // FIX: Cast to ObjectId
-    organization.members.push(user._id as mongoose.Types.ObjectId); // FIX: Cast to ObjectId
+    organization.owner = user._id as mongoose.Types.ObjectId;
+    organization.members.push(user._id as mongoose.Types.ObjectId);
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
-        organizationId: organization._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
-        planId: trialPlan._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+        organizationId: organization._id as mongoose.Types.ObjectId,
+        planId: trialPlan._id as mongoose.Types.ObjectId,
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
-    organization.subscription = subscription._id as mongoose.Types.ObjectId; // FIX: Cast to ObjectId
+    organization.subscription = subscription._id as mongoose.Types.ObjectId;
     await organization.save();
     await user.save();
     await subscription.save();
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: user._id.toString() }); // FIX: Cast to ObjectId
+    // FIX: Cast user._id to ObjectId before .toString() when used in details object
+    auditService.recordAction(
+        user._id as mongoose.Types.ObjectId,
+        organization._id as mongoose.Types.ObjectId,
+        'USER_REGISTER',
+        { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() }
+    );
     try {
         await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
     } catch (emailError) {
@@ -68,7 +74,11 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId as mongoose.Types.ObjectId, 'USER_LOGIN'); // FIX: Cast to ObjectId
+    auditService.recordAction(
+        user._id as mongoose.Types.ObjectId,
+        user.organizationId as mongoose.Types.ObjectId,
+        'USER_LOGIN'
+    );
     sendTokenResponse(user, 200, res);
 };
 
