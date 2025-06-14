@@ -13,27 +13,27 @@ import DashboardPage from './pages/DashboardPage';
 import PropertiesPage from './pages/PropertiesPage';
 import TenantsPage from './pages/TenantsPage';
 import AuditLogPage from './pages/AuditLogPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-// ... import other pages as needed
+import SettingsPage from './pages/SettingsPage'; // For user settings
+import OrganizationPage from './pages/OrganizationPage';
+import UsersPage from './pages/UsersPage';
+import BillingPage from './pages/BillingPage';
 
-const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
+// ... other imports for admin pages ...
+import AdminDashboardPage from './pages/AdminDashboardPage';
+
+
+const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-const AdminRoute = () => {
-  const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = isAuthenticated && user?.role === 'Super Admin';
-  return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
-};
+const AdminRoute = () => { /* ... remains the same ... */ };
 
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
 
-  // This effect runs on app load to get user data if a token exists in localStorage
   useEffect(() => {
     const checkUserSession = async () => {
       if (token && !user) {
@@ -49,28 +49,33 @@ function App() {
     checkUserSession();
   }, [token, user, setUser, logout]);
 
-
   return (
     <Router>
       <Routes>
+        {/* --- Public Routes --- */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-        
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardLayout />}>
+
+        {/* --- FIX: Consolidated All Protected User Routes Under DashboardLayout --- */}
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
+            <Route path="organization" element={<OrganizationPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
-            <Route path="settings" element={<ProfilePage />} />
+            <Route path="settings" element={<SettingsPage />} /> 
           </Route>
         </Route>
         
+        {/* --- Protected Super Admin Routes --- */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route path="dashboard" element={<AdminDashboardPage />} />
-          {/* ... other admin routes */}
+          {/* ... other admin routes ... */}
         </Route>
 
         <Route path="*" element={<NotFound />} />
