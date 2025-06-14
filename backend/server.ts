@@ -12,11 +12,11 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
-import auditRoutes from './routes/auditRoutes';
+import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
+import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
-import planRoutes from './routes/planRoutes'; // <-- ADD THIS LINE
+import planRoutes from './routes/planRoutes';
 
 dotenv.config();
 
@@ -65,11 +65,11 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes);
-app.use('/api/audit', auditRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes); // FIX: Mount the new subscriptionsRoutes
+app.use('/api/audit', auditRoutes); // FIX: Mount the new auditRoutes
 app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
-app.use('/api/plans', planRoutes); // <-- ADD THIS LINE
+app.use('/api/plans', planRoutes);
 
 
 // A simple health-check route
