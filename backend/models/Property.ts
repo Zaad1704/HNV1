@@ -22,8 +22,8 @@ export interface IProperty extends Document {
   address: IAddress;
   location?: ILocation;
   numberOfUnits: number;
-  organizationId: mongoose.Schema.Types.ObjectId;
-  createdBy: mongoose.Schema.Types.ObjectId;
+  organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  createdBy: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
   status: 'Active' | 'Inactive' | 'Under Renovation';
   createdAt: Date;
 }
