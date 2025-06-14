@@ -50,7 +50,7 @@ const LandingPageContent = () => {
 
         if (lang !== 'en') {
             setTimeout(() => {
-                if (window.confirm(`Switch to ${localLanguageName}?`)) {
+                if (window.confirm(`Want to see this page in ${localLanguageName}?`)) {
                     i18n.changeLanguage(lang);
                     setCurrency(curr);
                 }
@@ -68,19 +68,24 @@ const LandingPageContent = () => {
   };
   
   const executives = [
-      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
-      { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
-      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://picsum.photos/id/1027/150/150" }
+      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://placehold.co/150x150/9333ea/ffffff?text=CEO" },
+      { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
+      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
   ];
-  
-  // Using a more reliable placeholder service for background images
+
+  const pricingPlans = [
+    { name: 'trialPlan', price: 0, features: ['featureTrial1', 'featureTrial2', 'featureTrial3'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600' },
+    { name: 'landlordPlan', price: 10, features: ['feature1', 'feature2', 'feature3', 'feature4'], recommended: true, ctaColor: 'bg-pink-600 hover:bg-pink-500' },
+    { name: 'agentPlan', price: 25, features: ['feature5', 'feature6', 'feature7', 'feature8'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600' }
+  ];
+
   const sectionBackgrounds = {
-    hero: `url('https://picsum.photos/id/1074/1920/1080')`,
-    features: `url('https://picsum.photos/id/1062/1920/1080')`,
-    about: `url('https://picsum.photos/id/1041/1920/1080')`,
-    pricing: `url('https://picsum.photos/id/103/1920/1080')`,
-    cta: `url('https://picsum.photos/id/12/1920/1080')`,
-    contact: `url('https://picsum.photos/id/1015/1920/1080')`
+    hero: `url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living')`,
+    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
+    about: `url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture')`,
+    pricing: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building')`,
+    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys')`,
+    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
   };
 
   return (
@@ -158,13 +163,30 @@ const LandingPageContent = () => {
         
         <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-            {/* Full Features Content Here */}
+             <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
+              <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card1Title')}</h3>
+                <p className="text-slate-300">{t('features.card1Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card2Title')}</h3>
+                <p className="text-slate-300">{t('features.card2Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card3Title')}</h3>
+                <p className="text-slate-300">{t('features.card3Text')}</p>
+              </div>
+            </div>
           </div>
         </section>
-        
+
         <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-               {/* Full About Us Content Here */}
+              {/* Full About Us Content Here */}
           </div>
         </section>
 
