@@ -2,6 +2,7 @@ import { Response } from 'express';
 import Property from '../models/Property';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import auditService from '../services/auditService';
+import mongoose from 'mongoose'; // FIX: Import mongoose to use Types.ObjectId
 
 export const getProperties = async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -19,15 +20,20 @@ export const createProperty = async (req: AuthenticatedRequest, res: Response) =
 
     const propertyData = {
       ...req.body,
-      organizationId: req.user.organizationId,
-      createdBy: req.user.id,
+      organizationId: req.user.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+      createdBy: req.user.id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
     };
     const property = await Property.create(propertyData);
 
-    auditService.recordAction(req.user._id, req.user.organizationId, 'PROPERTY_CREATE', { 
-      propertyId: property._id.toString(), 
-      propertyName: property.name 
-    });
+    auditService.recordAction(
+      req.user._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+      req.user.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+      'PROPERTY_CREATE',
+      {
+        propertyId: property._id.toString(),
+        propertyName: property.name
+      }
+    );
 
     res.status(201).json({ success: true, data: property });
   } catch (error: any) {
@@ -43,7 +49,7 @@ export const getPropertyById = async (req: AuthenticatedRequest, res: Response) 
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
-    
+
     if (property.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to access this property' });
     }
@@ -61,7 +67,7 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
-    
+
     if (property.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to update this property' });
     }
@@ -70,10 +76,15 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
       new: true,
       runValidators: true,
     });
-    
+
     // FIX: Ensure property is not null before accessing its properties
     if (property) {
-        auditService.recordAction(req.user._id, req.user.organizationId, 'PROPERTY_UPDATE', { propertyId: property._id.toString(), propertyName: property.name });
+      auditService.recordAction(
+        req.user._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+        req.user.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+        'PROPERTY_UPDATE',
+        { propertyId: property._id.toString(), propertyName: property.name }
+      );
     }
 
     res.status(200).json({ success: true, data: property });
@@ -89,14 +100,19 @@ export const deleteProperty = async (req: AuthenticatedRequest, res: Response) =
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
-    
+
     if (property.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to delete this property' });
     }
 
     await property.deleteOne();
-    
-    auditService.recordAction(req.user._id, req.user.organizationId, 'PROPERTY_DELETE', { propertyId: property._id.toString(), propertyName: property.name });
+
+    auditService.recordAction(
+      req.user._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+      req.user.organizationId as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
+      'PROPERTY_DELETE',
+      { propertyId: property._id.toString(), propertyName: property.name }
+    );
 
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
