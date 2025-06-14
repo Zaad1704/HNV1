@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken'; // FIX: Import Secret here
 
 export interface IUser extends Document {
   name: string;
@@ -38,10 +38,14 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
-  // FIX: Convert this._id to string explicitly in the payload
-  return jwt.sign({ id: this._id.toString(), role: this.role, name: this.name }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  });
+  // FIX: Cast process.env.JWT_SECRET to Secret type explicitly
+  return jwt.sign(
+    { id: this._id.toString(), role: this.role, name: this.name },
+    process.env.JWT_SECRET as Secret, // Use 'as Secret' for robust typing with jsonwebtoken
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    }
+  );
 };
 
 export default model<IUser>('User', UserSchema);
