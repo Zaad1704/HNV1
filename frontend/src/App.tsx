@@ -28,18 +28,20 @@ import AdminOrganizationsPage from './pages/AdminOrganizationsPage.tsx';
 import AdminBillingPage from './pages/AdminBillingPage.tsx';
 import AdminContentPage from './pages/AdminContentPage.tsx';
 import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage.tsx';
+import AdminPlansPage from './pages/AdminPlansPage.tsx'; // The new page for managing plans
 
 const NotFound = () => <div className="p-8"><h1>404 - Page Not Found</h1></div>;
 
 // --- Route Protection Components ---
 const ProtectedRoute = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // In a real app, this would be more robust, checking token validity
+  const isAuthenticated = useAuthStore((state) => !!state.user); 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 const AdminRoute = () => {
   const { isAuthenticated, user } = useAuthStore((state) => ({
-    isAuthenticated: state.isAuthenticated,
+    isAuthenticated: !!state.user,
     user: state.user,
   }));
   const isAdmin = isAuthenticated && user?.role === 'Super Admin';
@@ -58,13 +60,14 @@ function App() {
 
         {/* --- Protected User Routes --- */}
         {/* All routes inside here will use the DashboardLayout */}
-        <Route path="/" element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<DashboardLayout />}>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
             <Route path="settings" element={<ProfilePage />} /> 
+             {/* You might want to move other user pages inside this layout too */}
           </Route>
           {/* Standalone pages that still require login but might not need the full sidebar */}
           <Route path="/organization" element={<OrganizationPage />} />
@@ -77,12 +80,14 @@ function App() {
 
         {/* --- Protected Super Admin Routes --- */}
         <Route path="/admin" element={<AdminRoute />}>
+          {/* A developer could create a separate AdminLayout component here */}
           <Route path="dashboard" element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="organizations" element={<AdminOrganizationsPage />} />
           <Route path="billing" element={<AdminBillingPage />} />
           <Route path="content" element={<AdminContentPage />} />
           <Route path="site-editor" element={<SiteEditorPage />} />
+          <Route path="plans" element={<AdminPlansPage />} />
         </Route>
 
         {/* Catch-all route for pages that don't exist */}
