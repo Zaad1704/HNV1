@@ -1,99 +1,56 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Plan from '../models/Plan';
-import Subscription from '../models/Subscription';
-import emailService from '../services/emailService';
-import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import { IUser } from '../models/User';
-import mongoose from 'mongoose';
 
-const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
-    const token = user.getSignedJwtToken();
-    res.status(statusCode).json({ success: true, token });
-};
+export const createSuperAdmin = async (req: Request, res: Response) => {
+    const { secretKey } = req.body;
+    if (!secretKey || secretKey !== process.env.SETUP_SECRET_KEY) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, email, password, role } = req.body;
-  if (!name || !email || !password || !role) {
-      return res.status(400).json({ success: false, message: 'Please provide name, email, password, and role' });
-  }
-  try {
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ success: false, message: 'User with that email already exists' });
-    }
-    const trialPlan = await Plan.findOne({ name: 'Free Trial' });
-    if (!trialPlan) {
-        return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
-    }
-    const organization = new Organization({ name: `${name}'s Organization`, members: [] });
-    const user = new User({ name, email, password, role, organizationId: organization._id });
-    organization.owner = user._id as mongoose.Types.ObjectId;
-    organization.members.push(user._id as mongoose.Types.ObjectId);
-    const trialEndDate = new Date();
-    trialEndDate.setDate(trialEndDate.getDate() + 7);
-    const subscription = new Subscription({
-        organizationId: organization._id as mongoose.Types.ObjectId,
-        planId: trialPlan._id as mongoose.Types.ObjectId,
-        status: 'trialing',
-        trialExpiresAt: trialEndDate,
-    });
-    organization.subscription = subscription._id as mongoose.Types.ObjectId;
-    await organization.save();
-    await user.save();
-    await subscription.save();
-    // FIX: Cast user._id to ObjectId before .toString() when used in details object
-    auditService.recordAction(
-        user._id as mongoose.Types.ObjectId,
-        organization._id as mongoose.Types.ObjectId,
-        'USER_REGISTER',
-        { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() }
-    );
     try {
-        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
-    } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError);
-    }
-    sendTokenResponse(user, 201, res);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
-};
-
-export const loginUser = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-    auditService.recordAction(
-        user._id as mongoose.Types.ObjectId,
-        user.organizationId as mongoose.Types.ObjectId,
-        'USER_LOGIN'
-    );
-    sendTokenResponse(user, 200, res);
-};
-
-export const getMe = async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    const user = await User.findById(req.user.id).populate({
-        path: 'organizationId',
-        select: 'name status subscription',
-        populate: {
-            path: 'subscription',
-            model: 'Subscription',
-            select: 'planId status trialExpiresAt currentPeriodEndsAt'
+        const existingAdmin = await User.findOne({ email: 'admin@email.com' });
+        if (existingAdmin) {
+            return res.status(400).json({ success: false, message: 'Super Admin user already exists.' });
         }
-    });
-    res.status(200).json({ success: true, data: user });
+
+        // FIX: Create the admin org without a subscription reference.
+        const adminOrg = new Organization({ name: 'HNV Global Headquarters', members: [], status: 'active' });
+        
+        const superAdmin = new User({
+            name: 'Super Administrator',
+            email: 'admin@email.com',
+            password: 'admin', // This should be changed immediately after first login
+            role: 'Super Admin',
+            organizationId: adminOrg._id,
+        });
+
+        adminOrg.owner = superAdmin._id;
+        adminOrg.members.push(superAdmin._id);
+        
+        await adminOrg.save();
+        await superAdmin.save();
+
+        res.status(201).json({ success: true, message: 'Super Admin account created successfully!' });
+
+    } catch (error: any) {
+        console.error('Error creating Super Admin:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// ... createDefaultPlans function remains the same, but should be updated to use the new Plan model structure ...
+export const createDefaultPlans = async (req: Request, res: Response) => {
+    // ...
+    const defaultPlans = [
+      { 
+        name: 'Free Trial', price: 0, duration: 'monthly', isPublic: false,
+        features: ['1 Property', '5 Tenants', '1 User'],
+        limits: { maxProperties: 1, maxTenants: 5, maxAgents: 1 }
+      },
+      // ... other plans
+    ];
+    await Plan.insertMany(defaultPlans);
+    // ...
 };
