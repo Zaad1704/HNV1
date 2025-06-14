@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
-import bcrypt from 'bcrypt'; // FIX: Corrected import from bcryptjs
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 export interface IUser extends Document {
@@ -35,11 +35,11 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
 };
 
 UserSchema.methods.getSignedJwtToken = function(): string {
-  // FIX: Added check for JWT_SECRET to ensure it's defined and satisfy TypeScript
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
-  return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET, {
+  // FIX: Assert process.env.JWT_SECRET as string
+  return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET as string, {
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   });
 };
