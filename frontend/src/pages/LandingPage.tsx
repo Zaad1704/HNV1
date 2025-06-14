@@ -74,9 +74,9 @@ const LandingPageContent = () => {
   ];
 
   const pricingPlans = [
-    { name: 'trialPlan', price: 0, features: ['featureTrial1', 'featureTrial2', 'featureTrial3'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600' },
-    { name: 'landlordPlan', price: 10, features: ['feature1', 'feature2', 'feature3', 'feature4'], recommended: true, ctaColor: 'bg-pink-600 hover:bg-pink-500' },
-    { name: 'agentPlan', price: 25, features: ['feature5', 'feature6', 'feature7', 'feature8'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600' }
+    { nameKey: 'trialPlan', descKey: 'trialDesc', price: 0, features: ['featureTrial1', 'featureTrial2', 'featureTrial3'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600', textColor: 'text-white' },
+    { nameKey: 'landlordPlan', descKey: 'landlordDesc', price: 10, features: ['feature1', 'feature2', 'feature3', 'feature4'], recommended: true, ctaColor: 'bg-yellow-500 hover:bg-yellow-400', textColor: 'text-slate-900' },
+    { nameKey: 'agentPlan', descKey: 'agentDesc', price: 25, features: ['feature5', 'feature6', 'feature7', 'feature8'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600', textColor: 'text-white' }
   ];
 
   const sectionBackgrounds = {
@@ -163,7 +163,7 @@ const LandingPageContent = () => {
         
         <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-            <div className="text-center mb-16">
+             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
               <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
             </div>
@@ -218,8 +218,35 @@ const LandingPageContent = () => {
         </section>
 
         <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
-          {/* Full Pricing Content */}
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-white">{t('pricing.title')}</h2>
+              <p className="text-slate-400 mt-4 max-w-2xl mx-auto">{t('pricing.subtitle')}</p>
+            </div>
+            <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+              {pricingPlans.map((plan) => (
+                <div key={plan.nameKey} className={`bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl flex flex-col border transition-all duration-300 ${plan.recommended ? 'border-2 border-yellow-500 scale-105' : 'border-slate-700 hover:border-slate-500'}`}>
+                    <h3 className={`text-2xl font-bold ${plan.recommended ? 'text-yellow-400' : 'text-white'}`}>{t(`pricing.${plan.nameKey}`)}</h3>
+                    <p className="text-slate-400 mt-2">{t(`pricing.${plan.descKey}`)}</p>
+                    <div className="flex items-baseline mt-4 mb-8">
+                        <span className="text-4xl font-extrabold text-white">{currency.symbol}{Math.round(plan.price * currency.rate)}</span>
+                        {plan.price > 0 && <span className="text-slate-400 ml-2">{t('pricing.perMonth')}</span>}
+                    </div>
+                    <ul className="space-y-3 text-slate-300 mb-8 flex-grow">
+                        {plan.features.map(feature => (
+                            <li key={feature} className="flex items-center">
+                                <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                {t(`pricing.${feature}`)}
+                            </li>
+                        ))}
+                    </ul>
+                    <Link to="/register" className={`w-full text-center font-bold py-3 px-6 rounded-lg transition-all ${plan.ctaColor}`}>{t('pricing.cta')}</Link>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
+
       </main>
       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
