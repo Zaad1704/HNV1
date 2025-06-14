@@ -30,8 +30,8 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminBillingPage from './pages/AdminBillingPage';
-import AdminPlansPage from './pages/AdminPlansPage'; // Assuming you created this file
-import AdminProfilePage from './pages/SuperAdmin/AdminProfilePage'; // Assuming you created this file
+import AdminPlansPage from './pages/AdminPlansPage';
+import AdminProfilePage from './pages/SuperAdmin/AdminProfilePage';
 import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
 
 const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
@@ -48,11 +48,9 @@ const AdminRoute = () => {
   return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
-
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
 
-  // This effect runs on app load to get user data if a token exists in localStorage
   useEffect(() => {
     const checkUserSession = async () => {
       if (token && !user) {
@@ -79,7 +77,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
-        {/* --- Protected User Routes --- */}
+        {/* --- Protected User Routes (All now use DashboardLayout) --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
@@ -89,11 +87,11 @@ function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
-            <Route path="settings" element={<SettingsPage />} /> 
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>
         
-        {/* --- Protected Super Admin Routes --- */}
+        {/* --- Protected Super Admin Routes (All now use AdminLayout) --- */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboardPage />} />
@@ -106,7 +104,7 @@ function App() {
           </Route>
         </Route>
 
-        {/* Catch-all route for pages that don't exist */}
+        {/* --- Fallback Route --- */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
