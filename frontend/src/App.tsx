@@ -3,37 +3,56 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 
-// --- Import All Page Components ---
+// --- Layout Components ---
+import DashboardLayout from './components/layout/DashboardLayout';
+import AdminLayout from './components/layout/AdminLayout';
+
+// --- Public Page Components ---
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
-import DashboardLayout from './components/layout/DashboardLayout';
+import TermsPage from './pages/TermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+
+// --- Authenticated User Page Components ---
 import DashboardPage from './pages/DashboardPage';
+import OrganizationPage from './pages/OrganizationPage';
 import PropertiesPage from './pages/PropertiesPage';
 import TenantsPage from './pages/TenantsPage';
-import AuditLogPage from './pages/AuditLogPage';
-import SettingsPage from './pages/SettingsPage'; // For user settings
-import OrganizationPage from './pages/OrganizationPage';
 import UsersPage from './pages/UsersPage';
 import BillingPage from './pages/BillingPage';
+import AuditLogPage from './pages/AuditLogPage';
+import SettingsPage from './pages/SettingsPage';
 
-// ... other imports for admin pages ...
+// --- Super Admin Page Components ---
 import AdminDashboardPage from './pages/AdminDashboardPage';
-
+import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminBillingPage from './pages/AdminBillingPage';
+import AdminPlansPage from './pages/AdminPlansPage'; // Assuming you created this file
+import AdminProfilePage from './pages/SuperAdmin/AdminProfilePage'; // Assuming you created this file
+import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
 
 const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
 
+// --- Route Protection Components ---
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-const AdminRoute = () => { /* ... remains the same ... */ };
+const AdminRoute = () => {
+  const { isAuthenticated, user } = useAuthStore();
+  const isAdmin = isAuthenticated && user?.role === 'Super Admin';
+  return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
+};
+
 
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
 
+  // This effect runs on app load to get user data if a token exists in localStorage
   useEffect(() => {
     const checkUserSession = async () => {
       if (token && !user) {
@@ -56,9 +75,11 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
-        {/* --- FIX: Consolidated All Protected User Routes Under DashboardLayout --- */}
+        {/* --- Protected User Routes --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
@@ -74,10 +95,18 @@ function App() {
         
         {/* --- Protected Super Admin Routes --- */}
         <Route path="/admin" element={<AdminRoute />}>
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          {/* ... other admin routes ... */}
+          <Route element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="organizations" element={<AdminOrganizationsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="billing" element={<AdminBillingPage />} />
+            <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="site-editor" element={<SiteEditorPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
+          </Route>
         </Route>
 
+        {/* Catch-all route for pages that don't exist */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
