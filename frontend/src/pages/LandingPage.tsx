@@ -68,9 +68,9 @@ const LandingPageContent = () => {
   };
   
   const executives = [
-      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://placehold.co/150x150/9333ea/ffffff?text=CEO" },
-      { name: "John Smith", title: "Chief Technology Officer", img: "https://placehold.co/150x150/db2777/ffffff?text=CTO" },
-      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://placehold.co/150x150/16a34a/ffffff?text=COO" }
+      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
+      { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
+      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://picsum.photos/id/1027/150/150" }
   ];
 
   const pricingPlans = [
@@ -80,12 +80,12 @@ const LandingPageContent = () => {
   ];
 
   const sectionBackgrounds = {
-    hero: `url('https://placehold.co/1920x1080/020617/f59e0b?text=Modern+Living')`,
-    features: `url('https://placehold.co/1920x1080/020617/10b981?text=Sleek+Interior')`,
-    about: `url('https://placehold.co/1920x1080/020617/ec4899?text=Architecture')`,
-    pricing: `url('https://placehold.co/1920x1080/020617/3b82f6?text=Glass+Building')`,
-    cta: `url('https://placehold.co/1920x1080/020617/8b5cf6?text=Apartment+Keys')`,
-    contact: `url('https://placehold.co/1920x1080/020617/6366f1?text=Global+Network')`
+    hero: `url('https://picsum.photos/id/1074/1920/1080')`,
+    features: `url('https://picsum.photos/id/1062/1920/1080')`,
+    about: `url('https://picsum.photos/id/1041/1920/1080')`,
+    pricing: `url('https://picsum.photos/id/103/1920/1080')`,
+    cta: `url('https://picsum.photos/id/12/1920/1080')`,
+    contact: `url('https://picsum.photos/id/1015/1920/1080')`
   };
 
   return (
@@ -96,7 +96,7 @@ const LandingPageContent = () => {
       <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <a href="#hero" className="flex items-center space-x-3">
-            <img src="https://placehold.co/40x40/f59e0b/0f172a?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
+            <img src="https://placehold.co/40x40/facc15/0f172a?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
             <span className="text-base sm:text-lg md:text-xl font-bold text-white whitespace-nowrap">HNV Property Management Solutions</span>
           </a>
           <nav className="hidden lg:flex items-center space-x-6">
@@ -186,13 +186,13 @@ const LandingPageContent = () => {
 
         <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-              {/* Full About Us Content Here */}
+              {/* Full About Us Content */}
           </div>
         </section>
 
         <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-              {/* Full Pricing Content Here */}
+              {/* Full Pricing Content */}
           </div>
         </section>
 
@@ -200,7 +200,7 @@ const LandingPageContent = () => {
       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
            <div className="container mx-auto px-6 relative z-10">
-               {/* Full Footer Content Here */}
+               {/* Full Footer Content */}
            </div>
       </footer>
     </div>
