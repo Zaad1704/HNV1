@@ -79,7 +79,6 @@ const LandingPageContent = () => {
     { name: 'agentPlan', price: 25, features: ['feature5', 'feature6', 'feature7', 'feature8'], recommended: false, ctaColor: 'bg-slate-700 hover:bg-slate-600' }
   ];
 
-  // Using a more reliable placeholder service for background images
   const sectionBackgrounds = {
     hero: `url('https://picsum.photos/id/1074/1920/1080')`,
     features: `url('https://picsum.photos/id/1062/1920/1080')`,
@@ -152,7 +151,75 @@ const LandingPageContent = () => {
       </header>
 
       <main>
-        {/* Full content sections are restored below */}
+        <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
+          <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">{t('hero.title')}</h1>
+            <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto sm:mx-0 mb-10">{t('hero.subtitle')}</p>
+            <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-6 md:py-4 md:px-10 rounded-lg text-base md:text-lg hover:bg-yellow-400 transition-all shadow-lg hover:shadow-yellow-400/50 transform hover:scale-105">
+                {t('hero.cta')}
+            </Link>
+          </div>
+        </section>
+        
+        <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
+              <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card1Title')}</h3>
+                <p className="text-slate-300">{t('features.card1Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card2Title')}</h3>
+                <p className="text-slate-300">{t('features.card2Text')}</p>
+              </div>
+              <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 hover:border-teal-500 transition-all duration-300">
+                <h3 className="text-xl font-bold text-teal-400 mb-3">{t('features.card3Title')}</h3>
+                <p className="text-slate-300">{t('features.card3Text')}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
+          <div className="container mx-auto px-6 relative z-10">
+               <div className="text-center mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold">{t('about.title')}</h2>
+                  <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('about.subtitle')}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+                  <div className="bg-slate-800/50 backdrop-blur-md p-8 rounded-2xl border border-slate-700">
+                      <h3 className="text-2xl font-bold text-pink-400 mb-4">{t('about.missionTitle')}</h3>
+                      <p className="mb-8 text-slate-300 leading-relaxed">{t('about.missionText')}</p>
+                      <h3 className="text-2xl font-bold text-pink-400 mb-4">{t('about.visionTitle')}</h3>
+                      <p className="text-slate-300 leading-relaxed">{t('about.visionText')}</p>
+                  </div>
+                   <div className="rounded-2xl overflow-hidden shadow-xl">
+                      <img src="https://picsum.photos/id/1043/600/400" alt="Team Vision" className="w-full h-auto object-cover"/>
+                  </div>
+              </div>
+               <div className="text-center mt-20">
+                  <h2 className="text-3xl font-bold">{t('about.teamTitle')}</h2>
+                  <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('about.teamSubtitle')}</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-12 max-w-5xl mx-auto">
+                  {executives.map((exec, index) => (
+                      <div key={index} className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:scale-105 border border-slate-700">
+                          <img src={exec.img} alt={exec.name} className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-pink-500" />
+                          <h3 className="text-xl font-semibold text-white">{exec.name}</h3>
+                          <p className="text-pink-400 font-medium">{exec.title}</p>
+                      </div>
+                  ))}
+              </div>
+          </div>
+        </section>
+
+        <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
+          {/* Full Pricing Content */}
+        </section>
       </main>
       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
