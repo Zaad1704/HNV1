@@ -39,15 +39,15 @@ const AdminPlansPage = () => {
         if (window.confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
             try {
                 await apiClient.delete(`/plans/${planId}`);
-                fetchPlans(); // Refresh the list
+                fetchPlans(); // Refresh the list after deleting
             } catch (err) {
                 alert('Failed to delete plan.');
             }
         }
     };
 
-    if (loading) return <div className="text-white">Loading plans...</div>;
-    if (error) return <div className="text-red-400">{error}</div>;
+    if (loading) return <div className="text-white text-center p-8">Loading plans...</div>;
+    if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
 
     return (
         <div className="text-white">
@@ -59,34 +59,38 @@ const AdminPlansPage = () => {
             />
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-4xl font-bold">Manage Subscription Plans</h1>
-                <button onClick={handleAddNew} className="px-5 py-2.5 bg-cyan-600 text-white font-bold rounded-lg hover:bg-cyan-500">
+                <button onClick={handleAddNew} className="px-5 py-2.5 bg-cyan-600 text-white font-bold rounded-lg hover:bg-cyan-500 shadow-lg hover:shadow-cyan-400/50 transition-all">
                     + Add New Plan
                 </button>
             </div>
-            <div className="bg-slate-800 rounded-lg border border-slate-700">
-                <table className="w-full">
-                    <thead className="text-left text-slate-400">
-                        <tr>
-                            <th className="p-4">Plan Name</th>
-                            <th className="p-4">Price</th>
-                            <th className="p-4">Features</th>
-                            <th className="p-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-700">
-                        {plans.map(plan => (
-                            <tr key={plan._id}>
-                                <td className="p-4 font-bold">{plan.name}</td>
-                                <td className="p-4">${(plan.price / 100).toFixed(2)} / month</td>
-                                <td className="p-4 text-sm text-slate-300">{plan.features.join(', ')}</td>
-                                <td className="p-4 space-x-2">
-                                    <button onClick={() => handleEdit(plan)} className="text-yellow-400">Edit</button>
-                                    <button onClick={() => handleDelete(plan._id)} className="text-red-500">Delete</button>
-                                </td>
+            <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-900">
+                            <tr>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Plan Name</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Price</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Limits</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700">
+                            {plans.map(plan => (
+                                <tr key={plan._id}>
+                                    <td className="p-4 font-bold text-white">{plan.name}</td>
+                                    <td className="p-4">${(plan.price / 100).toFixed(2)} / {plan.duration}</td>
+                                    <td className="p-4 text-sm text-slate-300">
+                                        Properties: {plan.limits.maxProperties}, Tenants: {plan.limits.maxTenants}, Agents: {plan.limits.maxAgents}
+                                    </td>
+                                    <td className="p-4 space-x-4">
+                                        <button onClick={() => handleEdit(plan)} className="font-medium text-yellow-400 hover:text-yellow-300">Edit</button>
+                                        <button onClick={() => handleDelete(plan._id)} className="font-medium text-red-500 hover:text-red-400">Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
