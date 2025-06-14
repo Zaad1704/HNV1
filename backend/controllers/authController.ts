@@ -1,29 +1,19 @@
+// backend/controllers/authController.ts
+
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
+import Plan from '../models/Plan'; // <-- Import Plan model
+import Subscription from '../models/Subscription'; // <-- Import Subscription model
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// This custom interface extends the Express Request to include our user property
-// after they have been authenticated by the 'protect' middleware.
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    organizationId: string;
-    role: string;
-  };
-}
-
-// Helper function to create and send a secure JWT token in the response.
 const sendTokenResponse = (user: any, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
 };
 
-/**
- * @desc    Register a new user (Landlord or Agent)
- * @route   POST /api/auth/register
- */
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password, role } = req.body;
 
@@ -37,35 +27,42 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return res.status(400).json({ success: false, message: 'User with that email already exists' });
     }
 
-    // Create a new organization for this user
-    const organization = new Organization({
-        name: `${name}'s Organization`,
-        members: [] // Initialize the members array
-    });
+    // --- New Subscription Logic ---
+    // 1. Find the default trial plan from the database.
+    const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+    if (!trialPlan) {
+        return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
+    }
 
-    // Create the new user and assign them to the new organization
-    const user = new User({
-      name,
-      email,
-      password, // Password will be hashed automatically by the model's pre-save hook
-      role,
-      organizationId: organization._id,
-    });
-    
-    // Set the user as the owner and a member of the organization
+    // 2. Create the Organization and User first to get their IDs.
+    const organization = new Organization({ name: `${name}'s Organization`, members: [] });
+    const user = new User({ name, email, password, role, organizationId: organization._id });
     organization.owner = user._id;
     organization.members.push(user._id);
 
-    // Save both new documents to the database
+    // 3. Create the 7-day trial subscription.
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 7);
+
+    const subscription = new Subscription({
+        organizationId: organization._id,
+        planId: trialPlan._id,
+        status: 'trialing',
+        trialExpiresAt: trialEndDate,
+    });
+
+    // 4. Update the organization with the new subscription ID.
+    organization.subscription = subscription._id;
+
+    // 5. Save everything to the database.
     await organization.save();
     await user.save();
+    await subscription.save();
 
-    // Log this important action
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     
-    // Send a welcome email (this is simulated in the service file)
     try {
-        await emailService.sendEmail(user.email, 'Welcome to HNV!', '<h1>Welcome!</h1><p>Thank you for registering.</p>');
+        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
     } catch (emailError) {
         console.error("Failed to send welcome email:", emailError);
     }
@@ -78,7 +75,25 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-// ... other controller functions like loginUser and getMe
-export const loginUser = async (req: Request, res: Response) => { /* ... */ };
-export const getMe = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
 
+export const loginUser = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !(await user.matchPassword(password))) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    auditService.recordAction(user._id, user.organizationId, 'USER_LOGIN');
+    sendTokenResponse(user, 200, res);
+};
+
+export const getMe = async (req: AuthenticatedRequest, res: Response) => { 
+    // In a real app, you might want to populate more user details here
+    const user = await User.findById(req.user!.id).populate({
+        path: 'organizationId',
+        select: 'name status subscription',
+        populate: {
+            path: 'subscription',
+            select: 'planId status trialExpiresAt currentPeriodEndsAt'
+        }
+    });
+    res.status(200).json({ success: true, data: user }); 
+};
