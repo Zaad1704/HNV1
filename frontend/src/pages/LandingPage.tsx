@@ -31,7 +31,7 @@ const LandingPageContent = () => {
   // --- Language & Currency Logic ---
   useEffect(() => {
     const fetchUserLocale = async () => {
-        const simulatedCountry = 'US'; // Test with 'BD', 'ES', etc.
+        const simulatedCountry = 'US'; 
         let lang = 'en', curr = { code: 'USD', symbol: '$', rate: 1 };
         let localLanguageName = 'English';
 
@@ -163,7 +163,7 @@ const LandingPageContent = () => {
         
         <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
           <div className="container mx-auto px-6 relative z-10">
-             <div className="text-center mb-16">
+            <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold">{t('features.title')}</h2>
               <p className="text-slate-300 mt-4 max-w-2xl mx-auto">{t('features.subtitle')}</p>
             </div>
@@ -247,11 +247,52 @@ const LandingPageContent = () => {
           </div>
         </section>
 
+        <section id="cta" style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
+          <div className="container mx-auto px-6 text-center relative z-10">
+              <h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2>
+              <p className="mt-4 mb-8 text-slate-300 max-w-xl mx-auto">{t('cta.subtitle')}</p>
+              <Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-8 rounded-lg text-lg hover:bg-yellow-400 shadow-lg hover:shadow-yellow-400/50">
+                  {t('cta.button')}
+              </Link>
+          </div>
+        </section>
       </main>
-      
+       
        <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
            <div className="container mx-auto px-6 relative z-10">
-               {/* Full Footer Content */}
+               <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white">{t('contact.title')}</h2>
+                  <p className="text-cyan-300 mt-4 max-w-2xl mx-auto">{t('contact.subtitle')}</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                  <div className="space-y-8">
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.officeTitle')}</h3>
+                          <p className="text-slate-400">123 Property Lane, Suite 400<br/>Management City, MC 54321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.phoneTitle')}</h3>
+                          <p className="text-slate-400">General: (555) 123-4567<br/>Support: (555) 765-4321</p>
+                      </div>
+                       <div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{t('contact.emailTitle')}</h3>
+                          <p className="text-slate-400">info@hnvpropertymanagementsolutions.com<br/>support@hnvpropertymanagementsolutions.com</p>
+                      </div>
+                  </div>
+                  <div>
+                      <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-lg border border-slate-700">
+                          <h3 className="text-xl font-semibold text-white mb-4">{t('contact.formTitle')}</h3>
+                          <form className="space-y-4">
+                              <input type="text" placeholder={t('contact.nameLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="email" placeholder={t('contact.emailLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <input type="text" placeholder={t('contact.subjectLabel')} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                              <textarea placeholder={t('contact.messageLabel')} rows="4" className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none"></textarea>
+                              <button type="submit" className="w-full py-3 bg-cyan-600 font-semibold rounded-lg hover:bg-cyan-500">{t('contact.submitButton')}</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
            </div>
       </footer>
     </div>
