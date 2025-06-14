@@ -10,8 +10,9 @@ export const handleFeedbackSubmission = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: 'Name, email, and message are required fields.' });
     }
 
-    // --- Customize Your Email Here ---
-    const recipientEmail = 'your-feedback-email@yourdomain.com'; // IMPORTANT: Change this to your actual email address
+    // IMPORTANT: Change this to the email address where you want to receive feedback.
+    const recipientEmail = 'feedback@hnvpropertysolutions.com'; 
+    
     const emailSubject = `New Feedback from ${name}: ${subject || 'No Subject'}`;
     const emailHtml = `
         <h1>New Website Feedback</h1>
@@ -22,7 +23,7 @@ export const handleFeedbackSubmission = async (req: Request, res: Response) => {
         <p><strong>Subject:</strong> ${subject || 'Not Provided'}</p>
         <hr>
         <h3>Message:</h3>
-        <p>${message}</p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
     `;
 
     try {
