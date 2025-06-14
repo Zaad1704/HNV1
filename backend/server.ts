@@ -4,6 +4,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
+import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -42,7 +43,7 @@ connectDB();
 
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com'
+  'https://hnv.onrender.com' // FIX: Ensure your deployed frontend URL is precisely 'https://hnv.onrender.com'
 ];
 
 const corsOptions: CorsOptions = {
@@ -57,6 +58,28 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
+
+// FIX: Configure Helmet's Content Security Policy - THIS IS CRITICAL FOR YOUR FRONTEND TO LOAD
+// This addresses the CSP errors you were seeing in the browser console.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow scripts from self and inline scripts (often needed for React/Vite/bundlers)
+      styleSrc: ["'self'", "'unsafe-inline'"],  // Allow styles from self and inline styles (often needed for Tailwind CSS/bundlers)
+      imgSrc: ["'self'", "data:", "https:", "http:"], // Allow images from self, data URIs, HTTPS/HTTP sources (e.g., for placeholders, external images)
+      connectSrc: [
+        "'self'",
+        "https://hnv.onrender.com", // Your frontend domain, allowing it to connect to itself
+        "https://hnv.onrender.com/api" // Your backend API endpoint
+      ],
+      // Add other directives if you encounter more errors (e.g., font-src for custom fonts, media-src for video/audio)
+      // Note: 'unsafe-inline' should be used with caution in production. For higher security, consider using nonces or hashes for inline content.
+    },
+  },
+  // If you need to allow PWA manifest or other specific headers that Helmet might block by default, configure them here.
+}));
+
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
