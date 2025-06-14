@@ -1,12 +1,9 @@
 import axios from 'axios';
-import { useAuthStore } from '../store/authStore'; // Corrected import with curly braces
+import { useAuthStore } from '../store/authStore';
 
-// Use the environment variable for the base URL in production.
-// This allows your code to work both locally and when deployed.
-// The '/api' fallback is for local development with a proxy.
-const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+// FIX: Changed VITE_API_BASE_URL to VITE_API_URL to match the variable in render.yaml
+const baseURL = import.meta.env.VITE_API_URL || '/api';
 
-// Create a new Axios instance with the correct base URL
 const apiClient = axios.create({
   baseURL: baseURL,
   headers: {
@@ -14,11 +11,10 @@ const apiClient = axios.create({
   },
 });
 
-// --- Axios Interceptor ---
-// This automatically adds the authentication token to every request.
 apiClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    // FIX: Switched to a standard function to get the token, as Zustand hooks should be used in components.
+    const token = useAuthStore.getState().user?.token; // Assuming token is on the user object
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
