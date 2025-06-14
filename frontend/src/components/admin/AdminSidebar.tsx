@@ -7,6 +7,7 @@ const AdminSidebar: React.FC = () => (
     <nav className="flex flex-col gap-4">
       <Link to="/admin/organizations" className="hover:underline">Organizations</Link>
       <Link to="/admin/users" className="hover:underline">Users</Link>
+      <Link to="/admin/plans" className="hover:underline">Manage Plans</Link> {/* <-- ADD THIS LINE */}
       <Link to="/admin/content" className="hover:underline">Content Management</Link>
       <Link to="/admin/billing" className="hover:underline">Billing</Link>
     </nav>
