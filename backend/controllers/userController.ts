@@ -4,6 +4,7 @@ import Organization from '../models/Organization';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import auditService from '../services/auditService';
 import { IUser } from '../models/User';
+import mongoose from 'mongoose'; // FIX: Import mongoose to use Types.ObjectId
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
@@ -53,7 +54,7 @@ export const requestDataExport = async (req: AuthenticatedRequest, res: Response
         if (!organization) return res.status(404).json({ success: false, message: "Organization not found." });
         organization.dataManagement = { ...organization.dataManagement, dataExportRequestedAt: new Date() };
         await organization.save();
-        auditService.recordAction(req.user._id, req.user.organizationId, 'DATA_EXPORT_REQUEST');
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'DATA_EXPORT_REQUEST'); // FIX: Cast to ObjectId
         res.status(200).json({ success: true, message: "Your data export request has been received." });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
@@ -68,7 +69,7 @@ export const requestAccountDeletion = async (req: AuthenticatedRequest, res: Res
         organization.status = 'pending_deletion';
         organization.dataManagement = { ...organization.dataManagement, accountDeletionRequestedAt: new Date() };
         await organization.save();
-        auditService.recordAction(req.user!._id, req.user!.organizationId, 'ACCOUNT_DELETION_REQUEST');
+        auditService.recordAction(req.user!._id as mongoose.Types.ObjectId, req.user!.organizationId as mongoose.Types.ObjectId, 'ACCOUNT_DELETION_REQUEST'); // FIX: Cast to ObjectId
         res.status(200).json({ success: true, message: "Your account deletion request has been received." });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
