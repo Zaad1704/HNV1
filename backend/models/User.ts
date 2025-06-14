@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken'; // FIX: Import Secret and SignOptions
 
 export interface IUser extends Document {
   name: string;
@@ -39,12 +39,11 @@ UserSchema.methods.getSignedJwtToken = function(): string {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
 
+  // FIX: Explicitly define payload, secret, and options with their types
   const payload = { id: this._id.toString(), role: this.role, name: this.name };
-  const secret: Secret = process.env.JWT_SECRET;
+  const secret: Secret = process.env.JWT_SECRET; // Explicitly type the secret
   const options: SignOptions = {
-    // FIX: Use 'as any' for expiresIn value to bypass a persistent TypeScript type definition issue.
-    // This allows compilation while acknowledging the runtime value is a string.
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any,
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any, // FIX: Use 'as any' for expiresIn value to bypass a persistent TypeScript type definition issue.
   };
 
   return jwt.sign(payload, secret, options);
