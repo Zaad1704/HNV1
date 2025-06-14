@@ -10,7 +10,7 @@ const LandingPageContent = () => {
     const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-    // --- PWA Installation Logic ---
+    // PWA Installation Logic remains the same...
     useEffect(() => {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
@@ -28,16 +28,19 @@ const LandingPageContent = () => {
         }
     };
 
-    // --- REFINED & FIXED: Language & Currency Logic ---
+    // --- FINALIZED: Language & Currency Logic with ipinfo.io ---
     useEffect(() => {
         const fetchUserLocale = async () => {
+            // IMPORTANT: Replace this with your actual API key from ipinfo.io
+            const apiKey = '7903077ee3c324';
+
             try {
-                // FIXED: Changed http to https to prevent mixed content errors
-                const response = await fetch('https://ip-api.com/json');
-                if (!response.ok) throw new Error('Failed to fetch IP info');
+                const response = await fetch(`https://ipinfo.io/json?token=${apiKey}`);
+                if (!response.ok) throw new Error('Failed to fetch IP info from ipinfo.io');
                 
                 const data = await response.json();
-                const countryCode = data.countryCode;
+                // Note: ipinfo.io uses "country" instead of "countryCode"
+                const countryCode = data.country; 
 
                 if (countryCode === 'BD') {
                     i18n.changeLanguage('bn');
@@ -72,6 +75,9 @@ const LandingPageContent = () => {
         { code: 'es', name: 'ES' }
     ];
 
+    // The rest of your component (data, JSX) remains exactly the same.
+    // ... all data arrays (executives, pricingPlans, etc.) ...
+    // ... the entire return() statement with all sections ...
     const executives = [
       { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
       { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
@@ -148,8 +154,6 @@ const LandingPageContent = () => {
                     </div>
                 )}
             </header>
-            
-            {/* --- FIXED: ALL MISSING CONTENT IS RESTORED --- */}
             <main>
                 <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
                     <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
@@ -160,7 +164,6 @@ const LandingPageContent = () => {
                         </Link>
                     </div>
                 </section>
-                
                 <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -183,7 +186,6 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
-
                 <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -216,7 +218,6 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
-
                 <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -246,7 +247,6 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
-
                 <section id="cta" style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
                     <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
                     <div className="container mx-auto px-6 text-center relative z-10">
@@ -258,7 +258,6 @@ const LandingPageContent = () => {
                     </div>
                 </section>
             </main>
-      
             <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center mb-12">
@@ -299,6 +298,7 @@ const LandingPageContent = () => {
     );
 };
 
+// Wrapper component to provide the i18n instance
 const AppWrapper = () => (
     <I18nextProvider i18n={i18n}>
         <LandingPageContent />
