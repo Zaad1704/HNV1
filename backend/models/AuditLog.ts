@@ -1,8 +1,8 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 export interface IAuditLog extends Document {
-    user: mongoose.Schema.Types.ObjectId;
+    user: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
     action: string;
-    organizationId: mongoose.Schema.Types.ObjectId;
+    organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
     details: Map<string, string>;
     timestamp: Date;
 }
