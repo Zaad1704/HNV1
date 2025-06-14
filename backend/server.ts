@@ -15,7 +15,8 @@ import userRoutes from './routes/userRoutes';
 import subscriptionsRoutes from './routes/subscriptionsRoutes';
 import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
-import feedbackRoutes from './routes/feedbackRoutes'; // Import the new feedback routes
+import feedbackRoutes from './routes/feedbackRoutes';
+import planRoutes from './routes/planRoutes'; // <-- ADD THIS LINE
 
 dotenv.config();
 
@@ -67,7 +68,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/setup', setupRoutes);
-app.use('/api/feedback', feedbackRoutes); // Mount the new feedback routes
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/plans', planRoutes); // <-- ADD THIS LINE
 
 
 // A simple health-check route
