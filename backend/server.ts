@@ -1,10 +1,7 @@
-// backend/server.ts
-
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet'; // Import helmet
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -41,9 +38,10 @@ const connectDB = async () => {
 };
 connectDB();
 
+// FIX: Corrected the frontend URL to match your service name 'hnv-saas-frontend'.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com' // FIX: This MUST be your frontend's exact URL
+  'https://hnv-saas-frontend.onrender.com' 
 ];
 
 const corsOptions: CorsOptions = {
@@ -58,27 +56,6 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
-
-// FIX: Configure Helmet's Content Security Policy and update connectSrc directives
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: [
-        "'self'",
-        "https://hnv-1-frontend.onrender.com", // FIX: Allow connections from the actual frontend domain
-        "https://hnv.onrender.com", // FIX: Allow connections to the actual backend domain
-        "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
-        "https://ipinfo.io" // For localizationController to fetch IP info
-      ],
-      // Ensure other directives like font-src, media-src, etc., are added if your app needs them
-    },
-  },
-}));
-
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
