@@ -9,8 +9,10 @@ const apiClient = axios.create({
   },
 });
 
+// This "interceptor" runs before every API request is sent.
 apiClient.interceptors.request.use(
   (config) => {
+    // FIX: Directly read the token from localStorage. This is the correct way.
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
