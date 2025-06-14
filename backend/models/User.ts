@@ -42,7 +42,9 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   const payload = { id: this._id.toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
   const options: SignOptions = {
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as string, // FIX: Explicitly cast expiresIn value to string
+    // FIX: Use 'as any' for expiresIn value to bypass a persistent TypeScript type definition issue.
+    // This allows compilation while acknowledging the runtime value is a string.
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any,
   };
 
   return jwt.sign(payload, secret, options);
