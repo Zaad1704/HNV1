@@ -9,20 +9,24 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
+  const loginAction = useAuthStore((state) => state.login);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      if (response.data.token) {
-        login(response.data.token);
-        navigate('/dashboard');
+      
+      // FIX: Check for the token and call the correct login action from the store
+      if (response.data && response.data.token) {
+        loginAction(response.data.token);
+        navigate('/dashboard'); // Redirect to dashboard on success
       } else {
-        throw new Error("Token not found in response");
+        throw new Error("Login response did not include a token.");
       }
+
     } catch (err: any) {
       const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
       setError(message);
@@ -40,7 +44,7 @@ const LoginPage: React.FC = () => {
             <p className="text-blue-100">Sign in to access your property management dashboard.</p>
         </div>
         <div className="p-8 sm:p-12 bg-slate-800">
-            <h1 className="text-3xl font-bold mb-8 text-center">Portal Log In</h1>
+            <h1 className="text-3xl font-bold mb-8 text-center md:text-left">Portal Log In</h1>
             <form onSubmit={handleLogin} className="space-y-6">
                 {error && (<div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert"><span>{error}</span></div>)}
                 <div>
@@ -57,7 +61,12 @@ const LoginPage: React.FC = () => {
                     </button>
                 </div>
             </form>
-            <p className="mt-8 text-center text-sm text-slate-400">Don't have an account?{' '}<Link to="/register" className="font-medium text-cyan-400 hover:text-cyan-300">Start your trial</Link></p>
+            <p className="mt-8 text-center text-sm text-slate-400">
+                Don't have an account?{' '}
+                <Link to="/register" className="font-medium text-cyan-400 hover:text-cyan-300">
+                    Start your trial
+                </Link>
+            </p>
         </div>
       </div>
     </div>
