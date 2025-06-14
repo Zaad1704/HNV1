@@ -4,7 +4,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
+import helmet from 'helmet'; // Import helmet
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -13,8 +13,8 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
-import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
+import subscriptionsRoutes from './routes/subscriptionsRoutes';
+import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
@@ -43,7 +43,7 @@ connectDB();
 
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv.onrender.com' // FIX: Ensure your deployed frontend URL is precisely 'https://hnv.onrender.com'
+  'https://hnv-1-frontend.onrender.com' // FIX: This MUST be your frontend's exact URL
 ];
 
 const corsOptions: CorsOptions = {
@@ -59,25 +59,24 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-// FIX: Configure Helmet's Content Security Policy - THIS IS CRITICAL FOR YOUR FRONTEND TO LOAD
-// This addresses the CSP errors you were seeing in the browser console.
+// FIX: Configure Helmet's Content Security Policy and update connectSrc directives
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow scripts from self and inline scripts (often needed for React/Vite/bundlers)
-      styleSrc: ["'self'", "'unsafe-inline'"],  // Allow styles from self and inline styles (often needed for Tailwind CSS/bundlers)
-      imgSrc: ["'self'", "data:", "https:", "http:"], // Allow images from self, data URIs, HTTPS/HTTP sources (e.g., for placeholders, external images)
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
       connectSrc: [
         "'self'",
-        "https://hnv.onrender.com", // Your frontend domain, allowing it to connect to itself
-        "https://hnv.onrender.com/api" // Your backend API endpoint
+        "https://hnv-1-frontend.onrender.com", // FIX: Allow connections from the actual frontend domain
+        "https://hnv.onrender.com", // FIX: Allow connections to the actual backend domain
+        "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
+        "https://ipinfo.io" // For localizationController to fetch IP info
       ],
-      // Add other directives if you encounter more errors (e.g., font-src for custom fonts, media-src for video/audio)
-      // Note: 'unsafe-inline' should be used with caution in production. For higher security, consider using nonces or hashes for inline content.
+      // Ensure other directives like font-src, media-src, etc., are added if your app needs them
     },
   },
-  // If you need to allow PWA manifest or other specific headers that Helmet might block by default, configure them here.
 }));
 
 
@@ -88,8 +87,8 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes); // FIX: Mount the new subscriptionsRoutes
-app.use('/api/audit', auditRoutes); // FIX: Mount the new auditRoutes
+app.use('/api/subscriptions', subscriptionsRoutes);
+app.use('/api/audit', auditRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
