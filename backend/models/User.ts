@@ -38,8 +38,8 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
-  // FIX: Assert process.env.JWT_SECRET as string
-  return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET as string, {
+  // FIX: Convert this._id to string explicitly in the payload
+  return jwt.sign({ id: this._id.toString(), role: this.role, name: this.name }, process.env.JWT_SECRET as string, {
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   });
 };
