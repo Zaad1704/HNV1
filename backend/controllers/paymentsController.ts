@@ -9,13 +9,16 @@ import { AuthenticatedRequest } from '../middleware/authMiddleware';
  */
 export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    // Find all payments that belong to the logged-in user's organization
-    // Populate related data for a comprehensive view on the frontend
-    const payments = await Payment.find({ organizationId: req.user!.organizationId })
-      .populate('tenantId', 'name')      // Get the tenant's name
-      .populate('propertyId', 'name')    // Get the property's name
-      .populate('recordedBy', 'name')    // Get the name of the user who recorded it
-      .sort({ paymentDate: -1 });      // Show most recent payments first
+    // FIX: Added a check to ensure req.user exists before using it.
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const payments = await Payment.find({ organizationId: req.user.organizationId })
+      .populate('tenantId', 'name')
+      .populate('propertyId', 'name')
+      .populate('recordedBy', 'name')
+      .sort({ paymentDate: -1 });
 
     res.status(200).json({ success: true, count: payments.length, data: payments });
   } catch (error) {
@@ -23,16 +26,3 @@ export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
-
-// In a future update, a developer would add functions here for creating,
-// viewing, and managing individual payment records. For example:
-
-/*
-export const createPayment = async (req: AuthenticatedRequest, res: Response) => {
-  // Logic to manually record a new payment
-};
-
-export const getPaymentById = async (req: AuthenticatedRequest, res: Response) => {
-  // Logic to get a single payment record
-};
-*/
