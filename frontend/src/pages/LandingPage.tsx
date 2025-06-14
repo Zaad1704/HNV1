@@ -3,14 +3,24 @@ import { Link } from 'react-router-dom';
 import { useTranslation, I18nextProvider } from 'react-i18next';
 import i18n from '../services/i18n';
 
+// This is your new "Master List". To add a language, add it here and create the corresponding JSON file.
+const supportedLanguages = {
+    en: { name: 'EN', nativeName: 'English', currency: { code: 'USD', symbol: '$', rate: 1 }, countries: ['US', 'GB', 'CA', 'AU', 'IE', 'NZ'] },
+    bn: { name: 'BN', nativeName: 'বাংলা', currency: { code: 'BDT', symbol: '৳', rate: 117 }, countries: ['BD'] },
+    es: { name: 'ES', nativeName: 'Español', currency: { code: 'EUR', symbol: '€', rate: 0.92 }, countries: ['ES', 'MX', 'AR', 'CO', 'CL'] }
+    // To add German: de: { name: 'DE', ..., countries: ['DE', 'AT', 'CH'] }
+};
+
+
 const LandingPageContent = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
     
     const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [languageOptions, setLanguageOptions] = useState([]);
 
-    // PWA Installation Logic remains the same...
+    // --- PWA Installation Logic ---
     useEffect(() => {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
@@ -28,56 +38,55 @@ const LandingPageContent = () => {
         }
     };
 
-    // --- FINALIZED: Language & Currency Logic with ipinfo.io ---
+    // --- Dynamic Language Detection Logic ---
     useEffect(() => {
         const fetchUserLocale = async () => {
             // IMPORTANT: Replace this with your actual API key from ipinfo.io
-            const apiKey = '7903077ee3c324';
+            const apiKey = '7903077ee3c324'; 
 
             try {
                 const response = await fetch(`https://ipinfo.io/json?token=${apiKey}`);
-                if (!response.ok) throw new Error('Failed to fetch IP info from ipinfo.io');
+                if (!response.ok) throw new Error('Failed to fetch IP info');
                 
                 const data = await response.json();
-                // Note: ipinfo.io uses "country" instead of "countryCode"
-                const countryCode = data.country; 
+                const userCountry = data.country;
 
-                if (countryCode === 'BD') {
-                    i18n.changeLanguage('bn');
-                    setCurrency({ code: 'BDT', symbol: '৳', rate: 117 });
-                } else if (countryCode === 'ES') {
-                    i18n.changeLanguage('es');
-                    setCurrency({ code: 'EUR', symbol: '€', rate: 0.92 });
+                const detectedLangCode = Object.keys(supportedLanguages).find(langCode => 
+                    supportedLanguages[langCode].countries.includes(userCountry)
+                );
+
+                const defaultLang = supportedLanguages.en;
+                const detectedLang = supportedLanguages[detectedLangCode] || defaultLang;
+                
+                i18n.changeLanguage(detectedLangCode || 'en');
+                setCurrency(detectedLang.currency);
+
+                if (detectedLang.name !== 'EN') {
+                    setLanguageOptions([detectedLang, defaultLang]);
                 } else {
-                    i18n.changeLanguage('en');
-                    setCurrency({ code: 'USD', symbol: '$', rate: 1 });
+                    setLanguageOptions([defaultLang]);
                 }
+
             } catch (error) {
                 console.error("Could not fetch user locale, defaulting to English:", error);
+                const defaultLang = supportedLanguages.en;
                 i18n.changeLanguage('en');
-                setCurrency({ code: 'USD', symbol: '$', rate: 1 });
+                setCurrency(defaultLang.currency);
+                setLanguageOptions([defaultLang]);
             }
         };
 
         fetchUserLocale();
     }, []); 
 
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-        if (lng === 'bn') setCurrency({ code: 'BDT', symbol: '৳', rate: 117 });
-        else if (lng === 'es') setCurrency({ code: 'EUR', symbol: '€', rate: 0.92 });
-        else setCurrency({ code: 'USD', symbol: '$', rate: 1 });
+    const changeLanguage = (langCode: string) => {
+        const newLang = supportedLanguages[langCode];
+        if (newLang) {
+            i18n.changeLanguage(langCode);
+            setCurrency(newLang.currency);
+        }
     };
 
-    const languages = [
-        { code: 'en', name: 'EN' },
-        { code: 'bn', name: 'BN' },
-        { code: 'es', name: 'ES' }
-    ];
-
-    // The rest of your component (data, JSX) remains exactly the same.
-    // ... all data arrays (executives, pricingPlans, etc.) ...
-    // ... the entire return() statement with all sections ...
     const executives = [
       { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
       { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
@@ -120,17 +129,24 @@ const LandingPageContent = () => {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             </button>
                         )}
-                        <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-full p-1">
-                            {languages.map(lang => (
-                                <button
-                                    key={lang.code}
-                                    onClick={() => changeLanguage(lang.code)}
-                                    className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${i18n.language === lang.code ? 'bg-yellow-500 text-slate-900' : 'text-slate-400 hover:bg-slate-700'}`}
-                                >
-                                    {lang.name}
-                                </button>
-                            ))}
-                        </div>
+                        
+                        {languageOptions.length > 1 && (
+                            <div className="flex items-center space-x-1 bg-slate-800 border border-slate-700 rounded-full p-1">
+                                {languageOptions.map(lang => {
+                                    const langCode = Object.keys(supportedLanguages).find(key => supportedLanguages[key] === lang);
+                                    return (
+                                        <button
+                                            key={lang.name}
+                                            onClick={() => changeLanguage(langCode)}
+                                            className={`px-3 py-1 text-sm font-bold rounded-full transition-colors duration-300 ${i18n.language === langCode ? 'bg-yellow-500 text-slate-900' : 'text-slate-400 hover:bg-slate-700'}`}
+                                        >
+                                            {lang.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
                         <Link to="/login" className="text-slate-300 font-semibold hover:text-white transition-colors">{t('header.login')}</Link>
                         <Link to="/register" className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-2 px-5 rounded-lg shadow-lg hover:shadow-yellow-400/50 transition-all">
                             {t('header.getStarted')}
@@ -154,6 +170,7 @@ const LandingPageContent = () => {
                     </div>
                 )}
             </header>
+            
             <main>
                 <section id="hero" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.5)), ${sectionBackgrounds.hero}`}} className="relative bg-cover bg-center text-white py-24 sm:py-40">
                     <div className="container mx-auto px-6 text-center sm:text-left relative z-10">
@@ -164,6 +181,7 @@ const LandingPageContent = () => {
                         </Link>
                     </div>
                 </section>
+                
                 <section id="features" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.features}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -186,6 +204,7 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
+
                 <section id="about" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.about}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -218,6 +237,7 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
+
                 <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
                         <div className="text-center mb-16">
@@ -247,6 +267,7 @@ const LandingPageContent = () => {
                         </div>
                     </div>
                 </section>
+
                 <section id="cta" style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
                     <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
                     <div className="container mx-auto px-6 text-center relative z-10">
@@ -258,6 +279,7 @@ const LandingPageContent = () => {
                     </div>
                 </section>
             </main>
+      
             <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="text-center mb-12">
