@@ -3,10 +3,10 @@ import mongoose, { Schema, Document, model } from 'mongoose';
 // FIX: Added missing properties to the interface to match their usage in controllers
 export interface IOrganization extends Document {
   name: string;
-  owner: mongoose.Schema.Types.ObjectId;
-  members: mongoose.Schema.Types.ObjectId[];
+  owner: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  members: mongoose.Types.ObjectId[]; // FIX: Changed to mongoose.Types.ObjectId[]
   status: 'active' | 'inactive' | 'pending_deletion';
-  subscription: mongoose.Schema.Types.ObjectId;
+  subscription: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
   dataManagement?: {
     dataExportRequestedAt?: Date;
     accountDeletionRequestedAt?: Date;
