@@ -3,7 +3,8 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
-import Plan from '../models/Plan'; // <-- Import the new Plan model
+import Plan from '../models/Plan';
+import mongoose from 'mongoose'; // FIX: Import mongoose to use Types.ObjectId
 
 /**
  * @desc    Create the initial Super Admin user. This route is intended for a one-time setup.
@@ -11,7 +12,6 @@ import Plan from '../models/Plan'; // <-- Import the new Plan model
  * @access  Private (requires a secret key)
  */
 export const createSuperAdmin = async (req: Request, res: Response) => {
-    // ... this function remains the same as before
     const { secretKey } = req.body;
     if (!secretKey || secretKey !== process.env.SETUP_SECRET_KEY) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
@@ -27,10 +27,10 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
             email: 'admin@email.com',
             password: 'admin',
             role: 'Super Admin',
-            organizationId: adminOrg._id,
+            organizationId: adminOrg._id as mongoose.Types.ObjectId, // FIX: Cast to ObjectId
         });
-        adminOrg.owner = superAdmin._id;
-        adminOrg.members.push(superAdmin._id);
+        adminOrg.owner = superAdmin._id as mongoose.Types.ObjectId; // FIX: Cast to ObjectId
+        adminOrg.members.push(superAdmin._id as mongoose.Types.ObjectId); // FIX: Cast to ObjectId
         await adminOrg.save();
         await superAdmin.save();
         res.status(201).json({ success: true, message: 'Super Admin account created successfully!' });
