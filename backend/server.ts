@@ -38,22 +38,20 @@ const connectDB = async () => {
 };
 connectDB();
 
-// FIX: Added your primary live URL to the list of allowed origins.
+// FIX: Updated the list to include your confirmed frontend URL
 const allowedOrigins: string[] = [
-  'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com',
-  'https://hnv.onrender.com' // <-- This is the required addition
+  'http://localhost:3000',                  // For local development
+  'https://hnv-1-frontend.onrender.com'      // Your live frontend URL
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg));
+    // Allow requests with no origin (e.g., mobile apps, Postman) and requests from whitelisted origins
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
   }
 };
 app.use(cors(corsOptions));
