@@ -4,8 +4,8 @@ export interface ITenant extends Document {
   name: string;
   email: string;
   phone?: string;
-  propertyId: mongoose.Schema.Types.ObjectId;
-  organizationId: mongoose.Schema.Types.ObjectId;
+  propertyId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
   unit: string;
   status: 'Active' | 'Inactive' | 'Late';
   createdAt: Date;
