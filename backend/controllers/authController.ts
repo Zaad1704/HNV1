@@ -7,6 +7,7 @@ import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
+// Helper function with explicit typing for the user parameter
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
@@ -33,9 +34,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
-    // Step 1: Create the new documents in memory
+    // Step 1: Create the organization document first
     const organization = new Organization({ name: `${name}'s Organization` });
-    const user = new User({
+    
+    // Step 2: Create the new user and explicitly link the organization's ID
+    const user: IUser = new User({
         name,
         email,
         password,
@@ -43,14 +46,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         organizationId: organization._id,
     });
 
-    // Step 2: Save the user first. This ensures user._id is a valid, finalized ObjectId.
-    await user.save();
-
-    // Step 3: Now that user._id is valid, link it to the organization.
+    // Step 3: Now, link the user back to the organization as its owner and member
     organization.owner = user._id;
-    organization.members = [user._id];
+    organization.members.push(user._id);
 
-    // Step 4: Create the trial subscription linked to the organization.
+    // Step 4: Create the trial subscription
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
@@ -61,19 +61,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
     organization.subscription = subscription._id;
 
-    // Step 5: Save the fully linked organization and the new subscription.
+    // Step 5: Save all new documents to the database
     await organization.save();
+    await user.save();
     await subscription.save();
 
-    // Step 6: Log the action and send the response.
+    // Step 6: Log the action and send the token response
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     
-    try {
-        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
-    } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError);
-    }
-
     sendTokenResponse(user, 201, res);
 
   } catch (error) {
