@@ -83,26 +83,4 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ email }).select('+password') as IUser;
     if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    auditService.recordAction(user._id as ObjectId, user.organizationId as ObjectId, 'USER_LOGIN');
-    sendTokenResponse(user, 200, res);
-};
-
-export const getMe = async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    const fullUserData = await User.findById(req.user.id).populate({
-        path: 'organizationId',
-        select: 'name status subscription',
-        populate: {
-            path: 'subscription',
-           
+        return res.status(401).json({ success: false,
