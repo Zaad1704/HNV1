@@ -15,64 +15,36 @@ import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
+import billingRoutes from './routes/billingRoutes'; // <-- ADD THIS LINE
 
 dotenv.config();
 
 const app: Express = express();
 
-const connectDB = async () => {
-  try {
-    if (!process.env.MONGO_URI) {
-        throw new Error('MONGO_URI is not defined in the environment variables.');
-    }
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB Connected...');
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-        console.error(err.message);
-    } else {
-        console.error('An unknown error occurred during database connection.');
-    }
-    process.exit(1);
-  }
-};
+const connectDB = async () => { /* ... */ };
 connectDB();
 
-// FIX: Updated the list to include your confirmed frontend URL
 const allowedOrigins: string[] = [
-  'http://localhost:3000',                  // For local development
-  'https://hnv-1-frontend.onrender.com'      // Your live frontend URL
+  'http://localhost:3000',
+  'https://hnv-1-frontend.onrender.com' 
 ];
 
-const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (e.g., mobile apps, Postman) and requests from whitelisted origins
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-};
+const corsOptions: CorsOptions = { /* ... */ };
 app.use(cors(corsOptions));
+
+// FIX: Add a special case for the raw webhook route BEFORE express.json()
+// Webhooks need the raw request body for signature verification.
+app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
-app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/properties', propertiesRoutes);
-app.use('/api/tenants', tenantsRoutes);
-app.use('/api/payments', paymentsRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes);
-app.use('/api/audit', auditRoutes);
-app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/billing', billingRoutes); // <-- ADD THIS LINE
+// ... and all other app.use() statements for your routes
 
-
-// A simple health-check route
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
