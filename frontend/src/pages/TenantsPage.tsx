@@ -1,38 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import apiClient from '../api/client';
+import React, { useState } from 'react';
 import AddTenantModal from '../components/common/AddTenantModal';
+import { useTenants, ITenant } from '../hooks/useTenants'; // Import the new hook and type
+import { useQueryClient } from '@tanstack/react-query'; // Import queryClient
 
-// Placeholder Icons
+// Placeholder Icon
 const AddIcon = () => <span>+</span>;
 
 const TenantsPage = () => {
-  const [tenants, setTenants] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Use the new hook to fetch data. It returns isLoading, isError, and data.
+  const { data: tenants = [], isLoading, isError, error } = useTenants();
+  
+  // Get the query client instance to invalidate cache on mutation
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchTenants = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const response = await apiClient.get('/tenants');
-        setTenants(response.data.data);
-      } catch (err) {
-        setError('Failed to fetch tenants.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTenants();
-  }, []);
-
-  const handleTenantAdded = (newTenant: any) => {
-    // A more robust implementation might refetch or find the property name.
-    // For now, we add the new tenant, and the page will show 'N/A' for the property until refresh.
-    setTenants(prevTenants => [...prevTenants, newTenant]);
+  const handleTenantAdded = (newTenant: ITenant) => {
+    // When a new tenant is added, invalidate the 'tenants' query.
+    // This tells React Query to automatically refetch the data.
+    queryClient.invalidateQueries({ queryKey: ['tenants'] });
+    // You could also update the cache manually for an optimistic update.
   };
 
   const getStatusBadge = (status: string) => {
@@ -44,8 +31,15 @@ const TenantsPage = () => {
     }
   };
   
-  if (loading) return <div className="text-white text-center p-8">Loading tenants...</div>;
-  if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
+  // Render a loading state while data is being fetched.
+  if (isLoading) {
+    return <div className="text-white text-center p-8">Loading tenants...</div>;
+  }
+
+  // Render an error state if the fetch fails.
+  if (isError) {
+    return <div className="text-red-400 text-center p-8">Error: {error.message}</div>;
+  }
 
   return (
     <div className="text-white">
