@@ -17,13 +17,11 @@ const LandingPageContent = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [languageOptions, setLanguageOptions] = useState<any[]>([]);
     
-    // State for pricing plans will now be fetched from the API
     const [pricingPlans, setPricingPlans] = useState<any[]>([]);
     const [feedback, setFeedback] = useState({ name: '', email: '', subject: '', message: '' });
     const [formMessage, setFormMessage] = useState({ type: '', text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Fetch public plans from the API when the component mounts
     useEffect(() => {
         const fetchPlans = async () => {
             try {
@@ -52,7 +50,7 @@ const LandingPageContent = () => {
 
     useEffect(() => {
         const fetchUserLocale = async () => {
-            const apiKey = '7903077ee3c324'; // Using the key you provided earlier.
+            const apiKey = '7903077ee3c324';
             try {
                 const response = await fetch(`https://ipinfo.io/json?token=${apiKey}`);
                 if (!response.ok) throw new Error('Failed to fetch IP info');
@@ -108,7 +106,7 @@ const LandingPageContent = () => {
             setIsSubmitting(false);
         }
     };
-
+    
     const executives = [
       { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
       { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
@@ -186,4 +184,56 @@ const LandingPageContent = () => {
                 </section>
                 <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
                     <div className="container mx-auto px-6 relative z-10">
-                        <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold text-white">{t('pricing.title')}</h2>
+                        <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold text-white">{t('pricing.title')}</h2><p className="text-slate-400 mt-4 max-w-2xl mx-auto">{t('pricing.subtitle')}</p></div>
+                        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+                            {pricingPlans.map((plan) => (
+                                <div key={plan._id} className={`bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl flex flex-col border transition-all duration-300 ${plan.name.includes('Agent') ? 'border-2 border-yellow-500 scale-105' : 'border-slate-700 hover:border-slate-500'}`}>
+                                    <h3 className={`text-2xl font-bold ${plan.name.includes('Agent') ? 'text-yellow-400' : 'text-white'}`}>{plan.name}</h3>
+                                    <div className="flex items-baseline mt-4 mb-8"><span className="text-4xl font-extrabold text-white">{currency.symbol}{Math.round((plan.price / 100) * currency.rate)}</span>{plan.price > 0 && <span className="text-slate-400 ml-2">/ {plan.duration}</span>}</div>
+                                    <ul className="space-y-3 text-slate-300 mb-8 flex-grow">{plan.features.map((feature: string) => (<li key={feature} className="flex items-center"><svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>{feature}</li>))}</ul>
+                                    <Link to={`/subscribe/${plan._id}`} className={`w-full mt-auto text-center font-bold py-3 px-6 rounded-lg transition-all ${plan.name.includes('Agent') ? 'bg-yellow-500 hover:bg-yellow-400 text-slate-900' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>Choose Plan</Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+                <section id="cta" style={{backgroundImage: sectionBackgrounds.cta}} className="relative bg-cover bg-center py-20">
+                    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div><div className="container mx-auto px-6 text-center relative z-10"><h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2><p className="mt-4 mb-8 text-slate-300 max-w-xl mx-auto">{t('cta.subtitle')}</p><Link to="/register" className="bg-yellow-500 text-slate-900 font-bold py-3 px-8 rounded-lg text-lg hover:bg-yellow-400 shadow-lg hover:shadow-yellow-400/50">{t('cta.button')}</Link></div>
+                </section>
+            </main>
+            <footer id="contact" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.contact}`}} className="relative bg-cover bg-center text-gray-300 py-16">
+                <div className="container mx-auto px-6 relative z-10">
+                    <div className="text-center mb-12"><h2 className="text-3xl md:text-4xl font-bold text-white">Share Your Feedback & Ideas</h2><p className="text-cyan-300 mt-4 max-w-2xl mx-auto">Have a suggestion, complaint, or a feature request? We'd love to hear from you!</p></div>
+                    <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                        <div className="space-y-8">
+                            <div><h3 className="text-xl font-semibold text-white mb-2">{t('contact.officeTitle')}</h3><p className="text-slate-400">123 Property Lane, Suite 400<br/>Management City, MC 54321</p></div>
+                            <div><h3 className="text-xl font-semibold text-white mb-2">{t('contact.phoneTitle')}</h3><p className="text-slate-400">General: (555) 123-4567<br/>Support: (555) 765-4321</p></div>
+                            <div><h3 className="text-xl font-semibold text-white mb-2">{t('contact.emailTitle')}</h3><p className="text-slate-400">info@hnvpropertymanagementsolutions.com<br/>support@hnvpropertymanagementsolutions.com</p></div>
+                        </div>
+                        <div>
+                            <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-lg border border-slate-700">
+                                <h3 className="text-xl font-semibold text-white mb-4">Feedback Form</h3>
+                                <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                                    <input type="text" name="name" placeholder={t('contact.nameLabel')} value={feedback.name} onChange={handleFeedbackChange} required className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                                    <input type="email" name="email" placeholder={t('contact.emailLabel')} value={feedback.email} onChange={handleFeedbackChange} required className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                                    <input type="text" name="subject" placeholder={t('contact.subjectLabel')} value={feedback.subject} onChange={handleFeedbackChange} className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none" />
+                                    <textarea name="message" placeholder={t('contact.messageLabel')} rows={4} value={feedback.message} onChange={handleFeedbackChange} required className="w-full p-3 rounded-md bg-slate-900 text-white border border-slate-600 focus:ring-2 focus:ring-cyan-500 focus:outline-none"></textarea>
+                                    <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-cyan-600 font-semibold rounded-lg hover:bg-cyan-500 disabled:bg-slate-600">{isSubmitting ? 'Sending...' : t('contact.submitButton')}</button>
+                                    {formMessage.text && (<p className={`text-center text-sm mt-4 ${formMessage.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>{formMessage.text}</p>)}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+           </footer>
+        </div>
+    );
+};
+
+const AppWrapper = () => (
+    <I18nextProvider i18n={i18n}>
+        <LandingPageContent />
+    </I18nextProvider>
+);
+
+export default AppWrapper;
