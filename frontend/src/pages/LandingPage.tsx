@@ -11,13 +11,13 @@ const supportedLanguages = {
 };
 
 const LandingPageContent = () => {
-    const [pricingPlans, setPricingPlans] = useState<any[]>([]);
-    // All other state and useEffect hooks remain the same
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
     const [currency, setCurrency] = useState({ code: 'USD', symbol: '$', rate: 1 });
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [languageOptions, setLanguageOptions] = useState<any[]>([]);
+    
+    const [pricingPlans, setPricingPlans] = useState<any[]>([]);
     const [feedback, setFeedback] = useState({ name: '', email: '', subject: '', message: '' });
     const [formMessage, setFormMessage] = useState({ type: '', text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,70 +34,95 @@ const LandingPageContent = () => {
         fetchPlans();
     }, []);
 
-    // ... All other useEffects and handler functions remain the same ...
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }, []);
 
-    const executives = [/* ... */];
-    const sectionBackgrounds = {/* ... */};
+    const handleInstallClick = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            setDeferredPrompt(null);
+        }
+    };
+
+    useEffect(() => {
+        const fetchUserLocale = async () => {
+            const apiKey = '7903077ee3c324';
+            try {
+                const response = await fetch(`https://ipinfo.io/json?token=${apiKey}`);
+                if (!response.ok) throw new Error('Failed to fetch IP info');
+                const data = await response.json();
+                const userCountry = data.country;
+                const detectedLangCode = Object.keys(supportedLanguages).find(langCode => 
+                    (supportedLanguages as any)[langCode].countries.includes(userCountry)
+                );
+                const defaultLang = supportedLanguages.en;
+                const detectedLang = (supportedLanguages as any)[detectedLangCode || 'en'] || defaultLang;
+                i18n.changeLanguage(detectedLangCode || 'en');
+                setCurrency(detectedLang.currency);
+                if (detectedLang.name !== 'EN') {
+                    setLanguageOptions([detectedLang, defaultLang]);
+                } else {
+                    setLanguageOptions([defaultLang]);
+                }
+            } catch (error) {
+                console.error("Could not fetch user locale, defaulting to English:", error);
+                const defaultLang = supportedLanguages.en;
+                i18n.changeLanguage('en');
+                setCurrency(defaultLang.currency);
+                setLanguageOptions([defaultLang]);
+            }
+        };
+        fetchUserLocale();
+    }, [i18n]); 
+
+    const changeLanguage = (langCode: string) => {
+        const newLang = (supportedLanguages as any)[langCode];
+        if (newLang) {
+            i18n.changeLanguage(langCode);
+            setCurrency(newLang.currency);
+        }
+    };
+
+    const handleFeedbackChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFeedback({ ...feedback, [e.target.name]: e.target.value });
+    };
+
+    const handleFeedbackSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setFormMessage({ type: '', text: '' });
+        try {
+            await apiClient.post('/feedback', feedback);
+            setFormMessage({ type: 'success', text: 'Thank you! Your feedback has been sent.' });
+            setFeedback({ name: '', email: '', subject: '', message: '' });
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || 'Failed to send feedback. Please try again later.';
+            setFormMessage({ type: 'error', text: errorMsg });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const executives = [
+      { name: "Jane Doe", title: "Chief Executive Officer", img: "https://picsum.photos/id/1005/150/150" },
+      { name: "John Smith", title: "Chief Technology Officer", img: "https://picsum.photos/id/1011/150/150" },
+      { name: "Alice Brown", title: "Chief Operations Officer", img: "https://picsum.photos/id/1027/150/150" }
+    ];
+    
+    const sectionBackgrounds = {
+      hero: `url('https://picsum.photos/id/1074/1920/1080')`,
+      features: `url('https://picsum.photos/id/1062/1920/1080')`,
+      about: `url('https://picsum.photos/id/1041/1920/1080')`,
+      pricing: `url('https://picsum.photos/id/103/1920/1080')`,
+      cta: `url('https://picsum.photos/id/12/1920/1080')`,
+      contact: `url('https://picsum.photos/id/1015/1920/1080')`
+    };
 
     return (
         <div className="bg-slate-900 text-slate-200">
-            {/* Header and all other sections remain the same */}
-            <header> {/* ... */} </header>
-            <main>
-                {/* ... hero, features, about sections ... */}
-
-                <section id="pricing" style={{backgroundImage: `linear-gradient(to right, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.8)), ${sectionBackgrounds.pricing}`}} className="relative bg-cover bg-center py-20 text-white">
-                    <div className="container mx-auto px-6 relative z-10">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold text-white">{t('pricing.title')}</h2>
-                            <p className="text-slate-400 mt-4 max-w-2xl mx-auto">{t('pricing.subtitle')}</p>
-                        </div>
-                        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
-                            {pricingPlans.map((plan) => (
-                                <div key={plan._id} className={`bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl flex flex-col border transition-all duration-300 ${plan.name.includes('Agent') ? 'border-2 border-yellow-500 scale-105' : 'border-slate-700 hover:border-slate-500'}`}>
-                                    <h3 className={`text-2xl font-bold ${plan.name.includes('Agent') ? 'text-yellow-400' : 'text-white'}`}>{plan.name}</h3>
-                                    <div className="flex items-baseline mt-4 mb-8">
-                                        <span className="text-4xl font-extrabold text-white">{currency.symbol}{plan.price === 0 ? '0' : Math.round((plan.price / 100) * currency.rate)}</span>
-                                        {plan.price > 0 && <span className="text-slate-400 ml-2">/ {plan.duration}</span>}
-                                    </div>
-                                    <ul className="space-y-3 text-slate-300 mb-8 flex-grow">
-                                        {plan.features.map((feature: string) => (
-                                            <li key={feature} className="flex items-center">
-                                                <svg className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <Link to={`/subscribe/${plan._id}`} className={`w-full mt-auto text-center font-bold py-3 px-6 rounded-lg transition-all ${plan.name.includes('Agent') ? 'bg-yellow-500 hover:bg-yellow-400 text-slate-900' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>
-                                        {plan.price === 0 ? 'Start Trial' : 'Choose Plan'}
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
-                        
-                        {/* --- NEW SECTION ADDED --- */}
-                        <div className="text-center mt-16">
-                            <p className="text-slate-300">
-                                Need a custom enterprise plan or a one-time payment option for lifetime access?
-                            </p>
-                            <a href="#contact" className="font-bold text-cyan-400 hover:text-cyan-300 transition-colors mt-2 inline-block">
-                                Please contact us to discuss your requirements.
-                            </a>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ... cta section and footer ... */}
-            </main>
-            <footer> {/* ... */} </footer>
-        </div>
-    );
-};
-
-const AppWrapper = () => (
-    <I18nextProvider i18n={i18n}>
-        <LandingPageContent />
-    </I18nextProvider>
-);
-
-export default AppWrapper;
+            <style>{` html { scroll-behavior: smooth; } `}</style>
+            <header className="bg-
