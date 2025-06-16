@@ -7,12 +7,13 @@ import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// Helper function with explicit typing for the user parameter
+// Helper function to create and send a secure JWT token
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
 };
 
+// @desc    Register a new user (Landlord or Agent)
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name, email, password, role } = req.body;
 
@@ -34,7 +35,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
-    // Step 1: Create new documents in memory
+    // Create new documents
     const organization = new Organization({ name: `${name}'s Organization` });
     const user: IUser = new User({
         name,
@@ -43,16 +44,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         role,
         organizationId: organization._id,
     });
-    
-    // Step 2: Save both documents. Now they exist in the DB.
-    await organization.save();
+
+    // Save the user first to ensure its _id is valid
     await user.save();
 
-    // Step 3: Update the organization with the now-guaranteed user ID.
+    // Now link the user to the organization and set up the subscription
     organization.owner = user._id;
     organization.members = [user._id];
-    
-    // Step 4: Create the trial subscription
+
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
@@ -63,11 +62,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
     organization.subscription = subscription._id;
 
-    // Step 5: Save the updated organization and the new subscription
+    // Save the fully configured documents
     await organization.save();
     await subscription.save();
 
-    // Step 6: Log action and send response
+    // Log the action and send the response
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     
     sendTokenResponse(user, 201, res);
@@ -78,10 +77,41 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+// @desc    Login a user
 export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    }
     
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-        return res.
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    auditService.recordAction(user._id, user.organizationId, 'USER_LOGIN');
+    sendTokenResponse(user, 200, res);
+};
+
+// @desc    Get current user profile
+export const getMe = async (req: AuthenticatedRequest, res: Response) => { 
+    if (!req.user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    const fullUserData = await User.findById(req.user.id).populate({
+        path: 'organizationId',
+        select: 'name status subscription',
+        populate: { 
+            path: 'subscription', 
+            model: 'Subscription' 
+        }
+    });
+    
+    res.status(200).json({ success: true, data: fullUserData }); 
+};
