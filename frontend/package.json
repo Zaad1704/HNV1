@@ -14,7 +14,44 @@
     "axios": "^1.7.2",
     "i18next": "^23.12.2",
     "i18next-http-backend": "^2.5.2",
-    "lucide-react": "^0.0.0",  
+    "lucide-react": "^{
+  "name": "hnv-saas-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.19",
+    "axios": "^1.7.2",
+    "i18next": "^23.12.2",
+    "i18next-http-backend": "^2.5.2",
+    "lucide-react": "^0.515.0",  
+    "postcss": "^8.4.39",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.0.0",
+    "react-router-dom": "^6.25.1",
+    "tailwindcss": "^3.4.6",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.4",
+    "vite-plugin-pwa": "^0.2.0"
+  }
+}
+",  // Replace with the actual latest version
     "postcss": "^8.4.39",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
