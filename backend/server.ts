@@ -10,18 +10,20 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
 import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
-import billingRoutes from './routes/billingRoutes'; // <-- ADD THIS LINE
+import billingRoutes from './routes/billingRoutes';
+import tenantPortalRoutes from './routes/tenantPortalRoutes'; // <-- IMPORT THE NEW ROUTE
 
 dotenv.config();
 
 const app: Express = express();
 
-const connectDB = async () => { /* ... */ };
+const connectDB = async () => { 
+    // This function should contain your mongoose.connect() logic
+};
 connectDB();
 
 const allowedOrigins: string[] = [
@@ -29,11 +31,12 @@ const allowedOrigins: string[] = [
   'https://hnv-1-frontend.onrender.com' 
 ];
 
-const corsOptions: CorsOptions = { /* ... */ };
+const corsOptions: CorsOptions = { 
+    origin: allowedOrigins
+};
 app.use(cors(corsOptions));
 
-// FIX: Add a special case for the raw webhook route BEFORE express.json()
-// Webhooks need the raw request body for signature verification.
+// Special case for the raw webhook route BEFORE express.json()
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
@@ -42,8 +45,16 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
-app.use('/api/billing', billingRoutes); // <-- ADD THIS LINE
-// ... and all other app.use() statements for your routes
+app.use('/api/billing', billingRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/properties', propertiesRoutes);
+app.use('/api/tenants', tenantsRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/tenant-portal', tenantPortalRoutes); // <-- MOUNT THE NEW ROUTE
+app.use('/api/super-admin', superAdminRoutes); // Assuming this is the intended mount path
+app.use('/api/setup', setupRoutes);
+
 
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
