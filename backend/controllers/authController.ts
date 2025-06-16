@@ -7,7 +7,7 @@ import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// Helper function with explicit typing for the user parameter
+// Helper function to create and send a secure JWT token
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
@@ -34,8 +34,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
-    // Create new documents in memory
+    // Step 1: Create a new organization, but don't save it yet.
     const organization = new Organization({ name: `${name}'s Organization` });
+
+    // Step 2: Create a new user, linking the organization's ID.
     const user: IUser = new User({
         name,
         email,
@@ -44,11 +46,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         organizationId: organization._id,
     });
 
-    // Link the user as the owner of the organization
+    // Step 3: Link the user as the owner of the organization.
     organization.owner = user._id;
-    organization.members = [user._id];
+    organization.members.push(user._id);
 
-    // Create the trial subscription
+    // Step 4: Create the trial subscription.
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
@@ -58,13 +60,13 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         trialExpiresAt: trialEndDate,
     });
     organization.subscription = subscription._id;
-    
-    // Save all documents
-    await user.save();
+
+    // Step 5: Save all documents. Mongoose will handle the order correctly.
     await organization.save();
+    await user.save();
     await subscription.save();
 
-    // Log the action and send response
+    // Step 6: Log the action and send response.
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     sendTokenResponse(user, 201, res);
 
