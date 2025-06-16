@@ -4,15 +4,15 @@ import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// All routes in this file are protected and require a Super Admin role.
-router.use(protect, authorize('Super Admin'));
-
+// This route is now public so the landing page can display plans.
 router.route('/')
     .get(getPlans)
-    .post(createPlan);
+    // The POST route to create a plan remains protected for Super Admins.
+    .post(protect, authorize('Super Admin'), createPlan);
 
+// The routes for updating and deleting specific plans remain protected.
 router.route('/:id')
-    .put(updatePlan)
-    .delete(deletePlan);
+    .put(protect, authorize('Super Admin'), updatePlan)
+    .delete(protect, authorize('Super Admin'), deletePlan);
 
 export default router;
