@@ -1,12 +1,13 @@
-import { Router } from "express";
-import { getPlans, getBillingHistory, subscribe } from "../controllers/billingController";
-import { authenticate } from "../middleware/authenticate";
-import { authorize } from "../middleware/rbac";
+import { Router } from 'express';
+import { createCheckoutSession, handlePaymentWebhook } from '../controllers/billingController';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.get("/plans", authenticate, getPlans);
-router.get("/history", authenticate, getBillingHistory);
-router.post("/subscribe", authenticate, authorize(["SuperAdmin", "Landlord"]), subscribe);
+// A logged-in user calls this to start a purchase. It's a protected route.
+router.post('/create-checkout-session', protect, createCheckoutSession);
+
+// The payment provider (2Checkout) calls this public URL. It must not be protected.
+router.post('/webhook', handlePaymentWebhook);
 
 export default router;
