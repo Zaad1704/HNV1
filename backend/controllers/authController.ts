@@ -91,15 +91,6 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    auditService.recordAction(user._id as ObjectId, user.organizationId as ObjectId, 'USER_LOGIN');
+    // Send token response if login is successful
     sendTokenResponse(user, 200, res);
 };
-
-export const getMe = async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    const fullUserData = await User.findById(req.user.id).populate({
-        path: 'organizationId',
-        select:
