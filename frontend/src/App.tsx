@@ -16,7 +16,9 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
 // --- Authenticated User Page Components ---
-import DashboardPage from './pages/DashboardPage';
+import DashboardRedirector from './pages/DashboardRedirector'; // <-- IMPORT NEW
+import OverviewPage from './pages/OverviewPage'; // <-- IMPORT RENAMED
+import TenantDashboardPage from './pages/TenantDashboardPage'; // <-- IMPORT NEW
 import OrganizationPage from './pages/OrganizationPage';
 import PropertiesPage from './pages/PropertiesPage';
 import TenantsPage from './pages/TenantsPage';
@@ -80,7 +82,16 @@ function App() {
         {/* --- Protected User Routes (All now use DashboardLayout) --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
+            {/* The index route now points to our role-based redirector */}
+            <Route index element={<DashboardRedirector />} />
+            
+            {/* The main Landlord/Agent overview page */}
+            <Route path="overview" element={<OverviewPage />} />
+            
+            {/* The new Tenant Dashboard page */}
+            <Route path="tenant" element={<TenantDashboardPage />} />
+
+            {/* Other routes for Landlords/Agents */}
             <Route path="organization" element={<OrganizationPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
