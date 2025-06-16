@@ -33,28 +33,39 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
+    // Step 1: Create the new documents in memory
     const organization = new Organization({ name: `${name}'s Organization` });
-    const user = new User({ name, email, password, role, organizationId: organization._id });
+    const user = new User({
+        name,
+        email,
+        password,
+        role,
+        organizationId: organization._id,
+    });
 
+    // Step 2: Save the user first. This ensures user._id is a valid, finalized ObjectId.
+    await user.save();
+
+    // Step 3: Now that user._id is valid, link it to the organization.
     organization.owner = user._id;
     organization.members = [user._id];
 
+    // Step 4: Create the trial subscription linked to the organization.
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
-
     const subscription = new Subscription({
         organizationId: organization._id,
         planId: trialPlan._id,
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
-    
     organization.subscription = subscription._id;
 
+    // Step 5: Save the fully linked organization and the new subscription.
     await organization.save();
-    await user.save();
     await subscription.save();
 
+    // Step 6: Log the action and send the response.
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     
     try {
