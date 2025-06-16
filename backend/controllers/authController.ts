@@ -33,7 +33,6 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
-    // FIX: Create instances first, then link them to ensure types are correctly inferred.
     const organization = new Organization({ name: `${name}'s Organization` });
     const user = new User({ name, email, password, role, organizationId: organization._id });
 
@@ -52,12 +51,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     
     organization.subscription = subscription._id;
 
-    // Save all new documents
     await organization.save();
     await user.save();
     await subscription.save();
 
-    // Now that they are saved, their IDs are guaranteed to be of the correct type.
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     
     try {
@@ -96,7 +93,6 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }
-    // Repopulate to get the latest data
     const fullUserData = await User.findById(req.user.id).populate({
         path: 'organizationId',
         select: 'name status subscription',
