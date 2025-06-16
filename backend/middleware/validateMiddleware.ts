@@ -9,7 +9,7 @@ export const validate = (schema: z.ZodObject<any, any>) => {
       schema.parse(req.body);
       // If validation is successful, proceed to the next middleware/controller.
       next();
-    } catch (error) aney {
+    } catch (error: any) { // FIX: Corrected the typo from 'aney' to ': any'
       // If validation fails, check if it's a ZodError.
       if (error instanceof ZodError) {
         // Map the Zod errors to a more user-friendly format.
