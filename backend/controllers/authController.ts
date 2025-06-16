@@ -33,11 +33,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
 
-    // Step 1: Create and save the organization first to get a confirmed _id.
+    // Step 1: Create the organization and save it to get a confirmed ID.
     let organization = new Organization({ name: `${name}'s Organization` });
     await organization.save();
 
-    // Step 2: Create and save the user with the confirmed organizationId.
+    // Step 2: Create the user, now with a guaranteed valid organizationId.
     const user: IUser = new User({
         name,
         email,
@@ -47,9 +47,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
     await user.save();
 
-    // Step 3: Now that the user is saved, update the organization with the user's _id.
+    // Step 3: Update the organization with the confirmed user ID.
     organization.owner = user._id;
-    organization.members = [user._id];
+    organization.members.push(user._id);
     
     // Step 4: Create and save the subscription.
     const trialEndDate = new Date();
@@ -62,53 +62,20 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
     await subscription.save();
 
-    // Step 5: Update the organization with the subscription ID and save the final changes.
+    // Step 5: Link the subscription to the organization and save the final update.
     organization.subscription = subscription._id;
     await organization.save();
 
-    // Step 6: Log the action and send the success response.
+    // Step 6: Log action and send response.
     auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     sendTokenResponse(user, 201, res);
 
   } catch (error) {
-    console.error('Error during registration:', error);
-    // If something fails, it's good practice to try and clean up created documents.
-    // This is advanced error handling you can add later.
+    console.error(error);
     res.status(500).json({ success: false, message: 'Server Error during registration.' });
   }
 };
 
 export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-
-    auditService.recordAction(user._id, user.organizationId, 'USER_LOGIN');
-    sendTokenResponse(user, 200, res);
-};
-
-export const getMe = async (req: AuthenticatedRequest, res: Response) => { 
-    if (!req.user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    
-    const fullUserData = await User.findById(req.user.id).populate({
-        path: 'organizationId',
-        select: 'name status subscription',
-        populate: { 
-            path: 'subscription', 
-            model: 'Subscription' 
-        }
-    });
-    
-    res.status(200).json({ success: true, data: fullUserData }); 
-};
+    if (!email || !password) return res.status(400).json({ success: false, message: '
