@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-// Interface for the optional reference sub-document
 interface IReference {
   name: string;
   phone?: string;
@@ -15,9 +14,10 @@ export interface ITenant extends Document {
   organizationId: mongoose.Types.ObjectId;
   unit: string;
   status: 'Active' | 'Inactive' | 'Late';
-  imageUrl?: string; // NEW: To store the URL of the tenant's photo
-  idCardUrl?: string; // NEW: To store the URL of the ID card scan
-  reference?: IReference; // NEW: Optional reference person
+  leaseEndDate?: Date; // <-- NEW FIELD
+  imageUrl?: string;
+  idCardUrl?: string;
+  reference?: IReference;
   createdAt: Date;
 }
 
@@ -29,9 +29,10 @@ const TenantSchema: Schema<ITenant> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   unit: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
-  imageUrl: { type: String }, // NEW
-  idCardUrl: { type: String }, // NEW
-  reference: { // NEW
+  leaseEndDate: { type: Date }, // <-- NEW FIELD
+  imageUrl: { type: String },
+  idCardUrl: { type: String },
+  reference: {
     name: { type: String },
     phone: { type: String },
     email: { type: String },
