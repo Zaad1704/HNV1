@@ -27,37 +27,18 @@ import expenseRoutes from './routes/expenseRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
 import invoiceRoutes from './routes/invoiceRoutes';
-import reportRoutes from './routes/reportRoutes'; // <-- IMPORT NEW ROUTE
+import reportRoutes from './routes/reportRoutes';
+import receiptRoutes from './routes/receiptRoutes'; // <-- IMPORT NEW ROUTE
 
 dotenv.config();
 
 const app: Express = express();
 
-const connectDB = async () => { 
-    try {
-        await mongoose.connect(process.env.MONGO_URI!);
-        console.log('MongoDB Connected...');
-    } catch (err: any) {
-        console.error(err.message);
-        process.exit(1);
-    }
-};
+const connectDB = async () => { /* ... */ };
 connectDB();
 
-const allowedOrigins: string[] = [
-  'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com' 
-];
-
-const corsOptions: CorsOptions = { 
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    }
-};
+const allowedOrigins: string[] = [ /* ... */ ];
+const corsOptions: CorsOptions = { /* ... */ };
 app.use(cors(corsOptions));
 
 // --- Initialize Middleware ---
@@ -85,12 +66,12 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/maintenance-requests', maintenanceRoutes);
 app.use('/api/invoices', invoiceRoutes);
-app.use('/api/reports', reportRoutes); // <-- MOUNT NEW ROUTE
+app.use('/api/reports', reportRoutes);
+app.use('/api/receipts', receiptRoutes); // <-- MOUNT NEW ROUTE
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
 
-// Root health check route
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
