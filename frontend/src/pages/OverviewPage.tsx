@@ -1,13 +1,13 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { Building, Users, HandCoins, BarChart2, Bell, TrendingUp } from 'lucide-react';
+import { Building, Users, HandCoins, BarChart2, CalendarClock, TrendingUp, Bell } from 'lucide-react';
 import ActionableAlerts from '../components/common/ActionableAlerts';
 import FinancialChart from '../components/charts/FinancialChart';
 import OccupancyChart from '../components/charts/OccupancyChart';
 import { useLateTenants } from '../hooks/useLateTenants';
 
-// Data fetching functions
+// --- Data Fetching Hooks ---
 const fetchOverviewStats = async () => {
     const { data } = await apiClient.get('/dashboard/overview-stats');
     return data.data;
@@ -20,8 +20,15 @@ const fetchOccupancySummary = async () => {
     const { data } = await apiClient.get('/dashboard/occupancy-summary');
     return data.data;
 };
+const fetchExpiringLeases = async () => {
+    const { data } = await apiClient.get('/dashboard/expiring-leases');
+    return data.data;
+};
+function useExpiringLeases() {
+    return useQuery(['expiringLeases'], fetchExpiringLeases);
+}
 
-// StatCard Component
+// --- StatCard Sub-Component ---
 const StatCard = ({ title, value, icon, accentColor, formatAsCurrency = false }: any) => (
     <div className="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-slate-700 relative overflow-hidden">
         <div className={`absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full opacity-10 ${accentColor}`}></div>
@@ -35,16 +42,16 @@ const StatCard = ({ title, value, icon, accentColor, formatAsCurrency = false }:
     </div>
 );
 
-
+// --- Main OverviewPage Component ---
 const OverviewPage = () => {
     const { data: stats } = useQuery(['overviewStats'], fetchOverviewStats);
     const { data: lateTenants = [], isLoading: isLoadingTenants } = useLateTenants();
     const { data: financialData, isLoading: isLoadingFinancial } = useQuery(['financialSummary'], fetchFinancialSummary);
     const { data: occupancyData, isLoading: isLoadingOccupancy } = useQuery(['occupancySummary'], fetchOccupancySummary);
+    const { data: expiringLeases = [], isLoading: isLoadingLeases } = useExpiringLeases();
 
-    const handleSendReminder = (tenantId: string) => {
-        alert(`Simulating sending a rent reminder to tenant ID: ${tenantId}`);
-    };
+    const handleSendReminder = (tenantId: string) => { alert(`Simulating sending a rent reminder to tenant ID: ${tenantId}`); };
+    const handleRenewLease = (tenantId: string) => { alert(`Navigating to renewal process for tenant ID: ${tenantId}`); };
 
     return (
         <div className="text-white">
@@ -58,38 +65,32 @@ const OverviewPage = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                
                 <div className="bg-slate-800/70 p-6 rounded-2xl shadow-lg border border-slate-700">
                     <h2 className="text-xl font-bold text-white mb-4 flex items-center"><HandCoins className="mr-2" />12-Month Financial Summary</h2>
-                    {isLoadingFinancial ? (
-                        <div className="h-80 flex items-center justify-center text-slate-400">Loading Chart...</div>
-                    ) : (
-                        <FinancialChart data={financialData || []} />
-                    )}
+                    {isLoadingFinancial ? (<div className="h-80 flex items-center justify-center text-slate-400">Loading Chart...</div>) : (<FinancialChart data={financialData || []} />)}
                 </div>
-
                 <div className="bg-slate-800/70 p-6 rounded-2xl shadow-lg border border-slate-700">
                     <h2 className="text-xl font-bold text-white mb-4 flex items-center"><TrendingUp className="mr-2" />New Tenant Trend (12 Months)</h2>
-                    {isLoadingOccupancy ? (
-                        <div className="h-80 flex items-center justify-center text-slate-400">Loading Chart...</div>
-                    ) : (
-                        <OccupancyChart data={occupancyData || []} />
-                    )}
+                    {isLoadingOccupancy ? (<div className="h-80 flex items-center justify-center text-slate-400">Loading Chart...</div>) : (<OccupancyChart data={occupancyData || []} />)}
                 </div>
-
                 <div className="bg-slate-800/70 p-6 rounded-2xl shadow-lg border border-slate-700">
                      <ActionableAlerts
                         title="Overdue Rent"
                         isLoading={isLoadingTenants}
-                        items={lateTenants.map(t => ({ id: t._id, primaryText: t.name, secondaryText: `${t.propertyId.name}, Unit ${t.unit}` }))}
+                        items={lateTenants.map((t: any) => ({ id: t._id, primaryText: t.name, secondaryText: `${t.propertyId.name}, Unit ${t.unit}` }))}
                         onActionClick={handleSendReminder}
                         actionText="Send Reminder"
                     />
                 </div>
-                
                 <div className="bg-slate-800/70 p-6 rounded-2xl shadow-lg border border-slate-700">
-                    <h2 className="text-xl font-bold text-white mb-4">Upcoming Lease Expirations</h2>
-                    <div className="h-full flex items-center justify-center text-slate-500">[Content coming soon]</div>
+                     <ActionableAlerts
+                        title="Upcoming Lease Expirations"
+                        icon={<CalendarClock className="mr-2" />}
+                        isLoading={isLoadingLeases}
+                        items={expiringLeases.map((t: any) => ({ id: t._id, primaryText: t.name, secondaryText: `Expires on: ${new Date(t.leaseEndDate).toLocaleDateString()}` }))}
+                        onActionClick={handleRenewLease}
+                        actionText="Renew"
+                    />
                 </div>
             </div>
         </div>
