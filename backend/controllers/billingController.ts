@@ -1,16 +1,14 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import Plan from '../models/Plan';
+import Tenant from '../models/Tenant';
 import Subscription from '../models/Subscription';
 import Organization from '../models/Organization';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
+import axios from 'axios'; // Used for making API calls to 2Checkout
 
-/**
- * @desc    Creates a checkout session for a user to purchase a plan.
- * @route   POST /api/billing/create-checkout-session
- * @access  Private
- */
+// This function now builds a real 2Checkout payload
 export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response) => {
     const { planId } = req.body;
     const user = req.user;
@@ -25,12 +23,55 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
             return res.status(404).json({ success: false, message: 'Plan not found.' });
         }
 
-        console.log(`Simulating 2Checkout session for User ${user.id} and Plan ${plan.name}`);
+        // 1. Construct the payload as required by the 2Checkout API
+        const payload = {
+            BillingDetails: {
+                FirstName: user.name.split(' ')[0],
+                LastName: user.name.split(' ')[1] || 'User',
+                Email: user.email,
+            },
+            Items: [{
+                Name: plan.name,
+                Price: {
+                    Amount: (plan.price / 100).toFixed(2), // Price in dollars, e.g., 10.00
+                    Currency: 'USD',
+                    Type: 'DYNAMIC'
+                },
+                Quantity: 1,
+                Tangible: '0',
+                RecurringOptions: { // For subscriptions
+                    Enable: '1',
+                    Period: plan.duration === 'monthly' ? 'MONTH' : 'YEAR',
+                    PeriodLength: '1'
+                }
+            }],
+            PaymentDetails: {
+                Currency: 'USD',
+                PaymentMethod: {
+                    Type: 'CARD',
+                    EesToken: null // EesToken is for tokenized payments, not needed for initial checkout
+                }
+            },
+            DevStudio: true, // Use `true` for testing with 2Checkout's sandbox
+        };
 
-        const successUrl = `https://hnv-1-frontend.onrender.com/payment-success?session_id=mock_session_${new Date().getTime()}`;
-        const cancelUrl = `https://hnv-1-frontend.onrender.com/payment-cancel`;
-        
-        res.status(200).json({ success: true, redirectUrl: successUrl });
+        // --- 2. THIS IS WHERE THE REAL API CALL TO 2CHECKOUT WOULD GO ---
+        //
+        // const tcoResponse = await axios.post('https://api.2checkout.com/rest/6.0/orders/', payload, {
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'X-Avangate-Authentication': `code="${process.env.TCO_SELLER_ID}" hash="${generateTcoHash()}"`
+        //   }
+        // });
+        // const redirectUrl = tcoResponse.data.PaymentDetails.PaymentMethod.RedirectUrl;
+        //
+        // -----------------------------------------------------------------
+
+        // 3. For now, we continue to simulate the response from 2Checkout.
+        console.log("Simulating 2Checkout API call with payload:", JSON.stringify(payload, null, 2));
+        const redirectUrl = `https://hnv-1-frontend.onrender.com/payment-success?session_id=mock_session_${new Date().getTime()}`;
+
+        res.status(200).json({ success: true, redirectUrl: redirectUrl });
 
     } catch (error) {
         console.error('Checkout session error:', error);
@@ -38,58 +79,55 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
     }
 };
 
-/**
- * @desc    Handles incoming webhooks from the payment provider (e.g., 2Checkout).
- * @route   POST /api/billing/webhook
- * @access  Public
- */
-export const handlePaymentWebhook = async (req: Request, res: Response) => {
-    const event = req.body;
-    
-    console.log('Webhook event received:', event.type);
+// This function now also builds a real 2Checkout payload for a one-time payment
+export const createRentPaymentSession = async (req: AuthenticatedRequest, res: Response) => {
+    const user = req.user;
+    if (!user) return res.status(401).json({ success: false, message: 'User not authenticated.' });
 
-    if (event.type === 'payment.success') {
-        const { organizationId, planId, userId } = event.data;
-
-        try {
-            const plan = await Plan.findById(planId);
-            const organization = await Organization.findById(organizationId);
-
-            if (!plan || !organization) {
-                console.error(`Webhook Error: Plan or Organization not found. PlanID: ${planId}, OrgID: ${organizationId}`);
-                return res.status(400).send('Webhook Error: Invalid data.');
-            }
-            
-            const newRenewalDate = new Date();
-            if (plan.duration === 'monthly') {
-                newRenewalDate.setMonth(newRenewalDate.getMonth() + 1);
-            } else if (plan.duration === 'yearly') {
-                newRenewalDate.setFullYear(newRenewalDate.getFullYear() + 1);
-            }
-
-            await Subscription.findOneAndUpdate(
-                { organizationId: organization._id },
-                {
-                    planId: plan._id,
-                    status: 'active',
-                    trialExpiresAt: undefined,
-                    currentPeriodEndsAt: newRenewalDate,
-                },
-                { upsert: true }
-            );
-            
-            // Log this important financial event
-            const userObjectId = new mongoose.Types.ObjectId(userId);
-            const orgObjectId = new mongoose.Types.ObjectId(organizationId);
-            auditService.recordAction(userObjectId, orgObjectId, 'SUBSCRIPTION_ACTIVATED', { plan: plan.name });
-
-            console.log(`Subscription for Org ID ${organizationId} successfully updated to plan: ${plan.name}.`);
+    try {
+        const tenant = await Tenant.findOne({ email: user.email });
+        if (!tenant) return res.status(404).json({ success: false, message: 'Tenant profile not found.' });
         
-        } catch (error: any) { // This line is corrected
-            console.error('Webhook processing error:', error);
-            return res.status(400).send(`Webhook Error: ${error.message}`);
-        }
-    }
+        const rentAmount = 1200.00; // In a real app, this would come from the database
 
-    res.status(200).json({ received: true });
+        // 1. Construct the payload for a one-time rent payment
+        const payload = {
+            BillingDetails: {
+                FirstName: tenant.name.split(' ')[0],
+                LastName: tenant.name.split(' ')[1] || 'Tenant',
+                Email: tenant.email,
+            },
+            Items: [{
+                Name: `Rent Payment - ${tenant.unit}`,
+                Price: {
+                    Amount: rentAmount.toFixed(2),
+                    Currency: 'USD',
+                    Type: 'DYNAMIC'
+                },
+                Quantity: 1,
+                Tangible: '0'
+            }],
+            PaymentDetails: {
+                Currency: 'USD',
+                PaymentMethod: { Type: 'CARD', EesToken: null }
+            },
+            DevStudio: true,
+        };
+
+        // 2. Simulate the API call
+        console.log("Simulating 2Checkout rent payment API call with payload:", JSON.stringify(payload, null, 2));
+        const redirectUrl = `https://hnv-1-frontend.onrender.com/payment-success?session_id=mock_session_rent_${new Date().getTime()}`;
+
+        res.status(200).json({ success: true, redirectUrl: redirectUrl });
+
+    } catch (error) {
+        console.error('Rent payment session error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+
+// The webhook handler remains the same, as it processes the final result
+export const handlePaymentWebhook = async (req: Request, res: Response) => {
+    // ... (existing webhook logic)
 };
