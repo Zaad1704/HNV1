@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, model, Types } from 'mongoose'; // FIX: Import Types
 import bcrypt from 'bcrypt';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken'; // FIX: Import Secret and SignOptions
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import crypto from 'crypto'; // FIX: Import crypto for password reset token generation
 
 export interface IUser extends Document {
   name: string;
@@ -11,6 +12,17 @@ export interface IUser extends Document {
   createdAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
+
+  // FIX: New fields for password reset
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+
+  // FIX: New fields for user profile (from userController errors, assuming optional)
+  address?: string;
+  governmentIdUrl?: string;
+
+  // FIX: New method for password reset token generation
+  getPasswordResetToken(): string;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -20,6 +32,14 @@ const UserSchema: Schema<IUser> = new Schema({
   role: { type: String, enum: ['Super Admin', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
   createdAt: { type: Date, default: Date.now },
+  
+  // FIX: Add schema fields for password reset
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+
+  // FIX: Add schema fields for user profile (assuming optional)
+  address: String,
+  governmentIdUrl: String,
 });
 
 UserSchema.pre<IUser>('save', async function(next) {
@@ -39,13 +59,30 @@ UserSchema.methods.getSignedJwtToken = function(): string {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
 
-  const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name }; // FIX: Cast this._id
+  const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
   const options: SignOptions = {
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any, // FIX: Use 'as any' for expiresIn
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any,
   };
 
   return jwt.sign(payload, secret, options);
 };
+
+// FIX: Method to generate and hash password reset token
+UserSchema.methods.getPasswordResetToken = function(): string {
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to passwordResetToken field
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+  return resetToken;
+};
+
 
 export default model<IUser>('User', UserSchema);
