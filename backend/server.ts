@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import passport from 'passport';
-import './config/passport-setup'; // Import to configure the Google Strategy
+import './config/passport-setup';
 
 // --- Import All API Route Files ---
 import authRoutes from './routes/authRoutes';
