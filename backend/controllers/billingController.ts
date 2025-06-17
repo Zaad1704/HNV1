@@ -4,8 +4,13 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import Organization from '../models/Organization';
 import auditService from '../services/auditService';
-import mongoose from 'mongoose'; // <-- I've added this import for ObjectId casting
+import mongoose from 'mongoose';
 
+/**
+ * @desc    Creates a checkout session for a user to purchase a plan.
+ * @route   POST /api/billing/create-checkout-session
+ * @access  Private
+ */
 export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response) => {
     const { planId } = req.body;
     const user = req.user;
@@ -33,6 +38,11 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
     }
 };
 
+/**
+ * @desc    Handles incoming webhooks from the payment provider (e.g., 2Checkout).
+ * @route   POST /api/billing/webhook
+ * @access  Public
+ */
 export const handlePaymentWebhook = async (req: Request, res: Response) => {
     const event = req.body;
     
@@ -75,7 +85,7 @@ export const handlePaymentWebhook = async (req: Request, res: Response) => {
 
             console.log(`Subscription for Org ID ${organizationId} successfully updated to plan: ${plan.name}.`);
         
-        } catch (error: any) { // FIX: Added ': any' to properly type the caught error
+        } catch (error: any) { // This line is corrected
             console.error('Webhook processing error:', error);
             return res.status(400).send(`Webhook Error: ${error.message}`);
         }
