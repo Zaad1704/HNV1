@@ -99,3 +99,4 @@ export const generateRentInvoice = async (req: AuthenticatedRequest, res: Respon
         doc.moveDown(5);
 
         // Invoice Table
+    }
