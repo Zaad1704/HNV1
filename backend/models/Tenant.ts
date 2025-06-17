@@ -21,6 +21,7 @@ export interface ITenant extends Document {
   unit: string;
   status: 'Active' | 'Inactive' | 'Late';
   leaseEndDate?: Date;
+  rentAmount?: number; // <-- NEW FIELD
   imageUrl?: string;
   idCardUrl?: string;
   reference?: IReference;
@@ -42,6 +43,7 @@ const TenantSchema: Schema<ITenant> = new Schema({
   unit: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
   leaseEndDate: { type: Date },
+  rentAmount: { type: Number, default: 0 }, // <-- NEW FIELD
   imageUrl: { type: String },
   idCardUrl: { type: String },
   reference: {
