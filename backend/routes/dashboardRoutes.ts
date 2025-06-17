@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getOverviewStats, getLateTenants, getFinancialSummary, getOccupancySummary, getExpiringLeases } from '../controllers/dashboardController';
+import {
+  getOverviewStats,
+  getLateTenants,
+  getFinancialSummary,
+  getOccupancySummary,
+  getExpiringLeases
+} from '../controllers/dashboardController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -8,6 +14,6 @@ router.get('/overview-stats', protect, authorize('Landlord', 'Agent', 'Super Adm
 router.get('/late-tenants', protect, authorize('Landlord', 'Agent'), getLateTenants);
 router.get('/financial-summary', protect, authorize('Landlord', 'Agent'), getFinancialSummary);
 router.get('/occupancy-summary', protect, authorize('Landlord', 'Agent'), getOccupancySummary);
-router.get('/expiring-leases', protect, authorize('Landlord', 'Agent'), getExpiringLeases); // <-- NEW ROUTE
+router.get('/expiring-leases', protect, authorize('Landlord', 'Agent'), getExpiringLeases); // NEW
 
 export default router;
