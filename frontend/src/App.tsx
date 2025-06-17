@@ -14,8 +14,8 @@ import RegisterPage from './pages/RegisterPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage'; // For password reset
-// A developer would also create a ResetPasswordPage component
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // --- Authenticated User Page Components ---
 import DashboardRedirector from './pages/DashboardRedirector';
@@ -28,7 +28,8 @@ import UsersPage from './pages/UsersPage';
 import BillingPage from './pages/BillingPage';
 import AuditLogPage from './pages/AuditLogPage';
 import SettingsPage from './pages/SettingsPage';
-// An ExpensesPage would be created here as well
+// A developer would create the ExpensesPage component next
+// import ExpensesPage from './pages/ExpensesPage'; 
 
 // --- Super Admin Page Components ---
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -79,7 +80,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        {/* <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> */}
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
