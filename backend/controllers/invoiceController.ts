@@ -26,7 +26,7 @@ interface IPopulatedTenant extends ITenant {
  * @access  Private
  */
 export const generateRentInvoice = async (req: AuthenticatedRequest, res: Response) => {
-    // Ensure user is authenticated (req.user is populated by authMiddleware)
+    // Ensure user is authenticated
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -34,8 +34,7 @@ export const generateRentInvoice = async (req: AuthenticatedRequest, res: Respon
     try {
         const tenantId = req.params.tenantId;
 
-        // 1. Fetch tenant and populate all necessary details in one query.
-        // We cast the result to our new interface for type safety.
+        // 1. Fetch tenant and populate all necessary details.
         const tenant = await Tenant.findById(tenantId)
             .populate<{ propertyId: IProperty }>('propertyId', 'name address')
             .populate<{ leaseId: ILease }>('leaseId', 'rentAmount') // Populating lease to get rent
@@ -46,19 +45,21 @@ export const generateRentInvoice = async (req: AuthenticatedRequest, res: Respon
             })
             .exec() as IPopulatedTenant;
 
-        // 2. Authorize: Check if tenant exists and belongs to the user's organization.
+        // 2. Authorize and validate data.
         if (!tenant || tenant.organizationId._id.toString() !== req.user.organizationId.toString()) {
             return res.status(404).json({ success: false, message: 'Tenant not found.' });
         }
         
-        // Check if all required populated data is present
         if (!tenant.propertyId || !tenant.organizationId?.owner || !tenant.leaseId) {
              return res.status(404).json({ success: false, message: 'Missing property, owner, or lease information.' });
         }
 
-        // 3. Setup PDF document and response headers
+        // 3. Setup PDF document and response headers.
         const doc = new PDFDocument({ size: 'A4', margin: 50 });
-        const filename = `Invoice-Rent-<span class="math-inline">\{tenant\.name\.replace\(/\\s/g, '\_'\)\}\-</span>{format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        
+        // FIX: Corrected the template literal for the filename
+        const filename = `Invoice-Rent-${tenant.name.replace(/\s/g, '_')}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        
         res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-type', 'application/pdf');
 
@@ -81,7 +82,6 @@ export const generateRentInvoice = async (req: AuthenticatedRequest, res: Respon
         doc.text(`${tenant.propertyId.name}, Unit ${tenant.unit || 'N/A'}`, 50, billToY + 30);
         doc.text(`${tenant.propertyId.address.street}, ${tenant.propertyId.address.city}`, 50, billToY + 45);
 
-        // 4. Use dynamic data and standardized date formats
         const rentAmount = tenant.leaseId.rentAmount; 
         const invoiceDetails = {
             "Invoice #": `INV-${Date.now().toString().slice(-6)}`,
@@ -98,5 +98,36 @@ export const generateRentInvoice = async (req: AuthenticatedRequest, res: Respon
 
         doc.moveDown(5);
 
-        // Invoice Table
+        // --- COMPLETION: Added the rest of the invoice table and total ---
+        
+        // Invoice Table Header
+        const tableTop = doc.y;
+        doc.font('Helvetica-Bold');
+        doc.text('Description', 50, tableTop);
+        doc.text('Amount', 500, tableTop, { align: 'right' });
+        doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+
+        // Invoice Table Row
+        const itemY = tableTop + 25;
+        doc.font('Helvetica');
+        doc.text(`Monthly Rent for ${tenant.propertyId.name}`, 50, itemY);
+        doc.text(`$${rentAmount.toFixed(2)}`, 0, itemY, { align: 'right' });
+        doc.moveTo(50, itemY + 15).lineTo(550, itemY + 15).stroke();
+        
+        // Total
+        const totalY = itemY + 30;
+        doc.font('Helvetica-Bold').fontSize(12).text('Total Due:', 400, totalY);
+        doc.text(`$${rentAmount.toFixed(2)}`, 0, totalY, { align: 'right' });
+
+        // Finalize the PDF
+        doc.end();
+
+    // --- FIX: Added the missing catch block ---
+    } catch (error) {
+        console.error("Error generating invoice:", error);
+        // Avoid sending another response if headers are already sent
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, message: "Server Error while generating invoice." });
+        }
     }
+};
