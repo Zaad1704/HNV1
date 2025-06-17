@@ -1,13 +1,11 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-// Interface for optional additional adults
 interface IAdditionalAdult {
     name: string;
     phone?: string;
     idCardUrl?: string;
 }
 
-// Interface for the optional reference
 interface IReference {
   name: string;
   phone?: string;
@@ -24,9 +22,8 @@ export interface ITenant extends Document {
   status: 'Active' | 'Inactive' | 'Late';
   leaseEndDate?: Date;
   imageUrl?: string;
-  idCardUrl?: string; // Main tenant's ID
+  idCardUrl?: string;
   reference?: IReference;
-  // --- NEW FIELDS ---
   gender?: 'Male' | 'Female' | 'Other';
   fatherName?: string;
   motherName?: string;
@@ -52,7 +49,6 @@ const TenantSchema: Schema<ITenant> = new Schema({
     phone: { type: String },
     email: { type: String },
   },
-  // --- NEW FIELDS ---
   gender: { type: String, enum: ['Male', 'Female', 'Other'] },
   fatherName: { type: String },
   motherName: { type: String },
