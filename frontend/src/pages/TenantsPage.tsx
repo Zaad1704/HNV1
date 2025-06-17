@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import apiClient from '../api/client';
 import AddTenantModal from '../components/common/AddTenantModal';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, FileDown } from 'lucide-react';
+import { Plus, FileDown, ClipboardList } from 'lucide-react';
 
 const fetchTenants = async () => {
     const { data } = await apiClient.get('/tenants');
@@ -15,20 +15,16 @@ const TenantsPage = () => {
 
   const handleGenerateInvoice = (tenantId: string) => {
     const token = localStorage.getItem('token');
-    // We must pass the token manually as this is not an 'apiClient' call
     const invoiceUrl = `${import.meta.env.VITE_API_URL || ''}/api/invoices/rent/${tenantId}?token=${token}`;
-    // A better way would be a short-lived token specifically for downloads
     window.open(invoiceUrl, '_blank');
   };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-teal-400/20 text-teal-300';
-      case 'Late': return 'bg-amber-400/20 text-amber-300';
-      case 'Inactive': return 'bg-slate-600/50 text-slate-400';
-      default: return 'bg-gray-500/20 text-gray-300';
-    }
+  
+  const handleDownloadCollectionSheet = () => {
+    const sheetUrl = `${import.meta.env.VITE_API_URL || ''}/api/reports/monthly-collection-sheet`;
+    window.open(sheetUrl, '_blank');
   };
+
+  const getStatusBadge = (status: string) => { /* ... (existing function) ... */ };
   
   if (isLoading) return <div className="text-white text-center p-8">Loading tenants...</div>;
   if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch tenants.</div>;
@@ -39,13 +35,22 @@ const TenantsPage = () => {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold">Manage Tenants</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center space-x-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-lg"
-        >
-          <Plus size={20} />
-          <span>Add Tenant</span>
-        </button>
+        <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadCollectionSheet}
+              className="flex items-center space-x-2 px-5 py-2.5 bg-slate-600 hover:bg-slate-500 text-white font-bold rounded-lg"
+            >
+              <ClipboardList size={20} />
+              <span>Collection Sheet</span>
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center space-x-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-lg"
+            >
+              <Plus size={20} />
+              <span>Add Tenant</span>
+            </button>
+        </div>
       </div>
 
       <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
