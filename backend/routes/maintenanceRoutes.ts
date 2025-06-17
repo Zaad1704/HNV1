@@ -1,14 +1,30 @@
+// backend/routes/maintenanceRoutes.ts
+
 import { Router } from 'express';
-import { createMaintenanceRequest, getMaintenanceRequests, updateMaintenanceRequestStatus } from '../controllers/maintenanceController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import {
+  createMaintenanceRequest,
+  getOrgMaintenanceRequests,
+  getMaintenanceRequestById,
+  updateMaintenanceRequest,
+  deleteMaintenanceRequest
+} from '../controllers/maintenanceController'; // Import controller functions
+import { protect, authorize } from '../middleware/authMiddleware'; // Import auth middleware
 
 const router = Router();
 
-// Tenant can create a request
-router.post('/', protect, authorize('Tenant'), createMaintenanceRequest);
+// Apply 'protect' middleware to all routes in this file.
+// This ensures only authenticated users can access maintenance request endpoints.
+router.use(protect);
 
-// Landlord/Agent can view all requests and update a request's status
-router.get('/', protect, authorize('Landlord', 'Agent'), getMaintenanceRequests);
-router.put('/:id', protect, authorize('Landlord', 'Agent'), updateMaintenanceRequestStatus);
+// Routes for creating and getting all maintenance requests for an organization
+router.route('/')
+  .post(createMaintenanceRequest) // Any authenticated user can create a request
+  .get(authorize('Landlord', 'Agent', 'Super Admin'), getOrgMaintenanceRequests); // Only specific roles can view all requests
+
+// Routes for specific maintenance requests by ID
+router.route('/:id')
+  .get(getMaintenanceRequestById) // Logic inside controller handles authorization for specific roles/tenants
+  .put(updateMaintenanceRequest) // Logic inside controller handles authorization for specific roles/tenants
+  .delete(authorize('Landlord', 'Agent', 'Super Admin'), deleteMaintenanceRequest); // Only specific roles can delete requests
 
 export default router;
