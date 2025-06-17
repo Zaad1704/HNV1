@@ -4,7 +4,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet'; // Import helmet
+import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -13,12 +13,13 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
-import auditRoutes from './routes/auditRoutes';
+import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
+import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes'; // FIX: Import the new maintenanceRoutes
+
 
 dotenv.config();
 
@@ -75,7 +76,6 @@ app.use(helmet({
         "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
         "https://ipinfo.io" // For localizationController to fetch IP info
       ],
-      // Ensure other directives like font-src, media-src, etc., are added if your app needs them
     },
   },
 }));
