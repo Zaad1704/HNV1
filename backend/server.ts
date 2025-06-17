@@ -20,13 +20,14 @@ import communicationRoutes from './routes/communicationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
+import expenseRoutes from './routes/expenseRoutes'; // <-- IMPORT THE NEW ROUTE
 
 dotenv.config();
 
 const app: Express = express();
 
 const connectDB = async () => { 
-    // This function should contain your mongoose.connect() logic from your original setup
+    // This function should contain your mongoose.connect() logic
 };
 connectDB();
 
@@ -40,13 +41,9 @@ const corsOptions: CorsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Special case for the raw webhook route BEFORE express.json()
+// Middleware
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
-
-// Standard JSON middleware
 app.use(express.json());
-
-// Serve static files from the 'public' directory for uploaded images
 app.use(express.static('public'));
 
 // --- Mount All API Routes ---
@@ -64,6 +61,7 @@ app.use('/api/communicate', communicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/upload', fileUploadRoutes);
+app.use('/api/expenses', expenseRoutes); // <-- MOUNT THE NEW ROUTE
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
