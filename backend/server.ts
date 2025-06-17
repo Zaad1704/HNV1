@@ -15,7 +15,9 @@ import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
 import billingRoutes from './routes/billingRoutes';
-import tenantPortalRoutes from './routes/tenantPortalRoutes'; // <-- IMPORT THE NEW ROUTE
+import tenantPortalRoutes from './routes/tenantPortalRoutes';
+import communicationRoutes from './routes/communicationRoutes';
+import dashboardRoutes from './routes/dashboardRoutes'; // <-- IMPORT THE NEW ROUTE
 
 dotenv.config();
 
@@ -51,8 +53,10 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/audit', auditRoutes);
-app.use('/api/tenant-portal', tenantPortalRoutes); // <-- MOUNT THE NEW ROUTE
-app.use('/api/super-admin', superAdminRoutes); // Assuming this is the intended mount path
+app.use('/api/tenant-portal', tenantPortalRoutes);
+app.use('/api/communicate', communicationRoutes);
+app.use('/api/dashboard', dashboardRoutes); // <-- MOUNT THE NEW ROUTE
+app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
 
