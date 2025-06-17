@@ -1,36 +1,45 @@
 // backend/controllers/maintenanceController.ts
 import { Response } from 'express';
-import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
+import MaintenanceRequest from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import auditService from '../services/auditService';
 import { Types } from 'mongoose';
 
+function toObjectId(id: any): Types.ObjectId | null {
+  if (Types.ObjectId.isValid(id)) return new Types.ObjectId(id);
+  return null;
+}
+
 export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    const userOrgId = toObjectId(req.user.organizationId) ?? req.user.organizationId;
+    const userId = toObjectId(req.user._id) ?? req.user._id;
+
     const { propertyId, description, status, priority, tenantId, category, notes, assignedTo } = req.body;
     if (!propertyId || !description)
       return res.status(400).json({ success: false, message: 'Property ID and description are required.' });
 
     const property = await Property.findById(propertyId);
-    if (!property || property.organizationId.toString() !== req.user.organizationId.toString())
+    if (!property || property.organizationId.toString() !== userOrgId.toString())
       return res.status(403).json({ success: false, message: 'Not authorized to create requests for this property.' });
 
     const newRequest = await MaintenanceRequest.create({
-      organizationId: req.user.organizationId,
+      organizationId: userOrgId,
       propertyId,
       tenantId: tenantId ? tenantId : undefined,
       description,
       status: status || 'Open',
       priority: priority || 'Medium',
-      reportedBy: req.user._id,
+      reportedBy: userId,
       category,
       notes,
       assignedTo: assignedTo ? assignedTo : undefined,
     });
 
-    auditService.recordAction(req.user._id, req.user.organizationId, 'MAINTENANCE_REQUEST_CREATED', {
+    auditService.recordAction(userId, userOrgId, 'MAINTENANCE_REQUEST_CREATED', {
       requestId: newRequest._id.toString(),
       description: newRequest.description,
       propertyId: property._id.toString(),
@@ -47,7 +56,9 @@ export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: 
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
-    const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId })
+    const userOrgId = toObjectId(req.user.organizationId) ?? req.user.organizationId;
+
+    const requests = await MaintenanceRequest.find({ organizationId: userOrgId })
       .populate('propertyId', 'name address')
       .populate('reportedBy', 'name email')
       .populate('assignedTo', 'name email')
@@ -74,10 +85,13 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
     if (!request)
       return res.status(404).json({ success: false, message: 'Maintenance request not found' });
 
-    if (request.organizationId.toString() !== req.user.organizationId.toString())
+    const userOrgId = toObjectId(req.user.organizationId) ?? req.user.organizationId;
+    const userId = toObjectId(req.user._id) ?? req.user._id;
+
+    if (request.organizationId.toString() !== userOrgId.toString())
       return res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
 
-    if (req.user.role === 'Tenant' && request.reportedBy.toString() !== req.user._id.toString())
+    if (req.user.role === 'Tenant' && request.reportedBy.toString() !== userId.toString())
       return res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
 
     res.status(200).json({ success: true, data: request });
@@ -95,7 +109,9 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     if (!request)
       return res.status(404).json({ success: false, message: 'Maintenance request not found' });
 
-    if (request.organizationId.toString() !== req.user.organizationId.toString())
+    const userOrgId = toObjectId(req.user.organizationId) ?? req.user.organizationId;
+
+    if (request.organizationId.toString() !== userOrgId.toString())
       return res.status(403).json({ success: false, message: 'Not authorized to update this request.' });
 
     if (req.user.role === 'Tenant') {
@@ -109,7 +125,9 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     request = await MaintenanceRequest.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
 
     if (request) {
-      auditService.recordAction(req.user._id, req.user.organizationId, 'MAINTENANCE_REQUEST_UPDATED', {
+      const userId = toObjectId(req.user._id) ?? req.user._id;
+
+      auditService.recordAction(userId, userOrgId, 'MAINTENANCE_REQUEST_UPDATED', {
         requestId: request._id.toString(),
         status: request.status,
         description: request.description,
@@ -131,7 +149,9 @@ export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     if (!request)
       return res.status(404).json({ success: false, message: 'Maintenance request not found' });
 
-    if (request.organizationId.toString() !== req.user.organizationId.toString())
+    const userOrgId = toObjectId(req.user.organizationId) ?? req.user.organizationId;
+
+    if (request.organizationId.toString() !== userOrgId.toString())
       return res.status(403).json({ success: false, message: 'Not authorized to delete this request.' });
 
     if (!['Landlord', 'Agent', 'Super Admin'].includes(req.user.role))
@@ -139,7 +159,9 @@ export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: R
 
     await request.deleteOne();
 
-    auditService.recordAction(req.user._id, req.user.organizationId, 'MAINTENANCE_REQUEST_DELETED', {
+    const userId = toObjectId(req.user._id) ?? req.user._id;
+
+    auditService.recordAction(userId, userOrgId, 'MAINTENANCE_REQUEST_DELETED', {
       requestId: request._id.toString(),
       description: request.description,
     });
