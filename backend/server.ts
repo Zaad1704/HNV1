@@ -24,6 +24,7 @@ import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
+import maintenanceRoutes from './routes/maintenanceRoutes'; // <-- IMPORT NEW ROUTE
 
 dotenv.config();
 
@@ -79,6 +80,7 @@ app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/upload', fileUploadRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/maintenance-requests', maintenanceRoutes); // <-- MOUNT NEW ROUTE
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
