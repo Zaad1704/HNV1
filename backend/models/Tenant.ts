@@ -1,5 +1,13 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
+// Interface for optional additional adults
+interface IAdditionalAdult {
+    name: string;
+    phone?: string;
+    idCardUrl?: string;
+}
+
+// Interface for the optional reference
 interface IReference {
   name: string;
   phone?: string;
@@ -14,10 +22,17 @@ export interface ITenant extends Document {
   organizationId: mongoose.Types.ObjectId;
   unit: string;
   status: 'Active' | 'Inactive' | 'Late';
-  leaseEndDate?: Date; // <-- NEW FIELD
+  leaseEndDate?: Date;
   imageUrl?: string;
-  idCardUrl?: string;
+  idCardUrl?: string; // Main tenant's ID
   reference?: IReference;
+  // --- NEW FIELDS ---
+  gender?: 'Male' | 'Female' | 'Other';
+  fatherName?: string;
+  motherName?: string;
+  spouseName?: string;
+  numberOfOccupants?: number;
+  additionalAdults?: IAdditionalAdult[];
   createdAt: Date;
 }
 
@@ -29,7 +44,7 @@ const TenantSchema: Schema<ITenant> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   unit: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
-  leaseEndDate: { type: Date }, // <-- NEW FIELD
+  leaseEndDate: { type: Date },
   imageUrl: { type: String },
   idCardUrl: { type: String },
   reference: {
@@ -37,6 +52,17 @@ const TenantSchema: Schema<ITenant> = new Schema({
     phone: { type: String },
     email: { type: String },
   },
+  // --- NEW FIELDS ---
+  gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+  fatherName: { type: String },
+  motherName: { type: String },
+  spouseName: { type: String },
+  numberOfOccupants: { type: Number },
+  additionalAdults: [{
+    name: { type: String },
+    phone: { type: String },
+    idCardUrl: { type: String },
+  }],
 }, { timestamps: true });
 
 export default model<ITenant>('Tenant', TenantSchema);
