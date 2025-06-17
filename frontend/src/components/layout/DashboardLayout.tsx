@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { useTranslation } from 'react-i18next'; // 1. Import the translation hook
-import { Home, Building, Users, CreditCard, Shield, Settings, LogOut, Star, Menu, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Home, Building, Users, CreditCard, Shield, Settings, LogOut, Star, Menu, X, FileText } from 'lucide-react'; // <-- Import FileText icon
 
 const DashboardLayout = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const { t, i18n } = useTranslation(); // 2. Initialize the hook
+  const { t, i18n } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -17,25 +17,33 @@ const DashboardLayout = () => {
   };
 
   const getLinkClass = (path: string) => {
-    return location.pathname.startsWith(path) && path !== '/dashboard' || location.pathname === path
+    return location.pathname.startsWith(path)
       ? 'bg-yellow-500 text-slate-900'
       : 'text-slate-300 hover:bg-slate-700 hover:text-white';
   };
 
   const NavLinks = () => (
     <>
-      {/* 3. Replace all hardcoded text with the 't' function */}
-      <Link to="/dashboard" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard')}`}>
+      <Link to="/dashboard/overview" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/overview')}`}>
         <Home size={20} /><span>{t('dashboard.nav.overview')}</span>
       </Link>
-      <Link to="/dashboard/organization" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/organization')}`}>
-        <Building size={20} /><span>{t('dashboard.nav.organization')}</span>
+      <Link to="/dashboard/properties" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/properties')}`}>
+        <Building size={20} /><span>{t('dashboard.nav.properties')}</span>
+      </Link>
+      <Link to="/dashboard/tenants" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/tenants')}`}>
+        <Users size={20} /><span>{t('dashboard.nav.tenants')}</span>
+      </Link>
+      
+      {/* --- NEW LINK for EXPENSES --- */}
+      <Link to="/dashboard/expenses" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/expenses')}`}>
+        <FileText size={20} /><span>{t('dashboard.nav.expenses')}</span>
+      </Link>
+
+      <Link to="/dashboard/billing" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/billing')}`}>
+        <CreditCard size={20} /><span>{t('dashboard.nav.billing')}</span>
       </Link>
       <Link to="/dashboard/users" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/users')}`}>
         <Users size={20} /><span>{t('dashboard.nav.users')}</span>
-      </Link>
-      <Link to="/dashboard/billing" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/billing')}`}>
-        <CreditCard size={20} /><span>{t('dashboard.nav.billing')}</span>
       </Link>
       <Link to="/dashboard/audit-log" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/audit-log')}`}>
         <Shield size={20} /><span>{t('dashboard.nav.audit_log')}</span>
@@ -53,9 +61,8 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-slate-900">
-      {/* Sidebar for Desktop */}
       <aside className="w-64 flex-shrink-0 bg-slate-800 shadow-2xl flex-col hidden md:flex">
-        {/* ... Sidebar header ... */}
+        {/* ... Sidebar Header ... */}
         <nav className="flex-1 px-4 py-6 space-y-2"><NavLinks /></nav>
         <div className="p-4 border-t border-slate-700">
            <Link to="/dashboard/settings" className={`flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors ${getLinkClass('/dashboard/settings')}`}>
@@ -66,15 +73,15 @@ const DashboardLayout = () => {
           </button>
         </div>
       </aside>
+      
+      {/* ... Mobile Sidebar ... */}
 
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col">
         <header className="h-20 bg-slate-800/50 backdrop-blur-md border-b border-slate-700 flex items-center justify-between px-4 sm:px-8">
-            <button className="text-slate-300 hover:text-white md:hidden" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+            <button className="text-slate-300 hover:text-white md:hidden" onClick={() => setSidebarOpen(true)}>
                 <Menu size={24}/>
             </button>
             <div className="flex items-center gap-4 ml-auto">
-                {/* 4. Add the language switcher component */}
                 <div className="flex items-center space-x-1 bg-slate-700/50 border border-slate-600 rounded-full p-1">
                     <button onClick={() => i18n.changeLanguage('en')} className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${i18n.language === 'en' ? 'bg-yellow-500 text-slate-900' : 'text-slate-300'}`}>EN</button>
                     <button onClick={() => i18n.changeLanguage('bn')} className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${i18n.language === 'bn' ? 'bg-yellow-500 text-slate-900' : 'text-slate-300'}`}>BN</button>
