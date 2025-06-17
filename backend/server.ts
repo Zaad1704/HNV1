@@ -17,7 +17,8 @@ import planRoutes from './routes/planRoutes';
 import billingRoutes from './routes/billingRoutes';
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
 import communicationRoutes from './routes/communicationRoutes';
-import dashboardRoutes from './routes/dashboardRoutes'; // <-- IMPORT THE NEW ROUTE
+import dashboardRoutes from './routes/dashboardRoutes';
+import siteSettingsRoutes from './routes/siteSettingsRoutes'; // <-- IMPORT THE NEW ROUTE
 
 dotenv.config();
 
@@ -55,7 +56,8 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/tenant-portal', tenantPortalRoutes);
 app.use('/api/communicate', communicationRoutes);
-app.use('/api/dashboard', dashboardRoutes); // <-- MOUNT THE NEW ROUTE
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/site-settings', siteSettingsRoutes); // <-- MOUNT THE NEW ROUTE
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
