@@ -4,6 +4,7 @@ import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
+import MaintenanceRequest from '../models/MaintenanceRequest';
 
 export const getOverviewStats = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
@@ -155,23 +156,23 @@ export const getOccupancySummary = async (req: AuthenticatedRequest, res: Respon
     }
 };
 
-export const getExpiringLeases = async (req: AuthenticatedRequest, res: Response) => {
+export const getOpenMaintenanceRequests = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
-        const now = new Date();
-        const sixtyDaysFromNow = new Date();
-        sixtyDaysFromNow.setDate(now.getDate() + 60);
-
-        const expiringLeases = await Tenant.find({
+        const openRequests = await MaintenanceRequest.find({
             organizationId: req.user.organizationId,
-            leaseEndDate: { $gte: now, $lte: sixtyDaysFromNow }
-        }).populate('propertyId', 'name unit').sort({ leaseEndDate: 1 });
+            status: 'Open'
+        })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('tenantId', 'name')
+        .populate('propertyId', 'name');
 
-        res.status(200).json({ success: true, data: expiringLeases });
+        res.status(200).json({ success: true, data: openRequests });
 
     } catch (error) {
-        console.error("Error fetching expiring leases:", error);
+        console.error("Error fetching open maintenance requests:", error);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
