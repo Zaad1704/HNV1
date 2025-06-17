@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import passport from 'passport';
 import './config/passport-setup'; // Import to configure the Google Strategy
 
-// --- Import API Route Files ---
+// --- Import All API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -23,13 +23,20 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
 import expenseRoutes from './routes/expenseRoutes';
+import passwordResetRoutes from './routes/passwordResetRoutes';
 
 dotenv.config();
 
 const app: Express = express();
 
 const connectDB = async () => { 
-    // This function should contain your mongoose.connect() logic
+    try {
+        await mongoose.connect(process.env.MONGO_URI!);
+        console.log('MongoDB Connected...');
+    } catch (err: any) {
+        console.error(err.message);
+        process.exit(1);
+    }
 };
 connectDB();
 
@@ -39,7 +46,13 @@ const allowedOrigins: string[] = [
 ];
 
 const corsOptions: CorsOptions = { 
-    origin: allowedOrigins
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
 };
 app.use(cors(corsOptions));
 
@@ -65,6 +78,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/upload', fileUploadRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
