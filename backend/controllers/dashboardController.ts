@@ -49,4 +49,107 @@ export const getOverviewStats = async (req: AuthenticatedRequest, res: Response)
     }
 };
 
-// ... (other dashboard functions like getLateTenants, getFinancialSummary, etc. would also be in this file)
+export const getLateTenants = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    try {
+        const lateTenants = await Tenant.find({
+            organizationId: req.user.organizationId,
+            status: 'Late'
+        }).populate('propertyId', 'name unit');
+
+        res.status(200).json({ success: true, data: lateTenants });
+
+    } catch (error) {
+        console.error("Error fetching late tenants:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+export const getFinancialSummary = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    try {
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+        const revenueData = await Payment.aggregate([
+            { $match: { organizationId: req.user.organizationId, date: { $gte: twelveMonthsAgo } } },
+            { $group: {
+                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+                totalRevenue: { $sum: "$amount" }
+            }},
+        ]);
+
+        const expenseData = await Expense.aggregate([
+            { $match: { organizationId: req.user.organizationId, date: { $gte: twelveMonthsAgo } } },
+            { $group: {
+                _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+                totalExpenses: { $sum: "$amount" }
+            }},
+        ]);
+
+        const summary = Array.from({ length: 12 }).map((_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1;
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            const revenue = revenueData.find(r => r._id.year === year && r._id.month === month)?.totalRevenue || 0;
+            const expenses = expenseData.find(e => e._id.year === year && e._id.month === month)?.totalExpenses || 0;
+            
+            return {
+                name: `${monthNames[month - 1]} ${String(year).slice(-2)}`,
+                Revenue: revenue,
+                Expenses: expenses,
+            };
+        }).reverse();
+        
+        res.status(200).json({ success: true, data: summary });
+
+    } catch (error) {
+        console.error("Error fetching financial summary:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+export const getOccupancySummary = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    try {
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+        const tenantData = await Tenant.aggregate([
+            { $match: { organizationId: req.user.organizationId, createdAt: { $gte: twelveMonthsAgo } } },
+            { $group: {
+                _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+                newTenants: { $sum: 1 }
+            }},
+        ]);
+
+        const summary = Array.from({ length: 12 }).map((_, i) => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1;
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            const tenants = tenantData.find(t => t._id.year === year && t._id.month === month)?.newTenants || 0;
+            
+            return {
+                name: `${monthNames[month - 1]} ${String(year).slice(-2)}`,
+                "New Tenants": tenants,
+            };
+        }).reverse();
+        
+        res.status(200).json({ success: true, data: summary });
+
+    } catch (error) {
+        console.error("Error fetching occupancy summary:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
