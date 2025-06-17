@@ -1,5 +1,3 @@
-// backend/controllers/feedbackController.ts
-
 import { Request, Response } from 'express';
 import emailService from '../services/emailService';
 
@@ -10,24 +8,21 @@ export const handleFeedbackSubmission = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: 'Name, email, and message are required fields.' });
     }
 
-    // IMPORTANT: Change this to the email address where you want to receive feedback.
     const recipientEmail = 'feedback@hnvpropertysolutions.com'; 
-    
     const emailSubject = `New Feedback from ${name}: ${subject || 'No Subject'}`;
-    const emailHtml = `
-        <h1>New Website Feedback</h1>
-        <p>You have received a new message from the HNV website contact form.</p>
-        <hr>
-        <p><strong>From:</strong> ${name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-        <p><strong>Subject:</strong> ${subject || 'Not Provided'}</p>
-        <hr>
-        <h3>Message:</h3>
-        <p>${message.replace(/\n/g, '<br>')}</p>
-    `;
 
     try {
-        await emailService.sendEmail(recipientEmail, emailSubject, emailHtml);
+        await emailService.sendEmail(
+            recipientEmail, 
+            emailSubject, 
+            'feedbackReceived', // Assumes you have a 'feedbackReceived.html' template
+            { // This 4th argument was missing
+                name: name,
+                email: email,
+                subject: subject || 'Not Provided',
+                message: message.replace(/\n/g, '<br>')
+            }
+        );
         res.status(200).json({ success: true, message: 'Feedback sent successfully!' });
     } catch (error) {
         console.error('Failed to send feedback email:', error);
