@@ -1,20 +1,14 @@
 import { Router } from 'express';
-import { getPayments } from '../controllers/paymentsController';
-import { protect } from '../middleware/authMiddleware';
+import { getPayments, createPayment } from '../controllers/paymentsController';
+import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Apply the 'protect' middleware to all routes in this file.
-// This ensures only authenticated users can view payment records.
-router.use(protect);
+// Apply protection to all routes in this file
+router.use(protect, authorize('Landlord', 'Agent'));
 
-// Route for getting all payments for the user's organization
 router.route('/')
-  .get(getPayments);
-
-// In a future update, a developer would add routes here for creating
-// and managing individual payment records. For example:
-// router.route('/:id').get(getPaymentById);
-// router.route('/').post(createPayment);
+  .get(getPayments)
+  .post(createPayment); // <-- ADD THIS a
 
 export default router;
