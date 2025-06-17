@@ -129,6 +129,7 @@ export const getOccupancySummary = async (req: AuthenticatedRequest, res: Respon
                 _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
                 newTenants: { $sum: 1 }
             }},
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
         ]);
 
         const summary = Array.from({ length: 12 }).map((_, i) => {
@@ -150,6 +151,27 @@ export const getOccupancySummary = async (req: AuthenticatedRequest, res: Respon
 
     } catch (error) {
         console.error("Error fetching occupancy summary:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+export const getExpiringLeases = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    try {
+        const now = new Date();
+        const sixtyDaysFromNow = new Date();
+        sixtyDaysFromNow.setDate(now.getDate() + 60);
+
+        const expiringLeases = await Tenant.find({
+            organizationId: req.user.organizationId,
+            leaseEndDate: { $gte: now, $lte: sixtyDaysFromNow }
+        }).populate('propertyId', 'name unit').sort({ leaseEndDate: 1 });
+
+        res.status(200).json({ success: true, data: expiringLeases });
+
+    } catch (error) {
+        console.error("Error fetching expiring leases:", error);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
