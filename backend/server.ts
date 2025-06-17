@@ -2,8 +2,10 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
+import passport from 'passport';
+import './config/passport-setup'; // Import to configure the Google Strategy
 
-// --- Import All API Route Files ---
+// --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -20,7 +22,7 @@ import communicationRoutes from './routes/communicationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
-import expenseRoutes from './routes/expenseRoutes'; // <-- IMPORT THE NEW ROUTE
+import expenseRoutes from './routes/expenseRoutes';
 
 dotenv.config();
 
@@ -41,7 +43,8 @@ const corsOptions: CorsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Middleware
+// --- Initialize Middleware ---
+app.use(passport.initialize());
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.static('public'));
@@ -61,7 +64,7 @@ app.use('/api/communicate', communicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/upload', fileUploadRoutes);
-app.use('/api/expenses', expenseRoutes); // <-- MOUNT THE NEW ROUTE
+app.use('/api/expenses', expenseRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
