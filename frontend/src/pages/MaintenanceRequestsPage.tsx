@@ -54,7 +54,8 @@ const MaintenanceRequestsPage = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700">
-                            {requests.map((req: any) => (
+                            {requests.length > 0 ? (
+                                requests.map((req: any) => (
                                 <tr key={req._id}>
                                     <td className="p-4 text-slate-300">{new Date(req.createdAt).toLocaleDateString()}</td>
                                     <td className="p-4 font-bold text-white">{req.tenantId?.name || 'N/A'}</td>
@@ -64,8 +65,8 @@ const MaintenanceRequestsPage = () => {
                                         <select 
                                             value={req.status} 
                                             onChange={(e) => handleStatusChange(req._id, e.target.value)}
-                                            className={`border-0 rounded-md text-xs font-semibold ${getStatusBadge(req.status)}`}
-                                            style={{ backgroundColor: 'transparent' }}
+                                            className={`border-0 rounded-md py-1 px-2 text-xs font-semibold ${getStatusBadge(req.status)}`}
+                                            style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
                                         >
                                             <option value="Open">Open</option>
                                             <option value="In Progress">In Progress</option>
@@ -74,7 +75,12 @@ const MaintenanceRequestsPage = () => {
                                         </select>
                                     </td>
                                 </tr>
-                            ))}
+                            ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-slate-400">No maintenance requests found.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
