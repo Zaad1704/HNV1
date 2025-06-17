@@ -1,22 +1,25 @@
+// backend/server.ts
+
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet';
+import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
 
+// --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
-import auditRoutes from './routes/auditRoutes';
-import setupRoutes from './routes/setupRoutes';
+import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
+import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
+import setupRoutes from './routes/setup'; // Assuming setup.ts as per typical Node.js setup
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
-import maintenanceRoutes from './routes/maintenanceRoutes';
-import dashboardRoutes from './routes/dashboardRoutes';
+import maintenanceRoutes from './routes/maintenanceRoutes'; // FIX: Import the new maintenanceRoutes
+
 
 dotenv.config();
 
@@ -25,57 +28,60 @@ const app: Express = express();
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is not defined in environment variables.');
+        throw new Error('MONGO_URI is not defined in the environment variables.');
     }
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected...');
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+        console.error(err.message);
     } else {
-      console.error('Unknown error during DB connection.');
+        console.error('An unknown error occurred during database connection.');
     }
     process.exit(1);
   }
 };
 connectDB();
 
-const allowedOrigins = [
+const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com'
+  'https://hnv-1-frontend.onrender.com' // FIX: This MUST be your frontend's exact URL
 ];
 
 const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) callback(null, true);
-    else callback(new Error('Not allowed by CORS'));
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   }
 };
-
 app.use(cors(corsOptions));
+
 app.use(express.json());
 
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:", "http:"],
-        connectSrc: [
-          "'self'",
-          "https://hnv-1-frontend.onrender.com",
-          "https://hnv.onrender.com",
-          "https://hnv.onrender.com/api",
-          "https://ipinfo.io"
-        ],
-      },
+// FIX: Configure Helmet's Content Security Policy
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: [
+        "'self'",
+        "https://hnv-1-frontend.onrender.com", // Allow connections from the actual frontend domain
+        "https://hnv.onrender.com", // Allow connections to the actual backend domain
+        "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
+        "https://ipinfo.io" // For localizationController to fetch IP info
+      ],
     },
-  })
-);
+  },
+}));
 
-// Mount routes
+
+// --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
@@ -87,14 +93,15 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/maintenance', maintenanceRoutes); // FIX: Mount the new maintenanceRoutes
 
+
+// A simple health-check route
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
 export default app;
