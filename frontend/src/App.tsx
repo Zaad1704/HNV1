@@ -14,11 +14,13 @@ import RegisterPage from './pages/RegisterPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage'; // For password reset
+// A developer would also create a ResetPasswordPage component
 
 // --- Authenticated User Page Components ---
-import DashboardRedirector from './pages/DashboardRedirector'; // <-- IMPORT NEW
-import OverviewPage from './pages/OverviewPage'; // <-- IMPORT RENAMED
-import TenantDashboardPage from './pages/TenantDashboardPage'; // <-- IMPORT NEW
+import DashboardRedirector from './pages/DashboardRedirector';
+import OverviewPage from './pages/OverviewPage';
+import TenantDashboardPage from './pages/TenantDashboardPage';
 import OrganizationPage from './pages/OrganizationPage';
 import PropertiesPage from './pages/PropertiesPage';
 import TenantsPage from './pages/TenantsPage';
@@ -26,6 +28,7 @@ import UsersPage from './pages/UsersPage';
 import BillingPage from './pages/BillingPage';
 import AuditLogPage from './pages/AuditLogPage';
 import SettingsPage from './pages/SettingsPage';
+// An ExpensesPage would be created here as well
 
 // --- Super Admin Page Components ---
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -75,6 +78,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        {/* <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> */}
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
@@ -82,19 +87,13 @@ function App() {
         {/* --- Protected User Routes (All now use DashboardLayout) --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            {/* The index route now points to our role-based redirector */}
             <Route index element={<DashboardRedirector />} />
-            
-            {/* The main Landlord/Agent overview page */}
             <Route path="overview" element={<OverviewPage />} />
-            
-            {/* The new Tenant Dashboard page */}
             <Route path="tenant" element={<TenantDashboardPage />} />
-
-            {/* Other routes for Landlords/Agents */}
             <Route path="organization" element={<OrganizationPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
+            {/* <Route path="expenses" element={<ExpensesPage />} /> */}
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
