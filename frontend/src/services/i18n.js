@@ -88,12 +88,20 @@ const translationsEn = {
   },
   // --- Authenticated App Pages ---
   dashboard: {
-    overview: "Overview",
-    properties: "Properties",
-    tenants: "Tenants",
-    billing: "Billing",
-    auditLog: "Audit Log",
-    settings: "Settings"
+    // Section for the main navigation
+    nav: {
+      overview: "Overview",
+      organization: "My Organization",
+      properties: "Properties",
+      tenants: "Tenants",
+      users: "Users & Invites",
+      billing: "Billing",
+      audit_log: "Audit Log",
+      settings: "Profile & Settings",
+      admin_panel: "Super Admin",
+      logout: "Logout"
+    },
+    // Other dashboard content would go here
   },
   adminDashboard: {
       title: "Super Admin Dashboard",
@@ -114,7 +122,6 @@ const translationsBn = {
     getStarted: "শুরু করুন",
     installApp: "অ্যাপ ইনস্টল করুন"
   },
-  // ... all other Bengali translations
   pricing: {
       title: "আপনার প্ল্যান বেছে নিন",
       subtitle: "আপনাকে বাড়াতে সাহায্য করার জন্য সহজ, স্বচ্ছ মূল্য। কোন লুকানো ফি নেই।",
@@ -139,6 +146,22 @@ const translationsBn = {
       cta: "প্ল্যান বেছে নিন",
       disclaimer: "সাবস্ক্রিপশন এবং বিলিং আমাদের পেমেন্ট পার্টনার, 2Checkout এর মাধ্যমে সুরক্ষিতভাবে পরিচালিত হয়।"
   },
+  // --- Authenticated App Pages (Bengali) ---
+  dashboard: {
+    nav: {
+      overview: "একনজরে",
+      organization: "আমার সংস্থা",
+      properties: "সম্পত্তিসমূহ",
+      tenants: "ভাড়াটে",
+      users: "ব্যবহারকারী এবং আমন্ত্রণ",
+      billing: "বিলিং",
+      audit_log: "অডিট লগ",
+      settings: "প্রোফাইল ও সেটিংস",
+      admin_panel: "সুপার অ্যাডমিন",
+      logout: "লগ আউট"
+    },
+  },
+  // ... all other Bengali translations
 };
 
 i18n
@@ -148,7 +171,6 @@ i18n
     resources: {
       en: { translation: translationsEn },
       bn: { translation: translationsBn },
-      // A developer would add more languages here, e.g., 'es'
     },
     lng: "en", // Default language
     fallbackLng: "en",
