@@ -1,64 +1,76 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../api/client';
+import { useAdminDashboardStats } from '../hooks/useAdminDashboardStats';
+import { Users, Building, ShieldCheck } from 'lucide-react';
 
-// Placeholder Icons - a developer would use a library like Lucide React
-const UsersIcon = () => <span>👥</span>;
-const OrgsIcon = () => <span>🏢</span>;
-const BillingIcon = () => <span>💳</span>;
-const ContentIcon = () => <span>🎨</span>;
+// Reusable Stat Card for this page
+const StatCard = ({ title, value, icon }: { title: string, value: number | string, icon: React.ReactNode }) => (
+    <div className="bg-white p-6 rounded-xl shadow-md">
+        <div className="flex items-center">
+            <div className="mr-4">{icon}</div>
+            <div>
+                <p className="text-sm font-medium text-gray-500">{title}</p>
+                <p className="text-2xl font-bold text-gray-800">{value}</p>
+            </div>
+        </div>
+    </div>
+);
+
+// We can reuse the organization fetching logic from AdminOrganizationsPage
+const fetchOrganizations = async () => {
+    const { data } = await apiClient.get('/super-admin/organizations');
+    return data.data;
+};
 
 const AdminDashboardPage = () => {
-    // This data would be fetched from dedicated backend APIs
-    const stats = {
-        totalUsers: 142,
-        activeSubscriptions: 35,
-        monthlyRecurringRevenue: 485.00,
-        contentPages: 5
-    };
-
+    const { data: stats, isLoading: isLoadingStats } = useAdminDashboardStats();
+    const { data: organizations = [], isLoading: isLoadingOrgs } = useQuery(['allOrganizations'], fetchOrganizations);
+    
     return (
-        <div className="text-white">
-            <h1 className="text-4xl font-bold mb-8">Super Admin Dashboard</h1>
+        <div className="text-gray-800 space-y-8">
+            <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-slate-700">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase">Total Users</h3>
-                    <p className="text-3xl font-bold text-white mt-2">{stats.totalUsers}</p>
-                </div>
-                <div className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-slate-700">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase">Active Subscriptions</h3>
-                    <p className="text-3xl font-bold text-white mt-2">{stats.activeSubscriptions}</p>
-                </div>
-                <div className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-slate-700">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase">Monthly Revenue</h3>
-                    <p className="text-3xl font-bold text-white mt-2">${stats.monthlyRecurringRevenue.toFixed(2)}</p>
-                </div>
-                 <div className="bg-slate-800/70 backdrop-blur-md p-6 rounded-2xl shadow-lg border border-slate-700">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase">Content Pages</h3>
-                    <p className="text-3xl font-bold text-white mt-2">{stats.contentPages}</p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <StatCard title="Total Users" value={isLoadingStats ? '...' : stats?.totalUsers ?? 0} icon={<Users className="w-8 h-8 text-blue-500" />} />
+                <StatCard title="Total Organizations" value={isLoadingStats ? '...' : stats?.totalOrgs ?? 0} icon={<Building className="w-8 h-8 text-green-500" />} />
+                <StatCard title="Active Subscriptions" value={isLoadingStats ? '...' : stats?.activeSubscriptions ?? 0} icon={<ShieldCheck className="w-8 h-8 text-indigo-500" />} />
             </div>
 
-            {/* Quick Actions */}
-            <h2 className="text-2xl font-bold mb-6">Management Panels</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Link to="/admin/users" className="block p-6 bg-blue-600 rounded-2xl text-white text-center hover:bg-blue-500 transition-all transform hover:scale-105 shadow-lg">
-                    <UsersIcon />
-                    <h3 className="text-xl font-bold mt-2">Manage Users</h3>
-                </Link>
-                 <Link to="/admin/organizations" className="block p-6 bg-emerald-600 rounded-2xl text-white text-center hover:bg-emerald-500 transition-all transform hover:scale-105 shadow-lg">
-                    <OrgsIcon />
-                    <h3 className="text-xl font-bold mt-2">Manage Organizations</h3>
-                </Link>
-                 <Link to="/admin/billing" className="block p-6 bg-pink-600 rounded-2xl text-white text-center hover:bg-pink-500 transition-all transform hover:scale-105 shadow-lg">
-                    <BillingIcon />
-                    <h3 className="text-xl font-bold mt-2">View Billing</h3>
-                </Link>
-                 <Link to="/admin/site-editor" className="block p-6 bg-orange-600 rounded-2xl text-white text-center hover:bg-orange-500 transition-all transform hover:scale-105 shadow-lg">
-                    <ContentIcon />
-                    <h3 className="text-xl font-bold mt-2">Edit Website Content</h3>
-                </Link>
+            {/* Organizations Table */}
+            <div className="bg-white p-6 rounded-xl shadow-md">
+                <h2 className="text-xl font-bold mb-4">All Organizations</h2>
+                <div className="overflow-x-auto">
+                    {isLoadingOrgs ? (
+                        <p>Loading organizations...</p>
+                    ) : (
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="p-3 font-semibold text-gray-600">Organization Name</th>
+                                    <th className="p-3 font-semibold text-gray-600">Owner</th>
+                                    <th className="p-3 font-semibold text-gray-600">Plan</th>
+                                    <th className="p-3 font-semibold text-gray-600">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {organizations.map((org: any) => (
+                                    <tr key={org.id} className="border-b">
+                                        <td className="p-3 font-semibold">{org.name}</td>
+                                        <td className="p-3 text-gray-600">{org.owner?.email || 'N/A'}</td>
+                                        <td className="p-3 text-gray-600">{org.plan || 'N/A'}</td>
+                                        <td className="p-3">
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${org.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {org.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );
