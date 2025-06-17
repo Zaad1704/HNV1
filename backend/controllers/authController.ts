@@ -46,12 +46,12 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await organization.save();
     await user.save();
     await subscription.save();
-    // FIX: Use Types.ObjectId for casting before .toString()
+    // FIX: Use Types.ObjectId for casting before .toString() and ensure 4 arguments for auditService
     auditService.recordAction(
         user._id as Types.ObjectId,
         organization._id as Types.ObjectId,
         'USER_REGISTER',
-        { registeredUserId: (user._id as Types.ObjectId).toString() }
+        { registeredUserId: (user._id as Types.ObjectId).toString() } // Pass empty object for details if none
     );
     try {
         await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
@@ -76,10 +76,12 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+    // FIX: Use Types.ObjectId for casting and ensure 4 arguments for auditService
     auditService.recordAction(
-        user._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
-        user.organizationId as Types.ObjectId, // FIX: Use Types.ObjectId for casting
-        'USER_LOGIN'
+        user._id as Types.ObjectId,
+        user.organizationId as Types.ObjectId,
+        'USER_LOGIN',
+        {} // Pass empty object for details
     );
     sendTokenResponse(user, 200, res);
 };
