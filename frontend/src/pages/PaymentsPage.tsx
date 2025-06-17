@@ -1,28 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import RecordPaymentModal from '../components/common/RecordPaymentModal';
+
+// Data fetching function for React Query
+const fetchPayments = async () => {
+    const { data } = await apiClient.get('/payments');
+    return data.data;
+};
 
 const PaymentsPage = () => {
-  const [payments, setPayments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const response = await apiClient.get('/payments');
-        setPayments(response.data.data);
-      } catch (err) {
-        setError('Failed to fetch payment records.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPayments();
-  }, []);
+  // Use React Query to fetch data, which handles loading and error states automatically
+  const { data: payments = [], isLoading, isError } = useQuery(['payments'], fetchPayments);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -45,14 +36,23 @@ const PaymentsPage = () => {
     });
   };
 
-  if (loading) return <div className="text-white text-center p-8">Loading payment records...</div>;
-  if (error) return <div className="text-red-400 text-center p-8">{error}</div>;
+  if (isLoading) return <div className="text-white text-center p-8">Loading payment records...</div>;
+  if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch payment records.</div>;
 
   return (
     <div className="text-white">
+      {/* Render the modal, its visibility is controlled by isModalOpen state */}
+      <RecordPaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Payment History</h1>
-        {/* In a future update, a "Record Manual Payment" button could be added here */}
+        {/* This button now opens the modal */}
+        <button 
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-cyan-600 text-white font-bold rounded-lg hover:bg-cyan-500 shadow-lg hover:shadow-cyan-400/50 transition-all"
+        >
+          + Record Manual Payment
+        </button>
       </div>
 
       <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
@@ -70,7 +70,7 @@ const PaymentsPage = () => {
             </thead>
             <tbody className="divide-y divide-slate-700">
               {payments.length > 0 ? (
-                payments.map((payment) => (
+                payments.map((payment: any) => (
                   <tr key={payment._id} className="hover:bg-slate-800 transition-colors">
                     <td className="p-4 text-slate-400 font-mono text-xs">{payment.transactionId || payment._id}</td>
                     <td className="p-4 font-bold text-white">{payment.tenantId?.name || 'N/A'}</td>
