@@ -76,7 +76,6 @@ app.use(helmet({
         "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
         "https://ipinfo.io" // For localizationController to fetch IP info
       ],
-      // Ensure other directives like font-src, media-src, etc., are added if your app needs them
     },
   },
 }));
