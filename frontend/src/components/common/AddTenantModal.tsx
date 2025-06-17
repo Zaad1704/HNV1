@@ -1,106 +1,121 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, PlusCircle, Trash2 } from 'lucide-react';
 
-const AddTenantModal = ({ isOpen, onClose, onTenantAdded }: { isOpen: boolean, onClose: () => void, onTenantAdded: (tenant: any) => void }) => {
-  const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', propertyId: '', unit: '',
-    leaseEndDate: '', referenceName: '', referencePhone: '', referenceEmail: ''
-  });
-  const [properties, setProperties] = useState<any[]>([]);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (isOpen) {
-      const fetchProperties = async () => {
-        try {
-          const response = await apiClient.get('/properties');
-          setProperties(response.data.data);
-        } catch (err) {
-          console.error("Failed to fetch properties for modal", err);
-          setError("Could not load properties list.");
-        }
-      };
-      fetchProperties();
-    }
-  }, [isOpen]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!formData.propertyId) {
-      setError('You must select a property.');
-      return;
-    }
-    try {
-      const submissionData = {
-        name: formData.name, email: formData.email, phone: formData.phone,
-        propertyId: formData.propertyId, unit: formData.unit,
-        leaseEndDate: formData.leaseEndDate,
-        reference: { name: formData.referenceName, phone: formData.referencePhone, email: formData.referenceEmail }
-      };
-      const response = await apiClient.post('/tenants', submissionData);
-      onTenantAdded(response.data.data);
-      onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to add tenant.');
-    }
-  };
-  
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-      <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-700">
-        <div className="flex justify-between items-center p-6 border-b border-slate-700">
-          <h2 className="text-xl font-bold text-white">Add New Tenant</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">&times;</button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-            {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-lg">{error}</div>}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-slate-300">Full Name</label>
-                  <input type="text" name="name" id="name" required onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white"/>
-                </div>
-                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-300">Email Address</label>
-                  <input type="email" name="email" id="email" required onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white"/>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-slate-300">Phone Number</label>
-                  <input type="tel" name="phone" id="phone" onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white"/>
-                </div>
-                <div>
-                    <label htmlFor="leaseEndDate" className="block text-sm font-medium text-slate-300">Lease End Date</label>
-                    <input type="date" name="leaseEndDate" id="leaseEndDate" onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white"/>
-                </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="propertyId" className="block text-sm font-medium text-slate-300">Property</label>
-                <select name="propertyId" id="propertyId" required onChange={handleChange} value={formData.propertyId} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white">
-                  <option value="" disabled>Select a property...</option>
-                  {properties.map((prop: any) => <option key={prop._id} value={prop._id}>{prop.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="unit" className="block text-sm font-medium text-slate-300">Unit / Apartment #</label>
-                <input type="text" name="unit" id="unit" required onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-slate-900 border-slate-600 rounded-md text-white"/>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-4 pt-4">
-              <button type="button" onClick={onClose} className="px-5 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-500">Cancel</button>
-              <button type="submit" className="px-5 py-2 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500">Save Tenant</button>
-            </div>
-        </form>
-      </div>
-    </div>
-  );
+const fetchProperties = async () => {
+    const { data } = await apiClient.get('/properties');
+    return data.data;
 };
-export default AddTenantModal;
+
+const createTenant = async (newTenant: any) => {
+    // A developer would add file upload logic here first
+    const { data } = await apiClient.post('/tenants', newTenant);
+    return data.data;
+};
+
+const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    const queryClient = useQueryClient();
+    const [error, setError] = useState('');
+    
+    // State for basic form data
+    const [formData, setFormData] = useState({
+        name: '', email: '', phone: '', propertyId: '', unit: '', leaseEndDate: '',
+        gender: 'Male', fatherName: '', motherName: '', spouseName: '', numberOfOccupants: 1,
+    });
+
+    // Separate state for the dynamic list of additional adults
+    const [additionalAdults, setAdditionalAdults] = useState<{ name: string, phone: string }[]>([]);
+
+    // Fetch properties for the dropdown
+    const { data: properties, isLoading: isLoadingProperties } = useQuery(['properties'], fetchProperties, { enabled: isOpen });
+
+    // Mutation for creating the tenant
+    const mutation = useMutation(createTenant, {
+        onSuccess: () => {
+            queryClient.invalidateQueries(['tenants']);
+            onClose();
+        },
+        onError: (err: any) => {
+            setError(err.response?.data?.message || 'Failed to add tenant.');
+        }
+    });
+
+    // Handlers for form changes
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleAdultChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const updatedAdults = [...additionalAdults];
+        updatedAdults[index] = { ...updatedAdults[index], [e.target.name]: e.target.value };
+        setAdditionalAdults(updatedAdults);
+    };
+
+    const addAdult = () => {
+        setAdditionalAdults([...additionalAdults, { name: '', phone: '' }]);
+    };
+
+    const removeAdult = (index: number) => {
+        const updatedAdults = additionalAdults.filter((_, i) => i !== index);
+        setAdditionalAdults(updatedAdults);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        const finalTenantData = { ...formData, additionalAdults };
+        mutation.mutate(finalTenantData);
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
+            <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl border border-slate-700">
+                <div className="flex justify-between items-center p-6 border-b border-slate-700">
+                    <h2 className="text-xl font-bold text-white">Add New Tenant</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white"><X size={24} /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[85vh] overflow-y-auto">
+                    {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-lg text-center">{error}</div>}
+                    
+                    {/* --- Primary Info --- */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div><label htmlFor="name" className="block text-sm text-slate-300">Full Name*</label><input type="text" name="name" required onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="email" className="block text-sm text-slate-300">Email*</label><input type="email" name="email" required onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="phone" className="block text-sm text-slate-300">Phone</label><input type="tel" name="phone" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="gender" className="block text-sm text-slate-300">Gender</label><select name="gender" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"><option>Male</option><option>Female</option><option>Other</option></select></div>
+                        <div><label htmlFor="fatherName" className="block text-sm text-slate-300">Father's Name</label><input type="text" name="fatherName" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="motherName" className="block text-sm text-slate-300">Mother's Name</label><input type="text" name="motherName" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="spouseName" className="block text-sm text-slate-300">Spouse's Name</label><input type="text" name="spouseName" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                    </div>
+
+                    {/* --- Lease & Property Info --- */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-slate-700">
+                        <div><label htmlFor="propertyId" className="block text-sm text-slate-300">Property*</label><select name="propertyId" required onChange={handleChange} disabled={isLoadingProperties} className="mt-1 w-full bg-slate-900 p-2 rounded-md"><option value="">{isLoadingProperties ? 'Loading...' : 'Select'}</option>{properties?.map((p: any) => <option key={p._id} value={p._id}>{p.name}</option>)}</select></div>
+                        <div><label htmlFor="unit" className="block text-sm text-slate-300">Unit*</label><input type="text" name="unit" required onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                        <div><label htmlFor="leaseEndDate" className="block text-sm text-slate-300">Lease End Date</label><input type="date" name="leaseEndDate" onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                    </div>
+                    
+                    {/* --- Occupants Info --- */}
+                    <div className="pt-4 border-t border-slate-700">
+                         <h3 className="text-lg font-semibold text-white">Occupants</h3>
+                         <div><label htmlFor="numberOfOccupants" className="block text-sm text-slate-300">How many people will live in the unit?*</label><input type="number" name="numberOfOccupants" min="1" required onChange={handleChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
+                         
+                         <div className="mt-4 space-y-3">
+                            <label className="block text-sm text-slate-300">Additional Adults</label>
+                            {additionalAdults.map((adult, index) => (
+                                <div key={index} className="flex items-end gap-2 p-3 bg-slate-900/50 rounded-md">
+                                    <div className="flex-grow grid grid-cols-2 gap-2">
+                                        <input type="text" name="name" placeholder={`Adult ${index + 2} Name`} value={adult.name} onChange={(e) => handleAdultChange(index, e)} className="w-full bg-slate-900 p-2 rounded-md"/>
+                                        <input type="tel" name="phone" placeholder="Phone Number" value={adult.phone} onChange={(e) => handleAdultChange(index, e)} className="w-full bg-slate-900 p-2 rounded-md"/>
+                                    </div>
+                                    <button type="button" onClick={() => removeAdult(index)} className="p-2 text-red-400 hover:text-red-300"><Trash2 size={18}/></button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={addAdult} className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 font-semibold"><PlusCircle size={16}/> Add Another Adult</button>
+                         </div>
+                    </div>
+
+                    <div className="flex justify-end
