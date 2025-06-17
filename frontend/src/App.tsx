@@ -28,7 +28,7 @@ import UsersPage from './pages/UsersPage';
 import BillingPage from './pages/BillingPage';
 import AuditLogPage from './pages/AuditLogPage';
 import SettingsPage from './pages/SettingsPage';
-// A developer would create the ExpensesPage component next
+import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
 // import ExpensesPage from './pages/ExpensesPage'; 
 
 // --- Super Admin Page Components ---
@@ -85,7 +85,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
-        {/* --- Protected User Routes (All now use DashboardLayout) --- */}
+        {/* --- Protected User Routes --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route index element={<DashboardRedirector />} />
@@ -95,6 +95,7 @@ function App() {
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
             {/* <Route path="expenses" element={<ExpensesPage />} /> */}
+            <Route path="maintenance" element={<MaintenanceRequestsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
@@ -102,7 +103,7 @@ function App() {
           </Route>
         </Route>
         
-        {/* --- Protected Super Admin Routes (All now use AdminLayout) --- */}
+        {/* --- Protected Super Admin Routes --- */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboardPage />} />
