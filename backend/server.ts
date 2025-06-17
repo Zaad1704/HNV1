@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 
-// --- Import API Route Files ---
+// --- Import All API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -18,14 +18,15 @@ import billingRoutes from './routes/billingRoutes';
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
 import communicationRoutes from './routes/communicationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
-import siteSettingsRoutes from './routes/siteSettingsRoutes'; // <-- IMPORT THE NEW ROUTE
+import siteSettingsRoutes from './routes/siteSettingsRoutes';
+import fileUploadRoutes from './routes/fileUploadRoutes';
 
 dotenv.config();
 
 const app: Express = express();
 
 const connectDB = async () => { 
-    // This function should contain your mongoose.connect() logic
+    // This function should contain your mongoose.connect() logic from your original setup
 };
 connectDB();
 
@@ -42,9 +43,13 @@ app.use(cors(corsOptions));
 // Special case for the raw webhook route BEFORE express.json()
 app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 
+// Standard JSON middleware
 app.use(express.json());
 
-// --- Mount API Routes ---
+// Serve static files from the 'public' directory for uploaded images
+app.use(express.static('public'));
+
+// --- Mount All API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
@@ -57,11 +62,13 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/tenant-portal', tenantPortalRoutes);
 app.use('/api/communicate', communicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/site-settings', siteSettingsRoutes); // <-- MOUNT THE NEW ROUTE
+app.use('/api/site-settings', siteSettingsRoutes);
+app.use('/api/upload', fileUploadRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/setup', setupRoutes);
 
 
+// Root health check route
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
