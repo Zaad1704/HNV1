@@ -1,14 +1,16 @@
+// backend/controllers/authController.ts
+
 import { Request, Response, NextFunction } from 'express';
-import User, { IUser } from '../models/User';
+import User from '../models/User';
 import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import mongoose, { Types } from 'mongoose';
+import { IUser } from '../models/User';
+import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
 
-// This helper function was missing from the broken file
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
@@ -30,42 +32,32 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
     const organization = new Organization({ name: `${name}'s Organization`, members: [] });
     const user = new User({ name, email, password, role, organizationId: organization._id });
-    organization.owner = user._id as Types.ObjectId;
-    organization.members.push(user._id as Types.ObjectId);
+    organization.owner = user._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
+    organization.members.push(user._id as Types.ObjectId); // FIX: Use Types.ObjectId for casting
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
-        organizationId: organization._id as Types.ObjectId,
-        planId: trialPlan._id as Types.ObjectId,
+        organizationId: organization._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        planId: trialPlan._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
-    organization.subscription = subscription._id as Types.ObjectId;
+    organization.subscription = subscription._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
     await organization.save();
     await user.save();
     await subscription.save();
-    
+    // FIX: Use Types.ObjectId for casting before .toString()
     auditService.recordAction(
         user._id as Types.ObjectId,
         organization._id as Types.ObjectId,
         'USER_REGISTER',
         { registeredUserId: (user._id as Types.ObjectId).toString() }
     );
-    
     try {
-        await emailService.sendEmail(
-          user.email, 
-          'Welcome to HNV Property Solutions!', 
-          'welcome', 
-          {
-            userName: user.name,
-            loginUrl: 'https://hnv-1-frontend.onrender.com/login'
-          }
-        );
+        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
     } catch (emailError) {
-        console.error("Failed to send welcome email, but user was registered successfully:", emailError);
+        console.error("Failed to send welcome email:", emailError);
     }
-
     sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error(error);
@@ -85,8 +77,8 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     auditService.recordAction(
-        user._id as Types.ObjectId,
-        user.organizationId as Types.ObjectId,
+        user._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        user.organizationId as Types.ObjectId, // FIX: Use Types.ObjectId for casting
         'USER_LOGIN'
     );
     sendTokenResponse(user, 200, res);
