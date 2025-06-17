@@ -76,6 +76,7 @@ app.use(helmet({
         "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
         "https://ipinfo.io" // For localizationController to fetch IP info
       ],
+      // Ensure other directives like font-src, media-src, etc., are added if your app needs them
     },
   },
 }));
@@ -88,8 +89,8 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes);
-app.use('/api/audit', auditRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes); // FIX: Mount the new subscriptionsRoutes
+app.use('/api/audit', auditRoutes); // FIX: Mount the new auditRoutes
 app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
