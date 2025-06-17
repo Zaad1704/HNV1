@@ -7,7 +7,7 @@ const router = Router();
 // Tenant can create a request
 router.post('/', protect, authorize('Tenant'), createMaintenanceRequest);
 
-// Landlord/Agent can view all requests and update them
+// Landlord/Agent can view all requests and update a request's status
 router.get('/', protect, authorize('Landlord', 'Agent'), getMaintenanceRequests);
 router.put('/:id', protect, authorize('Landlord', 'Agent'), updateMaintenanceRequestStatus);
 
