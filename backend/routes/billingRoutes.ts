@@ -1,13 +1,17 @@
 import { Router } from 'express';
-import { createCheckoutSession, handlePaymentWebhook } from '../controllers/billingController';
-import { protect } from '../middleware/authMiddleware';
+import { createCheckoutSession, handlePaymentWebhook, createRentPaymentSession } from '../controllers/billingController';
+import { protect, authorize } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// A logged-in user calls this to start a purchase. It's a protected route.
+// Route for subscribing to a plan
 router.post('/create-checkout-session', protect, createCheckoutSession);
 
-// The payment provider (2Checkout) calls this public URL. It must not be protected.
+// --- NEW ROUTE for Rent Payments ---
+// This route is protected and only available to users with the 'Tenant' role.
+router.post('/create-rent-payment-session', protect, authorize('Tenant'), createRentPaymentSession);
+
+// Public webhook route from the payment provider
 router.post('/webhook', handlePaymentWebhook);
 
 export default router;
