@@ -1,7 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'];
+const COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6'];
 
 const PlanDistributionChart = ({ data }: { data: any[] }) => {
     return (
