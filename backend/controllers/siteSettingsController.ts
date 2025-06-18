@@ -8,13 +8,19 @@ import mongoose from 'mongoose';
 // @access  Public
 export const getSiteSettings = async (req: Request, res: Response) => {
     try {
-        // There should only ever be one settings document. Find it.
-        const settings = await SiteSettings.findOne();
+        let settings = await SiteSettings.findOne();
+
+        // If no settings document exists in the database...
         if (!settings) {
-            // If no settings exist yet, we can return an empty object
-            return res.status(200).json({ success: true, data: {} });
+            // ...create a new one with the default values from your schema and save it.
+            console.log('No site settings found, creating default document.');
+            settings = new SiteSettings({});
+            await settings.save();
         }
+        
+        // Always return a complete settings object.
         res.status(200).json({ success: true, data: settings });
+
     } catch (error) {
         console.error('Error fetching site settings:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -35,11 +41,9 @@ export const updateSiteSettings = async (req: AuthenticatedRequest, res: Respons
             updatedBy: new mongoose.Types.ObjectId(req.user.id)
         };
         
-        // Use findOneAndUpdate with 'upsert: true'.
-        // This will update the existing settings document, or create it if it doesn't exist yet.
         const updatedSettings = await SiteSettings.findOneAndUpdate({}, settingsData, {
             new: true,
-            upsert: true, // This is the key option
+            upsert: true,
             runValidators: true,
         });
 
