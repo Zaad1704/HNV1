@@ -16,7 +16,7 @@ import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
 import billingRoutes from './routes/billingRoutes';
-import siteSettingsRoutes from './routes/siteSettingsRoutes'; // <--- FIX: IMPORT ADDED
+import siteSettingsRoutes from './routes/siteSettingsRoutes';
 
 dotenv.config();
 
@@ -72,9 +72,8 @@ app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/billing', billingRoutes);
-app.use('/api/site-settings', siteSettingsRoutes); // <--- FIX: ROUTE ADDED
+app.use('/api/site-settings', siteSettingsRoutes);
 
-// A simple health-check route
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 });
