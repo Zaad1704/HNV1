@@ -50,7 +50,6 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await user.save();
     await subscription.save();
     
-    // Corrected Line: Added the type assertion before .toString()
     auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() });
     sendTokenResponse(user, 201, res);
   } catch (error) {
@@ -63,11 +62,28 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
     
     const user = await User.findOne({ email }).select('+password');
-    if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    
+    // --- FIX: Log for "User Not Found" ---
+    if (!user) {
+        console.error(`Login failed: User not found for email ${email}`);
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
+    // --- FIX: Log for "Incorrect Password" ---
+    if (!isMatch) {
+        // Here, we found a user, so we can create a detailed audit log entry.
+        auditService.recordAction(
+            user._id as mongoose.Types.ObjectId, 
+            user.organizationId, 
+            'LOGIN_FAILURE', 
+            { reason: 'Incorrect password' }
+        );
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // This is the original log for a successful login
     auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_LOGIN', {});
     sendTokenResponse(user, 200, res);
 };
