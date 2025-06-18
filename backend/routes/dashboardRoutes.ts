@@ -1,19 +1,18 @@
 import { Router } from 'express';
 import {
-  getOverviewStats,
-  getLateTenants,
-  getFinancialSummary,
-  getOccupancySummary,
-  getExpiringLeases
+    getOverviewStats,
+    getLateTenants,
+    getFinancialSummary,
+    getOccupancySummary
 } from '../controllers/dashboardController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
+router.use(protect);
 
-router.get('/overview-stats', protect, authorize('Landlord', 'Agent', 'Super Admin'), getOverviewStats);
-router.get('/late-tenants', protect, authorize('Landlord', 'Agent'), getLateTenants);
-router.get('/financial-summary', protect, authorize('Landlord', 'Agent'), getFinancialSummary);
-router.get('/occupancy-summary', protect, authorize('Landlord', 'Agent'), getOccupancySummary);
-router.get('/expiring-leases', protect, authorize('Landlord', 'Agent'), getExpiringLeases); // NEW
+router.get('/stats', getOverviewStats);
+router.get('/late-tenants', getLateTenants);
+router.get('/financial-summary', getFinancialSummary);
+router.get('/occupancy-summary', getOccupancySummary);
 
 export default router;
