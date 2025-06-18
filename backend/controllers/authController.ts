@@ -50,7 +50,8 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await user.save();
     await subscription.save();
     
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: user._id.toString() });
+    // Corrected Line: Added the type assertion before .toString()
+    auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() });
     sendTokenResponse(user, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
