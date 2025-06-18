@@ -47,4 +47,21 @@ const ForgotPasswordPage: React.FC = () => {
                 />
             </div>
             <div>
-                <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-cyan-600 hover:bg-
+                <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600">
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                </button>
+            </div>
+          </form>
+        )}
+         <p className="mt-8 text-center text-sm text-slate-400">
+            Remembered your password?{' '}
+            <Link to="/login" className="font-medium text-cyan-400 hover:text-cyan-300">
+                Sign In
+            </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default ForgotPasswordPage;
