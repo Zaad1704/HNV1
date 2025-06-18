@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { generateRentInvoice } from '../controllers/invoiceController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { generateInvoices } from '../controllers/invoiceController';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
+router.use(protect);
 
-router.get('/rent/:tenantId', protect, authorize('Landlord', 'Agent'), generateRentInvoice);
+router.post('/generate', generateInvoices); // FIX: Corrected function name
 
 export default router;
