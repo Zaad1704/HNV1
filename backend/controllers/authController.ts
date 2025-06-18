@@ -5,6 +5,7 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import auditService from '../services/auditService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import mongoose from 'mongoose';
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
@@ -28,13 +29,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     if (!trialPlan) return res.status(500).json({ success: false, message: 'Trial plan not configured.' });
     
     const organization = new Organization({ name: `${name}'s Organization` });
-    await organization.save();
-
+    
     const user = new User({ name, email, password, role, organizationId: organization._id });
-    await user.save();
-
-    organization.owner = user._id;
-    organization.members.push(user._id);
+    
+    organization.owner = user._id as mongoose.Types.ObjectId;
+    organization.members.push(user._id as mongoose.Types.ObjectId);
 
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
@@ -44,12 +43,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
+    
+    organization.subscription = subscription._id as mongoose.Types.ObjectId;
+    
+    await organization.save();
+    await user.save();
     await subscription.save();
     
-    organization.subscription = subscription._id;
-    await organization.save();
-    
-    auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
+    auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     sendTokenResponse(user, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -66,7 +67,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const isMatch = await user.matchPassword(password);
     if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
-    auditService.recordAction(user._id, user.organizationId, 'USER_LOGIN', {});
+    auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_LOGIN', {});
     sendTokenResponse(user, 200, res);
 };
 
