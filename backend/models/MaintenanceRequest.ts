@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
 export interface IMaintenanceRequest extends Document {
-    propertyId: mongoose.Schema.Types.ObjectId;
-    organizationId: mongoose.Schema.Types.ObjectId;
-    requestedBy: mongoose.Schema.Types.ObjectId;
-    description: string;
-    priority: 'Low' | 'Medium' | 'High';
-    status: 'Open' | 'In Progress' | 'Completed';
+  propertyId: mongoose.Schema.Types.ObjectId;
+  organizationId: mongoose.Schema.Types.ObjectId;
+  requestedBy: mongoose.Schema.Types.ObjectId;
+  description: string;
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'Open' | 'In Progress' | 'Completed';
 }
 
 const MaintenanceRequestSchema: Schema<IMaintenanceRequest> = new Schema({
