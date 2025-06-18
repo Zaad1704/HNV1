@@ -16,6 +16,7 @@ import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
 import billingRoutes from './routes/billingRoutes';
+import siteSettingsRoutes from './routes/siteSettingsRoutes'; // <--- FIX: IMPORT ADDED
 
 dotenv.config();
 
@@ -39,7 +40,6 @@ const connectDB = async () => {
 };
 connectDB();
 
-// CORRECTED to your live frontend URL
 const allowedOrigins: string[] = [
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com'
@@ -55,14 +55,8 @@ const corsOptions: CorsOptions = {
   }
 };
 
-// This middleware must come before app.use(express.json())
 app.use(cors(corsOptions));
-
-// The webhook route needs the raw request body for signature verification.
-// All other routes can use the standard JSON parser.
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
-
-// This middleware parses JSON for all other routes.
+app.use(express.raw({ type: 'application/json' }));
 app.use(express.json());
 
 // --- Mount All API Routes ---
@@ -78,7 +72,7 @@ app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/billing', billingRoutes);
-
+app.use('/api/site-settings', siteSettingsRoutes); // <--- FIX: ROUTE ADDED
 
 // A simple health-check route
 app.get('/', (req: Request, res: Response) => {
