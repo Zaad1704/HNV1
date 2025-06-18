@@ -3,10 +3,10 @@ import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
+import mongoose from 'mongoose';
 
 // @desc    Create a new maintenance request
 export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
-    // FIX: Add guard clause to ensure user object exists and is correctly typed.
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -26,10 +26,9 @@ export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: R
             requestedBy: req.user._id,
         });
 
-        // FIX: Convert IDs to strings when passing to the audit service
-        auditService.recordAction(req.user._id, req.user.organizationId, 'MAINT_REQUEST_CREATE', { 
-            requestId: newRequest._id.toString(), 
-            propertyId: property._id.toString() 
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'MAINT_REQUEST_CREATE', { 
+            requestId: (newRequest._id as mongoose.Types.ObjectId).toString(), 
+            propertyId: (property._id as mongoose.Types.ObjectId).toString() 
         });
         
         res.status(201).json({ success: true, data: newRequest });
@@ -79,8 +78,8 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
 
         const updatedRequest = await MaintenanceRequest.findByIdAndUpdate(req.params.id, { status }, { new: true });
         
-        auditService.recordAction(req.user._id, req.user.organizationId, 'MAINT_REQUEST_UPDATE', {
-            requestId: updatedRequest!._id.toString(),
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'MAINT_REQUEST_UPDATE', {
+            requestId: (updatedRequest!._id as mongoose.Types.ObjectId).toString(),
             newStatus: status
         });
 
@@ -99,7 +98,7 @@ export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: R
             return res.status(404).json({ success: false, message: 'Request not found or not authorized.' });
         }
         await request.deleteOne();
-        auditService.recordAction(req.user._id, req.user.organizationId, 'MAINT_REQUEST_DELETE', { requestId: request._id.toString() });
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'MAINT_REQUEST_DELETE', { requestId: (request._id as mongoose.Types.ObjectId).toString() });
         res.status(200).json({ success: true, data: {} });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });
