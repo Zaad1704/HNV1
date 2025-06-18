@@ -1,56 +1,108 @@
-import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import SiteSettings from '../models/SiteSettings'; // We created this model earlier
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document, model } from 'mongoose';
 
-// @desc    Get the current site settings
-// @route   GET /api/site-settings
-// @access  Public
-export const getSiteSettings = async (req: Request, res: Response) => {
-    try {
-        let settings = await SiteSettings.findOne();
+export interface IContentSection {
+  title: string;
+  subtitle: string;
+  ctaText?: string;
+  backgroundImageUrl?: string;
+}
 
-        // If no settings document exists in the database...
-        if (!settings) {
-            // ...create a new one with the default values from your schema and save it.
-            console.log('No site settings found, creating default document.');
-            settings = new SiteSettings({});
-            await settings.save();
-        }
-        
-        // Always return a complete settings object.
-        res.status(200).json({ success: true, data: settings });
+export interface ISiteSettings extends Document {
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+  };
+  logos: {
+    navbarLogoUrl: string;
+    faviconUrl: string;
+  };
+  heroSection: IContentSection;
+  featuresSection: {
+    title: string;
+    subtitle: string;
+    card1Title: string;
+    card1Text: string;
+    card2Title: string;
+    card2Text: string;
+    card3Title: string;
+    card3Text: string;
+  };
+  aboutSection: {
+    title: string;
+    subtitle: string;
+    missionTitle: string;
+    missionText: string;
+    visionTitle: string;
+    visionText: string;
+    imageUrl: string;
+  };
+  ctaSection: {
+    title: string;
+    subtitle: string;
+    buttonText: string;
+    backgroundImageUrl: string;
+  };
+  contactSection: {
+    title: string;
+    subtitle: string;
+    officeTitle: string;
+    phoneTitle: string;
+    emailTitle: string;
+    formTitle: string;
+  };
+  updatedBy: mongoose.Types.ObjectId;
+}
 
-    } catch (error) {
-        console.error('Error fetching site settings:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
-    }
-};
+const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
+  theme: {
+    primaryColor: { type: String, default: '#4F46E5' },
+    secondaryColor: { type: String, default: '#F59E0B' },
+  },
+  logos: {
+    // UPDATED to a more reliable placeholder service
+    navbarLogoUrl: { type: String, default: 'https://via.placeholder.com/40/f59e0b/0f172a?text=HNV' },
+    faviconUrl: { type: String, default: '/favicon.svg' },
+  },
+  heroSection: {
+    title: { type: String, default: 'The All-in-One Platform for Modern Property Management' },
+    subtitle: { type: String, default: 'Automate tasks, track finances, and manage tenants with ease.' },
+    ctaText: { type: String, default: 'Start Your Free Trial' },
+    backgroundImageUrl: { type: String, default: 'https://picsum.photos/id/1074/1920/1080' },
+  },
+  featuresSection: {
+    title: { type: String, default: 'Powerful Tools for Every Role' },
+    subtitle: { type: String, default: 'From individual landlords to large agencies, our platform is designed to fit your needs.' },
+    card1Title: { type: String, default: 'Centralized Dashboard' },
+    card1Text: { type: String, default: "View properties, tenants, and payments at a glance." },
+    card2Title: { type: String, default: 'Secure Document Storage' },
+    card2Text: { type: String, default: 'Upload and manage lease agreements and important documents.' },
+    card3Title: { type: String, default: 'Audit Trails & Security' },
+    card3Text: { type: String, default: 'Track every important action with a detailed audit log.' },
+  },
+  aboutSection: {
+      title: { type: String, default: 'About HNV Solutions' },
+      subtitle: { type: String, default: 'Simplifying property management through technology.'},
+      missionTitle: { type: String, default: 'Our Mission' },
+      missionText: { type: String, default: 'To provide user-friendly tools that empower property managers.' },
+      visionTitle: { type: String, default: 'Our Vision' },
+      visionText: { type: String, default: 'To be the leading global platform for property management.' },
+      imageUrl: { type: String, default: 'https://picsum.photos/id/1043/600/400' }
+  },
+  ctaSection: {
+      title: { type: String, default: 'Ready to Get Started?' },
+      subtitle: { type: String, default: "Let's build the future of property management together." },
+      buttonText: { type: String, default: 'Create Your Account' },
+      backgroundImageUrl: { type: String, default: 'https://picsum.photos/id/12/1920/1080' },
+  },
+  contactSection: {
+      title: { type: String, default: 'Get In Touch' },
+      subtitle: { type: String, default: "We're here to help." },
+      officeTitle: { type: String, default: 'Our Office' },
+      phoneTitle: { type: String, default: 'Phone Support' },
+      emailTitle: { type: String, default: 'Email Us' },
+      formTitle: { type: String, default: 'Send Us a Message' },
+  },
+  updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
 
-// @desc    Create or Update the site settings
-// @route   PUT /api/site-settings
-// @access  Private (Super Admin)
-export const updateSiteSettings = async (req: AuthenticatedRequest, res: Response) => {
-    if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    try {
-        const settingsData = {
-            ...req.body,
-            updatedBy: new mongoose.Types.ObjectId(req.user.id)
-        };
-        
-        const updatedSettings = await SiteSettings.findOneAndUpdate({}, settingsData, {
-            new: true,
-            upsert: true,
-            runValidators: true,
-        });
-
-        res.status(200).json({ success: true, data: updatedSettings });
-
-    } catch (error) {
-        console.error('Error updating site settings:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
-    }
-};
+export default model<ISiteSettings>('SiteSettings', SiteSettingsSchema);
