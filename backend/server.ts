@@ -39,6 +39,7 @@ const connectDB = async () => {
 };
 connectDB();
 
+// Using the correct frontend URL you provided.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com'
