@@ -59,7 +59,8 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
     secondaryColor: { type: String, default: '#F59E0B' },
   },
   logos: {
-    navbarLogoUrl: { type: String, default: 'https://placehold.co/40x40/f59e0b/0f172a?text=HNV' },
+    // UPDATED to a more reliable placeholder service
+    navbarLogoUrl: { type: String, default: 'https://via.placeholder.com/40/f59e0b/0f172a?text=HNV' },
     faviconUrl: { type: String, default: '/favicon.svg' },
   },
   heroSection: {
