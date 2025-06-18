@@ -1,19 +1,23 @@
 import { Router } from 'express';
 import {
-  createMaintenanceRequest,
-  getOrgMaintenanceRequests,
-  getMaintenanceRequestById,
-  updateMaintenanceRequest,
-  deleteMaintenanceRequest,
+    createMaintenanceRequest,
+    getOrgMaintenanceRequests,
+    getMaintenanceRequestById,
+    updateMaintenanceRequest,
+    deleteMaintenanceRequest
 } from '../controllers/maintenanceController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
+router.use(protect);
 
-router.post('/', protect, authorize('Landlord', 'Agent', 'Tenant', 'Super Admin'), createMaintenanceRequest);
-router.get('/', protect, authorize('Landlord', 'Agent', 'Super Admin'), getOrgMaintenanceRequests);
-router.get('/:id', protect, authorize('Landlord', 'Agent', 'Tenant', 'Super Admin'), getMaintenanceRequestById);
-router.put('/:id', protect, authorize('Landlord', 'Agent', 'Super Admin', 'Tenant'), updateMaintenanceRequest);
-router.delete('/:id', protect, authorize('Landlord', 'Agent', 'Super Admin'), deleteMaintenanceRequest);
+router.route('/')
+    .post(createMaintenanceRequest)
+    .get(getOrgMaintenanceRequests);
+    
+router.route('/:id')
+    .get(getMaintenanceRequestById)
+    .put(updateMaintenanceRequest)
+    .delete(deleteMaintenanceRequest);
 
 export default router;
