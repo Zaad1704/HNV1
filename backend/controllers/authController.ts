@@ -172,3 +172,32 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({ success: true, data: fullUserData });
 });
+
+/**
+ * @desc    Update user password
+ * @route   PUT /api/auth/updatepassword
+ * @access  Private
+ */
+export const updatePassword = asyncHandler(async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // We need to fetch the user again to get the hashed password
+  const user = await User.findById(req.user?._id).select('+password');
+
+  if (!user) {
+    res.status(401);
+    throw new Error('User not found');
+  }
+
+  // Check if current password matches
+  if (!(await user.matchPassword(currentPassword))) {
+    res.status(401);
+    throw new Error('Incorrect current password');
+  }
+
+  // Set the new password. The pre-save hook will hash it.
+  user.password = newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
