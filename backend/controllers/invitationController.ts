@@ -1,44 +1,128 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import OrgInvitation from '../models/OrgInvitation';
-import jwt from 'jsonwebtoken';
+import User from '../models/User';
+import AgentInvitation from '../models/AgentInvitation';
+import emailService from '../services/emailService';
 
-export const inviteUser = async (req: AuthenticatedRequest, res: Response) => {
-    // Logic to create an invitation token and send an email
-    res.status(200).json({ message: "Invitation sent successfully." });
-};
+// @desc    Invite an Agent to a Landlord's organization
+// @route   POST /api/invitations/invite-agent
+export const inviteAgent = async (req: AuthenticatedRequest, res: Response) => {
+    const { recipientEmail } = req.body;
+    const inviter = req.user;
 
-// FIX: Added placeholder for getInvitationInfo
-export const getInvitationInfo = async (req: Request, res: Response) => {
-    const { token } = req.params;
-    if (!token) {
-        return res.status(400).json({ success: false, message: 'Invitation token is required.' });
+    if (!inviter || inviter.role !== 'Landlord') {
+        return res.status(403).json({ success: false, message: 'Only Landlords can invite agents.' });
     }
+    if (!recipientEmail) {
+        return res.status(400).json({ success: false, message: 'Recipient email is required.' });
+    }
+
     try {
-        // Verify the token
-        if (!process.env.JWT_SECRET) {
-            throw new Error('JWT_SECRET not defined');
+        const existingUser = await User.findOne({ email: recipientEmail });
+        if (existingUser && existingUser.organizationId.toString() === inviter.organizationId.toString()) {
+            return res.status(400).json({ success: false, message: 'This user is already part of your organization.' });
         }
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
-
-        // Find the invitation in the database
-        const invitation = await OrgInvitation.findOne({ token, status: 'pending', expiresAt: { $gt: new Date() } });
-
-        if (!invitation) {
-            return res.status(404).json({ success: false, message: 'Invalid or expired invitation.' });
+        
+        const pendingInvite = await AgentInvitation.findOne({ recipientEmail, organizationId: inviter.organizationId, status: 'pending' });
+        if (pendingInvite) {
+            return res.status(400).json({ success: false, message: 'This user already has a pending invitation.' });
         }
 
-        // Return relevant information about the invitation
-        res.status(200).json({
-            success: true,
-            email: invitation.email,
-            role: invitation.role,
-            organizationId: invitation.orgId,
-            message: 'Invitation valid.'
+        const invitation = await AgentInvitation.create({
+            organizationId: inviter.organizationId,
+            inviterId: inviter._id,
+            recipientEmail,
         });
+        
+        const acceptURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/accept-agent-invite/${invitation.token}`;
+
+        await emailService.sendEmail(
+            recipientEmail,
+            `Invitation to join ${inviter.name}'s Team on HNV`,
+            'agentInvitation', // We will create this template next
+            {
+                inviterName: inviter.name,
+                acceptURL: acceptURL,
+            }
+        );
+
+        res.status(201).json({ success: true, message: `Invitation sent to ${recipientEmail}.` });
 
     } catch (error) {
-        console.error("Error verifying invitation:", error);
-        return res.status(401).json({ success: false, message: 'Invalid or expired invitation token.' });
+        console.error("Error inviting agent:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+
+// @desc    Get invitation details from a token
+// @route   GET /api/invitations/accept/:token
+export const getInvitationDetails = async (req: Request, res: Response) => {
+    try {
+        const invitation = await AgentInvitation.findOne({ token: req.params.token, status: 'pending', expiresAt: { $gt: new Date() } })
+            .populate('inviterId', 'name');
+
+        if (!invitation) {
+            return res.status(404).json({ success: false, message: 'Invitation not found, is invalid, or has expired.' });
+        }
+
+        const existingUser = await User.findOne({ email: invitation.recipientEmail });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                recipientEmail: invitation.recipientEmail,
+                inviterName: (invitation.inviterId as any).name,
+                isExistingUser: !!existingUser,
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+
+// @desc    Accept an invitation and link accounts
+// @route   POST /api/invitations/accept/:token
+export const acceptAgentInvitation = async (req: Request, res: Response) => {
+    const { password } = req.body; // User provides password if they are new
+
+    try {
+        const invitation = await AgentInvitation.findOne({ token: req.params.token, status: 'pending', expiresAt: { $gt: new Date() } });
+        if (!invitation) {
+            return res.status(404).json({ success: false, message: 'Invitation not found, is invalid, or has expired.' });
+        }
+
+        let agentUser = await User.findOne({ email: invitation.recipientEmail });
+        
+        // If user doesn't exist, create a new Agent account
+        if (!agentUser) {
+            if (!password) {
+                return res.status(400).json({ success: false, message: 'Password is required for new users.' });
+            }
+            agentUser = await User.create({
+                email: invitation.recipientEmail,
+                name: invitation.recipientEmail.split('@')[0], // a default name
+                password,
+                role: 'Agent',
+                organizationId: invitation.organizationId,
+            });
+        }
+
+        // Link the Landlord and Agent
+        await User.findByIdAndUpdate(invitation.inviterId, { $addToSet: { managedAgentIds: agentUser._id } });
+        await User.findByIdAndUpdate(agentUser._id, { $addToSet: { associatedLandlordIds: invitation.inviterId } });
+        
+        // Mark invitation as accepted
+        invitation.status = 'accepted';
+        await invitation.save();
+        
+        // Return a JWT for the new/existing agent to log them in
+        const token = agentUser.getSignedJwtToken();
+        res.status(200).json({ success: true, token });
+
+    } catch (error) {
+        console.error("Error accepting invitation:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };
