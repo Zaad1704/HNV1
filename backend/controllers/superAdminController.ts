@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
 
-// Example: List all super admins
+// List all super admins
 export const getSuperAdmins = async (req: Request, res: Response) => {
   try {
     const superAdmins = await User.find({ role: 'Super Admin' });
@@ -12,14 +12,13 @@ export const getSuperAdmins = async (req: Request, res: Response) => {
   }
 };
 
-// Example: Remove a permission from a super admin
+// Remove all permissions from a super admin
 export const removeSuperAdminPermission = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user || user.role !== 'Super Admin') {
       return res.status(404).json({ success: false, message: 'Super Admin not found' });
     }
-    // permissions is optional in IUser, assign undefined to remove all
     user.permissions = undefined;
     await user.save();
     res.status(200).json({ success: true, data: user });
@@ -28,7 +27,7 @@ export const removeSuperAdminPermission = async (req: Request, res: Response) =>
   }
 };
 
-// Example: Delete a super admin (soft delete)
+// Deactivate a super admin (soft delete)
 export const deleteSuperAdmin = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.id);
@@ -43,7 +42,7 @@ export const deleteSuperAdmin = async (req: Request, res: Response) => {
   }
 };
 
-// Example: Remove organization from a super admin
+// Remove organization from a super admin
 export const removeOrganizationFromSuperAdmin = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.id);
@@ -56,11 +55,4 @@ export const removeOrganizationFromSuperAdmin = async (req: Request, res: Respon
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
-};
-
-export {
-  getSuperAdmins,
-  removeSuperAdminPermission,
-  deleteSuperAdmin,
-  removeOrganizationFromSuperAdmin
 };
