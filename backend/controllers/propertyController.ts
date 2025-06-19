@@ -1,12 +1,10 @@
-import { Response } from 'express';
+import { Request, Response } from 'express'; // FIX: Import Request
 import Property from '../models/Property';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-// FIX: Added 'export' to every function
-
-export const getProperties = async (req: AuthenticatedRequest, res: Response) => {
+export const getProperties = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const properties = await Property.find({ organizationId: req.user.organizationId });
@@ -16,23 +14,23 @@ export const getProperties = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-export const createProperty = async (req: AuthenticatedRequest, res: Response) => {
+export const createProperty = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     const propertyData = {
       ...req.body,
-      organizationId: req.user.organizationId as mongoose.Types.ObjectId,
-      createdBy: req.user.id as mongoose.Types.ObjectId,
+      organizationId: req.user.organizationId,
+      createdBy: req.user._id, // FIX: Use _id
     };
     const property = await Property.create(propertyData);
 
     auditService.recordAction(
-      req.user._id as mongoose.Types.ObjectId,
-      req.user.organizationId as mongoose.Types.ObjectId,
+      req.user._id,
+      req.user.organizationId,
       'PROPERTY_CREATE',
       {
-        propertyId: (property._id as mongoose.Types.ObjectId).toString(),
+        propertyId: property._id.toString(),
         propertyName: property.name
       }
     );
@@ -43,7 +41,7 @@ export const createProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const getPropertyById = async (req: AuthenticatedRequest, res: Response) => {
+export const getPropertyById = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const property = await Property.findById(req.params.id);
@@ -62,7 +60,7 @@ export const getPropertyById = async (req: AuthenticatedRequest, res: Response) 
   }
 };
 
-export const updateProperty = async (req: AuthenticatedRequest, res: Response) => {
+export const updateProperty = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     let property = await Property.findById(req.params.id);
@@ -81,10 +79,10 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
     
     if (property) {
         auditService.recordAction(
-          req.user._id as mongoose.Types.ObjectId,
-          req.user.organizationId as mongoose.Types.ObjectId,
+          req.user._id,
+          req.user.organizationId,
           'PROPERTY_UPDATE',
-          { propertyId: (property._id as mongoose.Types.ObjectId).toString(), propertyName: property.name }
+          { propertyId: property._id.toString(), propertyName: property.name }
         );
     }
 
@@ -94,7 +92,7 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const deleteProperty = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteProperty = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const property = await Property.findById(req.params.id);
@@ -109,10 +107,10 @@ export const deleteProperty = async (req: AuthenticatedRequest, res: Response) =
     await property.deleteOne();
     
     auditService.recordAction(
-        req.user._id as mongoose.Types.ObjectId,
-        req.user.organizationId as mongoose.Types.ObjectId,
+        req.user._id,
+        req.user.organizationId,
         'PROPERTY_DELETE',
-        { propertyId: (property._id as mongoose.Types.ObjectId).toString(), propertyName: property.name }
+        { propertyId: property._id.toString(), propertyName: property.name }
     );
 
     res.status(200).json({ success: true, data: {} });
