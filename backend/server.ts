@@ -28,6 +28,7 @@ dotenv.config();
 
 const app: Express = express();
 
+// Connect to MongoDB
 const connectDB = async (): Promise<void> => {
   try {
     if (!process.env.MONGO_URI) {
@@ -44,21 +45,28 @@ const connectDB = async (): Promise<void> => {
 };
 connectDB();
 
+// --- CORS CONFIGURATION START ---
+const envOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+  : [];
 const allowedOrigins: string[] = [
+  ...envOrigins,
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com'
 ];
 
-// This block is corrected
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
-  }
+  },
+  credentials: true,
 };
+// --- CORS CONFIGURATION END ---
 
 app.use(cors(corsOptions));
 app.use(express.json());
