@@ -32,12 +32,15 @@ router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
-    // On successful authentication, req.user will be populated by Passport.js.
-    // A developer would typically generate a JWT here and send it to the frontend.
-    // For now, we will redirect the user to their dashboard.
-    // NOTE: This assumes your frontend and backend are on the same domain or properly configured for cross-domain cookies.
-    // A more common pattern is to redirect with the token in the URL query. e.g., res.redirect('https://your-frontend-url/auth/success?token=...');
-    res.redirect('/dashboard');
+    // On successful authentication, a JWT is generated and sent to the user.
+    // We redirect to a frontend page that will handle the token.
+    if (req.user) {
+        const token = (req.user as any).getSignedJwtToken();
+        // Redirect with token. Frontend will save it and then redirect to the dashboard.
+        res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${token}`);
+    } else {
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    }
   }
 );
 
