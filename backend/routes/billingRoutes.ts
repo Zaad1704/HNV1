@@ -1,21 +1,24 @@
 import { Router } from 'express';
-import { 
-    createCheckoutSession, 
-    handlePaymentWebhook, 
+import {
+    getSubscriptionDetails,
+    createCheckoutSession,
     createRentPaymentSession,
-    getSubscriptionDetails
+    handlePaymentWebhook // This import will now work
 } from '../controllers/billingController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 
 const router = Router();
 
+// Get subscription details for the user's organization
 router.get('/', protect, getSubscriptionDetails);
 
+// Create a checkout session for a subscription plan
 router.post('/create-checkout-session', protect, createCheckoutSession);
 
-router.post('/create-rent-payment-session', protect, authorize(['Tenant']), createRentPaymentSession);
+// Create a checkout session for a one-time rent payment
+router.post('/create-rent-payment', protect, createRentPaymentSession);
 
+// Handle incoming webhooks from the payment provider
 router.post('/webhook', handlePaymentWebhook);
 
 export default router;
