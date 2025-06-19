@@ -1,6 +1,4 @@
 import { Router } from 'express';
-// --- CORRECTED CONTROLLER IMPORTS ---
-// The function names now match what is actually exported from the controller.
 import {
   getUsers,
   getUser,
@@ -8,23 +6,19 @@ import {
   deleteUser,
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac';
+import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 
 const router = Router();
 
-// Apply authentication middleware to all routes in this file.
 router.use(protect);
 
-// --- CORRECTED ROUTE DEFINITIONS ---
-// The controller function names now match the corrected imports.
-// The authorize function is called correctly with an array.
-router.route('/').get(authorize(['admin']), getUsers);
+// Note: The 'authorize' middleware now correctly expects an array of roles.
+router.route('/').get(authorize(['Super Admin']), getUsers); // Example: Only Super Admins can get all users
 
 router
   .route('/:id')
-  .get(authorize(['admin']), getUser)
-  .put(authorize(['admin']), updateUser)
-  .delete(authorize(['admin']), deleteUser);
+  .get(authorize(['Super Admin']), getUser)
+  .put(authorize(['Super Admin']), updateUser)
+  .delete(authorize(['Super Admin']), deleteUser);
 
-// This default export is correct.
 export default router;
