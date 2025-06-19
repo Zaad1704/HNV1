@@ -1,14 +1,13 @@
-// backend/models/Subscription.ts
-
 import mongoose, { Document, Schema, model } from "mongoose";
 
 export interface ISubscription extends Document {
   organizationId: mongoose.Types.ObjectId;
   planId: mongoose.Types.ObjectId;
-  status: "trialing" | "active" | "canceled" | "past_due";
-  trialExpiresAt?: Date; // <-- NEW FIELD for the 7-day trial
+  status: "trialing" | "active" | "inactive" | "canceled" | "past_due"; // Added 'inactive'
+  isLifetime: boolean; // NEW: Field for lifetime access
+  trialExpiresAt?: Date;
   currentPeriodEndsAt?: Date;
-  externalId?: string; // ID from the payment processor like 2Checkout or Stripe
+  externalId?: string; 
 }
 
 const SubscriptionSchema = new Schema<ISubscription>(
@@ -25,8 +24,12 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     status: { 
       type: String, 
-      enum: ["trialing", "active", "canceled", "past_due"], 
+      enum: ["trialing", "active", "inactive", "canceled", "past_due"], // Added 'inactive'
       default: "trialing" 
+    },
+    isLifetime: {
+      type: Boolean,
+      default: false // NEW: Default to false
     },
     trialExpiresAt: {
       type: Date,
