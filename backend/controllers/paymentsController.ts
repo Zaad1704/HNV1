@@ -1,11 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express'; // FIX: Import Request
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import mongoose from 'mongoose';
 
 // This function already exists
-export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
+export const getPayments = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -21,7 +21,7 @@ export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
 // @desc    Record a new manual payment
 // @route   POST /api/payments
 // @access  Private (Landlord, Agent)
-export const createPayment = async (req: AuthenticatedRequest, res: Response) => {
+export const createPayment = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     const { tenantId, amount, paymentDate, status } = req.body;
@@ -43,7 +43,7 @@ export const createPayment = async (req: AuthenticatedRequest, res: Response) =>
             status: status || 'Paid', // Default to 'Paid' if not provided
             propertyId: tenant.propertyId,
             organizationId: req.user.organizationId,
-            recordedBy: new mongoose.Types.ObjectId(req.user.id)
+            recordedBy: req.user._id // FIX: Use _id
         });
 
         res.status(201).json({ success: true, data: newPayment });
