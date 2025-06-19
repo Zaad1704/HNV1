@@ -1,110 +1,64 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import jwt, { SignOptions } from 'jsonwebtoken';
 
-export interface IUser extends Document {
-  _id: Types.ObjectId;
-  name: string;
+interface IUser extends mongoose.Document {
   email: string;
-  password?: string;
-  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[];
-  organizationId: Types.ObjectId;
-  managedAgentIds: Types.ObjectId[];
-  associatedLandlordIds: Types.ObjectId[];
-  googleId?: string;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-
-  matchPassword(enteredPassword: string): Promise<boolean>;
-  getSignedJwtToken(): string;
-  getPasswordResetToken(): string;
+  password: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+  generateAuthToken(): string;
 }
 
-const userSchema = new Schema<IUser>(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, select: false },
-    role: {
-      type: String,
-      enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
-      default: 'Tenant',
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive', 'suspended'],
-      default: 'active',
-    },
-    permissions: { type: [String], default: [] },
-    organizationId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
-      required: true,
-    },
-    managedAgentIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    associatedLandlordIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    googleId: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+const userSchema = new mongoose.Schema<IUser>({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
   },
-  { timestamps: true }
-);
-
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) {
-    return next();
+  password: {
+    type: String,
+    required: true,
+    minlength: 8,
+    select: false
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
-// Method to compare entered password
-userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string) {
-  if (!this.password) return false;
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-// --- THIS IS THE CORRECTED FUNCTION ---
-// Generate and sign a JWT for the user
-userSchema.methods.getSignedJwtToken = function (this: IUser): string {
-  const jwtSecret = process.env.JWT_SECRET as string;
-  if (!jwtSecret) {
-    console.error('FATAL ERROR: JWT_SECRET is not defined in the deployment environment.');
-    throw new Error('Server configuration error: JWT secret is missing.');
+// Hash password before saving
+userSchema.pre<IUser>('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err as mongoose.CallbackError);
   }
-  const expiresIn = process.env.JWT_EXPIRE || '30d';
+});
 
-  // The arguments are now in the correct order: payload, secret, options
-  return jwt.sign({ id: this._id, role: this.role }, jwtSecret, { expiresIn });
+// Method to compare passwords
+userSchema.methods.comparePassword = async function(
+  candidatePassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate a password reset token
-userSchema.methods.getPasswordResetToken = function (this: IUser): string {
-  const resetToken = crypto.randomBytes(20).toString('hex');
+// Method to generate JWT token
+userSchema.methods.generateAuthToken = function(): string {
+  const payload = { id: this._id };
+  const secret = process.env.JWT_SECRET as string;
+  const options: SignOptions = { 
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d' 
+  };
 
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
+  if (!secret) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+  }
 
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-  return resetToken;
+  return jwt.sign(payload, secret, options);
 };
 
-export default mongoose.model<IUser>('User', userSchema);
+const User = mongoose.model<IUser>('User', userSchema);
+export default User;
