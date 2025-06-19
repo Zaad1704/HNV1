@@ -1,9 +1,9 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import Tenant from '../models/Tenant';
 import PDFDocument from 'pdfkit';
 
-export const generateMonthlyCollectionSheet = async (req: AuthenticatedRequest, res: Response) => {
+export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
