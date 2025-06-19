@@ -1,3 +1,4 @@
+// backend/controllers/propertyController.ts
 import { Request, Response } from 'express';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
@@ -37,6 +38,39 @@ export const getProperties = async (req: Request, res: Response) => {
   try {
     const properties = await Property.find({ organizationId: user.organizationId });
     res.status(200).json({ success: true, data: properties });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// ADDED THIS FUNCTION
+export const getPropertyById = async (req: Request, res: Response) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Not authorized' });
+  }
+
+  try {
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({
+        success: false,
+        message: 'Property not found'
+      });
+    }
+
+    if (!property.organizationId.equals(user.organizationId)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this property'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: property
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
