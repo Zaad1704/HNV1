@@ -1,39 +1,22 @@
+// backend/routes/authRoutes.ts
+
 import { Router } from "express";
-import User from "../models/User";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { 
+    registerUser, 
+    loginUser, 
+    getMe 
+} from '../controllers/authController';
+import { protect } from "../middleware/authMiddleware"; // Import the 'protect' middleware
+import { validate } from "../middleware/validateMiddleware";
+import { registerSchema } from "../validators/userValidator";
 
 const router = Router();
 
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email }).select("+password");
-    if (!user || !user.password) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
+// Public routes
+router.post('/register', validate(registerSchema), registerUser);
+router.post('/login', loginUser);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      return res.status(500).json({ message: "Server misconfiguration" });
-    }
-    const expiresIn = process.env.JWT_EXPIRE ? parseInt(process.env.JWT_EXPIRE, 10) : 60 * 60 * 24 * 30;
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      jwtSecret,
-      { expiresIn }
-    );
-
-    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// Protected route - This was missing
+router.get('/me', protect, getMe);
 
 export default router;
