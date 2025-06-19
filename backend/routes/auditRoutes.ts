@@ -1,13 +1,12 @@
-// backend/routes/auditRoutes.ts
-
 import { Router } from 'express';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { protect } from '../middleware/authMiddleware';
+import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 import AuditLog from '../models/AuditLog';
 
 const router = Router();
 
 // Protect all routes in this file and require Super Admin or Landlord role
-router.use(protect, authorize('Super Admin', 'Landlord'));
+router.use(protect, authorize(['Super Admin', 'Landlord']));
 
 // @desc    Get all audit logs for the user's organization (or all for Super Admin)
 // @route   GET /api/audit
