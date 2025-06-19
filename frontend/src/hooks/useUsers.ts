@@ -5,8 +5,9 @@ export function useUsers() {
   const [users, setUsers] = useState<any[]>([]);
 
   const fetchUsers = async () => {
-    const res = await api.get("/org/users");
-    setUsers(res.data);
+    // Corrected the endpoint to match the new route
+    const res = await apiClient.get("/users/organization"); 
+    setUsers(res.data.data); // Assuming the backend returns { success: true, data: [...] }
   };
 
   return { users, fetchUsers };
