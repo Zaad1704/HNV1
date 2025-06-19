@@ -4,9 +4,8 @@ import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import auditService from '../services/auditService';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose'; // Use Types
 
-// This function generates and sends the JWT token in a response
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
@@ -30,11 +29,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     
     const organization = new Organization({ name: `${name}'s Organization` });
     
-    // The organizationId is now required on the User model
     const user = new User({ name, email, password, role, organizationId: organization._id });
     
-    organization.owner = user._id as mongoose.Types.ObjectId;
-    organization.members.push(user._id as mongoose.Types.ObjectId);
+    organization.owner = user._id;
+    organization.members.push(user._id);
 
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
@@ -45,14 +43,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         trialExpiresAt: trialEndDate,
     });
     
-    organization.subscription = subscription._id as mongoose.Types.ObjectId;
+    organization.subscription = subscription._id;
     
     await organization.save();
     await user.save();
     await subscription.save();
     
-    // Now that organizationId is required on user, this call is safe
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_REGISTER', { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() });
+    // Pass correct ObjectId type
+    auditService.recordAction(user._id, organization._id, 'USER_REGISTER', { registeredUserId: user._id.toString() });
     sendTokenResponse(user, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -63,7 +61,6 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
     
-    // We select the password field explicitly as it's not returned by default
     const user = await User.findOne({ email }).select('+password');
     
     if (!user) {
@@ -74,29 +71,62 @@ export const loginUser = async (req: Request, res: Response) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
-        // user.organizationId is guaranteed to exist due to the model change
-        auditService.recordAction(
-            user._id as mongoose.Types.ObjectId, 
-            user.organizationId, 
-            'LOGIN_FAILURE', 
-            { reason: 'Incorrect password' }
-        );
+        // Pass correct ObjectId type
+        auditService.recordAction(user._id, user.organizationId, 'LOGIN_FAILURE', { reason: 'Incorrect password' });
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // user.organizationId is guaranteed to exist
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_LOGIN', {});
+    // Pass correct ObjectId type
+    auditService.recordAction(user._id, user.organizationId, 'USER_LOGIN', {});
     sendTokenResponse(user, 200, res);
 };
 
-// The 'AuthenticatedRequest' type is no longer needed as we augmented the global Express.Request type
 export const getMe = async (req: Request, res: Response) => { 
     if (!req.user) return res.status(404).json({ success: false, message: 'User not found' });
     
-    const fullUserData = await User.findById(req.user.id).populate({
+    // Use req.user._id instead of req.user.id
+    const fullUserData = await User.findById(req.user._id).populate({
         path: 'organizationId',
         select: 'name status subscription',
         populate: { path: 'subscription', model: 'Subscription' }
     });
     res.status(200).json({ success: true, data: fullUserData }); 
 };
+
+/* ========== backend/controllers/cmsController.ts ========== */
+// (Code for this controller - ensure no AuthenticatedRequest import)
+import { Request, Response, NextFunction } from 'express';
+import CMSContent from '../models/CMSContent';
+
+interface UpdateBody { [key: string]: any; }
+
+export async function getAllContent(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const items = await CMSContent.find();
+    res.json(items.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {}));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateContent(req: Request<{}, {}, UpdateBody>, res: Response, next: NextFunction) {
+  try {
+    const updates = req.body;
+    // CORRECTED: Use optional chaining and _id
+    const userId = req.user?._id; 
+    const keys = Object.keys(updates);
+    const results = [];
+    for (const key of keys) {
+      const value = updates[key];
+      const updated = await CMSContent.findOneAndUpdate(
+        { key },
+        { value, updatedBy: userId, updatedAt: new Date() },
+        { upsert: true, new: true }
+      );
+      results.push(updated);
+    }
+    res.json({ success: true, updated: results });
+  } catch (err) {
+    next(err);
+  }
+}
