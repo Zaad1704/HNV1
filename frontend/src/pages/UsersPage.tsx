@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "../api/client";
 import { useAuthStore } from "../store/authStore";
-import { PlusCircle, Send, UserCheck, UserX } from "lucide-react";
+import { PlusCircle, Send } from "lucide-react";
 
 // --- React Query Fetch Functions ---
 const fetchOrgUsers = async () => {
   const { data } = await apiClient.get("/users/organization");
   return data.data;
 };
+
 const fetchManagedAgents = async () => {
   const { data } = await apiClient.get("/users/my-agents");
   return data.data;
@@ -26,7 +27,7 @@ const UsersPage: React.FC = () => {
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteError, setInviteError] = useState("");
 
-    // Fetch all users in the organization
+    // Fetch all users in the organization for the general list
     const { data: orgUsers = [], isLoading: isLoadingOrgUsers } = useQuery({ queryKey: ['orgUsers'], queryFn: fetchOrgUsers });
 
     // Fetch agents specifically managed by this Landlord
@@ -42,6 +43,7 @@ const UsersPage: React.FC = () => {
             alert(`Invitation sent to ${inviteEmail}`);
             setInviteEmail("");
             setInviteModalOpen(false);
+            // Optional: refetch agent list if you want to show pending invites
         },
         onError: (error: any) => {
             setInviteError(error.response?.data?.message || "Failed to send invitation.");
@@ -74,10 +76,10 @@ const UsersPage: React.FC = () => {
   return (
     <div className="text-white space-y-10">
       
-      {/* --- Agent Management Section (For Landlords) --- */}
+      {/* --- Agent Management Section (For Landlords Only) --- */}
       {user?.role === 'Landlord' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <h2 className="text-2xl font-bold">Manage Your Agents / Managers</h2>
             <button 
                 onClick={() => setInviteModalOpen(true)}
@@ -89,24 +91,26 @@ const UsersPage: React.FC = () => {
           </div>
           <div className="bg-slate-800/70 rounded-2xl border border-slate-700">
              {isLoadingAgents ? <p className="p-4 text-center">Loading agents...</p> : (
-                <table className="w-full text-left">
-                    <thead className="border-b border-slate-700">
-                        <tr>
-                            <th className="p-4 text-sm font-semibold text-slate-400">Name</th>
-                            <th className="p-4 text-sm font-semibold text-slate-400">Email</th>
-                            <th className="p-4 text-sm font-semibold text-slate-400">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {managedAgents.map((agent: any) => (
-                            <tr key={agent._id} className="border-t border-slate-800">
-                                <td className="p-4">{agent.name}</td>
-                                <td className="p-4 text-slate-400">{agent.email}</td>
-                                <td className="p-4">{getStatusChip(agent.status)}</td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="border-b border-slate-700">
+                            <tr>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Name</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Email</th>
+                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Status</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {managedAgents.map((agent: any) => (
+                                <tr key={agent._id} className="border-t border-slate-800 hover:bg-slate-800">
+                                    <td className="p-4">{agent.name}</td>
+                                    <td className="p-4 text-slate-400">{agent.email}</td>
+                                    <td className="p-4">{getStatusChip(agent.status)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
              )}
              { !isLoadingAgents && managedAgents.length === 0 && <p className="p-8 text-center text-slate-500">You have not invited any agents yet.</p>}
           </div>
@@ -118,9 +122,9 @@ const UsersPage: React.FC = () => {
         <h2 className="text-2xl font-bold mb-4">All Users in Your Organization</h2>
         <div className="bg-slate-800/70 rounded-2xl border border-slate-700">
             {isLoadingOrgUsers ? <p className="p-4 text-center">Loading users...</p> : (
-                <ul>
+                <ul className="divide-y divide-slate-800">
                     {orgUsers.map((u: any) => (
-                        <li key={u._id} className="flex justify-between items-center p-4 border-b border-slate-800 last:border-b-0">
+                        <li key={u._id} className="flex justify-between items-center p-4">
                             <div>
                                 <p className="font-bold">{u.name}</p>
                                 <p className="text-sm text-slate-400">{u.email}</p>
@@ -156,7 +160,7 @@ const UsersPage: React.FC = () => {
                       </div>
                       {inviteError && <p className="text-sm text-red-400">{inviteError}</p>}
                       <div className="flex justify-end gap-4 pt-2">
-                           <button type="button" onClick={() => setInviteModalOpen(false)} className="px-4 py-2 bg-slate-600 rounded-lg">Cancel</button>
+                           <button type="button" onClick={() => { setInviteModalOpen(false); setInviteError(""); }} className="px-4 py-2 bg-slate-600 rounded-lg">Cancel</button>
                            <button type="submit" disabled={inviteMutation.isPending} className="flex items-center gap-2 px-4 py-2 bg-cyan-600 rounded-lg disabled:bg-cyan-800">
                                {inviteMutation.isPending ? 'Sending...' : 'Send Invitation'} <Send size={16}/>
                            </button>
