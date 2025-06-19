@@ -8,6 +8,29 @@ import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 import axios from 'axios'; // Used for making API calls to 2Checkout
 
+// @desc    Get the subscription details for the current user's organization
+// @route   GET /api/billing
+export const getSubscriptionDetails = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'User not authenticated.' });
+    }
+
+    try {
+        const subscription = await Subscription.findOne({ organizationId: req.user.organizationId })
+            .populate('planId'); // Populate the plan details
+
+        if (!subscription) {
+            return res.status(404).json({ success: false, message: 'Subscription not found.' });
+        }
+
+        res.status(200).json({ success: true, data: subscription });
+    } catch (error) {
+        console.error('Error fetching subscription details:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+
 // This function now builds a real 2Checkout payload
 export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response) => {
     const { planId } = req.body;
