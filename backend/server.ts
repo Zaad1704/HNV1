@@ -27,6 +27,7 @@ import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
 import localizationRoutes from './routes/localizationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import uploadRoutes from './routes/uploadRoutes'; // NEW IMPORT
 
 dotenv.config();
 
@@ -48,17 +49,12 @@ const connectDB = async (): Promise<void> => {
 };
 connectDB();
 
-// --- CORS CONFIGURATION START ---
-const envOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
-  : [];
-  
-// CORRECTED THIS ARRAY
+// --- CORS CONFIGURATION ---
 const allowedOrigins: string[] = [
-  ...envOrigins,
+  process.env.CORS_ORIGIN || '',
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com' // This must match the name of your frontend service from render.yaml
-];
+  'https://hnv-saas-frontend.onrender.com' // Ensure this matches your frontend service name
+].filter(Boolean);
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
@@ -70,14 +66,17 @@ const corsOptions: CorsOptions = {
   },
   credentials: true,
 };
-// --- CORS CONFIGURATION END ---
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+
+// Serve static files from the 'public' directory at the project root
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes); // NEW ROUTE
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
