@@ -5,14 +5,14 @@ import crypto from 'crypto';
 
 // Interface for the User document
 export interface IUser extends Document {
-  _id: Types.ObjectId; // Explicitly define _id as the correct type
+  _id: Types.ObjectId; 
   name: string;
   email: string;
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
   status: 'active' | 'inactive' | 'suspended';
   permissions: string[];
-  organizationId: Types.ObjectId; // Use Types.ObjectId
+  organizationId: Types.ObjectId;
   createdAt: Date;
   managedAgentIds?: Types.ObjectId[];
   associatedLandlordIds?: Types.ObjectId[];
@@ -93,7 +93,7 @@ userSchema.methods.matchPassword = async function (enteredPassword: string): Pro
 
 // Method to generate JWT
 userSchema.methods.getSignedJwtToken = function (): string {
-    // FIX: The payload should contain the user ID as a string.
+    // FIX: The payload 'id' must be a string. Convert the ObjectId to a string.
     return jwt.sign({ id: this._id.toString() }, process.env.JWT_SECRET as string, {
       expiresIn: process.env.JWT_EXPIRE || '1d',
     });
