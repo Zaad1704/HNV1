@@ -4,7 +4,8 @@ import {
     getAllOrganizations, 
     updateOrganizationStatus,
     getPlatformGrowthData,
-    getPlanDistributionData
+    getPlanDistributionData,
+    getAllUsers // Import the new function
 } from '../controllers/superAdminController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
@@ -21,5 +22,9 @@ router.get('/plan-distribution', getPlanDistributionData);
 // Routes for managing organizations
 router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/status', updateOrganizationStatus);
+
+// Add the new route for getting all users
+router.get('/users', getAllUsers);
+
 
 export default router;
