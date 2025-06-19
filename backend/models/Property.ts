@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-// Interface for the address sub-document
 interface IAddress {
   street: string;
   city: string;
@@ -9,28 +8,23 @@ interface IAddress {
   formattedAddress?: string;
 }
 
-// Interface for the GeoJSON location sub-document
 interface ILocation {
   type: 'Point';
-  coordinates: [number, number]; // [longitude, latitude]
+  coordinates: [number, number];
 }
 
-// --- Main TypeScript Interface for the Property Document ---
-// This defines the shape of a property object in your application.
 export interface IProperty extends Document {
   name: string;
   address: IAddress;
   location?: ILocation;
   numberOfUnits: number;
-  organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-  createdBy: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  organizationId: mongoose.Types.ObjectId;
+  createdBy: mongoose.Types.ObjectId; // This will always be the Landlord
+  managedByAgentId?: mongoose.Types.ObjectId; // NEW: The assigned Agent/Manager
   status: 'Active' | 'Inactive' | 'Under Renovation';
   createdAt: Date;
 }
 
-// --- Mongoose Schema Definition ---
-// This is the blueprint for how property data is stored in MongoDB.
-// It is now strongly typed with the IProperty interface.
 const PropertySchema: Schema<IProperty> = new Schema({
   name: {
     type: String,
@@ -69,6 +63,10 @@ const PropertySchema: Schema<IProperty> = new Schema({
     ref: 'User',
     required: true,
   },
+  managedByAgentId: { // NEW SCHEMA FIELD
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
   status: {
     type: String,
     enum: ['Active', 'Inactive', 'Under Renovation'],
@@ -80,23 +78,17 @@ const PropertySchema: Schema<IProperty> = new Schema({
   },
 });
 
-// --- Mongoose Middleware for Geocoding (with TypeScript) ---
+// ... (keep existing PropertySchema.pre middleware)
 PropertySchema.pre<IProperty>('save', async function(next) {
-    // For demonstration, we'll assign random coordinates to simulate geocoding.
-    // A developer would integrate a real geocoding service here.
     this.location = {
         type: 'Point',
         coordinates: [
-            -74.0060 + (Math.random() - 0.5) * 0.1, // Random Longitude near NYC
-            40.7128 + (Math.random() - 0.5) * 0.1   // Random Latitude near NYC
+            -74.0060 + (Math.random() - 0.5) * 0.1,
+            40.7128 + (Math.random() - 0.5) * 0.1
         ]
     };
-
-    // We can also create a single formatted address string.
     this.address.formattedAddress = `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}`;
-    
     next();
 });
 
-// Export the compiled model
 export default model<IProperty>('Property', PropertySchema);
