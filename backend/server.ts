@@ -49,8 +49,9 @@ const allowedOrigins: string[] = [
   'https://hnv-1-frontend.onrender.com'
 ];
 
+// This block is corrected
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
