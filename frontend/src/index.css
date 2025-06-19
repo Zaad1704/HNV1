@@ -1,7 +1,13 @@
+/* frontend/src/index.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: #f8fafc;
+  background: #0f172a; /* A dark background color for the body */
 }
