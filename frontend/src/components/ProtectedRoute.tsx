@@ -1,25 +1,28 @@
 // frontend/src/components/ProtectedRoute.tsx
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
-// This is a placeholder for your real authentication logic
-const useAuth = () => {
-  // For now, let's pretend the user is always logged in.
-  // In your real app, you would check for a token in localStorage.
-  const user = { loggedIn: true }; 
-  return user && user.loggedIn;
-};
+// A simple loading component for the loading state
+const FullScreenLoader = () => (
+    <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="text-white text-lg">Loading...</div>
+    </div>
+);
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = useAuth();
+const ProtectedRoute = () => {
+  const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated) {
-    // Redirect them to the login page if they are not authenticated
-    return <Navigate to="/login" />;
+  // This handles the brief moment after login or on page refresh
+  // where we are authenticated but haven't fetched the user object yet.
+  if (isAuthenticated && !user) {
+    return <FullScreenLoader />;
   }
 
-  return children;
+  // If authenticated and user is loaded, show the nested content (e.g., the dashboard).
+  // Otherwise, redirect to the login page.
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;
