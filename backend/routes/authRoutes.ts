@@ -1,5 +1,5 @@
 import { Router } from "express";
-import User from "../models/User"; // Adjust path if needed
+import User from "../models/User"; // Adjust path as needed
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -8,7 +8,7 @@ const router = Router();
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    // 1. Find user by email, request password field explicitly
+    // 1. Find user, make sure password is selected
     const user = await User.findOne({ email }).select("+password");
     if (!user || !user.password) {
       console.log(`Login failed: user not found or no password for email ${email}`);
@@ -29,6 +29,7 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ message: "Server misconfiguration" });
     }
     const expiresIn = process.env.JWT_EXPIRE || "30d";
+    // Pass expiresIn as part of options (third param)
     const token = jwt.sign(
       { id: user._id, role: user.role },
       jwtSecret,
