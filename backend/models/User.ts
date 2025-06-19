@@ -1,5 +1,3 @@
-// models/User.ts
-
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -81,6 +79,7 @@ userSchema.methods.matchPassword = async function (this: IUser, enteredPassword:
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// --- THIS IS THE CORRECTED FUNCTION ---
 // Generate and sign a JWT for the user
 userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   const jwtSecret = process.env.JWT_SECRET as string;
@@ -90,6 +89,7 @@ userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   }
   const expiresIn = process.env.JWT_EXPIRE || '30d';
 
+  // The arguments are now in the correct order: payload, secret, options
   return jwt.sign({ id: this._id, role: this.role }, jwtSecret, { expiresIn });
 };
 
@@ -97,16 +97,13 @@ userSchema.methods.getSignedJwtToken = function (this: IUser): string {
 userSchema.methods.getPasswordResetToken = function (this: IUser): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
 
-  // Assign the hashed token to the user document's properties
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
 
-  // Set expiration (e.g., 10 minutes)
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Return the unhashed token to be sent to the user
   return resetToken;
 };
 
