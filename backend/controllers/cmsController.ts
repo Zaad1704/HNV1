@@ -1,4 +1,4 @@
-// FIX: Removed the duplicate import line.
+// FIX: Removed the duplicate import line and added Request.
 import { Request, Response, NextFunction } from "express";
 import CMSContent from "../models/CMSContent";
 
@@ -22,9 +22,13 @@ export async function getAllContent(_req: Request, res: Response, next: NextFunc
 // Update or create content item
 export async function updateContent(req: Request<{}, {}, UpdateBody>, res: Response, next: NextFunction) {
   try {
+    // FIX: Add a guard clause to ensure req.user is not undefined.
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+    }
     const updates = req.body;
-    // This relies on your custom type definition for req.user
-    const userId = req.user.id; 
+    // FIX: Access the user's ID via `_id` not `id`.
+    const userId = req.user._id; 
     const keys = Object.keys(updates);
 
     const results = [];
