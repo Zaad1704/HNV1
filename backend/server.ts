@@ -4,7 +4,7 @@ import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
 
-// --- UPDATED: Use default imports for all routes ---
+// --- CORRECTED: Use default imports for all routes ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -49,26 +49,23 @@ connectDB();
 const allowedOrigins: string[] = [
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com'
-  // Add other origins as needed
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  },
-  credentials: true,
+  }
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
 
 // --- Mount All API Routes ---
 app.use('/api/auth', authRoutes);
