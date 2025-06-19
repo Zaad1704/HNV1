@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response } from 'express'; // FIX: Import Request
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 
