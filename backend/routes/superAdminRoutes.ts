@@ -6,7 +6,12 @@ import {
     getPlatformGrowthData,
     getPlanDistributionData,
     getAllUsers,
-    getBillingData // Import the new function
+    getBillingData,
+    // --- Import new functions ---
+    createModerator,
+    getModerators,
+    updateModerator,
+    updateUserStatus
 } from '../controllers/superAdminController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
@@ -15,20 +20,29 @@ const router = Router();
 // This middleware protects all subsequent routes in this file for Super Admins only
 router.use(protect, authorize('Super Admin'));
 
-// Routes for dashboard data
+// --- Existing Routes ---
+// ... (keep all existing routes like /dashboard-stats, /organizations, /users, /billing, etc.)
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/platform-growth', getPlatformGrowthData);
 router.get('/plan-distribution', getPlanDistributionData);
-
-// Routes for managing organizations
 router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/status', updateOrganizationStatus);
-
-// Add the new route for getting all users
 router.get('/users', getAllUsers);
-
-// Add the new route for getting all billing info
 router.get('/billing', getBillingData);
+
+
+// --- NEW Moderator Management Routes ---
+router.route('/moderators')
+    .post(createModerator)
+    .get(getModerators);
+
+router.route('/moderators/:id')
+    .put(updateModerator);
+
+
+// --- NEW General User Management Route ---
+router.route('/users/:id/status')
+    .put(updateUserStatus);
 
 
 export default router;
