@@ -1,110 +1,104 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import { Request, Response } from 'express';
+import User from '../models/user.model';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 
-export interface IUser extends Document {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  password?: string;
-  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[];
-  organizationId: Types.ObjectId;
-  managedAgentIds: Types.ObjectId[];
-  associatedLandlordIds: Types.ObjectId[];
-  googleId?: string;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, role } = req.body;
 
-  matchPassword(enteredPassword: string): Promise<boolean>;
-  getSignedJwtToken(): string;
-  getPasswordResetToken(): string;
-}
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
-const userSchema = new Schema<IUser>(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, select: false },
-    role: {
-      type: String,
-      enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
-      default: 'Tenant',
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive', 'suspended'],
-      default: 'active',
-    },
-    permissions: { type: [String], default: [] },
-    organizationId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
-      required: true,
-    },
-    managedAgentIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    associatedLandlordIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    googleId: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
-  },
-  { timestamps: true }
-);
+    const user = new User({ name, email, password, role });
+    await user.save();
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) {
-    return next();
+    const token = user.getSignedJwtToken();
+    res.json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-// Method to compare entered password
-userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string) {
-  if (!this.password) return false;
-  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// --- THIS IS THE CORRECTED FUNCTION ---
-// Generate and sign a JWT for the user
-userSchema.methods.getSignedJwtToken = function (this: IUser): string {
-  const jwtSecret = process.env.JWT_SECRET as string;
-  if (!jwtSecret) {
-    console.error('FATAL ERROR: JWT_SECRET is not defined in the deployment environment.');
-    throw new Error('Server configuration error: JWT secret is missing.');
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = user.getSignedJwtToken();
+    res.json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-  const expiresIn = process.env.JWT_EXPIRE || '30d';
-
-  // Correct Order: 1. Payload, 2. Secret, 3. Options
-  return jwt.sign({ id: this._id, role: this.role }, jwtSecret, { expiresIn });
 };
 
-// Method to generate a password reset token
-userSchema.methods.getPasswordResetToken = function (this: IUser): string {
-  const resetToken = crypto.randomBytes(20).toString('hex');
+export const getMe = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-  return resetToken;
+    res.json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
-export default mongoose.model<IUser>('User', userSchema);
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const resetToken = user.getPasswordResetToken();
+    await user.save();
+
+    const resetUrl = `http://localhost:3000/passwordreset/${resetToken}`;
+    // Send email with reset link
+    console.log(resetUrl);
+    res.json({ message: 'Password reset link sent to your email' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid token or token has expired' });
+    }
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
