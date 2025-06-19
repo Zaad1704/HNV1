@@ -19,7 +19,7 @@ import billingRoutes from './routes/billingRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
 import translationRoutes from './routes/translationRoutes';
-import invitationRoutes from './routes/invitationRoutes'; // Import the new invitation routes
+import invitationRoutes from './routes/invitationRoutes';
 
 dotenv.config();
 
@@ -76,7 +76,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/translate', translationRoutes);
-app.use('/api/invitations', invitationRoutes); // Mount the new invitation routes
+app.use('/api/invitations', invitationRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 
 app.get('/', (req: Request, res: Response) => {
