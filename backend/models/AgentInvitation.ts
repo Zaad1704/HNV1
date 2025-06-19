@@ -21,12 +21,10 @@ const AgentInvitationSchema = new Schema<IAgentInvitation>({
   expiresAt: { type: Date, required: true },
 }, { timestamps: true });
 
-// Before saving, create the unique token
 AgentInvitationSchema.pre<IAgentInvitation>('validate', function(next) {
     if (this.isNew) {
         this.token = crypto.randomBytes(32).toString('hex');
-        // Set token to expire in 7 days
-        this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 day expiry
     }
     next();
 });
