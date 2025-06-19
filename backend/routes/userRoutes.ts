@@ -1,27 +1,32 @@
 import { Router } from 'express';
+// --- CORRECTED CONTROLLER IMPORTS ---
+// The function names now match what is exported from the controller.
 import {
-  getUsers,
-  getUser,
+  getAllUsers,
+  getUserById,
   updateUser,
   deleteUser,
 } from '../controllers/userController';
-import { protect } from '../middleware/authMiddleware';
-// Assuming you have an admin middleware, if not, you might need to adjust this
-import { admin } from '../middleware/adminMiddleware'; 
+import { authenticate } from '../middleware/authMiddleware';
+// --- CORRECTED MIDDLEWARE IMPORT ---
+// Import 'authorize' from rbac.ts instead of 'admin' from a non-existent file.
+import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
-// This middleware will apply protection and admin checks to all routes in this file
-router.use(protect, admin);
+// This middleware will apply authentication to all routes in this file first.
+router.use(authenticate);
 
-router.route('/').get(getUsers);
+// --- CORRECTED ROUTE DEFINITIONS ---
+// The authorize middleware is now used correctly.
+// The controller function names now match the corrected imports.
+router.route('/').get(authorize('admin'), getAllUsers);
 
 router
   .route('/:id')
-  .get(getUser)
-  .put(updateUser)
-  .delete(deleteUser);
+  .get(authorize('admin'), getUserById)
+  .put(authorize('admin'), updateUser)
+  .delete(authorize('admin'), deleteUser);
 
-// --- CORRECTED LINE ---
-// Changed from a named export to a default export for consistency.
+// This default export is correct.
 export default router;
