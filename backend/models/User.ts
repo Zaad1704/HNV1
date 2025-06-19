@@ -1,107 +1,57 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import mongoose, { Document, Schema } from "mongoose";
+import jwt, { SignOptions } from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
-  _id: Types.ObjectId;
-  name: string;
   email: string;
-  password?: string;
-  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[];
-  organizationId: Types.ObjectId;
-  managedAgentIds: Types.ObjectId[];
-  associatedLandlordIds: Types.ObjectId[];
-  googleId?: string;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-
-  matchPassword(enteredPassword: string): Promise<boolean>;
+  password: string;
   getSignedJwtToken(): string;
-  getPasswordResetToken(): string;
+  // Add other user fields as needed
 }
 
 const userSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, select: false },
-    role: {
+    email: {
       type: String,
-      enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
-      default: 'Tenant',
+      required: [true, "Please provide an email address"],
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    status: {
+    password: {
       type: String,
-      enum: ['active', 'inactive', 'suspended'],
-      default: 'active',
+      required: [true, "Please provide a password"],
+      minlength: 6,
+      select: false,
     },
-    permissions: { type: [String], default: [] },
-    organizationId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
-      required: true,
-    },
-    managedAgentIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    associatedLandlordIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    googleId: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+    // Add other fields as needed
   },
   { timestamps: true }
 );
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) {
-    return next();
-  }
+// Password encryption middleware
+userSchema.pre<IUser>("save", async function (next) {
+  if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Method to compare entered password
-userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string) {
-  if (!this.password) return false;
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-// Generate and sign a JWT for the user
-userSchema.methods.getSignedJwtToken = function (this: IUser): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  if (typeof jwtSecret !== 'string') {
-    throw new Error('Server configuration error: JWT secret is missing.');
+userSchema.methods.getSignedJwtToken = function () {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
   }
-  const expiresIn = process.env.JWT_EXPIRE || "30d";
-  const options = { expiresIn } as any;
-  return jwt.sign({ id: this._id, role: this.role }, jwtSecret, options);
+
+  // Explicitly define the options object with the SignOptions type
+  const jwtOptions: SignOptions = {
+    expiresIn: process.env.JWT_EXPIRE || "30d"
+  };
+
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_SECRET,
+    jwtOptions
+  );
 };
 
-// Method to generate a password reset token
-userSchema.methods.getPasswordResetToken = function (this: IUser): string {
-  const resetToken = crypto.randomBytes(20).toString('hex');
-
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-  return resetToken;
-};
-
-export default mongoose.model<IUser>('User', userSchema);
+export default mongoose.model<IUser>("User", userSchema);
