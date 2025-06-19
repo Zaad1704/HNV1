@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     try {
         let query: any = {};
         
-        // CORRECTED: Use optional chaining
+        // With the corrected global types, these accesses are now valid.
         if (req.user?.role !== 'Super Admin') {
             query.organizationId = req.user?.organizationId;
         }
