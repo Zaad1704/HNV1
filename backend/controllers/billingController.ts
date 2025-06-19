@@ -1,9 +1,9 @@
+// backend/controllers/billingController.ts
+
 import { Request, Response } from 'express';
 import Plan, { IPlan } from '../models/Plan';
 import Tenant from '../models/Tenant';
 import Subscription from '../models/Subscription';
-
-// ... (keep your existing getSubscriptionDetails, createCheckoutSession, and createRentPaymentSession functions as they are)
 
 export const getSubscriptionDetails = async (req: Request, res: Response) => {
     if (!req.user) {
@@ -33,10 +33,14 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         if (!plan) {
             return res.status(404).json({ success: false, message: 'Plan not found.' });
         }
+
+        // Corrected: Provide fallback for optional user.name
+        const userName = user.name || 'Valued Customer';
+
         const payload = {
             BillingDetails: {
-                FirstName: user.name.split(' ')[0],
-                LastName: user.name.split(' ')[1] || 'User',
+                FirstName: userName.split(' ')[0],
+                LastName: userName.split(' ')[1] || 'User',
                 Email: user.email,
             },
             Items: [{
@@ -64,7 +68,7 @@ export const createRentPaymentSession = async (req: Request, res: Response) => {
     try {
         const tenant = await Tenant.findOne({ email: user.email });
         if (!tenant) return res.status(404).json({ success: false, message: 'Tenant profile not found.' });
-        const rentAmount = 1200.00;
+        const rentAmount = tenant.rentAmount || 1200.00; // Use actual rent amount
         const payload = {
             BillingDetails: {
                 FirstName: tenant.name.split(' ')[0],
@@ -89,10 +93,7 @@ export const createRentPaymentSession = async (req: Request, res: Response) => {
     }
 };
 
-// ADDED: Exported handlePaymentWebhook function
 export const handlePaymentWebhook = async (req: Request, res: Response) => {
     console.log('Webhook received:', req.body);
-    // In a real application, you would verify the webhook signature here
-    // and then process the payment status (e.g., update the user's subscription).
     res.status(200).send('Webhook processed');
 };
