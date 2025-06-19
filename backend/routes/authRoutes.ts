@@ -6,7 +6,7 @@ import {
   getMe,
   forgotPassword,
   resetPassword,
-} from '../controllers/auth.controller';
+} from '../controllers/authController'; // Corrected import path
 import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -30,6 +30,7 @@ router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login', session: false }),
   (req, res) => {
+    // Add a type assertion or check for req.user as needed:
     const token = (req.user as any).getSignedJwtToken();
     res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${token}`);
   }
