@@ -89,10 +89,10 @@ userSchema.methods.getSignedJwtToken = function (): string {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     throw new Error('JWT_SECRET is not defined');
   }
-  
+ 
   return jwt.sign(
-    { id: this._id, role: this.role },             // 1. Payload
-    process.env.JWT_SECRET,                        // 2. Secret
+    { id: this._id, role: this.role },         // 1. Payload
+    process.env.JWT_SECRET,                    // 2. Secret
     { expiresIn: process.env.JWT_EXPIRE || '30d' } // 3. Options
   );
 };
