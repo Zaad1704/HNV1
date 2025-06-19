@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed due to global type augmentation.
 import Plan from '../models/Plan';
 import Tenant from '../models/Tenant';
 import Subscription from '../models/Subscription';
@@ -10,7 +10,7 @@ import axios from 'axios'; // Used for making API calls to 2Checkout
 
 // @desc    Get the subscription details for the current user's organization
 // @route   GET /api/billing
-export const getSubscriptionDetails = async (req: AuthenticatedRequest, res: Response) => {
+export const getSubscriptionDetails = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'User not authenticated.' });
     }
@@ -32,7 +32,7 @@ export const getSubscriptionDetails = async (req: AuthenticatedRequest, res: Res
 
 
 // This function now builds a real 2Checkout payload
-export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response) => {
+export const createCheckoutSession = async (req: Request, res: Response) => { // FIX: Use Request
     const { planId } = req.body;
     const user = req.user;
 
@@ -103,7 +103,7 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
 };
 
 // This function now also builds a real 2Checkout payload for a one-time payment
-export const createRentPaymentSession = async (req: AuthenticatedRequest, res: Response) => {
+export const createRentPaymentSession = async (req: Request, res: Response) => { // FIX: Use Request
     const user = req.user;
     if (!user) return res.status(401).json({ success: false, message: 'User not authenticated.' });
 
