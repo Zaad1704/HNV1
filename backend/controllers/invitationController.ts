@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import User from '../models/User';
 import AgentInvitation from '../models/AgentInvitation';
 import emailService from '../services/emailService';
@@ -8,7 +8,7 @@ import Plan from '../models/Plan';
 
 // @desc    Invite an Agent to a Landlord's organization
 // @route   POST /api/invitations/invite-agent
-export const inviteAgent = async (req: AuthenticatedRequest, res: Response) => {
+export const inviteAgent = async (req: Request, res: Response) => { // FIX: Use Request
     const { recipientEmail } = req.body;
     const inviter = req.user;
 
