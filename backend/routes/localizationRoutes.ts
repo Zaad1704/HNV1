@@ -1,13 +1,11 @@
-import { Router } from 'express';
-import { detectLocale } from '../controllers/localizationController';
+import { Router } from "express";
 
 const router = Router();
 
-/**
- * @route   GET /api/localization/detect
- * @desc    Detects user's language and currency based on their IP address.
- * @access  Public
- */
-router.get('/detect', detectLocale);
+// Simple IP-based or default language detection (customize as needed)
+router.get('/detect', (req, res) => {
+  // For now, always return 'en' as the default language
+  res.json({ language: "en" });
+});
 
 export default router;
