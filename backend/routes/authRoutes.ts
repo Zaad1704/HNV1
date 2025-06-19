@@ -1,39 +1,38 @@
-import { Router } from 'express';
-import passport from 'passport';
-import {
-  registerUser,
-  loginUser,
-  getMe,
-  forgotPassword,
-  resetPassword,
-} from '../controllers/authController'; // Corrected import path
-import { protect } from '../middleware/authMiddleware';
+import { Router } from "express";
+import User from "../models/User"; // adjust as needed for your model structure
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
-// Local Authentication Routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/me', protect, getMe);
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // 1. Find user by email
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      console.log(`Login failed: user not found for email ${email}`);
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
-// Password Reset Routes
-router.post('/forgotpassword', forgotPassword);
-router.put('/passwordreset/:token', resetPassword);
+    // 2. Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log(`Login failed: incorrect password for email ${email}`);
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
-// Google OAuth 2.0 Authentication Routes
-router.get(
-  '/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
-
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', session: false }),
-  (req, res) => {
-    // Add a type assertion or check for req.user as needed:
-    const token = (req.user as any).getSignedJwtToken();
-    res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${token}`);
+    // 3. If all good, generate JWT and return
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: process.env.JWT_EXPIRE || "30d" }
+    );
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
   }
-);
+});
 
 export default router;
