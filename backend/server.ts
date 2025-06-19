@@ -1,3 +1,5 @@
+// backend/server.ts
+
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
@@ -23,7 +25,8 @@ import invitationRoutes from './routes/invitationRoutes';
 import sharingRoutes from './routes/sharingRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
-import localizationRoutes from './routes/localizationRoutes'; // <-- NEW
+import localizationRoutes from './routes/localizationRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
 
 dotenv.config();
 
@@ -49,10 +52,12 @@ connectDB();
 const envOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(s => s.trim())
   : [];
+  
+// CORRECTED THIS ARRAY
 const allowedOrigins: string[] = [
   ...envOrigins,
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com'
+  'https://hnv-saas-frontend.onrender.com' // This must match the name of your frontend service from render.yaml
 ];
 
 const corsOptions: CorsOptions = {
@@ -69,7 +74,7 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -90,7 +95,8 @@ app.use('/api/share', sharingRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/localization', localizationRoutes); // <-- NEW
+app.use('/api/localization', localizationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running');
