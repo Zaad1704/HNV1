@@ -24,7 +24,6 @@ import { sharingRoutes } from './routes/sharingRoutes';
 import { expenseRoutes } from './routes/expenseRoutes';
 import { maintenanceRoutes } from './routes/maintenanceRoutes';
 
-
 dotenv.config();
 
 const app: Express = express();
