@@ -8,11 +8,13 @@ interface IPlanLimits {
   maxTenants: number;
 }
 
-// Export this interface so other files (like your controller) can use it for type-checking.
+// Export this interface so other files can use it for type-checking.
 export interface IPlan extends Document {
   _id: Types.ObjectId;
   name: string;
   price: number;
+  // ADDED: duration property
+  duration: 'monthly' | 'yearly'; 
   features: string[];
   limits: IPlanLimits;
 }
@@ -27,6 +29,12 @@ const planSchema = new Schema<IPlan>(
     price: {
       type: Number,
       required: true,
+    },
+    // ADDED: duration schema definition
+    duration: {
+      type: String,
+      required: true,
+      enum: ['monthly', 'yearly'],
     },
     features: {
       type: [String],
