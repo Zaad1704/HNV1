@@ -1,37 +1,58 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { useLang } from "../contexts/LanguageContext";
-import Trans from "./Trans";
-const navLinks = [
-  { to: "/", en: "Home", bn: "[বেঙ্গলি হোম]" },
-  { to: "/about", en: "About Us", bn: "[আমাদের সম্পর্কে]" },
-  { to: "/services", en: "Services", bn: "[সেবা সমূহ]" },
-  { to: "/contact", en: "Contact", bn: "[যোগাযোগ]" },
-];
-export default function Navbar() {
-  const { lang, setLang } = useLang();
+// frontend/src/components/Navbar.tsx
+
+import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { ArrowRight } from 'lucide-react';
+
+const Navbar = () => {
+  const { data: settings } = useSiteSettings();
+
+  const navLinks = [
+    { name: 'Features', href: '/features' },
+    { name: 'About Us', href: '/about' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Contact', href: '/contact' },
+  ];
+
+  const getLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `font-medium transition-colors ${
+      isActive
+        ? 'text-yellow-400'
+        : 'text-slate-300 hover:text-yellow-400'
+    }`;
+
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50 font-sans">
-      <div className="container mx-auto px-4 flex items-center justify-between h-20">
-        <div className="flex items-center">
-          <img src="https://placehold.co/40x40/4F46E5/FFFFFF?text=PM" alt="ProManage Logo" className="h-10 w-10 rounded-md mr-3" />
-          <span className="font-bold text-2xl text-indigo-600">ProManage Solutions</span>
-        </div>
-        <nav className="hidden md:flex space-x-1 items-center">
-          {navLinks.map(link => (
-            <NavLink key={link.to} to={link.to}
-              className={({ isActive }) =>
-                `text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-md font-medium transition-colors ${isActive ? 'font-bold text-indigo-600' : ''}`
-              }>
-              <Trans en={link.en} bn={link.bn} />
+    <header className="bg-slate-900/70 backdrop-blur-lg shadow-lg sticky top-0 z-50">
+      <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+        <Link to="/" className="flex items-center space-x-3">
+          <img src={settings?.logos?.navbarLogoUrl} alt="HNV Logo" className="h-10" />
+        </Link>
+        
+        <nav className="hidden md:flex items-center space-x-8">
+          {navLinks.map((link) => (
+            <NavLink key={link.name} to={link.href} className={getLinkClass}>
+              {link.name}
             </NavLink>
           ))}
-          <div className="ml-4 flex items-center space-x-2">
-            <button onClick={() => setLang("en")} className={`px-3 py-1 border rounded-md text-sm font-medium ${lang === "en" ? "border-indigo-600 text-indigo-600 bg-indigo-50" : "border-gray-400 text-gray-500"}`}>EN</button>
-            <button onClick={() => setLang("bn")} className={`px-3 py-1 border rounded-md text-sm font-medium ${lang === "bn" ? "border-indigo-600 text-indigo-600 bg-indigo-50" : "border-gray-400 text-gray-500"}`}>BN</button>
-          </div>
         </nav>
+        
+        <div className="hidden md:flex items-center space-x-4">
+          <Link to="/login" className="font-semibold text-white hover:text-yellow-400">
+            Portal Log In
+          </Link>
+          <Link
+            to="/register"
+            className="font-bold text-slate-900 bg-yellow-500 hover:bg-yellow-400 py-2 px-5 rounded-lg flex items-center gap-2"
+          >
+            Get Started <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {/* Mobile menu button can be added here if needed */}
       </div>
     </header>
   );
-}
+};
+
+export default Navbar;
