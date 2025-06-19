@@ -11,6 +11,23 @@ const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     res.status(statusCode).json({ success: true, token });
 };
 
+// @desc    Get all users within the current user's organization
+// @route   GET /api/users/organization
+export const getOrganizationUsers = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    try {
+        const users = await User.find({ organizationId: req.user.organizationId })
+            .select('-password'); // Exclude password from results
+        
+        res.status(200).json({ success: true, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+
 export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(404).json({ success: false, message: 'User not found' });
