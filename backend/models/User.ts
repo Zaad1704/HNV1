@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose'; // CORRECTED: Import 'Types'
+import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -56,7 +56,7 @@ const userSchema: Schema<IUser> = new Schema({
     default: [],
   },
   organizationId: {
-    type: Schema.Types.ObjectId, // Schema definition uses Schema.Types
+    type: Schema.Types.ObjectId,
     ref: 'Organization',
     required: true,
   },
@@ -93,8 +93,8 @@ userSchema.methods.matchPassword = async function (enteredPassword: string): Pro
 
 // Method to generate JWT
 userSchema.methods.getSignedJwtToken = function (): string {
-    // CORRECTED: The payload is the first argument, the secret is the second.
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
+    // FIX: The payload should contain the user ID as a string.
+    return jwt.sign({ id: this._id.toString() }, process.env.JWT_SECRET as string, {
       expiresIn: process.env.JWT_EXPIRE || '1d',
     });
 };
