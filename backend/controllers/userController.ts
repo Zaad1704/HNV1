@@ -11,8 +11,6 @@ const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     res.status(statusCode).json({ success: true, token });
 };
 
-// @desc    Get all users within the current user's organization
-// @route   GET /api/users/organization
 export const getOrganizationUsers = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
@@ -26,7 +24,6 @@ export const getOrganizationUsers = async (req: AuthenticatedRequest, res: Respo
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
-
 
 export const getProfile = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
@@ -111,5 +108,38 @@ export const requestAccountDeletion = async (req: AuthenticatedRequest, res: Res
         res.status(200).json({ success: true, message: "Your account deletion request has been received." });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+// @desc    Update the branding for the user's organization
+// @route   PUT /api/users/organization/branding
+export const updateOrganizationBranding = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    
+    const { companyName, companyLogoUrl, companyAddress } = req.body;
+
+    try {
+        const organization = await Organization.findById(req.user.organizationId);
+
+        if (!organization) {
+            return res.status(404).json({ success: false, message: 'Organization not found' });
+        }
+
+        organization.branding = {
+            companyName: companyName || organization.branding?.companyName,
+            companyLogoUrl: companyLogoUrl || organization.branding?.companyLogoUrl,
+            companyAddress: companyAddress || organization.branding?.companyAddress,
+        };
+
+        await organization.save();
+
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'BRANDING_UPDATE');
+
+        res.status(200).json({ success: true, data: organization.branding });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
