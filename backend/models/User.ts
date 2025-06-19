@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt, { SignOptions, StringValue } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 export interface IUser extends Document {
@@ -85,8 +85,8 @@ userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   if (typeof jwtSecret !== 'string') {
     throw new Error('Server configuration error: JWT secret is missing.');
   }
-  const expiresIn: StringValue = (process.env.JWT_EXPIRE || "30d") as StringValue;
-  const options: SignOptions = { expiresIn };
+  const expiresIn = process.env.JWT_EXPIRE || "30d";
+  const options = { expiresIn } as any;
   return jwt.sign({ id: this._id, role: this.role }, jwtSecret, options);
 };
 
