@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
-import i18n from './services/i18n'; // Import i18n instance
+import i18n from './services/i18n';
 
 // --- Layout Components ---
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -40,18 +40,16 @@ import AdminBillingPage from './pages/AdminBillingPage';
 import AdminPlansPage from './pages/AdminPlansPage';
 import AdminProfilePage from './pages/SuperAdmin/AdminProfilePage';
 import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
+import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage'; // Import the new page
 
 const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
 
-// --- A simple loading spinner component to show while checking the session ---
 const FullScreenLoader = () => (
     <div className="flex items-center justify-center h-screen bg-slate-900">
         <div className="text-white text-lg">Loading Application...</div>
     </div>
 );
 
-
-// --- Route Protection Components ---
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
@@ -59,7 +57,7 @@ const ProtectedRoute = () => {
 
 const AdminRoute = () => {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = isAuthenticated && user?.role === 'Super Admin';
+  const isAdmin = isAuthenticated && (user?.role === 'Super Admin' || user?.role === 'Super Moderator');
   return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
@@ -67,7 +65,6 @@ function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
 
-  // This useEffect handles checking the user's login session
   useEffect(() => {
     const checkUserSession = async () => {
       if (token) {
@@ -84,21 +81,17 @@ function App() {
     checkUserSession();
   }, [token, setUser, logout]);
 
-  // --- NEW: This useEffect handles the automatic language detection ---
   useEffect(() => {
     const detectLanguage = async () => {
-      // The 'i18nextLng' item is set by the i18next-browser-languagedetector
-      // We only run our IP detection if a language has NOT been set already.
       const existingLang = localStorage.getItem('i18nextLng');
-      if (existingLang && existingLang !== 'en-US') { // 'en-US' is often a browser default
+      if (existingLang && existingLang !== 'en-US') {
         return;
       }
 
       try {
         const response = await apiClient.get('/localization/detect');
-        const detectedLang = response.data.lang; // e.g., 'bn'
+        const detectedLang = response.data.lang;
         
-        // Change the language only if it's one our app supports
         if (detectedLang && i18n.options.supportedLngs.includes(detectedLang)) {
           i18n.changeLanguage(detectedLang);
         }
@@ -108,7 +101,7 @@ function App() {
     };
 
     detectLanguage();
-  }, []); // The empty dependency array ensures this runs only ONCE on initial app load
+  }, []);
 
 
   if (isSessionLoading) {
@@ -152,6 +145,8 @@ function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="organizations" element={<AdminOrganizationsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
+            {/* --- ADD THIS NEW ROUTE --- */}
+            <Route path="moderators" element={<AdminModeratorsPage />} />
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="plans" element={<AdminPlansPage />} />
             <Route path="site-editor" element={<SiteEditorPage />} />
