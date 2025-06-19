@@ -7,6 +7,19 @@ export interface IContentSection {
   backgroundImageUrl?: string;
 }
 
+// --- NEW: Sub-document schemas for arrays ---
+export interface IExecutive {
+  name: string;
+  title: string;
+  imageUrl: string;
+}
+
+export interface ICorporateAddress {
+    locationName: string; // e.g., "Headquarters"
+    fullAddress: string;  // e.g., "123 Property Lane, KL, Malaysia"
+}
+
+
 export interface ISiteSettings extends Document {
   theme: {
     primaryColor: string;
@@ -35,6 +48,9 @@ export interface ISiteSettings extends Document {
     visionTitle: string;
     visionText: string;
     imageUrl: string;
+    teamTitle: string; // NEW
+    teamSubtitle: string; // NEW
+    executives: IExecutive[]; // MODIFIED: now an array
   };
   ctaSection: {
     title: string;
@@ -45,21 +61,19 @@ export interface ISiteSettings extends Document {
   contactSection: {
     title: string;
     subtitle: string;
-    officeTitle: string;
-    phoneTitle: string;
-    emailTitle: string;
     formTitle: string;
+    addresses: ICorporateAddress[]; // MODIFIED: now an array
   };
   updatedBy: mongoose.Types.ObjectId;
 }
 
 const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
+  // ... (theme and logos schemas remain the same)
   theme: {
     primaryColor: { type: String, default: '#4F46E5' },
     secondaryColor: { type: String, default: '#F59E0B' },
   },
   logos: {
-    // UPDATED to a more reliable placeholder service
     navbarLogoUrl: { type: String, default: 'https://via.placeholder.com/40/f59e0b/0f172a?text=HNV' },
     faviconUrl: { type: String, default: '/favicon.svg' },
   },
@@ -86,7 +100,14 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
       missionText: { type: String, default: 'To provide user-friendly tools that empower property managers.' },
       visionTitle: { type: String, default: 'Our Vision' },
       visionText: { type: String, default: 'To be the leading global platform for property management.' },
-      imageUrl: { type: String, default: 'https://picsum.photos/id/1043/600/400' }
+      imageUrl: { type: String, default: 'https://picsum.photos/id/1043/600/400' },
+      teamTitle: { type: String, default: 'Meet Our Leadership' },
+      teamSubtitle: { type: String, default: 'The driving force behind our commitment to excellence.' },
+      executives: [{ // MODIFIED
+          name: { type: String },
+          title: { type: String },
+          imageUrl: { type: String }
+      }]
   },
   ctaSection: {
       title: { type: String, default: 'Ready to Get Started?' },
@@ -97,10 +118,11 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   contactSection: {
       title: { type: String, default: 'Get In Touch' },
       subtitle: { type: String, default: "We're here to help." },
-      officeTitle: { type: String, default: 'Our Office' },
-      phoneTitle: { type: String, default: 'Phone Support' },
-      emailTitle: { type: String, default: 'Email Us' },
       formTitle: { type: String, default: 'Send Us a Message' },
+      addresses: [{ // MODIFIED
+          locationName: { type: String },
+          fullAddress: { type: String }
+      }]
   },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
