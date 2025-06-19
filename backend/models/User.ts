@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
 export interface IUser extends Document {
@@ -86,7 +86,8 @@ userSchema.methods.getSignedJwtToken = function (this: IUser): string {
     throw new Error('Server configuration error: JWT secret is missing.');
   }
   const expiresIn = process.env.JWT_EXPIRE || '30d';
-  return jwt.sign({ id: this._id, role: this.role }, jwtSecret, { expiresIn });
+  const options: SignOptions = { expiresIn };
+  return jwt.sign({ id: this._id, role: this.role }, jwtSecret as string, options);
 };
 
 // Method to generate a password reset token
