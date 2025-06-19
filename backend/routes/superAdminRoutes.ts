@@ -11,29 +11,29 @@ import {
     getModerators,
     updateModerator,
     updateUserStatus,
-    grantLifetimeAccess // Import the new function
+    grantLifetimeAccess
 } from '../controllers/superAdminController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { protect } from '../middleware/authMiddleware';
+import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 
 const router = Router();
 
-// This middleware protects all subsequent routes in this file for Super Admins
-router.use(protect, authorize('Super Admin'));
+router.use(protect, authorize(['Super Admin']));
 
-// --- Platform-Wide Stats & Reporting Routes ---
+// Platform-Wide Stats & Reporting Routes
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/platform-growth', getPlatformGrowthData);
 router.get('/plan-distribution', getPlanDistributionData);
 router.get('/billing', getBillingData);
 
-// --- Organization & User Management Routes ---
+// Organization & User Management Routes
 router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/subscription', updateSubscriptionStatus);
 router.get('/users', getAllUsers);
 router.put('/users/:id/status', updateUserStatus);
-router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess); // New Route
+router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess);
 
-// --- Moderator Management Routes ---
+// Moderator Management Routes
 router.route('/moderators')
     .post(createModerator)
     .get(getModerators);
