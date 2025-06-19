@@ -1,197 +1,176 @@
 import { Request, Response } from 'express';
+import asyncHandler from 'express-async-handler';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
-import { IUser } from '../models/User';
-import mongoose from 'mongoose';
+// No need to import IUser here, as it's handled by the global request type
 
-export const getExpenses = async (req: Request, res: Response) => {
-  const user = req.user as IUser;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+/**
+ * @desc    Get all expenses for the user's organization
+ * @route   GET /api/expenses
+ * @access  Private
+ */
+export const getExpenses = asyncHandler(async (req: Request, res: Response) => {
+  // With global types, req.user is already correctly typed as IUser | undefined.
+  // We just need to check if it exists. No "as IUser" needed.
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not authorized');
   }
 
-  try {
-    const expenses = await Expense.find({ organizationId: user.organizationId })
-      .populate('propertyId', 'name')
-      .populate('paidToAgentId', 'name')
-      .sort({ date: -1 });
+  const expenses = await Expense.find({ organizationId: req.user.organizationId })
+    .populate('propertyId', 'name')
+    .populate('paidToAgentId', 'name')
+    .sort({ date: -1 });
 
-    res.status(200).json({ success: true, data: expenses });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
-};
+  res.status(200).json({ success: true, data: expenses });
+});
 
-export const createExpense = async (req: Request, res: Response) => {
-  const user = req.user as IUser;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+/**
+ * @desc    Create a new expense
+ * @route   POST /api/expenses
+ * @access  Private
+ */
+export const createExpense = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not authorized');
   }
 
   const { description, amount, category, date, propertyId, paidToAgentId } = req.body;
 
   if (!description || !amount || !category || !date || !propertyId) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Please provide all required fields' 
-    });
+    res.status(400);
+    throw new Error('Please provide all required fields');
   }
 
-  try {
-    // Verify property belongs to organization
-    const property = await Property.findById(propertyId);
-    if (!property || !property.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Invalid property selected' 
-      });
+  // Verify property belongs to the user's organization
+  const property = await Property.findById(propertyId);
+  if (!property || !property.organizationId.equals(req.user.organizationId)) {
+    res.status(403);
+    throw new Error('Invalid property selected');
+  }
+
+  // Verify agent belongs to the landlord (if it's a salary payment)
+  if (category === 'Salary' && paidToAgentId) {
+    // Optional chaining on managedAgentIds is good practice
+    if (!req.user.managedAgentIds?.some(id => id.equals(paidToAgentId))) {
+      res.status(403);
+      throw new Error('This agent is not managed by you');
+    }
+  }
+
+  const newExpense = await Expense.create({
+    description,
+    amount,
+    category,
+    date,
+    propertyId,
+    paidToAgentId,
+    organizationId: req.user.organizationId,
+    ...(req.file && { documentUrl: req.file.path }) // Using req.file.path is often more reliable
+  });
+
+  res.status(201).json({ success: true, data: newExpense });
+});
+
+
+/**
+ * @desc    Get a single expense by its ID
+ * @route   GET /api/expenses/:id
+ * @access  Private
+ */
+export const getExpenseById = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
     }
 
-    // Verify agent belongs to landlord (if salary payment)
-    if (category === 'Salary' && paidToAgentId) {
-      if (!user.managedAgentIds?.some(id => id.equals(paidToAgentId))) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'This agent is not managed by you' 
-        });
-      }
-    }
-
-    const newExpense = await Expense.create({
-      description,
-      amount,
-      category,
-      date,
-      propertyId,
-      paidToAgentId,
-      organizationId: user.organizationId,
-      ...(req.file && { documentUrl: `/uploads/${req.file.filename}` })
-    });
-
-    res.status(201).json({ success: true, data: newExpense });
-  } catch (error: any) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Server Error' 
-    });
-  }
-};
-
-export const getExpenseById = async (req: Request, res: Response) => {
-  const user = req.user as IUser;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
-  }
-
-  try {
     const expense = await Expense.findById(req.params.id)
       .populate('propertyId', 'name')
       .populate('paidToAgentId', 'name');
 
     if (!expense) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Expense not found' 
-      });
+        res.status(404);
+        throw new Error('Expense not found');
     }
 
-    if (!expense.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Not authorized to access this expense' 
-      });
+    // Security check: Ensure the requested expense belongs to the user's organization
+    if (!expense.organizationId.equals(req.user.organizationId)) {
+        res.status(403);
+        throw new Error('Not authorized to access this expense');
     }
 
     res.status(200).json({ success: true, data: expense });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
-};
+});
 
-export const updateExpense = async (req: Request, res: Response) => {
-  const user = req.user as IUser;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
-  }
 
-  try {
-    let expense = await Expense.findById(req.params.id);
-    
-    if (!expense) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Expense not found' 
-      });
+/**
+ * @desc    Update an existing expense
+ * @route   PUT /api/expenses/:id
+ * @access  Private
+ */
+export const updateExpense = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
     }
 
-    if (!expense.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Not authorized to update this expense' 
-      });
-    }
-
-    // Verify property if being updated
-    if (req.body.propertyId) {
-      const property = await Property.findById(req.body.propertyId);
-      if (!property || !property.organizationId.equals(user.organizationId)) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Invalid property selected' 
-        });
-      }
-    }
-
-    // Verify agent if being updated for salary payment
-    if (req.body.category === 'Salary' && req.body.paidToAgentId) {
-      if (!user.managedAgentIds?.some(id => id.equals(req.body.paidToAgentId))) {
-        return res.status(403).json({ 
-          success: false, 
-          message: 'This agent is not managed by you' 
-        });
-      }
-    }
-
-    expense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-
-    res.status(200).json({ success: true, data: expense });
-  } catch (error: any) {
-    res.status(400).json({ 
-      success: false, 
-      message: error.message || 'Server Error' 
-    });
-  }
-};
-
-export const deleteExpense = async (req: Request, res: Response) => {
-  const user = req.user as IUser;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
-  }
-
-  try {
     const expense = await Expense.findById(req.params.id);
     
     if (!expense) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Expense not found' 
-      });
+        res.status(404);
+        throw new Error('Expense not found');
     }
 
-    if (!expense.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Not authorized to delete this expense' 
-      });
+    // Security check
+    if (!expense.organizationId.equals(req.user.organizationId)) {
+        res.status(403);
+        throw new Error('Not authorized to update this expense');
+    }
+
+    // If propertyId is being updated, re-validate it
+    if (req.body.propertyId) {
+        const property = await Property.findById(req.body.propertyId);
+        if (!property || !property.organizationId.equals(req.user.organizationId)) {
+            res.status(403);
+            throw new Error('Invalid property selected');
+        }
+    }
+
+    const updatedExpense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+
+    res.status(200).json({ success: true, data: updatedExpense });
+});
+
+
+/**
+ * @desc    Delete an expense
+ * @route   DELETE /api/expenses/:id
+ * @access  Private
+ */
+export const deleteExpense = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    const expense = await Expense.findById(req.params.id);
+    
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
+    }
+
+    // Security check
+    if (!expense.organizationId.equals(req.user.organizationId)) {
+        res.status(403);
+        throw new Error('Not authorized to delete this expense');
     }
 
     await expense.deleteOne();
+
     res.status(200).json({ success: true, data: {} });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
-};
+});
