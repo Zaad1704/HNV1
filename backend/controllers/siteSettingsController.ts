@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import SiteSettings from '../models/SiteSettings';
 import mongoose from 'mongoose';
 
@@ -30,7 +30,7 @@ export const getSiteSettings = async (req: Request, res: Response) => {
 // @desc    Create or Update the site settings
 // @route   PUT /api/site-settings
 // @access  Private (Super Admin)
-export const updateSiteSettings = async (req: AuthenticatedRequest, res: Response) => {
+export const updateSiteSettings = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -38,7 +38,7 @@ export const updateSiteSettings = async (req: AuthenticatedRequest, res: Respons
     try {
         const settingsData = {
             ...req.body,
-            updatedBy: new mongoose.Types.ObjectId(req.user.id)
+            updatedBy: req.user._id // FIX: Use _id
         };
         
         const updatedSettings = await SiteSettings.findOneAndUpdate({}, settingsData, {
