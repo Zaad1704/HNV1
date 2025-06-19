@@ -1,7 +1,7 @@
 // frontend/src/components/Navbar.tsx
 
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { ArrowRight } from 'lucide-react';
 
@@ -9,31 +9,32 @@ const Navbar = () => {
   const { data: settings } = useSiteSettings();
 
   const navLinks = [
-    { name: 'Features', href: '/features' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Pricing', href: '/pricing' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Features', href: '#features' },
+    { name: 'About Us', href: '#about' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'Contact', href: '#contact' },
   ];
-
-  const getLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `font-medium transition-colors ${
-      isActive
-        ? 'text-yellow-400'
-        : 'text-slate-300 hover:text-yellow-400'
-    }`;
 
   return (
     <header className="bg-slate-900/70 backdrop-blur-lg shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-3">
-          <img src={settings?.logos?.navbarLogoUrl} alt="HNV Logo" className="h-10" />
-        </Link>
+        <a href="#hero" className="flex items-center space-x-3">
+          <img 
+            src={settings?.logos?.navbarLogoUrl} 
+            alt="Company Logo" 
+            className="h-10" 
+          />
+          {/* Added company name display */}
+          <span className="text-xl font-bold text-white hidden sm:inline">
+            {settings?.logos?.companyName || 'HNV Solutions'}
+          </span>
+        </a>
         
         <nav className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) => (
-            <NavLink key={link.name} to={link.href} className={getLinkClass}>
+            <a key={link.name} href={link.href} className="font-medium transition-colors text-slate-300 hover:text-yellow-400">
               {link.name}
-            </NavLink>
+            </a>
           ))}
         </nav>
         
@@ -48,8 +49,6 @@ const Navbar = () => {
             Get Started <ArrowRight size={16} />
           </Link>
         </div>
-
-        {/* Mobile menu button can be added here if needed */}
       </div>
     </header>
   );
