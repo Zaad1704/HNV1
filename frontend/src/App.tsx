@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
+import i18n from './services/i18n'; // Import i18n instance
 
 // --- Layout Components ---
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -29,7 +30,7 @@ import BillingPage from './pages/BillingPage';
 import AuditLogPage from './pages/AuditLogPage';
 import SettingsPage from './pages/SettingsPage';
 import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
-import ExpensesPage from './pages/ExpensesPage'; // IMPORT ADDED
+import ExpensesPage from './pages/ExpensesPage'; 
 
 // --- Super Admin Page Components ---
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -64,13 +65,12 @@ const AdminRoute = () => {
 
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
-  // --- STATE FOR LOADING ---
   const [isSessionLoading, setSessionLoading] = useState(true);
 
+  // This useEffect handles checking the user's login session
   useEffect(() => {
     const checkUserSession = async () => {
       if (token) {
-        // If a token exists, we try to fetch user data
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.data);
@@ -79,20 +79,42 @@ function App() {
           logout();
         }
       }
-      // Finished checking, set loading to false
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, setUser, logout]); // Dependency array simplified
+  }, [token, setUser, logout]);
 
-  // --- RENDER LOADER ---
-  // While the session is being checked, show a full-screen loader
+  // --- NEW: This useEffect handles the automatic language detection ---
+  useEffect(() => {
+    const detectLanguage = async () => {
+      // The 'i18nextLng' item is set by the i18next-browser-languagedetector
+      // We only run our IP detection if a language has NOT been set already.
+      const existingLang = localStorage.getItem('i18nextLng');
+      if (existingLang && existingLang !== 'en-US') { // 'en-US' is often a browser default
+        return;
+      }
+
+      try {
+        const response = await apiClient.get('/localization/detect');
+        const detectedLang = response.data.lang; // e.g., 'bn'
+        
+        // Change the language only if it's one our app supports
+        if (detectedLang && i18n.options.supportedLngs.includes(detectedLang)) {
+          i18n.changeLanguage(detectedLang);
+        }
+      } catch (error) {
+        console.error("IP-based language detection failed, falling back to default.", error);
+      }
+    };
+
+    detectLanguage();
+  }, []); // The empty dependency array ensures this runs only ONCE on initial app load
+
+
   if (isSessionLoading) {
     return <FullScreenLoader />;
   }
 
-  // --- RENDER APP ---
-  // Once loading is complete, render the main application router
   return (
     <Router>
       <Routes>
@@ -115,7 +137,7 @@ function App() {
             <Route path="organization" element={<OrganizationPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
-            <Route path="expenses" element={<ExpensesPage />} /> {/* ROUTE UNCOMMENTED */}
+            <Route path="expenses" element={<ExpensesPage />} />
             <Route path="maintenance" element={<MaintenanceRequestsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
