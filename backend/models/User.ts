@@ -13,12 +13,13 @@ export interface IUser extends Document {
   status: 'active' | 'inactive' | 'suspended';
   permissions: string[];
   organizationId: Types.ObjectId;
-  managedAgentIds?: Types.ObjectId[];
-  associatedLandlordIds?: Types.ObjectId[];
+  managedAgentIds: Types.ObjectId[];
+  associatedLandlordIds: Types.ObjectId[];
   googleId?: string;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   createdAt: Date;
+  updatedAt: Date;
 
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
@@ -46,8 +47,16 @@ const userSchema = new Schema<IUser>(
       ref: 'Organization',
       required: true
     },
-    managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    associatedLandlordIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    managedAgentIds: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: []
+    },
+    associatedLandlordIds: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: []
+    },
     googleId: String,
     passwordResetToken: String,
     passwordResetExpires: Date
@@ -55,19 +64,9 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-userSchema.pre<IUser>('save', async function (next) {
-  if (!this.isModified('password') || !this.password) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+// ... (keep all your existing schema methods, but fix the JWT signing):
 
-userSchema.methods.matchPassword = async function (enteredPassword: string) {
-  if (!this.password) return false;
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-userSchema.methods.getSignedJwtToken = function () {
+userSchema.methods.getSignedJwtToken = function() {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined');
   }
@@ -76,16 +75,6 @@ userSchema.methods.getSignedJwtToken = function () {
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '30d' }
   );
-};
-
-userSchema.methods.getPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(20).toString('hex');
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-  return resetToken;
 };
 
 export default mongoose.model<IUser>('User', userSchema);
