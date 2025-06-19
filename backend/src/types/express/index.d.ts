@@ -1,14 +1,20 @@
-// src/types/express/index.d.ts
-
-import { IUser } from '../../models/User';
+// src/types/express.d.ts
+import { Document, Types } from 'mongoose';
 
 declare global {
   namespace Express {
+    interface User {
+      _id: Types.ObjectId;
+      name: string;
+      email: string;
+      role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
+      organizationId: Types.ObjectId;
+      // Add other User properties as needed
+    }
+
     interface Request {
-      user?: IUser; // Fully typed
-      organizationId?: string;
+      user?: User;
+      organizationId?: Types.ObjectId;
     }
   }
 }
-
-export {}; // Needed to make this a module
