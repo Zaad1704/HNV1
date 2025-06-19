@@ -2,10 +2,10 @@ import { Router } from 'express';
 import {
   getProperties,
   createProperty,
-  getPropertyById,
+  getPropertyById, // Added this import
   updateProperty,
   deleteProperty
-} from '../controllers/propertyController'; // FIX: Corrected filename from propertiesController
+} from '../controllers/propertyController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -17,7 +17,7 @@ router.route('/')
   .post(createProperty);
 
 router.route('/:id')
-  .get(getPropertyById)
+  .get(getPropertyById) // Added this route handler
   .put(updateProperty)
   .delete(deleteProperty);
 
