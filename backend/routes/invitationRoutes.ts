@@ -7,7 +7,7 @@ const router = Router();
 // A Landlord must be logged in to send an invitation
 router.post('/invite-agent', protect, authorize('Landlord'), inviteAgent);
 
-// These routes are public for the recipient to use the token
+// Public routes for accepting the invite (to be fully implemented later)
 router.get('/accept/:token', getInvitationDetails);
 router.post('/accept/:token', acceptAgentInvitation);
 
