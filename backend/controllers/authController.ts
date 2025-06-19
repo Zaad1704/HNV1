@@ -4,9 +4,9 @@ import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import mongoose from 'mongoose';
 
+// This function generates and sends the JWT token in a response
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
     res.status(statusCode).json({ success: true, token });
@@ -30,6 +30,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     
     const organization = new Organization({ name: `${name}'s Organization` });
     
+    // The organizationId is now required on the User model
     const user = new User({ name, email, password, role, organizationId: organization._id });
     
     organization.owner = user._id as mongoose.Types.ObjectId;
@@ -50,7 +51,8 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await user.save();
     await subscription.save();
     
-    auditService.recordAction(user._id as mongoose.Types.ObjectId, organization._id as mongoose.Types.ObjectId, 'USER_REGISTER', { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() });
+    // Now that organizationId is required on user, this call is safe
+    auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_REGISTER', { registeredUserId: (user._id as mongoose.Types.ObjectId).toString() });
     sendTokenResponse(user, 201, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -61,9 +63,9 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
     
+    // We select the password field explicitly as it's not returned by default
     const user = await User.findOne({ email }).select('+password');
     
-    // --- FIX: Log for "User Not Found" ---
     if (!user) {
         console.error(`Login failed: User not found for email ${email}`);
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -71,9 +73,8 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const isMatch = await user.matchPassword(password);
 
-    // --- FIX: Log for "Incorrect Password" ---
     if (!isMatch) {
-        // Here, we found a user, so we can create a detailed audit log entry.
+        // user.organizationId is guaranteed to exist due to the model change
         auditService.recordAction(
             user._id as mongoose.Types.ObjectId, 
             user.organizationId, 
@@ -83,12 +84,13 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // This is the original log for a successful login
+    // user.organizationId is guaranteed to exist
     auditService.recordAction(user._id as mongoose.Types.ObjectId, user.organizationId, 'USER_LOGIN', {});
     sendTokenResponse(user, 200, res);
 };
 
-export const getMe = async (req: AuthenticatedRequest, res: Response) => { 
+// The 'AuthenticatedRequest' type is no longer needed as we augmented the global Express.Request type
+export const getMe = async (req: Request, res: Response) => { 
     if (!req.user) return res.status(404).json({ success: false, message: 'User not found' });
     
     const fullUserData = await User.findById(req.user.id).populate({
