@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
@@ -42,6 +42,14 @@ import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
 
 const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
 
+// --- A simple loading spinner component to show while checking the session ---
+const FullScreenLoader = () => (
+    <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="text-white text-lg">Loading Application...</div>
+    </div>
+);
+
+
 // --- Route Protection Components ---
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -56,10 +64,13 @@ const AdminRoute = () => {
 
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
+  // --- STATE FOR LOADING ---
+  const [isSessionLoading, setSessionLoading] = useState(true);
 
   useEffect(() => {
     const checkUserSession = async () => {
-      if (token && !user) {
+      if (token) {
+        // If a token exists, we try to fetch user data
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.data);
@@ -68,10 +79,20 @@ function App() {
           logout();
         }
       }
+      // Finished checking, set loading to false
+      setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout]);
+  }, [token, setUser, logout]); // Dependency array simplified
 
+  // --- RENDER LOADER ---
+  // While the session is being checked, show a full-screen loader
+  if (isSessionLoading) {
+    return <FullScreenLoader />;
+  }
+
+  // --- RENDER APP ---
+  // Once loading is complete, render the main application router
   return (
     <Router>
       <Routes>
