@@ -82,11 +82,6 @@ userSchema.methods.matchPassword = async function (enteredPassword: string) {
 
 // ========================================================================
 // THIS IS THE METHOD WITH THE ERROR.
-// The jwt.sign function requires 3 arguments in this order:
-// 1. The payload (an object)
-// 2. The secret key (a string from your environment variables)
-// 3. The options (an object, e.g., with expiresIn)
-// The error log clearly shows the secret key is being missed.
 // The code below is the correct implementation.
 // ========================================================================
 userSchema.methods.getSignedJwtToken = function (): string {
@@ -96,8 +91,8 @@ userSchema.methods.getSignedJwtToken = function (): string {
   }
   
   return jwt.sign(
-    { id: this._id, role: this.role }, // 1. Payload
-    process.env.JWT_SECRET,             // 2. Secret
+    { id: this._id, role: this.role },             // 1. Payload
+    process.env.JWT_SECRET,                        // 2. Secret
     { expiresIn: process.env.JWT_EXPIRE || '30d' } // 3. Options
   );
 };
