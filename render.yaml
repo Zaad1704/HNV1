@@ -3,19 +3,19 @@ services:
     name: hnv-saas-backend
     env: docker
     plan: standard
-    repo: https://github.com/your-org/hnv-saas
+    repo:https://github.com/Zaad1704/HNV1.git
     branch: main
     rootDir: backend
     envVars:
       - key: PORT
         value: 5001
       - key: MONGO_URI
-        value: (your-mongo-connection-string)
-      # ... other env vars ...
+        # IMPORTANT: This must be set as a secret in your Render Dashboard
+        value: mongodb+srv://rajputragav420:5EIWHghGDZ4rEpmr@hnv.qw1lakw.mongodb.net/?retryWrites=true&w=majority&appName=HNV
 
   - type: static
-    name: hnv-saas-frontend
-    repo: https://github.com/your-org/hnv-saas
+    name: https://hnv-1-frontend.onrender.com
+    repo: https://github.com/Zaad1704/HNV1.git
     branch: main
     rootDir: frontend
     buildCommand: npm run build
@@ -23,4 +23,4 @@ services:
     envVars:
       - key: VITE_API_URL
         # CORRECTED to your live backend URL
-        value: https://hnv.onrender.com/api
+        value: https://hnv.onrender.com
