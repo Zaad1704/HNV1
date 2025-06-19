@@ -1,0 +1,42 @@
+{
+  "header": {
+    "features": "Features",
+    "about": "About Us",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "login": "Portal Log In",
+    "getStarted": "Get Started",
+    "installApp": "Install App"
+  },
+  "hero": {
+    "title": "The All-in-One Platform for Modern Property Management",
+    "subtitle": "Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.",
+    "cta": "Start Your Free Trial"
+  },
+  "features": {
+      "title": "Powerful Tools for Every Role",
+      "subtitle": "From individual landlords to large agencies, our platform is designed to fit your needs.",
+      "card1Title": "Centralized Dashboard",
+      "card1Text": "View properties, tenants, and payments at a glance. Get a clear overview of your entire portfolio's performance.",
+      "card2Title": "Secure Document Storage",
+      "card2Text": "Upload and manage lease agreements, tenant IDs, and other important documents in one secure, accessible location.",
+      "card3Title": "Audit Trails & Security",
+      "card3Text": "Track every important action with a detailed audit log. Your data is secure with our multi-tenant architecture."
+  },
+  "dashboard": {
+    "nav": {
+      "overview": "Overview",
+      "organization": "My Organization",
+      "properties": "Properties",
+      "tenants": "Tenants",
+      "expenses": "Expenses",
+      "maintenance": "Maintenance",
+      "users": "Users & Invites",
+      "billing": "Billing",
+      "audit_log": "Audit Log",
+      "settings": "Profile & Settings",
+      "admin_panel": "Super Admin",
+      "logout": "Logout"
+    }
+  }
+}
