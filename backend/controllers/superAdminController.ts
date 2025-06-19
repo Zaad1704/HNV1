@@ -20,7 +20,11 @@ export const createModerator = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: 'User with that email already exists.' });
         }
 
-        const superAdmin = await User.findById(req.user?._id);
+        // FIX: Add guard clause and use _id
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const superAdmin = await User.findById(req.user._id);
         if (!superAdmin) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
@@ -44,6 +48,8 @@ export const createModerator = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+// ... (The rest of the functions in this file remain the same, as they don't have the specific reported errors. Only createModerator had the 'req.user?._id' issue).
 
 // @desc    Get all Super Moderators
 // @route   GET /api/super-admin/moderators
