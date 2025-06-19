@@ -1,12 +1,12 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import User from '../models/User';
 
 // @desc    Get all expenses for the user's organization
 // @route   GET /api/expenses
-export const getExpenses = async (req: AuthenticatedRequest, res: Response) => {
+export const getExpenses = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
@@ -22,7 +22,7 @@ export const getExpenses = async (req: AuthenticatedRequest, res: Response) => {
 
 // @desc    Create a new expense (with optional document)
 // @route   POST /api/expenses
-export const createExpense = async (req: AuthenticatedRequest, res: Response) => {
+export const createExpense = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     const { description, amount, category, date, propertyId, paidToAgentId } = req.body;
