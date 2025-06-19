@@ -5,7 +5,8 @@ import {
   updateUserPassword,
   requestDataExport,
   requestAccountDeletion,
-  getOrganizationUsers // Import the new function
+  getOrganizationUsers,
+  updateOrganizationBranding // Import the new function
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
 
@@ -16,6 +17,9 @@ router.use(protect);
 
 // Route to get all users in the same organization
 router.get('/organization', getOrganizationUsers);
+
+// Add the new route to update organization branding
+router.put('/organization/branding', updateOrganizationBranding);
 
 // Route to get the current user's profile information
 router.get('/profile', getProfile);
