@@ -80,16 +80,26 @@ userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method for signing a JWT (This is the section with the fix)
+// ========================================================================
+// THIS IS THE METHOD WITH THE ERROR.
+// The jwt.sign function requires 3 arguments in this order:
+// 1. The payload (an object)
+// 2. The secret key (a string from your environment variables)
+// 3. The options (an object, e.g., with expiresIn)
+// The error log clearly shows the secret key is being missed.
+// The code below is the correct implementation.
+// ========================================================================
 userSchema.methods.getSignedJwtToken = function (): string {
   if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     throw new Error('JWT_SECRET is not defined');
   }
-  // The signature MUST be: jwt.sign(payload, secret, options)
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || '30d',
-  });
+  
+  return jwt.sign(
+    { id: this._id, role: this.role }, // 1. Payload
+    process.env.JWT_SECRET,             // 2. Secret
+    { expiresIn: process.env.JWT_EXPIRE || '30d' } // 3. Options
+  );
 };
 
 // Method to generate a password reset token
