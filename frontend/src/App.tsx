@@ -29,7 +29,7 @@ import BillingPage from './pages/BillingPage';
 import AuditLogPage from './pages/AuditLogPage';
 import SettingsPage from './pages/SettingsPage';
 import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
-// import ExpensesPage from './pages/ExpensesPage'; 
+import ExpensesPage from './pages/ExpensesPage'; // IMPORT ADDED
 
 // --- Super Admin Page Components ---
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -115,7 +115,7 @@ function App() {
             <Route path="organization" element={<OrganizationPage />} />
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="tenants" element={<TenantsPage />} />
-            {/* <Route path="expenses" element={<ExpensesPage />} /> */}
+            <Route path="expenses" element={<ExpensesPage />} /> {/* ROUTE UNCOMMENTED */}
             <Route path="maintenance" element={<MaintenanceRequestsPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
