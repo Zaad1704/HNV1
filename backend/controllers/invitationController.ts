@@ -8,7 +8,7 @@ import emailService from '../services/emailService';
 
 export const inviteAgent = async (req: Request, res: Response) => {
   const { recipientEmail } = req.body;
-  // Assuming req.user is populated and has the IUser shape
+  // The '!' asserts that req.user is not null, which is safe inside a protected route.
   const inviter = req.user!;
 
   if (inviter.role !== 'Landlord') {
@@ -27,7 +27,6 @@ export const inviteAgent = async (req: Request, res: Response) => {
 
   try {
     // Check subscription limits
-    // Use the imported IPlan interface to correctly type the populated 'planId' field
     const subscription = await Subscription.findOne({
       organizationId: inviter.organizationId,
     }).populate<{ planId: IPlan }>('planId');
@@ -80,20 +79,24 @@ export const inviteAgent = async (req: Request, res: Response) => {
       organizationId: inviter.organizationId,
       inviterId: inviter._id,
       recipientEmail,
+      role: 'Agent', // Explicitly set the role for this invitation type
       status: 'pending',
     });
 
     // Send invitation email
     const acceptURL = `${
       process.env.FRONTEND_URL || 'http://localhost:3000'
-    }/accept-invitation/${invitation.token}`;
+    }/accept-agent-invite/${invitation.token}`;
+
+    // Corrected: Provide fallback for optional inviter.name
+    const inviterName = inviter.name || 'Your Landlord';
 
     await emailService.sendEmail(
       recipientEmail,
-      `Invitation to join ${inviter.name}'s Team`,
+      `Invitation to join ${inviterName}'s Team`,
       'agentInvitation',
       {
-        inviterName: inviter.name,
+        inviterName: inviterName,
         acceptURL,
       }
     );
@@ -113,7 +116,7 @@ export const inviteAgent = async (req: Request, res: Response) => {
 
 export const acceptInvitation = async (req: Request, res: Response) => {
   const { token } = req.params;
-  const { name, password } = req.body;
+  const { password } = req.body;
 
   try {
     const invitation = await AgentInvitation.findOne({
@@ -125,33 +128,60 @@ export const acceptInvitation = async (req: Request, res: Response) => {
     if (!invitation) {
       return res.status(404).json({
         success: false,
-        message: 'Invalid or expired invitation',
+        message: 'Invalid or expired invitation token.',
       });
     }
 
-    // Create new agent user
-    const agent = await User.create({
-      name,
-      email: invitation.recipientEmail,
-      password,
-      role: 'Agent',
-      organizationId: invitation.organizationId,
-      status: 'active',
-    });
+    // Check if a user with this email already exists
+    let user = await User.findOne({ email: invitation.recipientEmail });
+    
+    // If user does not exist, create a new one
+    if (!user) {
+        if (!password) {
+            return res.status(400).json({ success: false, message: 'Password is required for new users.'});
+        }
+        user = new User({
+            email: invitation.recipientEmail,
+            password: password, // The password will be hashed by the pre-save hook in the User model
+            role: invitation.role,
+            status: 'active',
+            organizationId: invitation.organizationId,
+        });
+    } else {
+        // If user exists but is not in an org, assign them to this one
+        if (!user.organizationId) {
+            user.organizationId = invitation.organizationId;
+        } else if (user.organizationId.toString() !== invitation.organizationId.toString()) {
+            // This is an edge case: the user exists but is already in another organization.
+            // You might want to prevent this or handle it differently based on your business logic.
+            return res.status(400).json({ success: false, message: 'User is already a member of another organization.'});
+        }
+    }
 
-    // Add agent to landlord's managed agents
+    // Add agent to the inviter's list of managed agents
     await User.findByIdAndUpdate(invitation.inviterId, {
-      $addToSet: { managedAgentIds: agent._id },
+      $addToSet: { managedAgentIds: user._id },
     });
 
-    // Update invitation status
+    // Link agent to the landlord
+    user.associatedLandlordIds = user.associatedLandlordIds || [];
+    user.associatedLandlordIds.push(invitation.inviterId);
+
+    await user.save();
+
+    // Update invitation status to 'accepted'
     invitation.status = 'accepted';
     await invitation.save();
 
+    // Log the new user in by returning a JWT token
+    const jwtToken = user.getSignedJwtToken();
+
     res.status(200).json({
       success: true,
-      message: 'Invitation accepted successfully',
+      message: 'Invitation accepted successfully!',
+      token: jwtToken
     });
+
   } catch (error) {
     console.error('Error accepting invitation:', error);
     res.status(500).json({
@@ -172,31 +202,34 @@ export const getInvitationDetails = async (req: Request, res: Response) => {
     if (!invitation) {
       return res.status(404).json({
         success: false,
-        message: 'Invitation not found',
+        message: 'Invitation not found or invalid.',
       });
     }
 
     if (invitation.status !== 'pending') {
       return res.status(400).json({
         success: false,
-        message: 'Invitation has already been processed',
+        message: 'This invitation has already been accepted or has expired.',
       });
     }
 
     if (new Date() > invitation.expiresAt) {
       return res.status(400).json({
         success: false,
-        message: 'Invitation has expired',
+        message: 'This invitation has expired.',
       });
     }
+
+    // Check if a user account already exists for this email
+    const existingUser = await User.findOne({ email: invitation.recipientEmail });
 
     res.status(200).json({
       success: true,
       data: {
-        inviterName: (invitation.inviterId as any)?.name,
-        inviterEmail: (invitation.inviterId as any)?.email,
+        inviterName: (invitation.inviterId as any)?.name || 'An HNV User',
         organizationName: (invitation.organizationId as any)?.name,
         recipientEmail: invitation.recipientEmail,
+        isExistingUser: !!existingUser // Send a flag to the frontend
       },
     });
   } catch (error) {
