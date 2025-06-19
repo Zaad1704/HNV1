@@ -1,3 +1,5 @@
+// frontend/src/App.tsx
+
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
@@ -17,7 +19,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage'; // Import the new page
+import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
 
 // --- Authenticated User Page Components ---
 import DashboardRedirector from './pages/DashboardRedirector';
@@ -56,9 +58,17 @@ const ProtectedRoute = () => {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+// Corrected: Make AdminRoute aware of the loading state
 const AdminRoute = () => {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = isAuthenticated && (user?.role === 'Super Admin' || user?.role === 'Super Moderator');
+  
+  // While authenticated and waiting for user data, show a loader
+  if (isAuthenticated && !user) {
+    return <FullScreenLoader />;
+  }
+
+  const isAdmin = isAuthenticated && user && (user.role === 'Super Admin' || user.role === 'Super Moderator');
+  
   return isAdmin ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
@@ -68,12 +78,14 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      if (token && !user) { // Only check if token exists but user object is not yet in state
+      // Only check if a token exists and we don't have a user object yet
+      if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
-          setUser(response.data.data);
+          // Corrected: The user object is nested under the 'user' key
+          setUser(response.data.user); 
         } catch (error) {
-          console.error("Session token is invalid or expired. Logging out.");
+          console.error("Session token is invalid or expired. Logging out.", error);
           logout();
         }
       }
@@ -84,15 +96,15 @@ function App() {
 
   useEffect(() => {
     const detectLanguage = async () => {
-      const existingLang = localStorage.getItem('i18nextLng');
-      if (existingLang && existingLang !== 'en-US') {
-        return;
-      }
       try {
         const response = await apiClient.get('/localization/detect');
-        const detectedLang = response.data.lang;
-        if (detectedLang && i18n.options.supportedLngs.includes(detectedLang)) {
-          i18n.changeLanguage(detectedLang);
+        const detectedLang = response.data.lang; // e.g., 'bn', 'es'
+        if (detectedLang && i18n.options.supportedLngs && i18n.options.supportedLngs.includes(detectedLang)) {
+            // Check if language has already been set by user to avoid overriding
+            const userLang = localStorage.getItem('i18nextLng');
+            if (!userLang || userLang === detectedLang) {
+                 i18n.changeLanguage(detectedLang);
+            }
         }
       } catch (error) {
         console.error("IP-based language detection failed, falling back to default.", error);
@@ -117,7 +129,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-        <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} /> {/* NEW ROUTE */}
+        <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
 
         {/* --- Protected User Routes --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
