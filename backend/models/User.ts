@@ -80,12 +80,13 @@ userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Correctly defined method for signing a JWT
+// Method for signing a JWT (This is the section with the fix)
 userSchema.methods.getSignedJwtToken = function (): string {
   if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     throw new Error('JWT_SECRET is not defined');
   }
+  // The signature MUST be: jwt.sign(payload, secret, options)
   return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d',
   });
@@ -101,7 +102,7 @@ userSchema.methods.getPasswordResetToken = function (): string {
     .digest('hex');
 
   // Set token to expire in 10 minutes
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   return resetToken;
 };
