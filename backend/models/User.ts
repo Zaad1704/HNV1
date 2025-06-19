@@ -1,9 +1,9 @@
-// models/User.ts
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
+// Export the interface for use in other parts of your application
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -34,47 +34,76 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
-      default: 'Tenant'
+      default: 'Tenant',
     },
     status: {
       type: String,
       enum: ['active', 'inactive', 'suspended'],
-      default: 'active'
+      default: 'active',
     },
     permissions: { type: [String], default: [] },
     organizationId: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',
-      required: true
+      required: true,
     },
     managedAgentIds: {
       type: [Schema.Types.ObjectId],
       ref: 'User',
-      default: []
+      default: [],
     },
     associatedLandlordIds: {
       type: [Schema.Types.ObjectId],
       ref: 'User',
-      default: []
+      default: [],
     },
     googleId: String,
     passwordResetToken: String,
-    passwordResetExpires: Date
+    passwordResetExpires: Date,
   },
   { timestamps: true }
 );
 
-// ... (keep all your existing schema methods, but fix the JWT signing):
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 
-userSchema.methods.getSignedJwtToken = function() {
+// Method to compare entered password with the hashed password
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
+  if (!this.password) return false;
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Correctly defined method for signing a JWT
+userSchema.methods.getSignedJwtToken = function (): string {
   if (!process.env.JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined.');
     throw new Error('JWT_SECRET is not defined');
   }
-  return jwt.sign(
-    { id: this._id },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE || '30d' }
-  );
+  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE || '30d',
+  });
+};
+
+// Method to generate a password reset token
+userSchema.methods.getPasswordResetToken = function (): string {
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set token to expire in 10 minutes
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 export default mongoose.model<IUser>('User', userSchema);
