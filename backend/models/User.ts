@@ -7,11 +7,19 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant'; // Added 'Super Moderator'
-  status: 'active' | 'suspended'; // NEW: User status field
-  permissions: string[]; // NEW: For moderator permissions
+  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
+  status: 'active' | 'suspended';
+  permissions: string[];
   organizationId: mongoose.Types.ObjectId;
   createdAt: Date;
+
+  // --- NEW HIERARCHY FIELDS ---
+  // If the user is a Landlord, this will store the IDs of their Agents.
+  managedAgentIds: mongoose.Types.ObjectId[]; 
+  // If the user is an Agent, this will store the IDs of the Landlords they work for.
+  associatedLandlordIds: mongoose.Types.ObjectId[];
+
+  // ... other interface fields
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
   passwordResetToken?: string;
@@ -27,25 +35,32 @@ const UserSchema: Schema<IUser> = new Schema({
   password: { type: String, required: true, select: false },
   role: { 
     type: String, 
-    enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], // Added 'Super Moderator'
+    enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
     default: 'Landlord' 
   },
   status: {
     type: String,
-    enum: ['active', 'suspended'], // NEW: Status field with allowed values
+    enum: ['active', 'suspended'],
     default: 'active'
   },
   permissions: {
-    type: [String], // NEW: Array of strings to hold permission keys
+    type: [String],
     default: []
   },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  
+  // --- NEW HIERARCHY SCHEMA FIELDS ---
+  managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  associatedLandlordIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+
   createdAt: { type: Date, default: Date.now },
   passwordResetToken: String,
   passwordResetExpires: Date,
   address: String,
   governmentIdUrl: String,
 });
+
+// ... (keep all existing methods: UserSchema.pre, matchPassword, getSignedJwtToken, etc.)
 
 UserSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password') || !this.password) return next();
@@ -68,7 +83,7 @@ UserSchema.methods.getSignedJwtToken = function(): string {
     id: (this._id as Types.ObjectId).toString(), 
     role: this.role, 
     name: this.name,
-    permissions: this.permissions // NEW: Include permissions in the JWT payload
+    permissions: this.permissions
   };
   const secret: Secret = process.env.JWT_SECRET;
   const options: SignOptions = {
