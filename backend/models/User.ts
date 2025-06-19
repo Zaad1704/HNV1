@@ -81,8 +81,8 @@ userSchema.methods.matchPassword = async function (this: IUser, enteredPassword:
 
 // Generate and sign a JWT for the user
 userSchema.methods.getSignedJwtToken = function (this: IUser): string {
-  const jwtSecret = process.env.JWT_SECRET as string;
-  if (!jwtSecret) {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (typeof jwtSecret !== 'string') {
     throw new Error('Server configuration error: JWT secret is missing.');
   }
   const expiresIn = process.env.JWT_EXPIRE || '30d';
