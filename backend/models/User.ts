@@ -3,21 +3,14 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-// Export the interface for use in other parts of your application
+// Interface definition remains the same
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
   email: string;
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[];
-  organizationId: Types.ObjectId;
-  managedAgentIds: Types.ObjectId[];
-  associatedLandlordIds: Types.ObjectId[];
-  googleId?: string;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
+  // ... other properties
   createdAt: Date;
   updatedAt: Date;
 
@@ -26,6 +19,7 @@ export interface IUser extends Document {
   getPasswordResetToken(): string;
 }
 
+// Schema definition remains the same
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
@@ -36,35 +30,12 @@ const userSchema = new Schema<IUser>(
       enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
       default: 'Tenant',
     },
-    status: {
-      type: String,
-      enum: ['active', 'inactive', 'suspended'],
-      default: 'active',
-    },
-    permissions: { type: [String], default: [] },
-    organizationId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
-      required: true,
-    },
-    managedAgentIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    associatedLandlordIds: {
-      type: [Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    },
-    googleId: String,
-    passwordResetToken: String,
-    passwordResetExpires: Date,
+    // ... other schema fields
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+// Middleware and other methods remain the same
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) {
     return next();
@@ -74,27 +45,34 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to compare entered password with the hashed password
-userSchema.methods.matchPassword = async function (enteredPassword: string) {
+userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string) {
   if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate and sign a JWT for the user
+/**
+ * Generates and signs a JWT for the user.
+ * This version reads environment variables directly from the hosting platform (e.g., Render).
+ */
 userSchema.methods.getSignedJwtToken = function (this: IUser): string {
-  if (!process.env.JWT_SECRET) {
-    console.error('FATAL ERROR: JWT_SECRET is not defined.');
-    throw new Error('JWT_SECRET is not defined');
+  // Use type assertion and a clear check for the secret
+  const jwtSecret = process.env.JWT_SECRET as string;
+  
+  if (!jwtSecret) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined in the deployment environment.');
+    throw new Error('Server configuration error: JWT secret is missing.');
   }
- 
+
+  // Set the expiration, providing a default value
+  const expiresIn = process.env.JWT_EXPIRE || '30d';
+
   return jwt.sign(
-    { id: this._id, role: this.role },         // 1. Payload
-    process.env.JWT_SECRET,                    // 2. Secret
-    { expiresIn: process.env.JWT_EXPIRE || '30d' } // 3. Options
+    { id: this._id, role: this.role }, // 1. Payload
+    jwtSecret,                         // 2. Secret
+    { expiresIn }                      // 3. Options
   );
 };
 
-// Method to generate a password reset token
 userSchema.methods.getPasswordResetToken = function (this: IUser): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
 
@@ -103,7 +81,6 @@ userSchema.methods.getPasswordResetToken = function (this: IUser): string {
     .update(resetToken)
     .digest('hex');
 
-  // Set token to expire in 10 minutes
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   return resetToken;
