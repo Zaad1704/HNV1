@@ -1,25 +1,23 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose'; // CORRECTED: Import 'Types'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 // Interface for the User document
 export interface IUser extends Document {
+  _id: Types.ObjectId; // Explicitly define _id as the correct type
   name: string;
   email: string;
   password?: string;
-  // MODIFIED: Added 'Super Moderator' to the role enum
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
   status: 'active' | 'inactive' | 'suspended';
   permissions: string[];
-  // MODIFIED: Made organizationId required for robustness in a multi-tenant app
-  organizationId: Schema.Types.ObjectId;
+  organizationId: Types.ObjectId; // Use Types.ObjectId
   createdAt: Date;
-  managedAgentIds?: Schema.Types.ObjectId[];
-  associatedLandlordIds?: Schema.Types.ObjectId[];
+  managedAgentIds?: Types.ObjectId[];
+  associatedLandlordIds?: Types.ObjectId[];
   googleId?: string;
   
-  // NEW: Fields for password reset
   passwordResetToken?: string;
   passwordResetExpires?: Date;
 
@@ -41,11 +39,10 @@ const userSchema: Schema<IUser> = new Schema({
   },
   password: {
     type: String,
-    select: false, // Don't return password by default
+    select: false,
   },
   role: {
     type: String,
-    // MODIFIED: Added 'Super Moderator'
     enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
     default: 'Tenant',
   },
@@ -59,9 +56,9 @@ const userSchema: Schema<IUser> = new Schema({
     default: [],
   },
   organizationId: {
-    type: Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId, // Schema definition uses Schema.Types
     ref: 'Organization',
-    required: true, // Made required
+    required: true,
   },
   managedAgentIds: [{
     type: Schema.Types.ObjectId,
@@ -94,14 +91,15 @@ userSchema.methods.matchPassword = async function (enteredPassword: string): Pro
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// NEW: Method to generate JWT
+// Method to generate JWT
 userSchema.methods.getSignedJwtToken = function (): string {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRE || '1d',
-  });
+    // CORRECTED: The payload is the first argument, the secret is the second.
+    return jwt.sign({ id: this._id }, process.env.JWT_SECRET as string, {
+      expiresIn: process.env.JWT_EXPIRE || '1d',
+    });
 };
 
-// NEW: Method to generate password reset token
+// Method to generate password reset token
 userSchema.methods.getPasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
   
@@ -110,7 +108,7 @@ userSchema.methods.getPasswordResetToken = function (): string {
     .update(resetToken)
     .digest('hex');
     
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Expires in 10 minutes
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
   
   return resetToken;
 };
