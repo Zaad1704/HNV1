@@ -1,32 +1,30 @@
 import { Router } from 'express';
 // --- CORRECTED CONTROLLER IMPORTS ---
-// The controller actually exports 'getUsers', 'getUser', etc.
+// The controller exports functions with these exact names.
 import {
-  getUsers,
-  getUser,
+  getAllUsers,
+  getUserById,
   updateUser,
   deleteUser,
 } from '../controllers/userController';
-// --- CORRECTED MIDDLEWARE IMPORT ---
-// The auth middleware exports a function named 'protect'.
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
-// This middleware will apply authentication to all routes in this file.
-// The function is named 'protect', not 'authenticate'.
+// Apply authentication middleware to all routes in this file.
 router.use(protect);
 
 // --- CORRECTED ROUTE DEFINITIONS ---
-// The 'authorize' function takes its arguments as a list, not a single string.
-router.route('/').get(authorize('admin'), getUsers);
+// The 'authorize' function is now passed an array of strings.
+// The controller function names are now correct.
+router.route('/').get(authorize(['admin']), getAllUsers);
 
 router
   .route('/:id')
-  .get(authorize('admin'), getUser)
-  .put(authorize('admin'), updateUser)
-  .delete(authorize('admin'), deleteUser);
+  .get(authorize(['admin']), getUserById)
+  .put(authorize(['admin']), updateUser)
+  .delete(authorize(['admin']), deleteUser);
 
 // This default export is correct.
 export default router;
