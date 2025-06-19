@@ -1,11 +1,11 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import Payment from '../models/Payment';
 import User from '../models/User';
 
-export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenantDashboardData = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user || req.user.role !== 'Tenant') {
         return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
     }
