@@ -80,11 +80,8 @@ userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// ========================================================================
-// THIS IS THE METHOD WITH THE ERROR.
-// The code below is the correct implementation.
-// ========================================================================
-userSchema.methods.getSignedJwtToken = function (): string {
+// Generate and sign a JWT for the user
+userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     throw new Error('JWT_SECRET is not defined');
@@ -98,7 +95,7 @@ userSchema.methods.getSignedJwtToken = function (): string {
 };
 
 // Method to generate a password reset token
-userSchema.methods.getPasswordResetToken = function (): string {
+userSchema.methods.getPasswordResetToken = function (this: IUser): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
 
   this.passwordResetToken = crypto
