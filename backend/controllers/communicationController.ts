@@ -1,9 +1,9 @@
-import { Request, Response } from 'express'; // FIX: Import Request
-// FIX: AuthenticatedRequest is no longer needed due to global type augmentation.
+// backend/controllers/communicationController.ts
+import { Request, Response } from 'express';
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 
-export const sendCustomEmail = async (req: Request, res: Response) => { // FIX: Use Request
+export const sendCustomEmail = async (req: Request, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
     const sender = req.user;
 
@@ -16,19 +16,18 @@ export const sendCustomEmail = async (req: Request, res: Response) => { // FIX: 
     }
 
     try {
-        // Security Check: Ensure the sender's organization owns the tenant with this email.
         const tenant = await Tenant.findOne({ email: recipientEmail, organizationId: sender.organizationId });
         if (!tenant) {
             return res.status(403).json({ success: false, message: "You do not have permission to contact this recipient." });
         }
 
-        // Assumes a template named 'customMessage.html' exists in backend/src/templates/
         await emailService.sendEmail(
             recipientEmail,
             subject,
             'customMessage', 
             {
-                senderName: sender.name,
+                // Corrected: provide fallback for optional name
+                senderName: sender.name || "The Management",
                 messageBody: message.replace(/\n/g, '<br>')
             }
         );
