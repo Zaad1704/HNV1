@@ -21,19 +21,20 @@ router.post('/login', async (req, res) => {
     }
 
     // Make sure jwtSecret is of type Secret (string | Buffer)
-    const jwtSecret: Secret = process.env.JWT_SECRET || "changeme";
-    if (!jwtSecret || jwtSecret === "changeme") {
-      console.error("JWT_SECRET env variable is not set or is default");
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error("JWT_SECRET env variable is not set");
       return res.status(500).json({ message: "Server misconfiguration" });
     }
 
-    const expiresIn = process.env.JWT_EXPIRE || "30d";
+    // Make sure expiresIn is a string literal or a number (e.g., "30d" or 3600)
+    const expiresIn: string | number = process.env.JWT_EXPIRE ? String(process.env.JWT_EXPIRE) : "30d";
 
-    // Correct usage: secret is Secret, options is object
+    // Correct usage: secret is Secret, options is object (do NOT pass callback!)
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      jwtSecret,
-      { expiresIn }
+      jwtSecret as Secret,
+      { expiresIn: expiresIn }
     );
 
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
