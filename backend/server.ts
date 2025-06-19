@@ -28,7 +28,7 @@ dotenv.config();
 
 const app: Express = express();
 
-const connectDB = async () => {
+const connectDB = async (): Promise<void> => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error('MONGO_URI is not defined in the environment variables.');
@@ -52,7 +52,7 @@ const allowedOrigins: string[] = [
 ];
 
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -63,7 +63,7 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Mount All API Routes
 app.use('/api/auth', authRoutes);
