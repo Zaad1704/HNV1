@@ -1,12 +1,12 @@
-import { Request, Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import ShareableLink from '../models/ShareableLink';
 import Expense from '../models/Expense'; // We need this to find the document URL
 import path from 'path';
 
 // @desc    Create a secure, shareable link for a document
 // @route   POST /api/share/expense-document/:expenseId
-export const createShareLink = async (req: AuthenticatedRequest, res: Response) => {
+export const createShareLink = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
