@@ -1,5 +1,5 @@
 import { Router } from "express";
-import User from "../models/User"; // Adjust path as needed
+import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -8,28 +8,26 @@ const router = Router();
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    // 1. Find user, make sure password is selected
     const user = await User.findOne({ email }).select("+password");
     if (!user || !user.password) {
       console.log(`Login failed: user not found or no password for email ${email}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 2. Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.log(`Login failed: incorrect password for email ${email}`);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 3. Generate JWT
-    const jwtSecret = process.env.JWT_SECRET;
+    const jwtSecret = process.env.JWT_SECRET as string | undefined;
     if (!jwtSecret) {
       console.error("JWT_SECRET env variable is not set");
       return res.status(500).json({ message: "Server misconfiguration" });
     }
-    const expiresIn = process.env.JWT_EXPIRE || "30d";
-    // Pass expiresIn as part of options (third param)
+    const expiresIn = process.env.JWT_EXPIRE ? String(process.env.JWT_EXPIRE) : "30d";
+
+    // Correct signature: payload, secret, options
     const token = jwt.sign(
       { id: user._id, role: user.role },
       jwtSecret,
