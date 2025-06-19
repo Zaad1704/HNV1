@@ -1,8 +1,11 @@
 // backend/src/types/express/index.d.ts
+import { IUser } from '../../models/User'; // Import your User interface
 
-declare namespace Express {
-  export interface Request {
-    user?: any; // Or a more specific type if you have one, e.g., UserPayload
-    organizationId?: string;
+declare global {
+  namespace Express {
+    export interface Request {
+      user?: IUser; // Attach your user type to the Request object
+      organizationId?: string;
+    }
   }
 }
