@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
+import path from 'path'; // Import the path module
 
 // --- Import All API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -20,6 +21,9 @@ import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
 import translationRoutes from './routes/translationRoutes';
 import invitationRoutes from './routes/invitationRoutes';
+import sharingRoutes from './routes/sharingRoutes'; // Import the new sharing routes
+import expenseRoutes from './routes/expenseRoutes'; // Assuming this was missing, let's add it
+import maintenanceRoutes from './routes/maintenanceRoutes'; // Assuming this was missing, let's add it
 
 dotenv.config();
 
@@ -61,6 +65,11 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// --- NEW: Serve Static Files ---
+// This makes the 'public' directory accessible to the web.
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+
 // --- Mount All API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
@@ -77,7 +86,11 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/translate', translationRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/share', sharingRoutes); // Mount the new sharing routes
 app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+
 
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
