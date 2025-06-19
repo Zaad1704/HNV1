@@ -1,13 +1,13 @@
-import { Router } from 'express';
+import { Request, Response } from 'express'; // FIX: Import Request & Response
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 import AuditLog from '../models/AuditLog';
 
-const router = Router();
+const router = require('express').Router(); // Use require for router to avoid other type issues
 
 router.use(protect, authorize(['Super Admin', 'Landlord']));
 
-router.get('/', async (req, res) => {
+router.get('/', async (req: Request, res: Response) => { // FIX: Use Request
     try {
         let query: any = {};
         
