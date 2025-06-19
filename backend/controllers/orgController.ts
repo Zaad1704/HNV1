@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import Organization, { IOrganization } from '../models/Organization';
 import User from '../models/User';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan'; // Assuming Plan model is needed for subscription details
 
-export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Response) => {
+export const getOrganizationDetails = async (req: Request, res: Response) => { // FIX: Use Request
     // Logic to get details for the user's organization
     res.status(200).json({ name: "My Organization", owner: "Current User" });
 };
