@@ -23,12 +23,12 @@ import invitationRoutes from './routes/invitationRoutes';
 import sharingRoutes from './routes/sharingRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
+import localizationRoutes from './routes/localizationRoutes'; // <-- NEW
 
 dotenv.config();
 
 const app: Express = express();
 
-// Connect to MongoDB
 const connectDB = async (): Promise<void> => {
   try {
     if (!process.env.MONGO_URI) {
@@ -57,7 +57,6 @@ const allowedOrigins: string[] = [
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, server-to-server)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -91,6 +90,7 @@ app.use('/api/share', sharingRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/localization', localizationRoutes); // <-- NEW
 
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running');
