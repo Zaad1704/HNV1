@@ -1,56 +1,37 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
 import User, { IUser } from '../models/User';
+import { Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '../types/express';
 
-export interface AuthenticatedRequest extends Request {
-  user?: IUser;
-}
+const protect = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    let token;
 
-export const protect = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET not defined');
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      try {
+        token = req.headers.authorization.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
+        
+        // CORRECTED LINE: Added 'as IUser' type assertion
+        req.user = (await User.findById(decoded.id).select('-password')) as IUser;
+        
+        next();
+      } catch (error) {
+        console.error(error);
+        res.status(401);
+        throw new Error('Not authorized, token failed');
       }
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Fetch permissions along with other user data
-      req.user = await User.findById(decoded.id).select('-password');
+    }
 
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
-      }
-      next();
-    } catch (error) {
-      return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+    if (!token) {
+      res.status(401);
+      throw new Error('Not authorized, no token');
     }
   }
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
-  }
-};
+);
 
-// --- MODIFIED AUTHORIZE FUNCTION ---
-export const authorize = (...requiredPermissions: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    // Super Admins have access to everything, regardless of permissions.
-    if (req.user.role === 'Super Admin') {
-      return next();
-    }
-    
-    // For other roles like Super Moderator, check if they have at least one of the required permissions.
-    const hasPermission = req.user.permissions.some(permission => requiredPermissions.includes(permission));
-
-    if (!hasPermission) {
-      return res.status(403).json({ success: false, message: `User does not have the required permissions` });
-    }
-    
-    next();
-  };
-};
+export { protect };
