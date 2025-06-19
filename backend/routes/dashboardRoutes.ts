@@ -11,8 +11,10 @@ const router = express.Router();
 
 router.use(protect);
 
-router.get('/', getOverviewStats);
-router.get('/financial', getFinancialSummary);
-router.get('/occupancy', getOccupancySummary);
+// The original file had a single '/' route. 
+// The frontend calls specific routes, so we match those.
+router.get('/overview-stats', getOverviewStats);
+router.get('/financial-summary', getFinancialSummary);
+router.get('/occupancy-summary', getOccupancySummary);
 
 export default router;
