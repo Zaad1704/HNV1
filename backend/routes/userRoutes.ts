@@ -1,9 +1,9 @@
 import { Router } from 'express';
 // --- CORRECTED CONTROLLER IMPORTS ---
-// The controller exports functions with these exact names.
+// The function names now match what is actually exported from the controller.
 import {
-  getAllUsers,
-  getUserById,
+  getUsers,
+  getUser,
   updateUser,
   deleteUser,
 } from '../controllers/userController';
@@ -16,13 +16,13 @@ const router = Router();
 router.use(protect);
 
 // --- CORRECTED ROUTE DEFINITIONS ---
-// The 'authorize' function is now passed an array of strings.
-// The controller function names are now correct.
-router.route('/').get(authorize(['admin']), getAllUsers);
+// The controller function names now match the corrected imports.
+// The authorize function is called correctly with an array.
+router.route('/').get(authorize(['admin']), getUsers);
 
 router
   .route('/:id')
-  .get(authorize(['admin']), getUserById)
+  .get(authorize(['admin']), getUser)
   .put(authorize(['admin']), updateUser)
   .delete(authorize(['admin']), deleteUser);
 
