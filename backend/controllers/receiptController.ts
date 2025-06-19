@@ -1,11 +1,11 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import Payment from '../models/Payment';
 import PDFDocument from 'pdfkit';
 
 // @desc    Generate a PDF receipt for a single payment
 // @route   GET /api/receipts/payment/:paymentId
-export const generatePaymentReceipt = async (req: AuthenticatedRequest, res: Response) => {
+export const generatePaymentReceipt = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
