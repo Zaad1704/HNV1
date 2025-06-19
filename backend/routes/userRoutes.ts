@@ -4,7 +4,8 @@ import {
   updateUserDetails,
   updateUserPassword,
   requestDataExport,
-  requestAccountDeletion
+  requestAccountDeletion,
+  getOrganizationUsers // Import the new function
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
 
@@ -12,6 +13,9 @@ const router = Router();
 
 // All routes in this file are protected and require a user to be logged in.
 router.use(protect);
+
+// Route to get all users in the same organization
+router.get('/organization', getOrganizationUsers);
 
 // Route to get the current user's profile information
 router.get('/profile', getProfile);
