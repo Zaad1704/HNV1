@@ -8,4 +8,3 @@ export const authorize = (roles: string[]) => (req: Request, res: Response, next
   }
   next();
 };
-
