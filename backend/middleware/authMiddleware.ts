@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
-import User, { IUser } from '../models/User';
-import { Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '../types/express';
+import User from '../models/User';
+import { Request, Response, NextFunction } from 'express';
 
 const protect = asyncHandler(
-  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     let token;
 
     if (
@@ -13,11 +12,14 @@ const protect = asyncHandler(
       req.headers.authorization.startsWith('Bearer')
     ) {
       try {
+        // Get token from header
         token = req.headers.authorization.split(' ')[1];
+
+        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
         
-        // CORRECTED LINE: Added 'as IUser' type assertion
-        req.user = (await User.findById(decoded.id).select('-password')) as IUser;
+        // Get user from the token and attach it to the request object
+        req.user = await User.findById(decoded.id).select('-password');
         
         next();
       } catch (error) {
