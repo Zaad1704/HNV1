@@ -111,8 +111,6 @@ export const requestAccountDeletion = async (req: AuthenticatedRequest, res: Res
     }
 };
 
-// @desc    Update the branding for the user's organization
-// @route   PUT /api/users/organization/branding
 export const updateOrganizationBranding = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
@@ -139,6 +137,30 @@ export const updateOrganizationBranding = async (req: AuthenticatedRequest, res:
 
         res.status(200).json({ success: true, data: organization.branding });
 
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get all agents managed by the current Landlord
+// @route   GET /api/users/my-agents
+export const getManagedAgents = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user || req.user.role !== 'Landlord') {
+        return res.status(403).json({ success: false, message: 'User is not a Landlord.' });
+    }
+
+    try {
+        // Find the landlord and populate the managedAgentIds field with full user documents
+        const landlord = await User.findById(req.user.id).populate({
+            path: 'managedAgentIds',
+            select: 'name email status createdAt' // Select the fields you want to display
+        });
+
+        if (!landlord) {
+            return res.status(404).json({ success: false, message: 'Landlord not found.' });
+        }
+
+        res.status(200).json({ success: true, data: landlord.managedAgentIds });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
