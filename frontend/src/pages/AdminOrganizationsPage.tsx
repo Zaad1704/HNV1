@@ -1,42 +1,61 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import apiClient from '../api/client';
+import { ShieldCheck } from 'lucide-react';
 
 const AdminOrganizationsPage = () => {
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    const fetchOrganizations = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            const response = await apiClient.get('/super-admin/organizations');
+            // Update the mapping to include the isLifetime flag
+            const formattedOrgs = response.data.data.map((org: any) => ({
+                id: org._id,
+                name: org.name,
+                owner: org.owner?.name || 'N/A',
+                plan: org.subscription?.planId?.name || 'N/A',
+                userCount: org.members?.length || 0,
+                status: org.subscription?.status || org.status,
+                isLifetime: org.subscription?.isLifetime || false, // Add isLifetime
+            }));
+            setOrganizations(formattedOrgs);
+        } catch (err) {
+            setError('Failed to fetch organization data.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchOrganizations = async () => {
-            try {
-                setLoading(true);
-                setError('');
-                const response = await apiClient.get('/super-admin/organizations');
-                const formattedOrgs = response.data.data.map((org: any) => ({
-                    id: org._id,
-                    name: org.name,
-                    owner: org.owner?.name || 'N/A',
-                    plan: org.subscription?.plan || 'Free',
-                    userCount: org.members?.length || 0,
-                    status: org.subscription?.status === 'active' ? 'Active' : 'Inactive',
-                }));
-                setOrganizations(formattedOrgs);
-            } catch (err) {
-                setError('Failed to fetch organization data.');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchOrganizations();
     }, []);
 
-    const handleSubscriptionChange = (orgId: string, action: 'activate' | 'deactivate') => {
-        // A developer would connect these buttons to new backend API endpoints.
-        // For example: apiClient.post(`/super-admin/organizations/${orgId}/subscription`, { action });
-        alert(`Simulating ${action} subscription for organization ${orgId}`);
+    const handleSubscriptionChange = async (orgId: string, action: 'active' | 'inactive') => {
+        try {
+            await apiClient.put(`/super-admin/organizations/${orgId}/subscription`, { status: action });
+            fetchOrganizations(); 
+        } catch (err) {
+            alert(`Failed to ${action} subscription.`);
+        }
     };
 
-    const getStatusClass = (status: string) => status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-600/50 text-slate-400';
+    // --- NEW: Handler for granting lifetime access ---
+    const handleGrantLifetime = async (orgId: string) => {
+        if (window.confirm('Are you sure you want to grant LIFETIME access to this organization? This action cannot be easily undone.')) {
+            try {
+                await apiClient.put(`/super-admin/organizations/${orgId}/grant-lifetime`);
+                fetchOrganizations();
+            } catch (err) {
+                alert('Failed to grant lifetime access.');
+            }
+        }
+    };
+
+    const getStatusClass = (status: string) => status === 'active' || status === 'trialing' ? 'bg-green-500/20 text-green-400' : 'bg-slate-600/50 text-slate-400';
     const getPlanClass = (plan: string) => {
         if (plan.includes('Agent')) return 'bg-sky-500/20 text-sky-400';
         if (plan.includes('Landlord')) return 'bg-pink-500/20 text-pink-400';
@@ -69,9 +88,12 @@ const AdminOrganizationsPage = () => {
                                         <p className="text-sm text-slate-400">{org.owner}</p>
                                     </td>
                                     <td className="p-4">
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPlanClass(org.plan)}`}>
-                                            {org.plan}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {org.isLifetime && <ShieldCheck size={16} className="text-yellow-400" title="Lifetime Subscription"/>}
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPlanClass(org.plan)}`}>
+                                                {org.isLifetime ? 'Lifetime' : org.plan}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(org.status)}`}>
@@ -79,8 +101,11 @@ const AdminOrganizationsPage = () => {
                                         </span>
                                     </td>
                                     <td className="p-4 space-x-2">
-                                        <button onClick={() => handleSubscriptionChange(org.id, 'activate')} className="font-medium text-xs bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-500 transition-colors">Activate</button>
-                                        <button onClick={() => handleSubscriptionChange(org.id, 'deactivate')} className="font-medium text-xs bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-500 transition-colors">Deactivate</button>
+                                        <button onClick={() => handleSubscriptionChange(org.id, 'active')} className="font-medium text-xs bg-green-600 text-white py-1 px-3 rounded-md hover:bg-green-500 transition-colors">Activate</button>
+                                        <button onClick={() => handleSubscriptionChange(org.id, 'inactive')} className="font-medium text-xs bg-red-600 text-white py-1 px-3 rounded-md hover:bg-red-500 transition-colors">Deactivate</button>
+                                        {!org.isLifetime && (
+                                            <button onClick={() => handleGrantLifetime(org.id)} className="font-medium text-xs bg-yellow-600 text-white py-1 px-3 rounded-md hover:bg-yellow-500 transition-colors">Grant Lifetime</button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
