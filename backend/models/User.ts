@@ -1,8 +1,9 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Model } from "mongoose";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
+// Extend this interface as needed for your app
 export interface IUser extends Document {
   email: string;
   password: string;
@@ -13,9 +14,12 @@ export interface IUser extends Document {
   organizationId?: string;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
-  matchPassword?(enteredPassword: string): Promise<boolean>;
+  managedAgentIds?: string[];
+  associatedLandlordIds?: string[];
+  // Methods
+  matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
-  getPasswordResetToken?(): string;
+  getPasswordResetToken(): string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -29,10 +33,13 @@ const userSchema = new Schema<IUser>(
     organizationId: { type: String },
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
+    managedAgentIds: [{ type: String }],
+    associatedLandlordIds: [{ type: String }],
   },
   { timestamps: true }
 );
 
+// Hash password before save
 userSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -40,18 +47,16 @@ userSchema.pre<IUser>("save", async function (next) {
   next();
 });
 
-// Method to match password
+// Compare entered password with hashed password
 userSchema.methods.matchPassword = async function (enteredPassword: string) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
-// JWT signing
+// Generate JWT
 userSchema.methods.getSignedJwtToken = function () {
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined");
-  }
-  // If using jsonwebtoken v9+, expiresIn must be a number (seconds)
-  const expiresIn = process.env.JWT_EXPIRE ? parseInt(process.env.JWT_EXPIRE, 10) : 60 * 60 * 24 * 30; // 30 days default
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined");
+  // For jsonwebtoken v9+, expiresIn must be a number (seconds)
+  const expiresIn = process.env.JWT_EXPIRE ? parseInt(process.env.JWT_EXPIRE, 10) : 60 * 60 * 24 * 30;
   const jwtOptions: SignOptions = { expiresIn };
   return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, jwtOptions);
 };
@@ -64,4 +69,5 @@ userSchema.methods.getPasswordResetToken = function () {
   return resetToken;
 };
 
-export default mongoose.model<IUser>("User", userSchema);
+const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+export default User;
