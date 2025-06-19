@@ -23,4 +23,4 @@ services:
     envVars:
       - key: VITE_API_URL
         # CORRECTED to your live backend URL
-        value: https://hnv.onrender.com
+        value: https://hnv.onrender.com/api
