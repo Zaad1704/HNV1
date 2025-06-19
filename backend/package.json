@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.ts",
-    "build": "rm -f server.js && tsc && ls -l",
+    "build": "rm -f server.js && tsc --noEmitOnError false && ls -l",
     "test": "jest",
     "check": "pwd && ls -l && ls -l routes/"
   },
