@@ -5,7 +5,8 @@ import {
     updateOrganizationStatus,
     getPlatformGrowthData,
     getPlanDistributionData,
-    getAllUsers // Import the new function
+    getAllUsers,
+    getBillingData // Import the new function
 } from '../controllers/superAdminController';
 import { protect, authorize } from '../middleware/authMiddleware';
 
@@ -25,6 +26,9 @@ router.put('/organizations/:id/status', updateOrganizationStatus);
 
 // Add the new route for getting all users
 router.get('/users', getAllUsers);
+
+// Add the new route for getting all billing info
+router.get('/billing', getBillingData);
 
 
 export default router;
