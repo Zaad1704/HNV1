@@ -1,7 +1,7 @@
 import { Router } from "express";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 
 const router = Router();
 
@@ -20,19 +20,19 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error("JWT_SECRET env variable is not set");
+    // Make sure jwtSecret is of type Secret (string | Buffer)
+    const jwtSecret: Secret = process.env.JWT_SECRET || "changeme";
+    if (!jwtSecret || jwtSecret === "changeme") {
+      console.error("JWT_SECRET env variable is not set or is default");
       return res.status(500).json({ message: "Server misconfiguration" });
     }
 
-    // Ensure expiresIn is a string or number
-    const expiresIn: string | number = process.env.JWT_EXPIRE || "30d";
+    const expiresIn = process.env.JWT_EXPIRE || "30d";
 
-    // Correct usage: secret is string, options is object
+    // Correct usage: secret is Secret, options is object
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      jwtSecret as string,
+      jwtSecret,
       { expiresIn }
     );
 
