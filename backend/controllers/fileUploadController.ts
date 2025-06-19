@@ -1,7 +1,7 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 
-export const uploadImage = (req: AuthenticatedRequest, res: Response) => {
+export const uploadImage = (req: Request, res: Response) => { // FIX: Use Request
     if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
