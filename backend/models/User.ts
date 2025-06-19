@@ -1,9 +1,9 @@
+// models/User.ts
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-// Interface for the User document
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
@@ -13,20 +13,19 @@ export interface IUser extends Document {
   status: 'active' | 'inactive' | 'suspended';
   permissions: string[];
   organizationId: Types.ObjectId;
-  createdAt: Date;
   managedAgentIds?: Types.ObjectId[];
   associatedLandlordIds?: Types.ObjectId[];
   googleId?: string;
-
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  createdAt: Date;
 
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
   getPasswordResetToken(): string;
 }
 
-const userSchema: Schema<IUser> = new Schema(
+const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -34,34 +33,24 @@ const userSchema: Schema<IUser> = new Schema(
     role: {
       type: String,
       enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'],
-      default: 'Tenant',
+      default: 'Tenant'
     },
     status: {
       type: String,
       enum: ['active', 'inactive', 'suspended'],
-      default: 'active',
+      default: 'active'
     },
     permissions: { type: [String], default: [] },
     organizationId: {
       type: Schema.Types.ObjectId,
       ref: 'Organization',
-      required: true,
+      required: true
     },
-    managedAgentIds: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    associatedLandlordIds: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    googleId: { type: String },
+    managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    associatedLandlordIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    googleId: String,
     passwordResetToken: String,
-    passwordResetExpires: Date,
+    passwordResetExpires: Date
   },
   { timestamps: true }
 );
@@ -73,30 +62,30 @@ userSchema.pre<IUser>('save', async function (next) {
   next();
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
   if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.methods.getSignedJwtToken = function (): string {
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    throw new Error('JWT_SECRET environment variable is not set.');
+userSchema.methods.getSignedJwtToken = function () {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not defined');
   }
-  const jwtExpire = process.env.JWT_EXPIRE || '1d';
-  return jwt.sign({ id: this._id.toString() }, jwtSecret, {
-    expiresIn: jwtExpire,
-  });
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '30d' }
+  );
 };
 
-userSchema.methods.getPasswordResetToken = function (): string {
+userSchema.methods.getPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(20).toString('hex');
-
-  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
   return resetToken;
 };
 
-const User = mongoose.model<IUser>('User', userSchema);
-export default User;
+export default mongoose.model<IUser>('User', userSchema);
