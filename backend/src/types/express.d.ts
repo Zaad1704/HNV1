@@ -1,11 +1,11 @@
-// src/types/express.d.ts
+// backend/src/types/asexpress.d.ts
 import { Types } from 'mongoose';
 
 declare global {
   namespace Express {
     interface User {
       _id: Types.ObjectId;
-      name: string;
+      name?: string; // Corrected: Made name optional
       email: string;
       password?: string;
       role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
