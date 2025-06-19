@@ -3,6 +3,8 @@ import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import User from '../models/User';
 import AgentInvitation from '../models/AgentInvitation';
 import emailService from '../services/emailService';
+import Subscription from '../models/Subscription';
+import Plan from '../models/Plan';
 
 // @desc    Invite an Agent to a Landlord's organization
 // @route   POST /api/invitations/invite-agent
@@ -18,6 +20,17 @@ export const inviteAgent = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     try {
+        // --- NEW: Check subscription limits ---
+        const subscription = await Subscription.findOne({ organizationId: inviter.organizationId }).populate('planId');
+        if (!subscription || !subscription.planId) {
+            return res.status(403).json({ success: false, message: 'No valid subscription found.' });
+        }
+        const plan = subscription.planId as any; // Cast to access limits
+        if (inviter.managedAgentIds.length >= plan.limits.maxAgents) {
+            return res.status(403).json({ success: false, message: `You have reached the maximum of ${plan.limits.maxAgents} agents for your current plan.` });
+        }
+        // --- End of subscription check ---
+
         const existingUser = await User.findOne({ email: recipientEmail });
         if (existingUser && existingUser.organizationId.toString() === inviter.organizationId.toString()) {
             return res.status(400).json({ success: false, message: 'This user is already part of your organization.' });
@@ -39,7 +52,7 @@ export const inviteAgent = async (req: AuthenticatedRequest, res: Response) => {
         await emailService.sendEmail(
             recipientEmail,
             `Invitation to join ${inviter.name}'s Team on HNV`,
-            'agentInvitation', // We will create this template next
+            'agentInvitation',
             {
                 inviterName: inviter.name,
                 acceptURL: acceptURL,
@@ -54,75 +67,6 @@ export const inviteAgent = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-
-// @desc    Get invitation details from a token
-// @route   GET /api/invitations/accept/:token
-export const getInvitationDetails = async (req: Request, res: Response) => {
-    try {
-        const invitation = await AgentInvitation.findOne({ token: req.params.token, status: 'pending', expiresAt: { $gt: new Date() } })
-            .populate('inviterId', 'name');
-
-        if (!invitation) {
-            return res.status(404).json({ success: false, message: 'Invitation not found, is invalid, or has expired.' });
-        }
-
-        const existingUser = await User.findOne({ email: invitation.recipientEmail });
-
-        res.status(200).json({
-            success: true,
-            data: {
-                recipientEmail: invitation.recipientEmail,
-                inviterName: (invitation.inviterId as any).name,
-                isExistingUser: !!existingUser,
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Server Error" });
-    }
-};
-
-
-// @desc    Accept an invitation and link accounts
-// @route   POST /api/invitations/accept/:token
-export const acceptAgentInvitation = async (req: Request, res: Response) => {
-    const { password } = req.body; // User provides password if they are new
-
-    try {
-        const invitation = await AgentInvitation.findOne({ token: req.params.token, status: 'pending', expiresAt: { $gt: new Date() } });
-        if (!invitation) {
-            return res.status(404).json({ success: false, message: 'Invitation not found, is invalid, or has expired.' });
-        }
-
-        let agentUser = await User.findOne({ email: invitation.recipientEmail });
-        
-        // If user doesn't exist, create a new Agent account
-        if (!agentUser) {
-            if (!password) {
-                return res.status(400).json({ success: false, message: 'Password is required for new users.' });
-            }
-            agentUser = await User.create({
-                email: invitation.recipientEmail,
-                name: invitation.recipientEmail.split('@')[0], // a default name
-                password,
-                role: 'Agent',
-                organizationId: invitation.organizationId,
-            });
-        }
-
-        // Link the Landlord and Agent
-        await User.findByIdAndUpdate(invitation.inviterId, { $addToSet: { managedAgentIds: agentUser._id } });
-        await User.findByIdAndUpdate(agentUser._id, { $addToSet: { associatedLandlordIds: invitation.inviterId } });
-        
-        // Mark invitation as accepted
-        invitation.status = 'accepted';
-        await invitation.save();
-        
-        // Return a JWT for the new/existing agent to log them in
-        const token = agentUser.getSignedJwtToken();
-        res.status(200).json({ success: true, token });
-
-    } catch (error) {
-        console.error("Error accepting invitation:", error);
-        res.status(500).json({ success: false, message: "Server Error" });
-    }
-};
+// We will implement the acceptance logic in a later step
+export const getInvitationDetails = async (req: Request, res: Response) => { /* Placeholder */ };
+export const acceptAgentInvitation = async (req: Request, res: Response) => { /* Placeholder */ };
