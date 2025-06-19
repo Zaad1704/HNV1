@@ -2,12 +2,13 @@
   "name": "hnv-saas-backend",
   "version": "1.0.0",
   "description": "Backend for HNV SaaS",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "server": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-    "build": "tsc",
-    "test": "jest"
+    "start": "node dist/server.js",
+    "dev": "nodemon src/server.ts",
+    "build": "rm -rf dist && tsc",
+    "test": "jest",
+    "lint": "eslint . --ext .ts"
   },
   "author": "Zaad",
   "license": "ISC",
@@ -42,6 +43,9 @@
     "@types/passport-google-oauth20": "^2.0.11",
     "@types/pdfkit": "^0.12.9",
     "@types/supertest": "^2.0.12",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "eslint": "^8.38.0",
     "jest": "^29.4.3",
     "nodemon": "^2.0.20",
     "supertest": "^6.3.3",
