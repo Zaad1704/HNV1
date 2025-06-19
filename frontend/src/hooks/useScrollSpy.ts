@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 
 export function useScrollSpy(
   sectionIds: string[],
-  offset: number = 0
+  offset: number = 0 // A pixel offset from the top
 ): string {
   const [activeId, setActiveId] = useState<string>('');
   const observer = useRef<IntersectionObserver | null>(null);
@@ -14,7 +14,11 @@ export function useScrollSpy(
       observer.current.disconnect();
     }
 
-    // Use IntersectionObserver for performance
+    // This creates a "line" across the screen. When a section's
+    // top passes this line, it becomes active.
+    const topMargin = Math.floor(window.innerHeight / 2) - offset;
+    const bottomMargin = Math.floor(window.innerHeight / 2) - 1;
+
     observer.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -24,11 +28,8 @@ export function useScrollSpy(
         });
       },
       {
-        // The rootMargin shifts the "intersection" point.
-        // A negative top margin means the section becomes "active"
-        // shortly after its top edge enters the screen.
-        rootMargin: `-${offset}px 0px 0px 0px`,
-        threshold: 0.2, // Trigger when 20% of the section is visible
+        // Defines the "intersection line" relative to the viewport
+        rootMargin: `-${topMargin}px 0px -${bottomMargin}px 0px`,
       }
     );
 
