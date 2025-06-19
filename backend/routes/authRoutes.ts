@@ -20,19 +20,22 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const jwtSecret = process.env.JWT_SECRET as string | undefined;
+    const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       console.error("JWT_SECRET env variable is not set");
       return res.status(500).json({ message: "Server misconfiguration" });
     }
-    const expiresIn = process.env.JWT_EXPIRE ? String(process.env.JWT_EXPIRE) : "30d";
 
-    // Correct signature: payload, secret, options
+    // Ensure expiresIn is a string or number
+    const expiresIn: string | number = process.env.JWT_EXPIRE || "30d";
+
+    // Correct usage: secret is string, options is object
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      jwtSecret,
+      jwtSecret as string,
       { expiresIn }
     );
+
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   } catch (err) {
     console.error("Login error:", err);
