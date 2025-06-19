@@ -7,13 +7,16 @@ declare global {
       _id: Types.ObjectId;
       name: string;
       email: string;
+      password?: string;
       role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-      organizationId: Types.ObjectId;
       status: 'active' | 'inactive' | 'suspended';
       permissions: string[];
-      managedAgentIds?: Types.ObjectId[];
-      associatedLandlordIds?: Types.ObjectId[];
+      organizationId: Types.ObjectId;
+      managedAgentIds: Types.ObjectId[];
+      associatedLandlordIds: Types.ObjectId[];
       googleId?: string;
+      passwordResetToken?: string;
+      passwordResetExpires?: Date;
     }
 
     interface Request {
@@ -23,4 +26,4 @@ declare global {
   }
 }
 
-export {}; // Important for module augmentation
+export {};
