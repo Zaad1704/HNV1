@@ -1,10 +1,10 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import Invoice from '../models/Invoice';
-import Lease, { ILease } from '../models/Lease';
+import Lease from '../models/Lease';
 import { addMonths, startOfMonth } from 'date-fns';
 
-export const generateInvoices = async (req: AuthenticatedRequest, res: Response) => {
+export const generateInvoices = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ message: 'Not authorized' });
 
     try {
