@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Building, Image as ImageIcon, Save } from 'lucide-react';
 
 const SettingsPage = () => {
   const { user, setUser } = useAuthStore();
@@ -11,32 +12,45 @@ const SettingsPage = () => {
       name: '', 
       address: { street: '', city: '', state: '', zipCode: '' } 
   });
-  const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' });
+  
+  // --- NEW: State for branding form ---
+  const [branding, setBranding] = useState({
+      companyName: '',
+      companyLogoUrl: '',
+      companyAddress: ''
+  });
+
   const [message, setMessage] = useState({ type: '', text: '' });
   
-  const updateProfileMutation = useMutation(
-    (updatedProfile: any) => apiClient.put('/users/updatedetails', updatedProfile), {
-      onSuccess: (response) => {
-        setUser(response.data.data);
-        setMessage({ type: 'success', text: 'Profile updated successfully!' });
+  // --- NEW: Mutation for updating branding ---
+  const updateBrandingMutation = useMutation({
+      mutationFn: (updatedBranding: any) => apiClient.put('/users/organization/branding', updatedBranding),
+      onSuccess: () => {
+        setMessage({ type: 'success', text: 'Branding updated successfully!' });
+        // Refresh user data to get the latest branding info
+        queryClient.invalidateQueries(['getMe']); 
       },
       onError: (err: any) => {
-        setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update profile.' });
+        setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update branding.' });
       }
-    }
-  );
+  });
 
-  const uploadIdMutation = useMutation(
-    (formData: FormData) => apiClient.post('/upload/image', formData), {
-      onSuccess: (response) => {
-        updateProfileMutation.mutate({ governmentIdUrl: response.data.imageUrl });
-        setMessage({ type: 'success', text: 'ID uploaded successfully! Saving...' });
-      },
-      onError: (error: any) => {
-        setMessage({ type: 'error', text: error.response?.data?.message || 'ID upload failed.' });
-      },
-    }
-  );
+  // --- NEW: Mutation for uploading the logo ---
+  const uploadLogoMutation = useMutation({
+    mutationFn: (formData: FormData) => apiClient.post('/upload/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    onSuccess: (response) => {
+      // Once logo is uploaded, update the branding state and then save it
+      const newLogoUrl = response.data.imageUrl;
+      setBranding(b => ({...b, companyLogoUrl: newLogoUrl }));
+      updateBrandingMutation.mutate({ companyLogoUrl: newLogoUrl });
+      setMessage({ type: 'success', text: 'Logo uploaded! Saving...' });
+    },
+    onError: (error: any) => {
+      setMessage({ type: 'error', text: error.response?.data?.message || 'Logo upload failed.' });
+    },
+  });
 
   useEffect(() => {
     if (user) {
@@ -44,89 +58,83 @@ const SettingsPage = () => {
         name: user.name || '',
         address: user.address || { street: '', city: '', state: '', zipCode: '' },
       });
+      // --- NEW: Populate branding form from user data ---
+      if (user.organizationId?.branding) {
+        setBranding({
+            companyName: user.organizationId.branding.companyName || '',
+            companyLogoUrl: user.organizationId.branding.companyLogoUrl || '',
+            companyAddress: user.organizationId.branding.companyAddress || '',
+        });
+      }
     }
   }, [user]);
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (['street', 'city', 'state', 'zipCode'].includes(name)) {
-        setProfile(p => ({ ...p, address: { ...p.address, [name]: value } }));
-    } else {
-        setProfile(p => ({ ...p, [name]: value }));
-    }
+  const handleBrandingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBranding({ ...branding, [e.target.name]: e.target.value });
   };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
   
-  const handleIdUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
       const formData = new FormData();
       formData.append('image', file);
-      uploadIdMutation.mutate(formData);
+      uploadLogoMutation.mutate(formData);
   };
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateBranding = (e: React.FormEvent) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
-    updateProfileMutation.mutate(profile);
+    updateBrandingMutation.mutate(branding);
   };
-  
-  const handleUpdatePassword = async (e: React.FormEvent) => { /* ... */ };
-  const manageBilling = () => { /* ... */ };
-  const handleDataRequest = () => { /* ... */ };
-  const handleAccountDeletion = () => { /* ... */ };
+
+  // ... (keep your existing profile update logic: handleProfileChange, handleUpdateProfile, etc.)
 
   return (
     <div className="text-white">
       <h1 className="text-4xl font-bold mb-8">Profile & Settings</h1>
-      {/* ... message display ... */}
+      {message.text && (
+        <div className={`p-3 rounded-lg mb-6 text-center text-sm ${message.type === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+          {message.text}
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
-          {/* Profile Information Form */}
-          <div className="bg-slate-800/70 p-8 rounded-2xl">
-            <h2 className="text-xl font-bold mb-6">Profile Information</h2>
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              {/* Name and Email fields */}
+          
+          {/* --- NEW: Organization Branding Form --- */}
+          <div className="bg-slate-800/70 p-8 rounded-2xl border border-slate-700">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Building /> Organization Branding</h2>
+            <form onSubmit={handleUpdateBranding} className="space-y-4">
               <div>
-                <label>Full Name</label>
-                <input type="text" name="name" value={profile.name} onChange={handleProfileChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Company Name</label>
+                <input type="text" name="companyName" value={branding.companyName} onChange={handleBrandingChange} className="w-full bg-slate-900 p-2 rounded-md border border-slate-600"/>
               </div>
               <div>
-                <label>Email Address</label>
-                <input type="email" value={user?.email || ''} disabled className="mt-1 w-full bg-slate-700 p-2 rounded-md cursor-not-allowed"/>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Company Address</label>
+                <input type="text" name="companyAddress" value={branding.companyAddress} onChange={handleBrandingChange} className="w-full bg-slate-900 p-2 rounded-md border border-slate-600"/>
               </div>
-              {/* Address Fields */}
-              <div className="pt-4 border-t border-slate-700">
-                <h3 className="text-lg font-semibold mb-2">Address</h3>
-                <div className="space-y-4">
-                    <div><label>Street</label><input type="text" name="street" value={profile.address.street} onChange={handleProfileChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
-                    <div className="grid md:grid-cols-3 gap-4">
-                        <div><label>City</label><input type="text" name="city" value={profile.address.city} onChange={handleProfileChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
-                        <div><label>State</label><input type="text" name="state" value={profile.address.state} onChange={handleProfileChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
-                        <div><label>Zip Code</label><input type="text" name="zipCode" value={profile.address.zipCode} onChange={handleProfileChange} className="mt-1 w-full bg-slate-900 p-2 rounded-md"/></div>
-                    </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Company Logo</label>
+                <div className="flex items-center gap-4 mt-2">
+                    {branding.companyLogoUrl && <img src={branding.companyLogoUrl} alt="Company Logo" className="w-16 h-16 rounded-lg bg-slate-700 object-contain p-1" />}
+                    <input type="file" name="companyLogo" onChange={handleLogoUpload} className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-slate-700 file:text-slate-300 hover:file:bg-slate-600"/>
                 </div>
+                 {uploadLogoMutation.isLoading && <p className="text-sm text-amber-400 mt-2">Uploading logo...</p>}
               </div>
+
               <div className="text-right pt-2">
-                <button type="submit" disabled={updateProfileMutation.isLoading} className="px-5 py-2.5 bg-cyan-600 rounded-lg disabled:bg-slate-600">
-                  {updateProfileMutation.isLoading ? 'Saving...' : 'Save Profile'}
+                <button type="submit" disabled={updateBrandingMutation.isLoading} className="px-5 py-2.5 bg-cyan-600 rounded-lg disabled:bg-slate-600 flex items-center gap-2 ml-auto">
+                  <Save size={16} /> {updateBrandingMutation.isLoading ? 'Saving...' : 'Save Branding'}
                 </button>
               </div>
             </form>
           </div>
-          {/* ... Password Settings Form ... */}
+
+          {/* Existing Profile Information Form can go here */}
+          {/* <div className="bg-slate-800/70 p-8 rounded-2xl"> ... </div> */}
+
         </div>
         <div className="lg:col-span-1 space-y-8">
-            {/* ... Subscription and Danger Zone sections ... */}
-            <div className="bg-slate-800/70 p-8 rounded-2xl">
-                <h2 className="text-xl font-bold mb-4">Identity Verification</h2>
-                <div>
-                    <label htmlFor="governmentId" className="block text-sm font-medium text-slate-400">Upload Government ID</label>
-                    <input type="file" name="governmentId" id="governmentId" onChange={handleIdUpload} className="mt-1 w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-slate-700 file:text-slate-300 hover:file:bg-slate-600"/>
-                    {uploadIdMutation.isLoading && <p className="text-sm text-amber-400 mt-2">Uploading...</p>}
-                </div>
-            </div>
+            {/* Other settings cards can go here */}
         </div>
       </div>
     </div>
