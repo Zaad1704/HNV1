@@ -17,6 +17,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage'; // Import the new page
 
 // --- Authenticated User Page Components ---
 import DashboardRedirector from './pages/DashboardRedirector';
@@ -40,7 +41,7 @@ import AdminBillingPage from './pages/AdminBillingPage';
 import AdminPlansPage from './pages/AdminPlansPage';
 import AdminProfilePage from './pages/SuperAdmin/AdminProfilePage';
 import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
-import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage'; // Import the new page
+import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
 
 const NotFound = () => <div className="p-8 text-white"><h1>404 - Page Not Found</h1></div>;
 
@@ -67,7 +68,7 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      if (token) {
+      if (token && !user) { // Only check if token exists but user object is not yet in state
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.data);
@@ -79,7 +80,7 @@ function App() {
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, setUser, logout]);
+  }, [token, user, setUser, logout]);
 
   useEffect(() => {
     const detectLanguage = async () => {
@@ -87,11 +88,9 @@ function App() {
       if (existingLang && existingLang !== 'en-US') {
         return;
       }
-
       try {
         const response = await apiClient.get('/localization/detect');
         const detectedLang = response.data.lang;
-        
         if (detectedLang && i18n.options.supportedLngs.includes(detectedLang)) {
           i18n.changeLanguage(detectedLang);
         }
@@ -99,10 +98,8 @@ function App() {
         console.error("IP-based language detection failed, falling back to default.", error);
       }
     };
-
     detectLanguage();
   }, []);
-
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
@@ -120,6 +117,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+        <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} /> {/* NEW ROUTE */}
 
         {/* --- Protected User Routes --- */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
@@ -145,7 +143,6 @@ function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="organizations" element={<AdminOrganizationsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
-            {/* --- ADD THIS NEW ROUTE --- */}
             <Route path="moderators" element={<AdminModeratorsPage />} />
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="plans" element={<AdminPlansPage />} />
