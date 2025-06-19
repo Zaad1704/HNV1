@@ -1,9 +1,9 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed due to global type augmentation.
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 
-export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) => {
+export const sendCustomEmail = async (req: Request, res: Response) => { // FIX: Use Request
     const { recipientEmail, subject, message } = req.body;
     const sender = req.user;
 
