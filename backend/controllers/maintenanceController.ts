@@ -1,12 +1,12 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
 // @desc    Create a new maintenance request
-export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const createMaintenanceRequest = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -38,7 +38,7 @@ export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: R
 };
 
 // @desc    Get all maintenance requests for an organization
-export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: Response) => {
+export const getOrgMaintenanceRequests = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     try {
         const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId })
@@ -51,7 +51,7 @@ export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: 
 };
 
 // @desc    Get a single maintenance request by ID
-export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: Response) => {
+export const getMaintenanceRequestById = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     try {
         const request = await MaintenanceRequest.findById(req.params.id);
@@ -66,7 +66,7 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
 
 
 // @desc    Update a maintenance request (e.g., change its status)
-export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const updateMaintenanceRequest = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     
     const { status } = req.body;
@@ -90,7 +90,7 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
 };
 
 // @desc    Delete a maintenance request
-export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteMaintenanceRequest = async (req: Request, res: Response) => { // FIX: Use Request
      if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     try {
         const request = await MaintenanceRequest.findById(req.params.id);
