@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { sendCustomEmail } from '../controllers/communicationController';
-import { protect, authorize } from '../middleware/authMiddleware';
+import { protect } from '../middleware/authMiddleware';
+import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 
 const router = Router();
 
-// This route is protected and only available to Landlords and Agents
-router.post('/email', protect, authorize('Landlord', 'Agent'), sendCustomEmail);
+router.post('/email', protect, authorize(['Landlord', 'Agent']), sendCustomEmail);
 
 export default router;
