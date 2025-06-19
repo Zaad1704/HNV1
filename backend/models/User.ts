@@ -93,9 +93,13 @@ userSchema.methods.matchPassword = async function (enteredPassword: string): Pro
 
 // Method to generate JWT
 userSchema.methods.getSignedJwtToken = function (): string {
-    // FIX: The payload 'id' must be a string. Convert the ObjectId to a string.
-    return jwt.sign({ id: this._id.toString() }, process.env.JWT_SECRET as string, {
-      expiresIn: process.env.JWT_EXPIRE || '1d',
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        throw new Error('JWT_SECRET environment variable is not set.');
+    }
+    const jwtExpire = process.env.JWT_EXPIRE || '1d';
+    return jwt.sign({ id: this._id.toString() }, jwtSecret, {
+      expiresIn: jwtExpire,
     });
 };
 
