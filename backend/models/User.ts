@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-// --- FIX: Import the built-in Node.js crypto module ---
 import crypto from 'crypto';
 
 export interface IUser extends Document {
@@ -64,13 +63,23 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// --- FIX: Explicitly type 'this' for matchPassword ---
-userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string): Promise<boolean> {
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) {
+    return next();
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Method to compare entered password
+userSchema.methods.matchPassword = async function (this: IUser, enteredPassword: string) {
   if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// --- FIX: Corrected and verified ---
+// Generate and sign a JWT for the user
 userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   const jwtSecret = process.env.JWT_SECRET as string;
   if (!jwtSecret) {
@@ -80,7 +89,7 @@ userSchema.methods.getSignedJwtToken = function (this: IUser): string {
   return jwt.sign({ id: this._id, role: this.role }, jwtSecret, { expiresIn });
 };
 
-// --- FIX: Corrected and verified ---
+// Method to generate a password reset token
 userSchema.methods.getPasswordResetToken = function (this: IUser): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
 
@@ -90,17 +99,8 @@ userSchema.methods.getPasswordResetToken = function (this: IUser): string {
     .digest('hex');
 
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
   return resetToken;
 };
-
-// This middleware must be defined BEFORE the model is created
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) {
-    return next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
 
 export default mongoose.model<IUser>('User', userSchema);
