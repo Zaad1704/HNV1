@@ -1,5 +1,3 @@
-// zaad1704/hnv1/HNV1-ff6f7a48b147c7faf30457e63d2b94ee88b6eaf9/backend/server.ts
-
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
@@ -19,9 +17,9 @@ import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
 import billingRoutes from './routes/billingRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
-// Make sure to add the import for passwordResetRoutes if you haven't already
 import passwordResetRoutes from './routes/passwordResetRoutes';
-
+import translationRoutes from './routes/translationRoutes';
+import invitationRoutes from './routes/invitationRoutes'; // Import the new invitation routes
 
 dotenv.config();
 
@@ -61,13 +59,7 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// ***** CORRECTED SECTION *****
-// REMOVED: app.use(express.raw({ type: 'application/json' }));
-// This is the correct middleware for parsing JSON request bodies.
 app.use(express.json());
-// ***** END OF CORRECTION *****
-
 
 // --- Mount All API Routes ---
 app.use('/api/auth', authRoutes);
@@ -83,7 +75,8 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
-// Add the password reset route
+app.use('/api/translate', translationRoutes);
+app.use('/api/invitations', invitationRoutes); // Mount the new invitation routes
 app.use('/api/password-reset', passwordResetRoutes);
 
 app.get('/', (req: Request, res: Response) => {
