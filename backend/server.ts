@@ -31,15 +31,13 @@ const app: Express = express();
 const connectDB = async (): Promise<void> => {
   try {
     if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is not defined in the environment variables.');
+      throw new Error('MONGO_URI is not defined');
     }
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected...');
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(err.message);
-    } else {
-      console.error('An unknown error occurred during database connection.');
     }
     process.exit(1);
   }
@@ -52,8 +50,8 @@ const allowedOrigins: string[] = [
 ];
 
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void => {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -65,7 +63,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Mount All API Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
@@ -86,10 +84,10 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('HNV SaaS API is running successfully!');
+  res.send('HNV SaaS API is running');
 });
 
-const PORT: string | number = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export default app;
