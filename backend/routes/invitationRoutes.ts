@@ -1,14 +1,14 @@
-// backend/routes/invitationRoutes.ts
-
 import { Router } from 'express';
-import * as invitationController from '../controllers/invitationController';
+import { inviteAgent, getInvitationDetails, acceptAgentInvitation } from '../controllers/invitationController';
+import { protect, authorize } from '../middleware/authMiddleware';
 
-// FIX: Create the router instance
 const router = Router();
 
-// Define the routes
-router.get('/:token', invitationController.getInvitationInfo);
-// router.post('/', invitationController.createInvitation); // Example for another route
+// A Landlord must be logged in to send an invitation
+router.post('/invite-agent', protect, authorize('Landlord'), inviteAgent);
 
-// FIX: Export the configured router
+// These routes are public for the recipient to use the token
+router.get('/accept/:token', getInvitationDetails);
+router.post('/accept/:token', acceptAgentInvitation);
+
 export default router;
