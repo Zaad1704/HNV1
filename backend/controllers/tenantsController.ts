@@ -1,11 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express'; // FIX: Import Request
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+// FIX: AuthenticatedRequest is no longer needed.
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenants = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenants = await Tenant.find({ organizationId: req.user.organizationId }).populate('propertyId', 'name');
@@ -15,7 +15,7 @@ export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const createTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const createTenant = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const { propertyId } = req.body;
@@ -25,15 +25,15 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
     }
     const tenantData = { ...req.body, organizationId: req.user.organizationId };
     const tenant = await Tenant.create(tenantData);
-    // FIX: Cast tenant._id and property._id to ObjectId before .toString()
+    
     auditService.recordAction(
-        req.user._id as mongoose.Types.ObjectId,
-        req.user.organizationId as mongoose.Types.ObjectId,
+        req.user._id,
+        req.user.organizationId,
         'TENANT_CREATE',
         {
-            tenantId: (tenant._id as mongoose.Types.ObjectId).toString(),
+            tenantId: tenant._id.toString(),
             tenantName: tenant.name,
-            propertyId: (property._id as mongoose.Types.ObjectId).toString()
+            propertyId: property._id.toString()
         }
     );
     res.status(201).json({ success: true, data: tenant });
@@ -42,7 +42,7 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const getTenantById = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenantById = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenant = await Tenant.findById(req.params.id);
@@ -57,7 +57,7 @@ export const getTenantById = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-export const updateTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const updateTenant = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     let tenant = await Tenant.findById(req.params.id);
@@ -67,12 +67,11 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
     }
     tenant = await Tenant.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (tenant) {
-        // FIX: Cast tenant._id to ObjectId before .toString()
         auditService.recordAction(
-            req.user._id as mongoose.Types.ObjectId,
-            req.user.organizationId as mongoose.Types.ObjectId,
+            req.user._id,
+            req.user.organizationId,
             'TENANT_UPDATE',
-            { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), tenantName: tenant.name }
+            { tenantId: tenant._id.toString(), tenantName: tenant.name }
         );
     }
     res.status(200).json({ success: true, data: tenant });
@@ -81,7 +80,7 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteTenant = async (req: Request, res: Response) => { // FIX: Use Request
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenant = await Tenant.findById(req.params.id);
@@ -90,12 +89,12 @@ export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => 
       return res.status(403).json({ success: false, message: 'User not authorized to delete this tenant' });
     }
     await tenant.deleteOne();
-    // FIX: Cast tenant._id to ObjectId before .toString()
+    
     auditService.recordAction(
-        req.user._id as mongoose.Types.ObjectId,
-        req.user.organizationId as mongoose.Types.ObjectId,
+        req.user._id,
+        req.user.organizationId,
         'TENANT_DELETE',
-        { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), tenantName: tenant.name }
+        { tenantId: tenant._id.toString(), tenantName: tenant.name }
     );
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
