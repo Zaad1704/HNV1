@@ -4,25 +4,25 @@ import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
 
-// --- UPDATED: Use named imports for all routes ---
-import { authRoutes } from './routes/authRoutes';
-import { superAdminRoutes } from './routes/superAdminRoutes';
-import { propertiesRoutes } from './routes/propertiesRoutes';
-import { tenantsRoutes } from './routes/tenantsRoutes';
-import { paymentsRoutes } from './routes/paymentsRoutes';
-import { userRoutes } from './routes/userRoutes';
-import { auditRoutes } from './routes/auditRoutes';
-import { setupRoutes } from './routes/setupRoutes';
-import { feedbackRoutes } from './routes/feedbackRoutes';
-import { planRoutes } from './routes/planRoutes';
-import { billingRoutes } from './routes/billingRoutes';
-import { siteSettingsRoutes } from './routes/siteSettingsRoutes';
-import { passwordResetRoutes } from './routes/passwordResetRoutes';
-import { translationRoutes } from './routes/translationRoutes';
-import { invitationRoutes } from './routes/invitationRoutes';
-import { sharingRoutes } from './routes/sharingRoutes';
-import { expenseRoutes } from './routes/expenseRoutes';
-import { maintenanceRoutes } from './routes/maintenanceRoutes';
+// --- UPDATED: Use default imports for all routes ---
+import authRoutes from './routes/authRoutes';
+import superAdminRoutes from './routes/superAdminRoutes';
+import propertiesRoutes from './routes/propertiesRoutes';
+import tenantsRoutes from './routes/tenantsRoutes';
+import paymentsRoutes from './routes/paymentsRoutes';
+import userRoutes from './routes/userRoutes';
+import auditRoutes from './routes/auditRoutes';
+import setupRoutes from './routes/setupRoutes';
+import feedbackRoutes from './routes/feedbackRoutes';
+import planRoutes from './routes/planRoutes';
+import billingRoutes from './routes/billingRoutes';
+import siteSettingsRoutes from './routes/siteSettingsRoutes';
+import passwordResetRoutes from './routes/passwordResetRoutes';
+import translationRoutes from './routes/translationRoutes';
+import invitationRoutes from './routes/invitationRoutes';
+import sharingRoutes from './routes/sharingRoutes';
+import expenseRoutes from './routes/expenseRoutes';
+import maintenanceRoutes from './routes/maintenanceRoutes';
 
 dotenv.config();
 
@@ -49,23 +49,26 @@ connectDB();
 const allowedOrigins: string[] = [
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com'
+  // Add other origins as needed
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
 
 // --- Mount All API Routes ---
 app.use('/api/auth', authRoutes);
