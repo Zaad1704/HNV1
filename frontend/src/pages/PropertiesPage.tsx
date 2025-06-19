@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
+import { useDynamicTranslation } from '../hooks/useDynamicTranslation'; // Import our new hook
 
 // Placeholder Icons
 const AddIcon = () => <span>+</span>;
@@ -24,6 +25,14 @@ const convertCoordsToPixels = (lon: number, lat: number) => {
         top: `${(1 - latPercent) * 100}%`,
         left: `${lonPercent * 100}%`
     };
+};
+
+// --- NEW TRANSLATION COMPONENT ---
+// This small component will handle the display of translated text
+const TranslatedCell = ({ text }: { text: string }) => {
+    const { translatedText, isLoading } = useDynamicTranslation(text);
+    if (isLoading) return <span className="text-slate-500 italic">Translating...</span>;
+    return <>{translatedText}</>;
 };
 
 
@@ -81,8 +90,14 @@ const PropertiesPage = () => {
               {properties.length > 0 ? (
                 properties.map((prop) => (
                   <tr key={prop._id} className="hover:bg-slate-800 transition-colors">
-                    <td className="p-4 font-bold text-white">{prop.name}</td>
-                    <td className="p-4 text-slate-300">{prop.address.formattedAddress || `${prop.address.street}, ${prop.address.city}`}</td>
+                    <td className="p-4 font-bold text-white">
+                      {/* Using the new component to translate the property name */}
+                      <TranslatedCell text={prop.name} />
+                    </td>
+                    <td className="p-4 text-slate-300">
+                      {/* And the address */}
+                      <TranslatedCell text={prop.address.formattedAddress || `${prop.address.street}, ${prop.address.city}`} />
+                    </td>
                     <td className="p-4 text-slate-300">{prop.numberOfUnits}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>
@@ -125,7 +140,7 @@ const PropertiesPage = () => {
                     >
                         <div className="w-3 h-3 bg-cyan-400 rounded-full cursor-pointer shadow-lg animate-pulse"></div>
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block p-2 bg-slate-700 text-white text-xs font-bold rounded-md whitespace-nowrap">
-                            {prop.name}
+                            <TranslatedCell text={prop.name} />
                         </div>
                     </div>
                 );
