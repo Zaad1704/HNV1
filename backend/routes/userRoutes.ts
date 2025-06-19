@@ -1,30 +1,30 @@
 import { Router } from 'express';
 // --- CORRECTED CONTROLLER IMPORTS ---
-// The function names now match what is exported from the controller.
+// The controller actually exports 'getUsers', 'getUser', etc.
 import {
-  getAllUsers,
-  getUserById,
+  getUsers,
+  getUser,
   updateUser,
   deleteUser,
 } from '../controllers/userController';
-import { authenticate } from '../middleware/authMiddleware';
 // --- CORRECTED MIDDLEWARE IMPORT ---
-// Import 'authorize' from rbac.ts instead of 'admin' from a non-existent file.
+// The auth middleware exports a function named 'protect'.
+import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
-// This middleware will apply authentication to all routes in this file first.
-router.use(authenticate);
+// This middleware will apply authentication to all routes in this file.
+// The function is named 'protect', not 'authenticate'.
+router.use(protect);
 
 // --- CORRECTED ROUTE DEFINITIONS ---
-// The authorize middleware is now used correctly.
-// The controller function names now match the corrected imports.
-router.route('/').get(authorize('admin'), getAllUsers);
+// The 'authorize' function takes its arguments as a list, not a single string.
+router.route('/').get(authorize('admin'), getUsers);
 
 router
   .route('/:id')
-  .get(authorize('admin'), getUserById)
+  .get(authorize('admin'), getUser)
   .put(authorize('admin'), updateUser)
   .delete(authorize('admin'), deleteUser);
 
