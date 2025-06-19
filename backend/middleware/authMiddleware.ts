@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
-import User from '../models/User';
+import User, { IUser } from '../models/User'; // Import IUser
 import { Request, Response, NextFunction } from 'express';
 
 const protect = asyncHandler(
@@ -19,7 +19,14 @@ const protect = asyncHandler(
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
         
         // Get user from the token and attach it to the request object
-        req.user = await User.findById(decoded.id).select('-password');
+        const foundUser = await User.findById(decoded.id).select('-password');
+        
+        if (!foundUser) {
+          res.status(401);
+          throw new Error('Not authorized, user not found');
+        }
+        // Explicitly cast foundUser to IUser to ensure correct typing on req.user
+        req.user = foundUser as IUser;
         
         next();
       } catch (error) {
