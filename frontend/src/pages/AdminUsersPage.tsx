@@ -1,35 +1,41 @@
 import React, { useEffect, useState, useMemo } from "react";
-import apiClient from "../api/client"; // Corrected: Import the default export
+import apiClient from "../api/client";
 import AdminSidebar from "../components/admin/AdminSidebar";
 
 type User = {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: string;
-  organization: {
+  organizationId: {
     name: string;
   };
 };
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get("/admin/users");
-        setUsers(response.data);
+        setLoading(true);
+        // Corrected API endpoint to /super-admin/users
+        const response = await apiClient.get("/super-admin/users");
+        setUsers(response.data.data);
       } catch (err) {
         setError("Failed to fetch users.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchUsers();
   }, []);
 
   const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
     return users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,46 +43,37 @@ const AdminUsersPage: React.FC = () => {
     );
   }, [users, searchTerm]);
 
-  if (error) {
-    return (
-      <div className="flex">
-        <AdminSidebar />
-        <div className="flex-1 p-4">
-          <div className="text-red-500">{error}</div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-4 text-center">Loading users...</div>;
+  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
     <div className="flex">
-      <AdminSidebar />
       <div className="flex-1 p-4">
-        <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
+        <h1 className="text-2xl font-bold mb-4">Manage All Users</h1>
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder="Search by name or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-4 p-2 border rounded w-full"
         />
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
           <table className="w-full">
-            <thead>
+            <thead className="bg-gray-50">
               <tr>
-                <th className="text-left">Name</th>
-                <th className="text-left">Email</th>
-                <th className="text-left">Role</th>
-                <th className="text-left">Organization</th>
+                <th className="text-left p-3 font-semibold">Name</th>
+                <th className="text-left p-3 font-semibold">Email</th>
+                <th className="text-left p-3 font-semibold">Role</th>
+                <th className="text-left p-3 font-semibold">Organization</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y">
               {filteredUsers.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.role}</td>
-                  <td>{user.organization.name}</td>
+                <tr key={user._id}>
+                  <td className="p-3 font-medium">{user.name}</td>
+                  <td className="p-3">{user.email}</td>
+                  <td className="p-3">{user.role}</td>
+                  <td className="p-3 text-gray-600">{user.organizationId?.name || 'N/A'}</td>
                 </tr>
               ))}
             </tbody>
