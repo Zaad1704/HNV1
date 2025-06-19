@@ -1,11 +1,10 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import Lease from '../models/Lease'; // FIX: Now imports the Lease model
+import { Request, Response } from 'express'; // FIX: Import Request
+// FIX: AuthenticatedRequest is no longer needed.
+import Lease from '../models/Lease';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 
-// FIX: Added all missing functions with placeholder logic.
-export const getOverviewStats = async (req: AuthenticatedRequest, res: Response) => {
+export const getOverviewStats = async (req: Request, res: Response) => { // FIX: Use Request
     if (!req.user) return res.status(401).json({ message: 'Not authorized' });
     const { organizationId } = req.user;
     
@@ -23,14 +22,14 @@ export const getOverviewStats = async (req: AuthenticatedRequest, res: Response)
     });
 };
 
-export const getLateTenants = async (req: AuthenticatedRequest, res: Response) => {
+export const getLateTenants = async (req: Request, res: Response) => { // FIX: Use Request
     res.status(200).json({ success: true, data: [] }); // Placeholder
 };
 
-export const getFinancialSummary = async (req: AuthenticatedRequest, res: Response) => {
+export const getFinancialSummary = async (req: Request, res: Response) => { // FIX: Use Request
     res.status(200).json({ success: true, data: {} }); // Placeholder
 };
 
-export const getOccupancySummary = async (req: AuthenticatedRequest, res: Response) => {
+export const getOccupancySummary = async (req: Request, res: Response) => { // FIX: Use Request
     res.status(200).json({ success: true, data: {} }); // Placeholder
 };
