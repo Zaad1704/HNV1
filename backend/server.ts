@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import path from 'path'; // Import the path module
+import path from 'path';
 
 // --- Import All API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -11,7 +11,6 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes';
 import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes';
 import feedbackRoutes from './routes/feedbackRoutes';
@@ -21,9 +20,10 @@ import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
 import translationRoutes from './routes/translationRoutes';
 import invitationRoutes from './routes/invitationRoutes';
-import sharingRoutes from './routes/sharingRoutes'; // Import the new sharing routes
-import expenseRoutes from './routes/expenseRoutes'; // Assuming this was missing, let's add it
-import maintenanceRoutes from './routes/maintenanceRoutes'; // Assuming this was missing, let's add it
+import sharingRoutes from './routes/sharingRoutes';
+import expenseRoutes from './routes/expenseRoutes';
+import maintenanceRoutes from './routes/maintenanceRoutes';
+// The 'subscriptionsRoutes' file was empty and not used, so it's safe to remove the import.
 
 dotenv.config();
 
@@ -65,8 +65,6 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- NEW: Serve Static Files ---
-// This makes the 'public' directory accessible to the web.
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 
@@ -77,7 +75,6 @@ app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/feedback', feedbackRoutes);
@@ -86,7 +83,7 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/translate', translationRoutes);
 app.use('/api/invitations', invitationRoutes);
-app.use('/api/share', sharingRoutes); // Mount the new sharing routes
+app.use('/api/share', sharingRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
