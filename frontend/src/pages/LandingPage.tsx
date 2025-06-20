@@ -78,4 +78,22 @@ const LandingPage = () => {
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                         {pricingPlans.map(plan => (
                             <div key={plan._id} className="bg-white border border-border-color rounded-2xl p-8 flex flex-col text-left shadow-lg">
-                                <h
+                                <h3 className="text-xl font-bold text-brand-orange">{plan.name}</h3>
+                                <p className="text-4xl font-extrabold mt-4">${(plan.price / 100).toFixed(2)}<span className="text-base font-medium text-light-text"> / {plan.duration}</span></p>
+                                <ul className="space-y-3 mt-8 text-light-text flex-grow">
+                                    {plan.features.map((feature: string) => (
+                                        <li key={feature} className="flex items-center gap-3"><CheckCircle className="w-5 h-5 text-green-500" /><span>{feature}</span></li>
+                                    ))}
+                                </ul>
+                                <Link to={`/register?plan=${plan._id}`} className="mt-8 block w-full bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 text-center">Choose Plan</Link>
+                            </div>
+                        ))}
+                    </div>
+                     <p className="text-xs text-gray-400 mt-8">{settings.pricingSection?.disclaimer}</p>
+                </div>
+            </Section>
+        </div>
+    );
+};
+
+export default LandingPage;
