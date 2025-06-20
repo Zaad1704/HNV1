@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 
-// Simple Google Icon component for the button
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48">
         <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
@@ -41,55 +40,55 @@ const LoginPage: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
   const handleGoogleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || '/api'}/auth/google`;
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-800 shadow-2xl rounded-2xl overflow-hidden">
+    <div className="min-h-screen bg-light-bg text-dark-text flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-light-card shadow-lg rounded-2xl overflow-hidden">
         <div className="p-8 sm:p-12">
-            <h1 className="text-3xl font-bold mb-8 text-center">Portal Log In</h1>
+            <h1 className="text-3xl font-bold mb-8 text-center text-dark-text">Portal Log In</h1>
             
             <button
               onClick={handleGoogleLogin}
-              className="w-full flex justify-center items-center gap-3 py-3 px-4 rounded-lg shadow-md font-bold text-white bg-slate-700 hover:bg-slate-600 transition-colors mb-6"
+              className="w-full flex justify-center items-center gap-3 py-3 px-4 rounded-lg shadow-sm font-semibold text-dark-text bg-white border border-border-color hover:bg-gray-50 transition-colors mb-6"
             >
               <GoogleIcon />
               Sign In with Google
             </button>
             
             <div className="flex items-center my-4">
-                <hr className="w-full border-slate-600" />
-                <span className="px-4 text-slate-400 font-semibold">OR</span>
-                <hr className="w-full border-slate-600" />
+                <hr className="w-full border-border-color" />
+                <span className="px-4 text-light-text font-semibold text-sm">OR</span>
+                <hr className="w-full border-border-color" />
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
-                {error && (<div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-center" role="alert"><span>{error}</span></div>)}
+                {error && (<div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-center" role="alert"><span>{error}</span></div>)}
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-300">Email Address</label>
-                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1 block w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none"/>
+                    <label htmlFor="email" className="block text-sm font-medium text-light-text">Email Address</label>
+                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1 block w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-orange focus:outline-none"/>
                 </div>
                 <div>
                     <div className="flex justify-between items-center">
-                        <label htmlFor="password" className="block text-sm font-medium text-slate-300">Password</label>
-                        <Link to="/forgot-password" className="text-sm text-cyan-400 hover:text-cyan-300">
+                        <label htmlFor="password" className="block text-sm font-medium text-light-text">Password</label>
+                        <Link to="/forgot-password" className="text-sm text-brand-orange hover:opacity-80 font-medium">
                             Forgot password?
                         </Link>
                     </div>
-                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1 block w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:outline-none"/>
+                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1 block w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-orange focus:outline-none"/>
                 </div>
                 <div>
-                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-600">
-                      {loading ? 'Signing In...' : 'Sign In with Email'}
+                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-orange hover:opacity-90 disabled:opacity-50">
+                      {loading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </div>
             </form>
-            <p className="mt-8 text-center text-sm text-slate-400">
+            <p className="mt-8 text-center text-sm text-light-text">
                 Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-cyan-400 hover:text-cyan-300">
+                <Link to="/register" className="font-medium text-brand-orange hover:opacity-80">
                     Start your trial
                 </Link>
             </p>
