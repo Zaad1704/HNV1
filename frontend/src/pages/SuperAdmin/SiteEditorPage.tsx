@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { ISiteSettings } from '../../../../backend/models/SiteSettings'; // Adjust path if necessary
+import { ISiteSettings } from '../../../../backend/models/SiteSettings'; 
 
-// Helper component for a collapsible section
 const AccordionSection = ({ title, children }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
@@ -61,7 +60,9 @@ const SiteEditorPage = () => {
     formData.append('image', file);
     try {
         setMessage('Uploading image...');
-        const response = await apiClient.post('/upload/image', formData);
+        const response = await apiClient.post('/upload/image', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         handleChange(section, field, response.data.imageUrl);
         setMessage('Image uploaded successfully!');
     } catch (err) {
@@ -105,7 +106,6 @@ const SiteEditorPage = () => {
     </div>
   );
 
-
   if (loading) return <div>Loading Site Editor...</div>;
   if (message.startsWith('Error')) return <div className="text-red-500 p-4">{message}</div>;
 
@@ -119,12 +119,6 @@ const SiteEditorPage = () => {
         </div>
         {message && <div className="p-3 text-center bg-green-100 text-green-800 rounded-md">{message}</div>}
 
-        <AccordionSection title="Global Branding & Logos">
-            <Input label="Company Name" section="logos" field="companyName" />
-            <ImageInput label="Navbar Logo URL" section="logos" field="navbarLogoUrl" />
-            <ImageInput label="Footer Logo URL" section="logos" field="footerLogoUrl" />
-        </AccordionSection>
-
         <AccordionSection title="Hero Section">
             <Input label="Title" section="heroSection" field="title"/>
             <TextArea label="Subtitle" section="heroSection" field="subtitle"/>
@@ -136,39 +130,7 @@ const SiteEditorPage = () => {
             <Input label="Page Title" section="featuresPage" field="title" />
             <TextArea label="Page Subtitle" section="featuresPage" field="subtitle" />
             <ImageInput label="Background Image URL" section="featuresPage" field="backgroundImageUrl" />
-            {/* You can add an array editor here for the 'features' array if you want to make them dynamic */}
         </AccordionSection>
-
-        <AccordionSection title="About Page">
-            <Input label="Page Title" section="aboutPage" field="title" />
-            <TextArea label="Page Subtitle" section="aboutPage" field="subtitle" />
-            <ImageInput label="Background Image URL" section="aboutPage" field="backgroundImageUrl" />
-            <hr className="my-4"/>
-            <Input label="Mission Title" section="aboutPage" field="missionTitle" />
-            <TextArea label="Mission Statement" section="aboutPage" field="missionStatement" />
-            <hr className="my-4"/>
-            <Input label="Vision Title" section="aboutPage" field="visionTitle" />
-            <TextArea label="Vision Statement" section="aboutPage" field="visionStatement" />
-             <hr className="my-4"/>
-            <ImageInput label="Content Image URL" section="aboutPage" field="imageUrl" />
-        </AccordionSection>
-
-        <AccordionSection title="Pricing Section">
-            <Input label="Page Title" section="pricingSection" field="title" />
-            <TextArea label="Page Subtitle" section="pricingSection" field="subtitle" />
-            <ImageInput label="Background Image URL" section="pricingSection" field="backgroundImageUrl" />
-            <Input label="Disclaimer Text" section="pricingSection" field="disclaimer" />
-        </AccordionSection>
-
-         <AccordionSection title="Contact Page">
-            <Input label="Page Title" section="contactPage" field="title" />
-            <TextArea label="Page Subtitle" section="contactPage" field="subtitle" />
-            <Input label="Contact Form Title" section="contactPage" field="formTitle" />
-            <ImageInput label="Background Image URL" section="contactPage" field="backgroundImageUrl" />
-            {/* Add array editor for contact addresses if needed */}
-        </AccordionSection>
-
-        {/* You can add a similar accordion section for the Footer if you want to edit footer links */}
     </div>
   );
 };
