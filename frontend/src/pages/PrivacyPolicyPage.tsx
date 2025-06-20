@@ -8,7 +8,7 @@ const PrivacyPolicyPage = () => {
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-3">
               <img src="https://placehold.co/40x40/FF7A00/FFFFFF?text=HNV" alt="HNV Logo" className="h-10 w-10 rounded-lg" />
-              <span className="text-xl font-bold text-dark-text">HNV Property Solutions</span>
+              <span className="text-xl font-bold text-dark-text">HNV Property Managment Solutions</span>
             </Link>
             <Link to="/login" className="font-semibold text-dark-text hover:text-brand-orange">
               Portal Log In
