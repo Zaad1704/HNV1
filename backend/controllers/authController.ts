@@ -1,68 +1,142 @@
 // backend/controllers/authController.ts
-import { Request, Response } from 'express';
-import User from '../models/User'; // Corrected import path
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 
-export const registerUser = async (req: Request, res: Response) => {
-  try {
+import { Request, Response, NextFunction } from 'express';
+import asyncHandler from 'express-async-handler';
+import User from '../models/User';
+import Organization from '../models/Organization';
+import Subscription from '../models/Subscription';
+import Plan from '../models/Plan';
+import { registerSchema } from '../validators/userValidator';
+
+/**
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+export const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password, role } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+        res.status(400);
+        throw new Error('User already exists');
     }
 
-    const user = new User({ name, email, password, role });
-    await user.save();
+    // For a new Landlord, create a new Organization and a trial subscription
+    let organizationId;
+    if (role === 'Landlord') {
+        const organization = await Organization.create({
+            name: `${name}'s Organization`,
+        });
 
-    const token = user.getSignedJwtToken();
-    res.json({ token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
+        // Find the default "Free Trial" plan to assign to the new organization
+        const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+        if (trialPlan) {
+            const trialExpires = new Date();
+            trialExpires.setDate(trialExpires.getDate() + 14); // 14-day trial
 
-export const loginUser = async (req: Request, res: Response) => {
-  try {
+            const subscription = await Subscription.create({
+                organizationId: organization._id,
+                planId: trialPlan._id,
+                status: 'trialing',
+                trialExpiresAt: trialExpires,
+            });
+            organization.subscription = subscription._id;
+        }
+        
+        organizationId = organization._id;
+        // The owner will be set after the user is created
+        organization.owner = (await User.findOne({email}))?._id; // This needs to be updated after user creation.
+        await organization.save();
+
+    } else {
+        // For Agents, organization assignment happens via invitation, so this path is less common
+        res.status(400);
+        throw new Error('Agent registration should be done via invitation.');
+    }
+
+    const user = await User.create({
+        name,
+        email,
+        password,
+        role,
+        organizationId,
+        status: 'active'
+    });
+    
+    // Now that user exists, set them as the owner of the organization
+    if(role === 'Landlord') {
+        await Organization.findByIdAndUpdate(organizationId, { owner: user._id });
+    }
+
+    if (user) {
+        res.status(201).json({
+            token: user.getSignedJwtToken(),
+        });
+    } else {
+        res.status(400);
+        throw new Error('Invalid user data');
+    }
+});
+
+/**
+ * @desc    Authenticate user & get token
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+
+    if (user && user.password && (await user.matchPassword(password))) {
+        res.json({
+            token: user.getSignedJwtToken(),
+        });
+    } else {
+        res.status(401);
+        throw new Error('Invalid email or password');
+    }
+});
+
+/**
+ * @desc    Get current user profile
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+    // req.user is populated by the 'protect' middleware
+    if (req.user) {
+        // Refetch user to get all populated details if necessary
+        const user = await User.findById(req.user._id).populate({
+            path: 'organizationId',
+            populate: {
+                path: 'subscription',
+                populate: {
+                    path: 'planId',
+                    model: 'Plan'
+                }
+            }
+        });
+        res.json({ success: true, user });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+/**
+ * @desc    Handles the callback from Google OAuth
+ * @route   GET /api/auth/google/callback
+ * @access  Public
+ */
+export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authenticated after Google callback');
     }
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    const token = user.getSignedJwtToken();
-    res.json({ token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
-export const getMe = async (req: Request, res: Response) => {
-  try {
-    // Adjusted to check for req.user and _id property
-    if (!req.user || !("_id" in req.user)) {
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-    const user = await User.findById((req.user as any)._id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.json({ user });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
-// REMOVED forgotPassword from here, as it's now in passwordResetController.
-// The resetPassword function also remains in passwordResetController.
+    const token = req.user.getSignedJwtToken();
+    // Redirect back to a dedicated page on the frontend to handle the token
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+});
