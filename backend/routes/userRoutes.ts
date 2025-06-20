@@ -4,21 +4,26 @@ import {
   getUser,
   updateUser,
   deleteUser,
+  getOrgUsers,
+  getManagedAgents
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
+import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
 router.use(protect);
 
-// Note: The 'authorize' middleware now correctly expects an array of roles.
-router.route('/').get(authorize(['Super Admin']), getUsers); // Example: Only Super Admins can get all users
+router.route('/').get(authorize(['Super Admin']), getUsers);
 
 router
   .route('/:id')
   .get(authorize(['Super Admin']), getUser)
   .put(authorize(['Super Admin']), updateUser)
   .delete(authorize(['Super Admin']), deleteUser);
+
+// Corrected route permissions
+router.get('/organization', authorize(['Super Admin', 'Landlord', 'Agent']), getOrgUsers); 
+router.get('/my-agents', authorize(['Super Admin', 'Landlord']), getManagedAgents);
 
 export default router;
