@@ -5,6 +5,11 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
+import passport from 'passport';
+import session from 'express-session';
+
+// This line is crucial - it runs the configuration in passport-setup.ts
+import './config/passport-setup';
 
 // Route imports
 import authRoutes from './routes/authRoutes';
@@ -27,7 +32,7 @@ import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
 import localizationRoutes from './routes/localizationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
-import uploadRoutes from './routes/uploadRoutes'; // NEW IMPORT
+import uploadRoutes from './routes/uploadRoutes';
 
 dotenv.config();
 
@@ -49,11 +54,11 @@ const connectDB = async (): Promise<void> => {
 };
 connectDB();
 
-// --- CORS CONFIGURATION ---
+// CORS Configuration
 const allowedOrigins: string[] = [
   process.env.CORS_ORIGIN || '',
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com' // Ensure this matches your frontend service name
+  'https://hnv-saas-frontend.onrender.com'
 ].filter(Boolean);
 
 const corsOptions: CorsOptions = {
@@ -69,14 +74,26 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// Serve static files from the 'public' directory at the project root
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// NEW: Session and Passport Middleware
+if (!process.env.SESSION_SECRET) {
+    console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
+    process.exit(1);
+}
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/upload', uploadRoutes); // NEW ROUTE
+app.use('/api/upload', uploadRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
