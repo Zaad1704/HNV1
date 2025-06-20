@@ -23,7 +23,6 @@ const DashboardLayout = () => {
 
   const getLinkClass = (path: string) => {
     const base = 'flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors';
-    // Highlight parent routes as well (e.g., /dashboard/properties should highlight Properties)
     if (location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))) {
       return `${base} bg-yellow-500 text-slate-900`;
     }
@@ -33,7 +32,6 @@ const DashboardLayout = () => {
   const brandName = user?.organizationId?.branding?.companyName || "HNV Dashboard";
   const brandLogo = user?.organizationId?.branding?.companyLogoUrl || "https://placehold.co/32x32/f59e0b/0f172a?text=H";
 
-  // This component now contains ALL navigation links
   const NavLinks = () => (
     <>
       <Link to="/dashboard/overview" className={getLinkClass('/dashboard/overview')}>
@@ -93,30 +91,25 @@ const DashboardLayout = () => {
     </>
   );
 
-
   return (
     <div className="flex h-screen bg-slate-900">
-        {/* --- DESKTOP SIDEBAR --- */}
         <aside className="w-64 flex-shrink-0 bg-slate-800 shadow-2xl flex-col hidden md:flex">
             <SidebarContent />
         </aside>
 
-        {/* --- MOBILE SIDEBAR (OVERLAY) --- */}
         <div className={`fixed inset-0 z-40 transition-opacity duration-300 md:hidden ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)}></div>
             <aside className={`absolute top-0 left-0 h-full w-64 bg-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <SidebarContent />
             </aside>
         </div>
-
-        {/* --- MAIN CONTENT AREA --- */}
+        
         <main className="flex-1 flex flex-col">
             <header className="h-20 bg-slate-800/50 backdrop-blur-md border-b border-slate-700 flex items-center justify-between px-4 sm:px-8">
                 <button className="text-slate-300 hover:text-white md:hidden" onClick={() => setSidebarOpen(true)}>
                     <Menu size={24}/>
                 </button>
                 <div className="flex items-center gap-4 ml-auto">
-                    {/* ... other header items like language switcher ... */}
                     <div className="text-right">
                         <p className="font-semibold text-white">{user?.name}</p>
                         <p className="text-sm text-slate-400">{user?.role}</p>
@@ -124,7 +117,7 @@ const DashboardLayout = () => {
                 </div>
             </header>
             <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
-                <Outlet />
+              <Outlet />
             </div>
         </main>
     </div>
