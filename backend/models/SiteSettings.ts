@@ -1,5 +1,3 @@
-// backend/models/SiteSettings.ts
-
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
 
 // --- Sub-document Interfaces ---
@@ -66,6 +64,11 @@ export interface ISiteSettings extends Document {
     backgroundImageUrl: string;
     disclaimer: string;
   };
+  installAppSection: { // NEW SECTION
+    title: string;
+    subtitle: string;
+    backgroundImageUrl: string;
+  };
   contactPage: {
     title: string;
     subtitle: string;
@@ -93,7 +96,7 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   },
   heroSection: {
     title: { type: String, default: 'The All-in-One Platform for Modern Property Management' },
-    subtitle: { type: String, default: 'Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.' },
+    subtitle: { type: String, default: 'Automate tasks, track finances, and manage tenants with ease.' },
     ctaText: { type: String, default: 'Start Your Free Trial' },
     backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop' },
   },
@@ -125,6 +128,11 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
       subtitle: { type: String, default: 'Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.'},
       backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1554469384-e58fac166824?q=80&w=1974&auto=format&fit=crop' },
       disclaimer: { type: String, default: 'Subscription and billing are managed securely through our payment partner.'}
+  },
+  installAppSection: {
+    title: { type: String, default: 'Get the Full App Experience' },
+    subtitle: { type: String, default: 'Install the HNV web app on your device for faster access and a native-like feel, available on all platforms.' },
+    backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1618042164217-66a8ea535560?q=80&w=1974&auto=format&fit=crop' }
   },
   contactPage: {
     title: { type: String, default: 'Get In Touch' },
