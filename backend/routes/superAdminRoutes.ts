@@ -6,7 +6,9 @@ import {
     getAllUsers,
     grantLifetimeAccess,
     revokeLifetimeAccess,
-    updateUserByAdmin
+    updateUserByAdmin,
+    getModerators,      // <-- NEW
+    getGlobalBilling    // <-- NEW
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -22,5 +24,9 @@ router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess);
 
 router.get('/users', getAllUsers);
 router.put('/users/:userId/manage', updateUserByAdmin);
+
+// NEW ROUTES
+router.get('/moderators', getModerators);
+router.get('/billing', getGlobalBilling);
 
 export default router;
