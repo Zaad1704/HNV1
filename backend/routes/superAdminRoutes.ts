@@ -1,45 +1,32 @@
 // backend/routes/superAdminRoutes.ts
+
 import { Router } from 'express';
 import { 
     getDashboardStats, 
-    getAllOrganizations, 
-    updateSubscriptionStatus,
-    getPlatformGrowthData,
-    getPlanDistributionData,
+    getAllOrganizations,
     getAllUsers,
-    getBillingData,
-    createModerator,
-    getModerators,
-    updateModerator,
-    updateUserStatus,
-    grantLifetimeAccess
+    updateSubscriptionStatus,
+    grantLifetimeAccess,
+    revokeLifetimeAccess,
+    updateUserByAdmin
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
 const router = Router();
-
 router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
-// Platform-Wide Stats & Reporting Routes
+// Dashboard
 router.get('/dashboard-stats', getDashboardStats);
-router.get('/platform-growth', getPlatformGrowthData);
-router.get('/plan-distribution', getPlanDistributionData);
-router.get('/billing', getBillingData);
 
-// Organization & User Management Routes
+// Organizations
 router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/subscription', updateSubscriptionStatus);
 router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess);
+router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess);
+
+// Users
 router.get('/users', getAllUsers);
-router.put('/users/:id/status', updateUserStatus);
-
-// Moderator Management Routes
-router.route('/moderators')
-    .post(authorize(['Super Admin']), createModerator) // Only SA can create
-    .get(authorize(['Super Admin']), getModerators);
-
-router.route('/moderators/:id')
-    .put(authorize(['Super Admin']), updateModerator);
+router.put('/users/:userId/manage', updateUserByAdmin);
 
 export default router;
