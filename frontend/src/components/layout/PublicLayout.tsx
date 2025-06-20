@@ -10,7 +10,7 @@ const PublicLayout = () => {
     <div className="bg-slate-900">
       <Navbar />
       <main>
-        {/* This Outlet renders the specific public page (e.g., LandingPage) */}
+        {/* The Navbar component has the logo which links to "/" */}
         <Outlet />
       </main>
       <Footer />
