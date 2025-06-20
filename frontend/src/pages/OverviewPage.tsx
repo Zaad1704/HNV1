@@ -27,36 +27,36 @@ const OverviewPage = () => {
     const { data: expiringLeases, isLoading: isLoadingLeases } = useQuery(['expiringLeases'], fetchExpiringLeases);
 
     if (isLoadingStats || isLoadingLate || isLoadingLeases) {
-        return <div className="text-white">Loading Dashboard Data...</div>;
+        return <div className="text-dark-text">Loading Dashboard Data...</div>;
     }
 
     return (
-        <div className="text-white space-y-8">
-            <h1 className="text-4xl font-bold">Dashboard</h1>
+        <div className="space-y-8">
+            <h1 className="text-4xl font-bold text-dark-text">Dashboard</h1>
 
             {/* Financial Snapshots (Wallets) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FinancialSnapshotCard 
-                    title="Monthly Revenue" 
+                <FinancialSnapshotCard
+                    title="Monthly Revenue"
                     value={stats?.monthlyRevenue || 0}
                     currency="$"
-                    icon={<DollarSign className="w-6 h-6 text-green-400"/>}
+                    icon={<DollarSign className="w-8 h-8 text-green-500"/>}
                 />
-                <FinancialSnapshotCard 
-                    title="Total Properties" 
+                <FinancialSnapshotCard
+                    title="Total Properties"
                     value={stats?.totalProperties || 0}
-                    icon={<Building2 className="w-6 h-6 text-blue-400"/>}
+                    icon={<Building2 className="w-8 h-8 text-blue-500"/>}
                 />
-                <FinancialSnapshotCard 
-                    title="Active Tenants" 
+                <FinancialSnapshotCard
+                    title="Active Tenants"
                     value={stats?.activeTenants || 0}
-                    icon={<Users className="w-6 h-6 text-indigo-400"/>}
+                    icon={<Users className="w-8 h-8 text-indigo-500"/>}
                 />
             </div>
 
             {/* Action Items (Hot Quests) */}
             <div>
-                <h2 className="text-2xl font-bold mb-4">Action Items</h2>
+                <h2 className="text-2xl font-bold mb-4 text-dark-text">Action Items</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <ActionItemWidget
                         title="Overdue Rent Reminders"
