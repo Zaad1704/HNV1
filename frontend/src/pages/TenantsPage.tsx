@@ -24,53 +24,33 @@ const TenantsPage = () => {
     window.open(sheetUrl, '_blank');
   };
 
-  const getStatusBadge = (status: string) => { /* ... (existing function) ... */ };
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Active': return 'bg-green-100 text-green-800';
+      case 'Late': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
   
-  if (isLoading) return <div className="text-white text-center p-8">Loading tenants...</div>;
-  if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch tenants.</div>;
-
-  return (
-    <div className="text-white">
-      <AddTenantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onTenantAdded={() => {}}/>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-        <h1 className="text-4xl font-bold">Manage Tenants</h1>
-        <div className="flex items-center gap-2">
-            <button
-              onClick={handleDownloadCollectionSheet}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-slate-600 hover:bg-slate-500 text-white font-bold rounded-lg"
-            >
-              <ClipboardList size={20} />
-              <span>Collection Sheet</span>
-            </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-lg"
-            >
-              <Plus size={20} />
-              <span>Add Tenant</span>
-            </button>
-        </div>
-      </div>
-
-      <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+  const DesktopView = () => (
+     <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-900">
+            <thead className="bg-gray-50 border-b border-border-color">
               <tr>
-                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Tenant Name</th>
-                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Property</th>
-                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Unit</th>
-                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Status</th>
-                <th className="p-4 text-sm font-semibold text-slate-400 uppercase text-right">Actions</th>
+                <th className="p-4 text-sm font-semibold text-light-text uppercase">Tenant Name</th>
+                <th className="p-4 text-sm font-semibold text-light-text uppercase">Property</th>
+                <th className="p-4 text-sm font-semibold text-light-text uppercase">Unit</th>
+                <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
+                <th className="p-4 text-sm font-semibold text-light-text uppercase text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-700">
+            <tbody className="divide-y divide-border-color">
               {tenants.map((tenant: any) => (
-                  <tr key={tenant._id} className="hover:bg-slate-800">
-                    <td className="p-4 font-bold text-white">{tenant.name}</td>
-                    <td className="p-4 text-slate-300">{tenant.propertyId?.name || 'N/A'}</td>
-                    <td className="p-4 text-slate-300">{tenant.unit}</td>
+                  <tr key={tenant._id} className="hover:bg-gray-50">
+                    <td className="p-4 font-semibold text-dark-text">{tenant.name}</td>
+                    <td className="p-4 text-light-text">{tenant.propertyId?.name || 'N/A'}</td>
+                    <td className="p-4 text-light-text">{tenant.unit}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(tenant.status)}`}>
                         {tenant.status}
@@ -79,7 +59,7 @@ const TenantsPage = () => {
                     <td className="p-4 text-right">
                       <button 
                         onClick={() => handleGenerateInvoice(tenant._id)}
-                        className="font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1 ml-auto"
+                        className="font-medium text-brand-orange hover:opacity-80 flex items-center gap-1 ml-auto"
                       >
                          <FileDown size={16}/>
                          Invoice
@@ -91,6 +71,58 @@ const TenantsPage = () => {
           </table>
         </div>
       </div>
+  );
+  
+  const MobileView = () => (
+    <div className="space-y-4">
+        {tenants.map((tenant: any) => (
+            <div key={tenant._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-bold text-dark-text">{tenant.name}</h3>
+                        <p className="text-sm text-light-text mt-1">{tenant.propertyId?.name || 'N/A'}, Unit {tenant.unit}</p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(tenant.status)}`}>{tenant.status}</span>
+                </div>
+                <div className="mt-4 pt-4 border-t border-border-color text-right">
+                     <button onClick={() => handleGenerateInvoice(tenant._id)} className="font-semibold text-sm bg-brand-orange/10 text-brand-orange py-1.5 px-4 rounded-lg">
+                        Generate Invoice
+                    </button>
+                </div>
+            </div>
+        ))}
+    </div>
+  );
+
+  if (isLoading) return <div className="text-center p-8">Loading tenants...</div>;
+  if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch tenants.</div>;
+
+  return (
+    <div>
+      <AddTenantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onTenantAdded={() => {}}/>
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-dark-text">Manage Tenants</h1>
+        <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadCollectionSheet}
+              className="flex items-center space-x-2 px-4 py-2 bg-white border border-border-color text-dark-text font-semibold rounded-lg hover:bg-gray-50"
+            >
+              <ClipboardList size={18} />
+              <span>Collection Sheet</span>
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm"
+            >
+              <Plus size={18} />
+              <span>Add Tenant</span>
+            </button>
+        </div>
+      </div>
+      
+      <div className="hidden md:block"><DesktopView /></div>
+      <div className="block md:hidden"><MobileView /></div>
     </div>
   );
 };
