@@ -10,18 +10,26 @@ const Navbar = () => {
   const { data: settings } = useSiteSettings();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // The PWA install logic has been moved to LandingPage.tsx
-
   const navLinks = [
-    { name: 'Features', href: '#features' },
-    { name: 'About', href: '#about' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'Install App', href: '#install-app' },
+    { name: 'Features', href: '#featuresPage' },
+    { name: 'About', href: '#aboutPage' },
+    { name: 'Pricing', href: '#pricingSection' },
     { name: 'Contact', href: '#contact' },
   ];
   
   const sectionIds = navLinks.map(link => link.href.substring(1));
   const activeId = useScrollSpy(sectionIds, 150);
+
+  // Smooth scroll handler
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
+    e.preventDefault();
+    const targetId = href.substring(1);
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
 
   const NavLinksContent = ({ isMobile = false }) => (
     <>
@@ -31,7 +39,7 @@ const Navbar = () => {
           <a
             key={link.name}
             href={link.href}
-            onClick={() => setIsMenuOpen(false)}
+            onClick={(e) => handleScroll(e, link.href)}
             className={`font-medium transition-colors rounded-md ${
               isMobile ? 'block w-full text-left py-2' : 'px-3 py-2'
             } ${isActive ? 'text-slate-900 bg-yellow-400' : 'text-slate-300 hover:text-yellow-400'}`}
@@ -46,7 +54,7 @@ const Navbar = () => {
   return (
     <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-        <a href="#hero" className="flex items-center space-x-3">
+        <a href="/" className="flex items-center space-x-3">
           <img src={settings?.logos?.navbarLogoUrl} alt="Company Logo" className="h-10" />
           <span className="text-xl font-bold text-white sm:inline">
             {settings?.logos?.companyName || 'HNV Solutions'}
@@ -59,7 +67,7 @@ const Navbar = () => {
         
         <div className="hidden lg:flex items-center space-x-4">
           <Link to="/login" className="font-semibold text-white hover:text-yellow-400">Portal Log In</Link>
-          <Link to="/register" className="font-bold text-slate-900 bg-yellow-500 hover:bg-yellow-400 py-2 px-5 rounded-lg">
+          <Link to="/register" className="flex items-center gap-2 font-bold text-slate-900 bg-yellow-500 hover:bg-yellow-400 py-2 px-5 rounded-lg">
             Get Started <ArrowRight size={16} />
           </Link>
         </div>
