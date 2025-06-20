@@ -1,24 +1,26 @@
+// frontend/vite.config.ts
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'HNV Property Management',
         short_name: 'HNV',
         description: 'The All-in-One Platform for Modern Property Management',
-        theme_color: '#0f172a', // slate-900
+        theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
         scope: '/',
         start_url: '/',
         icons: [
+          // Using your proper PWA icons now
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
