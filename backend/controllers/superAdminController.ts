@@ -76,3 +76,17 @@ export const updateUserByAdmin = asyncHandler(async (req: Request, res: Response
     await user.save();
     res.status(200).json({ success: true, message: 'User updated successfully.', data: user });
 });
+
+// NEW: Function to get all moderators
+export const getModerators = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const moderators = await User.find({ role: 'Super Moderator' });
+    res.status(200).json({ success: true, data: moderators });
+});
+
+// NEW: Function to get all billing/subscription data
+export const getGlobalBilling = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const subscriptions = await Subscription.find({})
+        .populate({ path: 'organizationId', select: 'name' })
+        .populate({ path: 'planId', select: 'name' });
+    res.status(200).json({ success: true, data: subscriptions });
+});
