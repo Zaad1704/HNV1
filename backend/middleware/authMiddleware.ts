@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import Subscription from '../models/Subscription';
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   let token;
@@ -14,7 +15,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 
   if (!token) {
-    // Pass to next middleware if no token, let routes decide if it's required
     return next();
   }
 
@@ -25,16 +25,22 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
     
-    const user = await User.findById(decoded.id).lean(); // Use .lean() for a plain object directly
+    const user = await User.findById(decoded.id).lean();
     
     if (user) {
-        // Corrected: Assign the plain object to req.user
-        req.user = user as any; // Cast to any to satisfy the complex type, lean() makes it compatible
+        // If user is part of an organization, check its subscription status
+        if (user.organizationId && user.role !== 'Super Admin') { // Super Admins bypass this check
+            const subscription = await Subscription.findOne({ organizationId: user.organizationId });
+            // Block access if subscription is not active and not lifetime
+            if (subscription && subscription.status !== 'active' && !subscription.isLifetime) {
+                return res.status(403).json({ message: 'Subscription inactive. Please contact support.' });
+            }
+        }
+        req.user = user as any;
     }
     
     next();
   } catch (error) {
-    // If token is invalid or expired, just move on without a user
     console.error('Token verification failed:', error);
     next();
   }
