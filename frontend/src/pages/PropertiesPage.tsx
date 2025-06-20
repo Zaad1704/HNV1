@@ -7,7 +7,6 @@ import { useDynamicTranslation } from '../hooks/useDynamicTranslation';
 
 const ListIcon = () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>;
 const MapIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3V4"></path></svg>;
-const AddIcon = () => <span>+</span>;
 
 const TranslatedCell = ({ text }: { text: string }) => {
     const { translatedText, isLoading } = useDynamicTranslation(text);
@@ -20,8 +19,6 @@ const PropertiesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // View state for desktop only
   const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
@@ -102,27 +99,39 @@ const PropertiesPage = () => {
   );
 
   if (loading) return <div className="text-center p-8">Loading properties...</div>;
-  if (error || properties.length === 0) return (
+  if (error) return (
     <div className="text-center p-8 bg-light-card rounded-xl">
-        <h2 className="text-xl font-bold text-dark-text">No Properties Found</h2>
-        <p className="text-light-text mt-2 mb-4">Get started by adding your first property.</p>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm mx-auto">
-          <span>Add Your First Property</span>
-        </button>
+        <h2 className="text-xl font-bold text-dark-text">Error</h2>
+        <p className="text-light-text mt-2 mb-4">{error}</p>
     </div>
   );
+    if (!properties || properties.length === 0) return (
+        <div className="text-center p-8 bg-light-card rounded-xl">
+            <h2 className="text-xl font-bold text-dark-text">No Properties Found</h2>
+            <p className="text-light-text mt-2 mb-4">Get started by adding your first property.</p>
+            <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm mx-auto">
+              <span>+ Add Your First Property</span>
+            </button>
+        </div>
+    );
 
   return (
     <div>
-      <AddPropertyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onPropertyAdded={handlePropertyAdded}/>
+      <AddPropertyModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onPropertyAdded={handlePropertyAdded}
+      />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-dark-text">Manage Properties</h1>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm">
-          <AddIcon /><span>Add Property</span>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center space-x-2 px-5 py-2.5 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm"
+        >
+          <span>+ Add Property</span>
         </button>
       </div>
       
-      {/* --- RESPONSIVE VIEWS --- */}
       <div className="hidden md:block"> <ListView /> </div>
       <div className="block md:hidden"> <MobileCardView /> </div>
     </div>
