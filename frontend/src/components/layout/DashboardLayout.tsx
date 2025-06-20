@@ -21,7 +21,7 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  const getLinkClass = (path: string) => {
+  const getLinkClass = (path) => {
     const base = 'flex items-center space-x-3 px-4 py-2.5 font-bold rounded-lg transition-colors';
     if (location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))) {
       return `${base} bg-yellow-500 text-slate-900`;
@@ -79,7 +79,7 @@ const DashboardLayout = () => {
             </Link>
             <button onClick={() => setSidebarOpen(false)} className="text-slate-300 hover:text-white md:hidden"><X size={24} /></button>
         </div>
-        <nav className="flex-1 px-4 py-6 space-y-2"><NavLinks /></nav>
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto"><NavLinks /></nav>
         <div className="p-4 border-t border-slate-700">
             <Link to="/dashboard/settings" className={getLinkClass('/dashboard/settings')}>
                 <Settings size={20} /><span>{t('dashboard.nav.settings')}</span>
