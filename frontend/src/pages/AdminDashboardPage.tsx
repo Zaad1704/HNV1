@@ -5,10 +5,18 @@ import { Users, Building, ShieldCheck } from 'lucide-react';
 import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart';
 import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
 
-const fetchAdminStats = async () => { /* ... */ };
-const fetchOrganizations = async () => { /* ... */ };
-const fetchPlatformGrowth = async () => { /* ... */ };
-const fetchPlanDistribution = async () => { /* ... */ };
+const fetchAdminStats = async () => { 
+    const { data } = await apiClient.get('/super-admin/dashboard-stats');
+    return data.data;
+};
+const fetchPlatformGrowth = async () => { 
+    const { data } = await apiClient.get('/super-admin/platform-growth');
+    return data.data;
+};
+const fetchPlanDistribution = async () => { 
+    const { data } = await apiClient.get('/super-admin/plan-distribution');
+    return data.data;
+};
 
 const StatCard = ({ title, value, icon }: { title: string, value: number | string, icon: React.ReactNode }) => (
     <div className="bg-light-card p-6 rounded-xl shadow-sm border border-border-color">
@@ -24,7 +32,6 @@ const StatCard = ({ title, value, icon }: { title: string, value: number | strin
 
 const AdminDashboardPage = () => {
     const { data: stats, isLoading: isLoadingStats } = useQuery(['adminDashboardStats'], fetchAdminStats);
-    const { data: organizations = [], isLoading: isLoadingOrgs } = useQuery(['allOrganizations'], fetchOrganizations);
     const { data: growthData, isLoading: isLoadingGrowth } = useQuery(['platformGrowth'], fetchPlatformGrowth);
     const { data: planData, isLoading: isLoadingPlans } = useQuery(['planDistribution'], fetchPlanDistribution);
     
