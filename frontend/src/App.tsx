@@ -22,7 +22,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
-// Add any other page imports you have here...
+import NotFound from './pages/NotFound'; // Assuming you have a NotFound page component
 
 const FullScreenLoader = () => (
     <div className="flex items-center justify-center h-screen bg-slate-900">
@@ -58,7 +58,7 @@ function App() {
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
         <Routes>
-          {/* Public pages that use the main Navbar and Footer */}
+          {/* Public pages with Navbar and Footer */}
           <Route path="/*" element={
             <PublicLayout>
               <Routes>
@@ -76,9 +76,12 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
           
-          {/* Protected Routes (these render their own layouts) */}
+          {/* Protected Routes - These render their own layouts */}
           <Route path="/dashboard/*" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />
           <Route path="/admin/*" element={<AdminRoute><AdminLayout /></AdminRoute>} />
+          
+          {/* Fallback Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </Suspense>
