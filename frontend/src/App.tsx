@@ -1,9 +1,11 @@
+// frontend/src/App.tsx
+
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
-import axios from 'axios'; // Import axios to check for Axios errors
+import axios from 'axios';
 
 // --- Layout & Route Components ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -29,7 +31,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FeaturesPage from './pages/FeaturesPage';
-import ResubscribePage from './pages/ResubscribePage'; // Import the new page
+import ResubscribePage from './pages/ResubscribePage';
 
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
@@ -70,29 +72,38 @@ function App() {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
-          // If the user's status is inactive/suspended or subscription is inactive,
-          // the backend /auth/me would return 403, and the client.ts interceptor would redirect to /resubscribe.
-          // In that case, the setUser here might not run, or it will run before the redirect happens.
-          // The key is that logout() must NOT be called here for 403.
         } catch (error) {
-          // Check if the error is an Axios error and if it's a 403 Forbidden status
-          if (axios.isAxiosError(error) && error.response && error.response.status === 403) {
-            // If it's a 403 (e.g., account inactive, subscription expired),
-            // the client.ts interceptor is already handling the redirect to /resubscribe.
-            // DO NOT call logout() here, as it would clear the token and cause a redirect to /login.
-            console.warn("User session check received 403. Interceptor will handle redirection, preserving token state.");
+          // Check if the error is an Axios error
+          if (axios.isAxiosError(error) && error.response) {
+            // If it's a 403, and the message indicates account/subscription status,
+            // we let the interceptor handle the redirect. We explicitly DO NOT logout.
+            if (
+              error.response.status === 403 &&
+              (error.response.data?.message?.includes('account is inactive') ||
+               error.response.data?.message?.includes('account is suspended') ||
+               error.response.data?.message?.includes('subscription is inactive'))
+            ) {
+              console.warn("User session check received expected 403 (account/sub inactive). Interceptor will handle redirection, preserving token state.");
+              // Do nothing here; the apiClient interceptor will trigger window.location.href
+              // to the /resubscribe page, which then handles setting up its own state.
+            }
+            else {
+              // For 401 (Unauthorized - token invalid/expired), or other unexpected 403s,
+              // network errors, or any other unexpected errors, perform a full logout.
+              console.error("Session token is invalid or expired, or another unexpected error occurred during session check. Logging out.", error);
+              logout(); // Clear auth state
+            }
           } else {
-            // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
-            // perform a full logout to clear the session and redirect to login.
-            console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
-            logout(); // Clear auth state, which will lead to /login redirect via ProtectedRoute
+            // Non-Axios errors, or errors without a response (e.g., network down)
+            console.error("Non-Axios error during session check. Logging out.", error);
+            logout();
           }
         }
       }
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout]);
+  }, [token, user, setUser, logout]); // Removed `location.pathname` as discussed previously
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
