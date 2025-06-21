@@ -1,3 +1,4 @@
+// backend/models/SiteSettings.ts
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
 
 // --- Sub-document Interfaces ---
@@ -23,6 +24,13 @@ export interface ICorporateAddress {
     fullAddress: string;
     phone: string;
     email: string;
+}
+
+// NEW: Interface for Legal Pages Content
+export interface ILegalContent {
+  title: string;
+  lastUpdated: string;
+  content: string; // HTML or Markdown content for the policy
 }
 
 // --- Main Settings Interface ---
@@ -64,7 +72,7 @@ export interface ISiteSettings extends Document {
     backgroundImageUrl: string;
     disclaimer: string;
   };
-  installAppSection: { // NEW SECTION
+  installAppSection: {
     title: string;
     subtitle: string;
     backgroundImageUrl: string;
@@ -80,9 +88,12 @@ export interface ISiteSettings extends Document {
     description: string;
     copyrightText: string;
     quickLinks: ILink[];
-    legalLinks: ILink[];
+    legalLinks: ILink[]; // This already exists
     socialLinks: ILink[];
   };
+  // NEW: Add fields for Terms and Privacy Policy content
+  termsPageContent?: ILegalContent;
+  privacyPolicyPageContent?: ILegalContent;
   updatedBy: Types.ObjectId;
 }
 
@@ -103,7 +114,7 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   featuresPage: {
     title: { type: String, default: 'Powerful Tools for Every Role' },
     subtitle: { type: String, default: 'From individual landlords to large agencies, our platform is designed to fit your needs.' },
-    backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop' },
+    backgroundImageUrl: { type: String, default: 'https://images.unsplash.co/1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop' },
     features: { type: [{ icon: String, title: String, text: String }], default: [
         { icon: 'briefcase', title: 'Centralized Dashboard', text: 'View properties, tenants, and payments at a glance.' },
         { icon: 'lock', title: 'Secure Document Storage', text: 'Upload and manage lease agreements and important documents.' },
@@ -158,6 +169,17 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
         {text: 'Twitter', url: '#'},
         {text: 'LinkedIn', url: '#'}
     ] },
+  },
+  // NEW SCHEMA FIELDS FOR LEGAL CONTENT
+  termsPageContent: {
+    title: { type: String, default: 'Terms and Conditions' },
+    lastUpdated: { type: String, default: 'June 21, 2025' },
+    content: { type: String, default: '<h1>Terms and Conditions</h1><p>Welcome to HNV Property Management Solutions...</p>' },
+  },
+  privacyPolicyPageContent: {
+    title: { type: String, default: 'Privacy Policy' },
+    lastUpdated: { type: String, default: 'June 21, 2025' },
+    content: { type: String, default: '<h1>Privacy Policy</h1><p>HNV Property Management Solutions is committed to protecting your privacy...</p>' },
   },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
