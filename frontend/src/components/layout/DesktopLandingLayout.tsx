@@ -1,29 +1,27 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ISiteSettings } from '../../../../backend/models/SiteSettings'; // Adjust path if needed
-// Import all your common landing page section components
-import HeroSection from '../landing/HeroSection';
+import { ISiteSettings } from '../../../../backend/models/SiteSettings'; // Correct path to backend types
+// FIX: Adjusted import paths to be relative for all common landing page section components
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
 import LeadershipSection from '../landing/LeadershipSection';
-import PricingSection from '../landing/PricingSection';
+import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react'; // Example icons needed for features section
+import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react'; 
 
 interface DesktopLandingLayoutProps {
     settings: ISiteSettings;
-    plans: any[]; // Assuming plans type is `any[]`
+    plans: any[]; 
 }
 
-// Re-defining IconMap and getFeatureIcon if they are used directly in this layout for features
 const IconMap = { "Centralized Dashboard": Home, "Secure Document Storage": ShieldCheck, "Audit Trails & Security": Briefcase };
-const getFeatureIcon = (title: string) => (IconMap as any)[title] || Star; // Casting to any for dynamic lookup
+const getFeatureIcon = (title: string) => (IconMap as any)[title] || Star; 
 
 const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, plans }) => {
     return (
         <div className="bg-light-bg text-dark-text">
-            {/* Desktop Hero Section - Using direct content as per your original DesktopLayout */}
+            {/* Desktop Hero Section */}
             <section id="hero" className="text-white text-center py-40" style={{ background: `linear-gradient(135deg, #3D52A0, #7091E6), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{settings.heroSection?.title}</h1>
@@ -34,18 +32,18 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            {/* Desktop Features Section - Using direct content as per your original DesktopLayout */}
+            {/* Desktop Features Section */}
             <section id="featuresPage" className="py-20 md:py-28">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
                     <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                         {settings.featuresPage?.features.map((feature) => {
-                            const Icon = getFeatureIcon(feature.title); // Use helper function for icons
+                            const Icon = getFeatureIcon(feature.title); 
                             return (
                                 <div key={feature.title} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
                                     <div className="text-brand-primary mb-4">
-                                        <Icon className="w-12 h-12" />
+                                        <Icon className="w-12 h-12" /> 
                                     </div>
                                     <h3 className="text-2xl font-bold text-brand-dark mb-2">{feature.title}</h3>
                                     <p className="text-light-text">{feature.text}</p>
@@ -56,27 +54,35 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            {/* INTEGRATED: About Section */}
-            <AboutSection />
+            {/* FIX: Ensure About Section is wrapped with a section tag and has the correct ID */}
+            {/* Note: AboutSection itself will also need its internal ID adjusted to 'aboutPage' for consistency */}
+            <section id="aboutPage" className="py-16 md:py-24 bg-white">
+                 <AboutSection />
+            </section>
 
-            {/* INTEGRATED: Services Section */}
-            <ServicesSection />
+            {/* FIX: Ensure Services Section is wrapped with a section tag and has the correct ID */}
+            <section id="services" className="py-16 md:py-24 bg-gray-100">
+                <ServicesSection />
+            </section>
 
-            {/* INTEGRATED: Leadership Section */}
-            <LeadershipSection />
+            {/* FIX: Ensure Leadership Section is wrapped with a section tag and has the correct ID */}
+            <section id="leadership" className="py-16 md:py-24 bg-white">
+                <LeadershipSection />
+            </section>
 
-            {/* INTEGRATED: Pricing Section */}
-            {/* Note: PricingSection expects 'plans' prop */}
-            <PricingSection plans={plans} />
+            {/* FIX: Ensure Pricing Section is wrapped with a section tag and has the correct ID */}
+            <section id="pricingSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
+                 <PricingSection plans={plans} />
+            </section>
 
-            {/* INTEGRATED: Install App Section */}
+            {/* FIX: Ensure Install App Section is wrapped with a section tag and has the correct ID */}
             <section id="installAppSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
                     <InstallAppSection />
                 </div>
             </section>
 
-            {/* INTEGRATED: Contact Section */}
+            {/* FIX: Ensure Contact Section is wrapped with a section tag and has the correct ID */}
             <section id="contact" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
                     <ContactSection />
