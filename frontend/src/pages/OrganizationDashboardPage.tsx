@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useOrgStore } from "../store/orgStore";
-import { api } from "../api/client";
+import apiClient from "../api/client";
 import OrgSwitcher from "../components/OrgSwitcher";
 
 const OrganizationDashboardPage: React.FC = () => {
@@ -8,7 +8,7 @@ const OrganizationDashboardPage: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    api.get("/org").then(res => {
+    apiClient.get("/org").then(res => {
       setOrgs(res.data);
       // First load: set default or persisted org
       if (res.data.length && !currentOrg) {
@@ -21,7 +21,7 @@ const OrganizationDashboardPage: React.FC = () => {
 
   useEffect(() => {
     if (currentOrg) {
-      api.get(`/org/${currentOrg._id}/stats`).then(res => setStats(res.data));
+      apiClient.get(`/org/${currentOrg._id}/stats`).then(res => setStats(res.data));
     }
   }, [currentOrg]);
 
