@@ -9,8 +9,9 @@ import {
     updateUserByAdmin,
     getModerators,
     getGlobalBilling,
-    updateSubscriptionStatus,
-    getAllMaintenanceRequests // FIX: Import new function
+    getAllMaintenanceRequests,
+    getPlatformGrowth, // Import new function
+    getPlanDistribution // Import new function
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -20,10 +21,14 @@ router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
 router.get('/dashboard-stats', getDashboardStats);
 
+// Add new routes for charts
+router.get('/platform-growth', getPlatformGrowth);
+router.get('/plan-distribution', getPlanDistribution);
+
 router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/status', updateSubscriptionStatus);
-router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess); // FIX: Add route for lifetime access
-router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess); // FIX: Add route for revoke lifetime access
+router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess);
+router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess);
 
 router.get('/users', getAllUsers);
 router.put('/users/:userId/manage', updateUserByAdmin);
@@ -31,7 +36,6 @@ router.put('/users/:userId/manage', updateUserByAdmin);
 router.get('/moderators', getModerators);
 router.get('/billing', getGlobalBilling);
 
-// FIX: Add route for platform-wide maintenance requests
-router.get('/all-maintenance-requests', getAllMaintenanceRequests); 
+router.get('/all-maintenance-requests', getAllMaintenanceRequests);
 
 export default router;
