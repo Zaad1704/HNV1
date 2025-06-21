@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
-import notificationService from '../services/notificationService'; // <-- Import notification service
+import notificationService from '../services/notificationService';
 import mongoose from 'mongoose';
 
 // @desc    Create a new maintenance request
@@ -26,14 +26,11 @@ export const createMaintenanceRequest = async (req: Request, res: Response) => {
             requestedBy: req.user._id,
         });
 
-        // --- NOTIFICATION LOGIC ADDED ---
-        // Notify the user who created the property (the Landlord/owner)
         if (property.createdBy) {
             const message = `New maintenance request for ${property.name}: "${description.substring(0, 50)}..."`;
             const link = `/dashboard/maintenance`;
             await notificationService.createNotification(property.createdBy, req.user.organizationId, message, link);
         }
-        // --- END OF NOTIFICATION LOGIC ---
 
         auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'MAINT_REQUEST_CREATE', { 
             requestId: (newRequest._id as mongoose.Types.ObjectId).toString(), 
@@ -83,4 +80,37 @@ export const updateMaintenanceRequest = async (req: Request, res: Response) => {
     }
 };
 
-// ... other functions like getMaintenanceRequestById and deleteMaintenanceRequest
+
+// --- START OF ADDED FUNCTIONS ---
+
+// @desc    Get a single maintenance request by ID
+export const getMaintenanceRequestById = async (req: Request, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    try {
+        const request = await MaintenanceRequest.findById(req.params.id);
+        if (!request || request.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(404).json({ success: false, message: 'Request not found or not authorized.' });
+        }
+        res.status(200).json({ success: true, data: request });
+    } catch(err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Delete a maintenance request
+export const deleteMaintenanceRequest = async (req: Request, res: Response) => {
+     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    try {
+        const request = await MaintenanceRequest.findById(req.params.id);
+        if (!request || request.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(404).json({ success: false, message: 'Request not found or not authorized.' });
+        }
+        await request.deleteOne();
+        auditService.recordAction(req.user._id as mongoose.Types.ObjectId, req.user.organizationId as mongoose.Types.ObjectId, 'MAINT_REQUEST_DELETE', { requestId: (request._id as mongoose.Types.ObjectId).toString() });
+        res.status(200).json({ success: true, data: {} });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// --- END OF ADDED FUNCTIONS ---
