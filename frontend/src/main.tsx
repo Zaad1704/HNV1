@@ -6,7 +6,7 @@ import App from './App.tsx';
 import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { LangProvider } from './contexts/LanguageContext'; // Add this import
+import { LangProvider } from './contexts/LanguageContext'; // <<< ADD THIS IMPORT
 
 // This line imports and runs the i18next configuration for the entire app.
 import './services/i18n.js';
@@ -21,9 +21,9 @@ if (rootElement) {
       <QueryClientProvider client={queryClient}>
         {/* Wrap the App with ThemeProvider and LangProvider */}
         <ThemeProvider>
-          <LangProvider> {/* Add LangProvider here */}
+          <LangProvider> {/* <<< ADD THIS LINE */}
             <App />
-          </LangProvider> {/* Close LangProvider here */}
+          </LangProvider> {/* <<< ADD THIS LINE */}
         </ThemeProvider>
       </QueryClientProvider>
     </React.StrictMode>
