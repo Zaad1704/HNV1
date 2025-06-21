@@ -25,7 +25,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Handle errors, especially 403 Forbidden
+// Response Interceptor: Handle errors, especially 401 Unauthorized and 403 Forbidden
 apiClient.interceptors.response.use(
   (response) => {
     return response;
@@ -38,26 +38,37 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
 
       if (status === 401) {
-        // Token invalid or expired - force logout
+        // Token invalid or expired - force logout to clear session
         console.error('API Error: 401 Unauthorized - Token expired or invalid.');
         logout(); // Clear auth state
-        window.location.href = '/login?message=session_expired'; // Redirect to login
+        window.location.href = '/login?message=session_expired'; // Redirect to login page
       } else if (status === 403) {
-        // Forbidden - could be role-based or subscription-based
-        console.error('API Error: 403 Forbidden - Access denied.');
+        // Forbidden - access denied based on user role or subscription status
+        console.error('API Error: 403 Forbidden - Access denied.', data.message);
 
-        // Check if the message indicates a subscription issue
-        if (data && typeof data.message === 'string' && data.message.includes('subscription is inactive')) {
-          // Specific handling for inactive subscription
-          window.location.href = '/dashboard/billing?message=subscription_inactive'; // Redirect to billing page
+        // Check if the message indicates a specific account or subscription issue
+        if (data && typeof data.message === 'string') {
+          if (data.message.includes('subscription is inactive')) {
+            // Specific handling for inactive subscription
+            window.location.href = '/dashboard/billing?status=subscription_inactive'; // Redirect to billing
+          } else if (data.message.includes('account is inactive') || data.message.includes('account is suspended')) {
+            // Specific handling for inactive/suspended user account
+            window.location.href = '/login?status=account_inactive'; // Redirect to login with specific message
+          } else {
+            // General 403 for other reasons (e.g., insufficient role for specific action)
+            // User remains logged in but is shown an access denied alert/message on current page
+            // Or redirected to a safe dashboard overview
+            window.location.href = '/dashboard/overview?status=access_denied';
+          }
         } else {
-          // General 403 for other reasons (e.g., insufficient role)
-          window.location.href = '/dashboard/overview?message=access_denied'; // Redirect to dashboard with general denial
+          // Fallback for generic 403 without specific message
+          window.location.href = '/dashboard/overview?status=access_denied';
         }
+
       } else if (status >= 500) {
         // Server errors
         console.error(`API Error: ${status} Server Error`, data.message);
-        // Optionally show a generic server error message to the user
+        // You might want to display a temporary notification to the user about a server issue.
       }
     }
     return Promise.reject(error);
