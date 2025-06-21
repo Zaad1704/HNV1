@@ -1,5 +1,3 @@
-// frontend/src/components/Navbar.tsx
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
@@ -14,10 +12,9 @@ const Navbar = () => {
     { name: 'Features', href: '#featuresPage' },
     { name: 'About', href: '#aboutPage' },
     { name: 'Pricing', href: '#pricingSection' },
-    { name: 'Install App', href: '#installAppSection' }, // Added Install App Link
     { name: 'Contact', href: '#contact' },
   ];
-
+  
   const sectionIds = navLinks.map(link => link.href.substring(1));
   const activeId = useScrollSpy(sectionIds, 150);
 
@@ -42,7 +39,7 @@ const Navbar = () => {
             onClick={(e) => handleScroll(e, link.href)}
             className={`font-medium transition-colors rounded-md ${
               isMobile ? 'block w-full text-left py-2' : 'px-3 py-2'
-            } ${isActive ? 'text-slate-900 bg-yellow-400' : 'text-slate-300 hover:text-yellow-400'}`}
+            } ${isActive ? 'text-white bg-brand-primary' : 'text-gray-300 hover:text-white'}`}
           >
             {link.name}
           </a>
@@ -52,22 +49,22 @@ const Navbar = () => {
   );
 
   return (
-    <header className="bg-slate-900/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
+    <header className="bg-brand-dark/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
         <a href="/" className="flex items-center space-x-3">
-          <img src={settings?.logos?.navbarLogoUrl} alt="Company Logo" className="h-10" />
+          <img src="/logo-min.png" alt="Company Logo" className="h-10" />
           <span className="text-xl font-bold text-white sm:inline">
             {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
         </a>
-
-        <nav className="hidden lg:flex items-center space-x-6">
+        
+        <nav className="hidden lg:flex items-center space-x-2">
           <NavLinksContent />
         </nav>
-
+        
         <div className="hidden lg:flex items-center space-x-4">
-          <Link to="/login" className="font-semibold text-white hover:text-yellow-400">Portal Log In</Link>
-          <Link to="/register" className="flex items-center gap-2 font-bold text-slate-900 bg-yellow-500 hover:bg-yellow-400 py-2 px-5 rounded-lg">
+          <Link to="/login" className="font-semibold text-white hover:text-gray-300">Portal Log In</Link>
+          <Link to="/register" className="flex items-center gap-2 font-bold text-brand-dark bg-white hover:bg-gray-200 py-2 px-5 rounded-lg">
             Get Started <ArrowRight size={16} />
           </Link>
         </div>
@@ -78,13 +75,13 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-
+      
       {isMenuOpen && (
-        <nav className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900 shadow-xl">
+        <nav className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-brand-dark shadow-xl">
           <NavLinksContent isMobile={true} />
-          <hr className="my-2 border-slate-700" />
-          <Link to="/login" className="block py-2 text-slate-300 font-semibold hover:text-white">Portal Log In</Link>
-          <Link to="/register" className="block w-full mt-2 text-center bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold py-2 px-4 rounded-lg">Get Started</Link>
+          <hr className="my-2 border-gray-700" />
+          <Link to="/login" className="block py-2 text-gray-300 font-semibold hover:text-white">Portal Log In</Link>
+          <Link to="/register" className="block w-full mt-2 text-center bg-white hover:bg-gray-200 text-brand-dark font-semibold py-2 px-4 rounded-lg">Get Started</Link>
         </nav>
       )}
     </header>
