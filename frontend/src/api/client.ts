@@ -53,7 +53,8 @@ apiClient.interceptors.response.use(
             window.location.href = '/dashboard/billing?status=subscription_inactive'; // Redirect to billing
           } else if (data.message.includes('account is inactive') || data.message.includes('account is suspended')) {
             // Specific handling for inactive/suspended user account
-            window.location.href = '/login?status=account_inactive'; // Redirect to login with specific message
+            // FIXED: Redirect to billing page instead of login for inactive/suspended accounts
+            window.location.href = '/dashboard/billing?status=account_inactive'; 
           } else {
             // General 403 for other reasons (e.g., insufficient role for specific action)
             // User remains logged in but is shown an access denied alert/message on current page
