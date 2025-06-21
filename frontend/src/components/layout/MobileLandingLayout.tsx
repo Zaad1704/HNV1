@@ -1,87 +1,84 @@
+// frontend/src/components/layout/MobileLandingLayout.tsx
+// This component now focuses on structuring the content sections for mobile,
+// assuming the main navigation is provided by PublicBottomNavBar.
+
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ISiteSettings } from '../../../../backend/models/SiteSettings'; // Correct path to backend types
-// FIX: Adjusted import paths to be relative for all common landing page section components
+import { ISiteSettings } from '../../../../backend/models/SiteSettings';
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
 import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection';
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react'; 
+// No need for icons here, as they are in PublicBottomNavBar now
+// import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react';
 
 interface MobileLandingLayoutProps {
     settings: ISiteSettings;
-    plans: any[]; 
+    plans: any[];
 }
-
-const IconMap = { "Centralized Dashboard": Home, "Secure Document Storage": ShieldCheck, "Audit Trails & Security": Briefcase };
-const getFeatureIcon = (title: string) => (IconMap as any)[title] || Star; 
 
 const MobileLandingLayout: React.FC<MobileLandingLayoutProps> = ({ settings, plans }) => {
     return (
-        <div className="bg-brand-bg text-dark-text">
-            {/* Mobile Hero Section */}
-            <section id="hero" className="p-4">
-                 <div className="relative h-48 bg-cover bg-center rounded-xl overflow-hidden my-2 shadow-lg" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`}}>
-                    <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-4">
-                        <h2 className="text-2xl font-extrabold">{settings.heroSection?.title}</h2>
-                        <Link to="/register" className="mt-4 inline-flex items-center gap-2 bg-white text-brand-dark font-bold py-2 px-5 text-sm rounded-lg shadow-xl">{settings.heroSection?.ctaText}</Link>
-                    </div>
+        <div className="bg-brand-bg text-dark-text pb-16"> {/* Add padding-bottom for fixed bottom nav */}
+            {/* Mobile Hero Section - Simplified to just content, assuming Navbar/BottomNav handle CTA */}
+            <section id="hero" className="p-4 py-8 text-center" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                <div className="bg-black/50 p-4 rounded-xl text-center text-white">
+                    <h2 className="text-2xl font-extrabold">{settings.heroSection?.title}</h2>
+                    <p className="mt-2 text-sm">{settings.heroSection?.subtitle}</p>
+                    {/* Removed direct CTA link here, as it can be accessed via bottom nav / register page */}
                 </div>
             </section>
 
-            {/* Mobile Features Grid */}
-            <section id="featuresPage" className="grid grid-cols-4 gap-2 p-2 text-center text-xs">
-                {settings.featuresPage?.features?.slice(0, 4).map(feature => {
-                    const Icon = getFeatureIcon(feature.title); 
+            {/* Mobile Features Grid - Simplified, links can go to detailed features page or just scroll */}
+            {/* Keep the grid as a visual summary, direct links in bottom nav */}
+            <section id="featuresPage" className="grid grid-cols-2 gap-4 p-4 text-center text-xs"> {/* Adjusted to 2 columns for better sizing */}
+                {settings.featuresPage?.features?.slice(0, 4).map((feature, index) => { // Display first 4 features
+                    // Icon selection logic might need to be consistent with settings or hardcoded if simple
+                    const IconComponent = feature.icon ? (require('lucide-react')[feature.icon] || Home) : Home; // Example: Dynamically load icon
                     return (
-                        <Link to="/#featuresPage" key={feature.title} className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-brand-primary/10">
-                            <div className="w-14 h-14 flex items-center justify-center bg-brand-primary/10 text-brand-primary rounded-full">
-                                <Icon className="w-7 h-7" />
+                        <div key={index} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card border border-border-color shadow-sm">
+                            <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 text-brand-primary rounded-full mb-2">
+                                <IconComponent className="w-6 h-6" />
                             </div>
-                            <span className="font-medium text-dark-text">{feature.title}</span>
-                        </Link>
+                            <span className="font-bold text-dark-text">{feature.title}</span>
+                            <span className="text-light-text text-xs line-clamp-2">{feature.text}</span> {/* Added line-clamp for multi-line text */}
+                        </div>
                     );
                 })}
             </section>
             
-            {/* FIX: Ensure About Section is wrapped with a section tag and has the correct ID */}
+            {/* All other sections */}
             <section id="aboutPage" className="py-8">
                 <div className="container mx-auto px-6">
-                    <AboutSection /> 
+                    <AboutSection />
                 </div>
             </section>
 
-            {/* FIX: Ensure Services Section is wrapped with a section tag and has the correct ID */}
-            <section id="services" className="py-8 bg-gray-100"> 
+            <section id="services" className="py-8 bg-gray-100">
                 <div className="container mx-auto px-6">
-                    <ServicesSection /> 
+                    <ServicesSection />
                 </div>
             </section>
 
-            {/* FIX: Ensure Leadership Section is wrapped with a section tag and has the correct ID */}
             <section id="leadership" className="py-8">
                 <div className="container mx-auto px-6">
-                    <LeadershipSection /> 
+                    <LeadershipSection />
                 </div>
             </section>
 
-            {/* FIX: Ensure Pricing Section is wrapped with a section tag and has the correct ID */}
             <section id="pricingSection" className="py-8 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
-                    <PricingSection plans={plans} /> 
+                    <PricingSection plans={plans} />
                 </div>
             </section>
 
-            {/* FIX: Ensure Install App Section is wrapped with a section tag and has the correct ID */}
             <section id="installAppSection" className="py-8 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
                     <InstallAppSection />
                 </div>
             </section>
 
-            {/* FIX: Ensure Contact Section is wrapped with a section tag and has the correct ID */}
             <section id="contact" className="py-8 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
                     <ContactSection />
