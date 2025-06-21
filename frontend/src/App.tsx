@@ -1,8 +1,11 @@
+// frontend/src/App.tsx
+
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
+import axios from 'axios'; // Import axios to check for Axios errors
 
 // --- Layout & Route Components ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -15,19 +18,19 @@ import AdminRoute from './components/AdminRoute';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage'; // FIX: Add
-import ResetPasswordPage from './pages/ResetPasswordPage'; // FIX: Add
-import PaymentSuccessPage from './pages/PaymentSuccessPage'; // FIX: Add
-import PaymentCancelPage from './pages/PaymentCancelPage'; // FIX: Add
-import PaymentSummaryPage from './pages/PaymentSummaryPage'; // FIX: Add (if public access is needed for summary before login)
-import GoogleAuthCallback from './pages/GoogleAuthCallback'; // FIX: Add GoogleAuthCallback
-import AcceptInvitePage from './pages/AcceptInvitePage'; // FIX: Add AcceptInvitePage
-import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage'; // FIX: Add AcceptAgentInvitePage
-import TermsPage from './pages/TermsPage'; // FIX: Add TermsPage
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage'; // FIX: Add PrivacyPolicyPage
-import AboutPage from './pages/AboutPage'; // FIX: Add AboutPage (as standalone page if not just section of landing)
-import ContactPage from './pages/ContactPage'; // FIX: Add ContactPage (as standalone page if not just section of landing)
-import FeaturesPage from './pages/FeaturesPage'; // FIX: Add FeaturesPage (as standalone page if not just section of landing)
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentCancelPage from './pages/PaymentCancelPage';
+import PaymentSummaryPage from './pages/PaymentSummaryPage';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import AcceptInvitePage from './pages/AcceptInvitePage';
+import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import FeaturesPage from './pages/FeaturesPage';
 
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
@@ -39,8 +42,8 @@ import UsersPage from './pages/UsersPage';
 import BillingPage from './pages/BillingPage';
 import SettingsPage from './pages/SettingsPage';
 import AuditLogPage from './pages/AuditLogPage';
-import OrganizationPage from './pages/OrganizationPage'; // FIX: Add OrganizationPage if used
-import TenantDashboardPage from './pages/TenantDashboardPage'; // FIX: Add TenantDashboardPage
+import OrganizationPage from './pages/OrganizationPage';
+import TenantDashboardPage from './pages/TenantDashboardPage';
 
 // Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -49,9 +52,9 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminPlansPage from './pages/AdminPlansPage';
 import AdminBillingPage from './pages/AdminBillingPage';
 import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
-import AdminMaintenancePage from './pages/AdminMaintenancePage'; // FIX: Add
-import AdminDataManagementPage from './pages/AdminDataManagementPage'; // FIX: Add
-import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage'; // FIX: Add
+import AdminMaintenancePage from './pages/AdminMaintenancePage';
+import AdminDataManagementPage from './pages/AdminDataManagementPage';
+import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
 
 import NotFound from './pages/NotFound';
 
@@ -68,8 +71,18 @@ function App() {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
         } catch (error) {
-          console.error("Session token is invalid or expired. Logging out.", error);
-          logout();
+          // Check if the error is an Axios error and if it's a 403 Forbidden status
+          if (axios.isAxiosError(error) && error.response && error.response.status === 403) {
+            // If it's a 403 (e.g., account inactive, subscription expired),
+            // the client.ts interceptor is already handling the redirect to /dashboard/billing.
+            // DO NOT call logout() here, as it would clear the token and cause a redirect to /login.
+            console.warn("User session check received 403. Interceptor will handle redirection, preserving token state.");
+          } else {
+            // For 401 (Unauthorized), network errors, or any other unexpected errors,
+            // perform a full logout to clear the session and redirect to login.
+            console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
+            logout(); // Clear auth state, which will lead to /login redirect via ProtectedRoute
+          }
         }
       }
       setSessionLoading(false);
@@ -88,26 +101,26 @@ function App() {
           {/* Public Routes - Rendered with PublicLayout (Navbar, Footer) */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/terms" element={<TermsPage />} /> {/* FIX: Add */}
-            <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* FIX: Add */}
-            <Route path="/about" element={<AboutPage />} /> {/* FIX: Add as standalone page */}
-            <Route path="/features" element={<FeaturesPage />} /> {/* FIX: Add as standalone page */}
-            <Route path="/contact" element={<ContactPage />} /> {/* FIX: Add as standalone page */}
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             
             {/* Payment related public pages */}
-            <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} /> {/* FIX: Add */}
-            <Route path="/payment-success" element={<PaymentSuccessPage />} /> {/* FIX: Add */}
-            <Route path="/payment-cancel" element={<PaymentCancelPage />} /> {/* FIX: Add */}
+            <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
+            <Route path="/payment-success" element={<PaymentSuccessPage />} />
+            <Route path="/payment-cancel" element={<PaymentCancelPage />} />
           </Route>
 
           {/* Authentication Routes (No Layout or minimal layout) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} /> {/* FIX: Add */}
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} /> {/* FIX: Add */}
-          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} /> {/* FIX: Add Google Callback */}
-          <Route path="/accept-invite/:token" element={<AcceptInvitePage />} /> {/* FIX: Add User Invite */}
-          <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} /> {/* FIX: Add Agent Invite */}
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+          <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+          <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
 
           {/* Protected Routes - Rendered with DashboardLayout */}
           <Route element={<ProtectedRoute />}>
@@ -123,9 +136,9 @@ function App() {
               <Route path="billing" element={<BillingPage />} />
               <Route path="audit-log" element={<AuditLogPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="organization" element={<OrganizationPage />} /> {/* FIX: Add Organization page */}
+              <Route path="organization" element={<OrganizationPage />} />
               {/* Specific tenant dashboard route */}
-              <Route path="tenant" element={<TenantDashboardPage />} /> {/* FIX: Add Tenant Dashboard */}
+              <Route path="tenant" element={<TenantDashboardPage />} />
             </Route>
           </Route>
         
@@ -136,12 +149,12 @@ function App() {
                 <Route path="dashboard" element={<AdminDashboardPage />} />
                 <Route path="organizations" element={<AdminOrganizationsPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
-                <Route path="moderators" element={<AdminModeratorsPage />} /> {/* FIX: Add Moderators page */}
+                <Route path="moderators" element={<AdminModeratorsPage />} />
                 <Route path="plans" element={<AdminPlansPage />} />
                 <Route path="billing" element={<AdminBillingPage />} />
                 <Route path="site-editor" element={<SiteEditorPage />} />
-                <Route path="maintenance" element={<AdminMaintenancePage />} /> {/* FIX: Add */}
-                <Route path="data-management" element={<AdminDataManagementPage />} /> {/* FIX: Add */}
+                <Route path="maintenance" element={<AdminMaintenancePage />} />
+                <Route path="data-management" element={<AdminDataManagementPage />} />
             </Route>
           </Route>
 
