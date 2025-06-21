@@ -1,19 +1,17 @@
 import { Router } from 'express';
-// Correctly import 'acceptInvitation' instead of 'acceptAgentInvitation'
-import { inviteAgent, getInvitationDetails, acceptInvitation } from '../controllers/invitationController';
+// Corrected: Import 'inviteUser' instead of 'inviteAgent'
+import { inviteUser, getInvitationDetails, acceptInvitation } from '../controllers/invitationController';
 import { protect } from '../middleware/authMiddleware';
-// Assuming your rbac middleware is correctly located here
 import { authorize } from '../middleware/rbac'; 
 
 const router = Router();
 
-// Invite an agent (only for Landlords)
-router.post('/invite-agent', protect, authorize(['Landlord']), inviteAgent);
+// Corrected: This single route now uses the generic 'inviteUser' function
+// and is accessible by both Landlords and Agents.
+router.post('/invite-user', protect, authorize(['Landlord', 'Agent']), inviteUser);
 
-// Get the details for an invitation page
+// Routes for accepting the invitation remain the same
 router.get('/accept/:token', getInvitationDetails);
-
-// Post to the same URL to accept the invitation
 router.post('/accept/:token', acceptInvitation);
 
 export default router;
