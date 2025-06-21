@@ -1,12 +1,18 @@
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
+import fs from 'fs'; // Import the file system module
 
 // Configure how files are stored
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Files will be saved in the 'public/uploads' directory
-        cb(null, 'public/uploads/');
+        const uploadPath = path.join(__dirname, '..', 'public', 'uploads'); // Define absolute path
+        
+        // Ensure the directory exists. Create it if it doesn't.
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true }); // `recursive: true` ensures parent directories are also created
+        }
+        cb(null, uploadPath); // Pass the absolute path to Multer
     },
     filename: function (req, file, cb) {
         // Create a unique filename to prevent overwrites
