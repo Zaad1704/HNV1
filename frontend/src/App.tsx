@@ -31,6 +31,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FeaturesPage from './pages/FeaturesPage';
+import ResubscribePage from './pages/ResubscribePage'; // Import the new page
 
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
@@ -66,19 +67,24 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
+      // If a token exists but user object is not yet loaded, try to fetch user details
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
+          // If the user's status is inactive/suspended or subscription is inactive,
+          // the backend /auth/me would return 403, and the client.ts interceptor would redirect to /resubscribe.
+          // In that case, the setUser here might not run, or it will run before the redirect happens.
+          // The key is that logout() must NOT be called here for 403.
         } catch (error) {
           // Check if the error is an Axios error and if it's a 403 Forbidden status
           if (axios.isAxiosError(error) && error.response && error.response.status === 403) {
             // If it's a 403 (e.g., account inactive, subscription expired),
-            // the client.ts interceptor is already handling the redirect to /dashboard/billing.
+            // the client.ts interceptor is already handling the redirect to /resubscribe.
             // DO NOT call logout() here, as it would clear the token and cause a redirect to /login.
             console.warn("User session check received 403. Interceptor will handle redirection, preserving token state.");
           } else {
-            // For 401 (Unauthorized), network errors, or any other unexpected errors,
+            // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
             // perform a full logout to clear the session and redirect to login.
             console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
             logout(); // Clear auth state, which will lead to /login redirect via ProtectedRoute
@@ -98,7 +104,7 @@ function App() {
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
         <Routes>
-          {/* Public Routes - Rendered with PublicLayout (Navbar, Footer) */}
+          {/* Public Routes (e.g., Landing, Terms, Privacy) - wrapped with PublicLayout */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/terms" element={<TermsPage />} />
@@ -121,6 +127,10 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
           <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
           <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+
+          {/* NEW: Dedicated Resubscribe Page (no layout initially, or minimal PublicLayout if desired) */}
+          {/* This page should handle its own auth/redirect logic for simplicity */}
+          <Route path="/resubscribe" element={<ResubscribePage />} />
 
           {/* Protected Routes - Rendered with DashboardLayout */}
           <Route element={<ProtectedRoute />}>
