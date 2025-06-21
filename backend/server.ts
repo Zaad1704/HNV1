@@ -7,12 +7,12 @@ import mongoose from 'mongoose';
 import path from 'path';
 import passport from 'passport';
 import session from 'express-session';
-import helmet from 'helmet'; // Added helmet for security headers
+import helmet from 'helmet'; 
 
 // This line is crucial - it runs the configuration in passport-setup.ts
 import './config/passport-setup';
 
-// Route imports
+// Route imports - FIX: Ensure all are imported correctly
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -34,12 +34,12 @@ import maintenanceRoutes from './routes/maintenanceRoutes';
 import localizationRoutes from './routes/localizationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import uploadRoutes from './routes/uploadRoutes';
-import notificationRoutes from './routes/notificationRoutes'; // FIX: Ensure notificationsRoutes is imported
-import orgRoutes from './routes/orgRoutes'; // FIX: Ensure orgRoutes is imported (will correct content next)
-import invoiceRoutes from './routes/invoiceRoutes'; // FIX: Ensure invoiceRoutes is imported
-import receiptRoutes from './routes/receiptRoutes'; // FIX: Ensure receiptRoutes is imported
-import tenantPortalRoutes from './routes/tenantPortalRoutes'; // FIX: Ensure tenantPortalRoutes is imported
-import communicationRoutes from './routes/communicationRoutes'; // FIX: Ensure communicationRoutes is imported
+import notificationRoutes from './routes/notificationRoutes'; 
+import orgRoutes from './routes/orgRoutes'; 
+import invoiceRoutes from './routes/invoiceRoutes'; 
+import receiptRoutes from './routes/receiptRoutes'; 
+import tenantPortalRoutes from './routes/tenantPortalRoutes'; 
+import communicationRoutes from './routes/communicationRoutes'; 
 
 
 dotenv.config();
@@ -66,7 +66,8 @@ connectDB();
 const allowedOrigins: string[] = [
   process.env.CORS_ORIGIN || '',
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com' // Ensure your Render frontend URL is here
+  // FIX: Ensure your Render frontend URL is here for production deployments
+  'https://hnv-saas-frontend.onrender.com' 
 ].filter(Boolean);
 
 const corsOptions: CorsOptions = {
@@ -89,30 +90,30 @@ app.use(cors(corsOptions));
 app.use(express.json()); // Body parser for JSON
 app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
 // Serve static files from the 'public' directory (for uploads, shared documents)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); // FIX: Explicitly serve /uploads
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 
-// NEW: Session and Passport Middleware
+// Session and Passport Middleware
 if (!process.env.SESSION_SECRET) {
     console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
     // In production, you might want to exit, but for dev, you could default to a string
     // process.exit(1);
 }
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev', // Fallback for development
+    secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev', 
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-        httpOnly: true, // Prevent client-side JS from accessing cookies
-        sameSite: 'lax', // Protect against CSRF
+        secure: process.env.NODE_ENV === 'production', 
+        httpOnly: true, 
+        sameSite: 'lax', 
     }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(helmet()); // Apply security headers
+app.use(helmet()); 
 
 
 // API Routes - FIX: Ensure ALL relevant routes are mounted
@@ -137,12 +138,12 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/localization', localizationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/notifications', notificationRoutes); // FIX: Mount notifications route
-app.use('/api/orgs', orgRoutes); // FIX: Mount orgs route (will fix its content next)
-app.use('/api/invoices', invoiceRoutes); // FIX: Mount invoices route
-app.use('/api/receipts', receiptRoutes); // FIX: Mount receipts route
-app.use('/api/tenant-portal', tenantPortalRoutes); // FIX: Mount tenant portal route
-app.use('/api/communication', communicationRoutes); // FIX: Mount communication route
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/orgs', orgRoutes); 
+app.use('/api/invoices', invoiceRoutes); 
+app.use('/api/receipts', receiptRoutes); 
+app.use('/api/tenant-portal', tenantPortalRoutes); 
+app.use('/api/communication', communicationRoutes); 
 
 
 app.get('/', (req: Request, res: Response) => {
