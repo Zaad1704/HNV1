@@ -12,6 +12,10 @@
   "language_toggle": {
     "en_display": "English",
     "bn_display": "বাংলা",
+    "es_display": "Español",
+    "de_display": "Deutsch",
+    "hi_display": "हिन्दी",
+    "fr_display": "Français",
     "switch_to": "Switch to"
   },
   "hero": {
@@ -163,7 +167,7 @@
     "email": "Email",
     "role": "Role",
     "language_settings": "Language Settings",
-    "select_language": "Select Language",
+    "current_language": "Current Language",
     "theme_settings": "Theme Settings",
     "current_theme": "Current Theme",
     "toggle_theme": "Toggle Theme",
