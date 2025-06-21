@@ -1,7 +1,7 @@
-// frontend/src/components/layout/Footer.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useSiteSettings } from '../../hooks/useSiteSettings';
+// FIX: Adjusted import path to relative for useSiteSettings
+import { useSiteSettings } from '../../hooks/useSiteSettings'; 
 
 const Footer = () => {
     const { data: settings, isLoading } = useSiteSettings();
@@ -13,8 +13,10 @@ const Footer = () => {
             {links.map(link => (
                 <li key={link.text}>
                     {link.url.startsWith('/') ? (
+                        // If it's an internal link, use React Router's Link
                         <Link to={link.url} className="hover:text-cyan-400">{link.text}</Link>
                     ) : (
+                        // If it's an external link, use a regular anchor tag
                         <a href={link.url} className="hover:text-cyan-400" target="_blank" rel="noopener noreferrer">{link.text}</a>
                     )}
                 </li>
@@ -27,7 +29,10 @@ const Footer = () => {
             <div className="container mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div className="col-span-1 md:col-span-2">
-                        <img src={settings.logos?.footerLogoUrl} alt="Logo" className="h-8 mb-4 filter grayscale brightness-150"/>
+                        {/* FIX: Wrap the footer logo with a Link to the homepage */}
+                        <Link to="/"> 
+                            <img src={settings.logos?.footerLogoUrl} alt="Company Logo" className="h-8 mb-4 filter grayscale brightness-150"/>
+                        </Link>
                         <p className="max-w-md">{settings.footer.description}</p>
                     </div>
                     <div>
@@ -46,4 +51,5 @@ const Footer = () => {
         </footer>
     );
 };
+
 export default Footer;
