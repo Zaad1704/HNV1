@@ -53,7 +53,7 @@ const Navbar = () => {
     <header className="bg-brand-dark/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
         <a href="/" className="flex items-center space-x-3">
-          <img src="/logo-min.png" alt="Company Logo" className="h-10" />
+          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" />
           <span className="text-xl font-bold text-white sm:inline">
             {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
