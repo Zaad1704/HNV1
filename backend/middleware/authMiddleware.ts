@@ -15,9 +15,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 
   if (!token) {
-    // If no token, return 401 if route is meant to be protected.
-    // For unprotected routes, next() would handle it.
-    // Given the context this middleware is used, usually means a protected route.
     return res.status(401).json({ message: 'Not authorized, no token' });
   }
 
@@ -28,7 +25,6 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
     
-    // Fetch the user from the database.
     const user = await User.findById(decoded.id);
     
     if (!user) {
@@ -36,36 +32,38 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     }
 
     // --- CRITICAL FIX MODIFICATION HERE ---
-    // Allow inactive/suspended users to access *specific* billing/resubscribe endpoints
-    // This allows the ResubscribePage to fetch necessary data.
-    const isBillingOrResubscribeRoute = req.path.startsWith('/billing') || req.path.startsWith('/resubscribe'); // Added check for path
+    // Allow inactive/suspended users to access *specific* billing/resubscribe endpoints.
+    // This allows the ResubscribePage to fetch necessary data from /api/billing.
+    const path = req.path.toLowerCase();
+    const isAllowedForInactiveUser = (
+        path.startsWith('/api/billing') // Allows access to billing details for inactive users
+    );
 
+    // Block inactive or suspended users immediately, UNLESS they are accessing allowed routes.
     if (user.status && user.status !== 'active') {
-        if (!isBillingOrResubscribeRoute) {
+        if (!isAllowedForInactiveUser) {
             return res.status(403).json({ message: `Your account is ${user.status}. Access denied.` });
         }
-        // If it is a billing/resubscribe route, allow them to pass the user check,
-        // so they can fetch their billing info to reactivate.
+        // If it is an allowed route for inactive users, proceed to next middleware/route handler.
     }
 
     // For non-admin users, check their organization's subscription status.
     // Super Admins bypass subscription checks.
     if (user.organizationId && user.role !== 'Super Admin') {
         const subscription = await Subscription.findOne({ organizationId: user.organizationId });
-        // Block access if subscription is not active and it's not a lifetime deal
+        // Block access if subscription is not active and it's not a lifetime deal,
+        // UNLESS they are accessing allowed routes.
         if (subscription && subscription.status !== 'active' && !subscription.isLifetime) {
-            if (!isBillingOrResubscribeRoute) {
+            if (!isAllowedForInactiveUser) {
                 return res.status(403).json({ message: 'Organization subscription is inactive. Please contact support.' });
             }
-            // If it's a billing/resubscribe route, allow them to proceed.
+            // If it's an allowed route for inactive subscriptions, proceed.
         }
     }
 
-    // Attach the lean object for performance in subsequent operations
     req.user = user.toObject() as any; 
     next();
   } catch (error) {
-    // This will catch expired tokens etc.
     console.error('Token verification failed:', error);
     return res.status(401).json({ message: 'Not authorized, token failed' });
   }
