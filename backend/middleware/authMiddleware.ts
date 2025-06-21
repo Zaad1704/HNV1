@@ -31,13 +31,9 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
         return res.status(401).json({ message: 'Not authorized, user not found' });
     }
 
-    // --- CRITICAL FIX MODIFICATION HERE ---
-    // Allow inactive/suspended users to access *specific* billing/resubscribe endpoints.
-    // This allows the ResubscribePage to fetch necessary data from /api/billing.
-    const path = req.path.toLowerCase();
-    const isAllowedForInactiveUser = (
-        path.startsWith('/api/billing') // Allows access to billing details for inactive users
-    );
+    // Use full path for matching, so exception works regardless of router mount point.
+    const fullPath = (req.baseUrl?.toLowerCase() || '') + req.path.toLowerCase();
+    const isAllowedForInactiveUser = fullPath.startsWith('/api/billing');
 
     // Block inactive or suspended users immediately, UNLESS they are accessing allowed routes.
     if (user.status && user.status !== 'active') {
