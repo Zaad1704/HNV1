@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client";
 
 export function useBilling() {
   const [plans, setPlans] = useState<any[]>([]);
   const [billingHistory, setBillingHistory] = useState<any[]>([]);
 
   const fetchPlans = async () => {
-    const res = await api.get("/billing/plans");
+    const res = await apiClient.get("/billing/plans");
     setPlans(res.data);
   };
 
   const fetchBillingHistory = async () => {
-    const res = await api.get("/billing/history");
+    const res = await apiClient.get("/billing/history");
     setBillingHistory(res.data);
   };
 
