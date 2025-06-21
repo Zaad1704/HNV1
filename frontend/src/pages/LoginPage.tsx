@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
       <div className="text-center my-8">
         <Link to="/" className="inline-flex items-center gap-3">
             {/* Implement logo based on site settings */}
-            <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="logo" className="h-10 w-10" />
+            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" />
             <span className="text-2xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
         </Link>
       </div>
