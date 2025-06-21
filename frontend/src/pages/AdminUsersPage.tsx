@@ -1,15 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import apiClient from "../api/client";
-import AdminSidebar from "../components/admin/AdminSidebar";
 
 type User = {
   _id: string;
   name: string;
   email: string;
   role: string;
-  organizationId: {
-    name: string;
-  };
+  organizationId?: { name: string; };
 };
 
 const AdminUsersPage: React.FC = () => {
@@ -22,7 +19,6 @@ const AdminUsersPage: React.FC = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        // Corrected API endpoint to /super-admin/users
         const response = await apiClient.get("/super-admin/users");
         setUsers(response.data.data);
       } catch (err) {
@@ -47,38 +43,36 @@ const AdminUsersPage: React.FC = () => {
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="flex">
-      <div className="flex-1 p-4">
-        <h1 className="text-2xl font-bold mb-4">Manage All Users</h1>
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-4 p-2 border rounded w-full"
-        />
-        <div className="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left p-3 font-semibold">Name</th>
-                <th className="text-left p-3 font-semibold">Email</th>
-                <th className="text-left p-3 font-semibold">Role</th>
-                <th className="text-left p-3 font-semibold">Organization</th>
+    <div className="text-dark-text">
+      <h1 className="text-3xl font-bold mb-4">Manage All Users</h1>
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-6 p-3 border border-border-color rounded-lg w-full bg-light-card"
+      />
+      <div className="bg-light-card p-6 rounded-xl shadow-sm border border-border-color overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-border-color">
+            <tr>
+              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm">Name</th>
+              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm">Email</th>
+              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm">Role</th>
+              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm">Organization</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border-color">
+            {filteredUsers.map((user) => (
+              <tr key={user._id} className="hover:bg-gray-50">
+                <td className="p-4 font-medium">{user.name}</td>
+                <td className="p-4 text-light-text">{user.email}</td>
+                <td className="p-4 text-light-text">{user.role}</td>
+                <td className="p-4 text-light-text">{user.organizationId?.name || 'N/A'}</td>
               </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filteredUsers.map((user) => (
-                <tr key={user._id}>
-                  <td className="p-3 font-medium">{user.name}</td>
-                  <td className="p-3">{user.email}</td>
-                  <td className="p-3">{user.role}</td>
-                  <td className="p-3 text-gray-600">{user.organizationId?.name || 'N/A'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
