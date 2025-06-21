@@ -1,27 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ISiteSettings } from '../../../../backend/models/SiteSettings'; // Adjust path if needed
-import HeroSection from '../landing/HeroSection'; // Reuse common section components
+// Import all your common landing page section components
+import HeroSection from '../landing/HeroSection';
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
 import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection';
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react'; // Example icons
+import { Home, ShieldCheck, Briefcase, Star } from 'lucide-react'; // Example icons needed for features section
 
 interface DesktopLandingLayoutProps {
     settings: ISiteSettings;
     plans: any[]; // Assuming plans type is `any[]`
 }
 
+// Re-defining IconMap and getFeatureIcon if they are used directly in this layout for features
 const IconMap = { "Centralized Dashboard": Home, "Secure Document Storage": ShieldCheck, "Audit Trails & Security": Briefcase };
 const getFeatureIcon = (title: string) => (IconMap as any)[title] || Star; // Casting to any for dynamic lookup
 
 const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, plans }) => {
     return (
         <div className="bg-light-bg text-dark-text">
-            {/* Desktop Hero Section - Potentially different styling than mobile */}
+            {/* Desktop Hero Section - Using direct content as per your original DesktopLayout */}
             <section id="hero" className="text-white text-center py-40" style={{ background: `linear-gradient(135deg, #3D52A0, #7091E6), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{settings.heroSection?.title}</h1>
@@ -32,18 +34,18 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            {/* Desktop Features Section - Use responsive grid internally */}
+            {/* Desktop Features Section - Using direct content as per your original DesktopLayout */}
             <section id="featuresPage" className="py-20 md:py-28">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
                     <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                         {settings.featuresPage?.features.map((feature) => {
-                            const Icon = getFeatureIcon(feature.title);
+                            const Icon = getFeatureIcon(feature.title); // Use helper function for icons
                             return (
                                 <div key={feature.title} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
                                     <div className="text-brand-primary mb-4">
-                                        <Icon className="w-12 h-12" /> {/* Render icon based on lookup */}
+                                        <Icon className="w-12 h-12" />
                                     </div>
                                     <h3 className="text-2xl font-bold text-brand-dark mb-2">{feature.title}</h3>
                                     <p className="text-light-text">{feature.text}</p>
@@ -54,12 +56,27 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            {/* Other Desktop Sections */}
+            {/* INTEGRATED: About Section */}
             <AboutSection />
+
+            {/* INTEGRATED: Services Section */}
             <ServicesSection />
+
+            {/* INTEGRATED: Leadership Section */}
             <LeadershipSection />
+
+            {/* INTEGRATED: Pricing Section */}
+            {/* Note: PricingSection expects 'plans' prop */}
             <PricingSection plans={plans} />
-            <InstallAppSection />
+
+            {/* INTEGRATED: Install App Section */}
+            <section id="installAppSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
+                <div className="container mx-auto px-6">
+                    <InstallAppSection />
+                </div>
+            </section>
+
+            {/* INTEGRATED: Contact Section */}
             <section id="contact" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
                 <div className="container mx-auto px-6">
                     <ContactSection />
