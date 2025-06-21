@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/client"; 
 import { useAuthStore } from "../store/authStore";
-import { useSiteSettings } from "../hooks/useSiteSettings"; // NEW: Import useSiteSettings
-import { Chrome } from 'lucide-react'; // NEW: Import Chrome icon for Google button
+import { useSiteSettings } from '../hooks/useSiteSettings'; // FIX: Adjusted import path to relative
+import { Chrome } from 'lucide-react'; 
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '' });
@@ -11,7 +11,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const loginAction = useAuthStore((state) => state.login);
-  const { data: settings } = useSiteSettings(); // NEW: Use settings for logo
+  const { data: settings } = useSiteSettings(); 
 
   const handleRoleSelect = (role: string) => {
     setFormData({ ...formData, role });
@@ -41,7 +41,7 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  // NEW: Handle Google Signup (same endpoint as login, backend handles new users)
+  // Handle Google Signup (same endpoint as login, backend handles new users)
   const handleGoogleSignup = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google`; // Directs to backend Google OAuth initiation
   };
@@ -56,7 +56,7 @@ const RegisterPage: React.FC = () => {
         <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center">
             <div className="mb-8">
                  <Link to="/" className="inline-flex items-center gap-3">
-                    {/* NEW: Implement logo based on site settings */}
+                    {/* Implement logo based on site settings */}
                     <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="logo" className="h-8 w-8" />
                     <span className="text-xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
                 </Link>
@@ -91,7 +91,7 @@ const RegisterPage: React.FC = () => {
                 </div>
             </form>
 
-            {/* NEW: Google Signup Button */}
+            {/* Google Signup Button */}
             <div className="relative flex items-center justify-center py-4">
                 <div className="flex-grow border-t border-border-color"></div>
                 <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
