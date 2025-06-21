@@ -2,23 +2,21 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { ArrowRight, Globe, Sun, Moon } from 'lucide-react'; // Import Globe, Sun, Moon icons
-import { useLang } from '../contexts/LanguageContext'; // Import useLang
-import { useTheme } from '../contexts/ThemeContext'; // Import useTheme
-
-// Define explicitly supported languages for the switcher
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'bn', name: 'বাংলা' },
-  { code: 'es', name: 'Español' }, // Example of adding more languages
-  { code: 'de', name: 'Deutsch' },
-  { code: 'hi', name: 'हिन्दी' }
-];
+// NOTE: useScrollSpy is now conditionally used only if necessary for desktop features nav in other layout
+// import { useScrollSpy } from '../hooks/useScrollSpy'; // Not using directly in Navbar for this iteration
+import { ArrowRight, Globe, Sun, Moon } from 'lucide-react';
+import { useLang } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
+// No need for useTranslation directly here as useLang context provides language state info
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
-  const { lang, setLang, getNextLanguage } = useLang(); // Get getNextLanguage
-  const { theme, toggleTheme } = useTheme(); // Get theme context
+  const { lang, setLang, currentLanguageName, getNextToggleLanguage, toggleLanguages } = useLang(); // Get all needed language context values
+  const { theme, toggleTheme } = useTheme();
+
+  // State to manage potential language switcher mini-dropdown (if we switch back to that style)
+  // For now, it's a simple toggle button that cycles, so this state is not used directly.
+  // const [isLangMenuOpen, setIsLangMenuOpen] = useState(false); 
 
   const navLinks = [
     { name: 'Features', href: '/#featuresPage' },
@@ -40,18 +38,16 @@ const Navbar = () => {
 
   const NavLinksContent = () => (
     <>
-      {navLinks.map((link) => {
-        return (
-          <a
-            key={link.name}
-            href={link.href}
-            onClick={(e) => handleScroll(e, link.href)}
-            className={`font-medium transition-colors rounded-md px-3 py-2 text-gray-300 hover:text-white`}
-          >
-            {link.name}
-          </a>
-        );
-      })}
+      {navLinks.map((link) => (
+        <a
+          key={link.name}
+          href={link.href}
+          onClick={(e) => handleScroll(e, link.href)}
+          className={`font-medium transition-colors rounded-md px-3 py-2 text-gray-300 hover:text-white`}
+        >
+          {link.name}
+        </a>
+      ))}
     </>
   );
 
@@ -68,13 +64,15 @@ const Navbar = () => {
         <nav className="hidden lg:flex items-center space-x-2">
           <NavLinksContent />
           {/* Language Toggle for Desktop */}
-          <button 
-            onClick={() => setLang(getNextLanguage().code)} // Cycle to next language
-            className="ml-4 flex items-center gap-1 p-2 bg-transparent border border-gray-600 text-white rounded-md text-sm hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-white"
-            title={`Switch to ${getNextLanguage().name}`}
-          >
-            <Globe size={16} /> {lang.toUpperCase()}
-          </button>
+          {toggleLanguages.length > 1 && ( // Only show language toggle if there's more than one language available
+            <button 
+              onClick={() => setLang(getNextToggleLanguage().code)} // Cycle to next language
+              className="ml-4 flex items-center gap-1 p-2 bg-transparent border border-gray-600 text-white rounded-md text-sm hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-white"
+              title={`Switch to ${getNextToggleLanguage().name}`}
+            >
+              <Globe size={16} /> {currentLanguageName}
+            </button>
+          )}
           {/* Theme Toggle for Desktop */}
           <button
             onClick={toggleTheme}
@@ -95,14 +93,15 @@ const Navbar = () => {
         {/* Mobile-specific Header Links (simplified) */}
         {/* Sign Up only on header, Login only on bottom nav */}
         <div className="lg:hidden flex items-center space-x-4">
-            {/* Language Toggle for Mobile Header */}
-            <button 
-              onClick={() => setLang(getNextLanguage().code)} // Cycle to next language
-              className="p-1 bg-transparent border border-gray-600 text-white rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-white flex items-center gap-1"
-              title={`Switch to ${getNextLanguage().name}`}
-            >
-              <Globe size={14} /> {lang.toUpperCase()}
-            </button>
+            {toggleLanguages.length > 1 && ( // Only show language toggle if more than one language
+              <button 
+                onClick={() => setLang(getNextToggleLanguage().code)} // Cycle to next language
+                className="p-1 bg-transparent border border-gray-600 text-white rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-white flex items-center gap-1"
+                title={`Switch to ${getNextToggleLanguage().name}`}
+              >
+                <Globe size={14} /> {lang.toUpperCase()}
+              </button>
+            )}
             {/* Theme Toggle for Mobile Header */}
             <button
               onClick={toggleTheme}
