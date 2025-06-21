@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import apiClient from '../api/client';
-import { useWindowSize } from '../hooks/useWindowSize';
 import {
     ChevronRight, Home, ShieldCheck, Briefcase,
     DownloadCloud, ArrowRight, CheckCircle, Star, Phone, Mail
@@ -22,124 +21,37 @@ function useWindowSize() {
 
 const FullPageLoader = () => <div className="min-h-screen bg-brand-primary flex items-center justify-center text-white">Loading...</div>;
 
+const IconMap = { "Centralized Dashboard": Home, "Secure Document Storage": ShieldCheck, "Audit Trails & Security": Briefcase };
+const getFeatureIcon = (title) => IconMap[title] || Star;
+
+
+// --- (2) DESKTOP LAYOUT & ITS SECTIONS ---
+
 const DesktopSection = ({ id, children, className = '' }) => (
     <section id={id} className={`py-20 md:py-28 ${className}`}>
         <div className="container mx-auto px-6">{children}</div>
     </section>
 );
 
-
-// --- (2) SELF-CONTAINED SECTION COMPONENTS ---
-
-const ContactFormComponent = ({ settings }) => {
-    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-    const [status, setStatus] = useState({ submitting: false, success: false, error: '' });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus({ submitting: true, success: false, error: '' });
-        try {
-            await apiClient.post('/feedback', formData);
-            setStatus({ submitting: false, success: true, error: '' });
-            setFormData({ name: '', email: '', subject: '', message: '' });
-        } catch (err: any) {
-            setStatus({ submitting: false, success: false, error: err.response?.data?.message || 'Failed to send message.' });
-        }
-    };
-
-    return (
-        <div className="bg-light-card p-8 rounded-2xl shadow-lg border border-border-color">
-            <h3 className="text-2xl font-bold text-dark-text mb-6">{settings?.contactPage?.formTitle}</h3>
-            <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                    <label className="block text-sm font-medium text-light-text">Full Name</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full p-3 bg-brand-bg border border-border-color rounded-lg"/>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-light-text">Email Address</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 w-full p-3 bg-brand-bg border border-border-color rounded-lg"/>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-light-text">Message</label>
-                    <textarea name="message" value={formData.message} onChange={handleChange} required rows={5} className="mt-1 w-full p-3 bg-brand-bg border border-border-color rounded-lg"></textarea>
-                </div>
-                <button type="submit" disabled={status.submitting} className="w-full bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-brand-dark disabled:opacity-50">
-                    {status.submitting ? 'Sending...' : 'Send Message'}
-                </button>
-                {status.success && <p className="text-green-600">Message sent successfully!</p>}
-                {status.error && <p className="text-red-600">{status.error}</p>}
-            </form>
-        </div>
-    );
-}
-
-// --- (3) MAIN LAYOUTS (DESKTOP & MOBILE) ---
-
 const DesktopLayout = ({ settings, plans }) => (
     <div className="bg-light-bg text-dark-text">
-        {/* ... Hero and Features sections are unchanged ... */}
         <DesktopSection id="hero" className="text-white text-center !py-40" style={{ background: 'linear-gradient(135deg, #3D52A0, #7091E6)'}}>
-             {/* Hero Content */}
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{settings.heroSection?.title}</h1>
+            <p className="mt-6 max-w-3xl mx-auto text-xl text-indigo-200">{settings.heroSection?.subtitle}</p>
+            <Link to="/register" className="mt-10 inline-block bg-white text-brand-dark font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-200 shadow-xl transition-all transform hover:scale-105">
+                {settings.heroSection?.ctaText}
+            </Link>
         </DesktopSection>
+
         <DesktopSection id="featuresPage">
-             {/* Features Content */}
-        </DesktopSection>
-
-        {/* About Section - With Executives */}
-        <DesktopSection id="aboutPage" className="bg-brand-bg/80">
-            <div className="grid md:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
-                <div className="bg-light-card p-10 rounded-2xl shadow-lg border border-border-color">
-                    <h3 className="text-2xl font-bold text-brand-dark mb-4">{settings.aboutPage?.missionTitle}</h3>
-                    <p className="text-light-text leading-relaxed">{settings.aboutPage?.missionStatement}</p>
-                </div>
-                <div className="rounded-2xl overflow-hidden shadow-2xl">
-                    <img src={settings.aboutPage?.imageUrl} alt="About Us" className="w-full h-auto object-cover"/>
-                </div>
-            </div>
-            <div className="text-center mt-28">
-                <h2 className="text-4xl font-bold text-dark-text">{settings.aboutPage?.teamTitle}</h2>
-                <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.aboutPage?.teamSubtitle}</p>
-                <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                    {settings.aboutPage?.executives.map((exec, index) => (
-                        <div key={index} className="text-center">
-                            <img src={exec.imageUrl} alt={exec.name} className="w-36 h-36 rounded-full mx-auto mb-4 object-cover border-4 border-white shadow-md"/>
-                            <h4 className="text-xl font-bold text-dark-text">{exec.name}</h4>
-                            <p className="text-brand-primary">{exec.title}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </DesktopSection>
-
-        {/* Pricing Section */}
-        <DesktopSection id="pricingSection">
-             {/* Pricing Content as before */}
-        </DesktopSection>
-        
-        {/* Install App Section */}
-        <DesktopSection id="installAppSection" className="bg-brand-bg/80">
-            {/* Install App Content as before */}
-        </DesktopSection>
-
-        {/* Contact Section - With Form and Addresses */}
-        <DesktopSection id="contact">
-            <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-dark-text">{settings?.contactPage?.title}</h2>
-                <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings?.contactPage?.subtitle}</p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-16 max-w-6xl mx-auto items-start">
-                <ContactFormComponent settings={settings} />
-                <div className="space-y-8 text-light-text">
-                    {settings?.contactPage?.addresses?.map((addr, index) => (
-                        <div key={index}>
-                            <h4 className="text-xl font-bold text-brand-dark">{addr.locationName}</h4>
-                            <p className="mt-2 text-dark-text">{addr.fullAddress}</p>
-                            <p className="flex items-center gap-2 mt-1"><Phone size={14}/> {addr.phone}</p>
-                            <p className="flex items-center gap-2"><Mail size={14}/> {addr.email}</p>
+             <div className="text-center">
+                <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
+                <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
+                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    {settings.featuresPage?.features.map((feature) => (
+                        <div key={feature.title} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
+                            <h3 className="text-2xl font-bold text-brand-dark mb-2">{feature.title}</h3>
+                            <p className="text-light-text">{feature.text}</p>
                         </div>
                     ))}
                 </div>
@@ -148,14 +60,39 @@ const DesktopLayout = ({ settings, plans }) => (
     </div>
 );
 
-const MobileLayout = ({ settings, plans }) => { /* ... Mobile layout code ... */ };
+
+// --- (3) MOBILE LAYOUT ---
+
+const MobileLayout = ({ settings, plans }) => {
+    return (
+        <div className="bg-brand-bg">
+            <div className="p-4">
+                 <div className="relative h-48 bg-cover bg-center rounded-xl overflow-hidden my-2 shadow-lg" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`}}>
+                    <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-4">
+                        <h2 className="text-2xl font-extrabold">{settings.heroSection?.title}</h2>
+                        <Link to="/register" className="mt-4 inline-flex items-center gap-2 bg-white text-brand-dark font-bold py-2 px-5 text-sm rounded-lg shadow-xl">{settings.heroSection?.ctaText}</Link>
+                    </div>
+                </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2 p-2 text-center text-xs">
+                {settings.featuresPage?.features?.slice(0, 4).map(feature => {
+                    const Icon = getFeatureIcon(feature.title);
+                    return (<Link to="/#featuresPage" key={feature.title} className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-brand-primary/10">
+                        <div className="w-14 h-14 flex items-center justify-center bg-brand-primary/10 text-brand-primary rounded-full"><Icon className="w-7 h-7" /></div>
+                        <span className="font-medium text-dark-text">{feature.title}</span>
+                    </Link>);
+                })}
+            </div>
+        </div>
+    );
+};
 
 
-// --- (4) FINAL PAGE COMPONENT ---
+// --- (4) MAIN PAGE COMPONENT ---
 const LandingPage = () => {
     const { data: settings, isLoading, isError } = useSiteSettings();
     const [plans, setPlans] = useState<any[]>([]);
-    const { width } = useWindowZize();
+    const { width } = useWindowSize(); // Corrected typo here
 
     useEffect(() => {
         apiClient.get('/plans').then(res => {
