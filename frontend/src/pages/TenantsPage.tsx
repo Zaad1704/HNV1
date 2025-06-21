@@ -15,7 +15,6 @@ const TenantsPage = () => {
 
   const handleDownloadCollectionSheet = () => {
     const sheetUrl = `${import.meta.env.VITE_API_URL || ''}/api/reports/monthly-collection-sheet`;
-    // Add token for authorization if required by the backend endpoint
     const token = localStorage.getItem('token');
     window.open(`${sheetUrl}?token=${token}`, '_blank');
   };
@@ -93,6 +92,15 @@ const TenantsPage = () => {
         </div>
       </div>
       
-      {tenants.length > 0 ? <DesktopView /> : (
-           <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
-                <h3 className="text-xl font-semibold text-dark-text">No
+       {tenants.length > 0 ? <DesktopView /> : (
+            <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
+                {/* This is the corrected line */}
+                <h3 className="text-xl font-semibold text-dark-text">No Tenants Found</h3>
+                <p className="text-light-text mt-2 mb-4">Get started by adding your first tenant.</p>
+            </div>
+       )}
+    </div>
+  );
+};
+
+export default TenantsPage;
