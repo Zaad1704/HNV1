@@ -5,10 +5,11 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from './contexts/ThemeContext'; // Import ThemeProvider
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LangProvider } from './contexts/LanguageContext'; // Add this import
 
 // This line imports and runs the i18next configuration for the entire app.
-import './services/i18n.js'; 
+import './services/i18n.js';
 
 // 1. Create a new instance of QueryClient
 const queryClient = new QueryClient();
@@ -18,9 +19,11 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        {/* Wrap the App with ThemeProvider */}
+        {/* Wrap the App with ThemeProvider and LangProvider */}
         <ThemeProvider>
-          <App />
+          <LangProvider> {/* Add LangProvider here */}
+            <App />
+          </LangProvider> {/* Close LangProvider here */}
         </ThemeProvider>
       </QueryClientProvider>
     </React.StrictMode>
