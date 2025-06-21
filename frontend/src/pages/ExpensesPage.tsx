@@ -1,8 +1,10 @@
+// frontend/src/pages/ExpensesPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import LogExpenseModal from '../components/common/LogExpenseModal';
 import { Plus, Tag, Calendar, Building, DollarSign, Share2, Download, Check } from 'lucide-react';
+import { useWindowSize } from '../hooks/useWindowSize'; // Import useWindowSize
 
 const fetchExpenses = async () => {
     const { data } = await apiClient.get('/expenses');
@@ -17,6 +19,7 @@ const ExpensesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: expenses = [], isLoading, isError } = useQuery({ queryKey: ['expenses'], queryFn: fetchExpenses });
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const { width } = useWindowSize(); // Get window width
 
   const shareMutation = useMutation({
       mutationFn: createShareLinkMutationFn,
@@ -34,7 +37,7 @@ const ExpensesPage = () => {
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   
   const getCategoryIcon = (category: string) => {
-      const iconMap = {
+      const iconMap: { [key: string]: React.ReactNode } = { // Explicitly type iconMap
           'Repairs': <Tag size={16} />,
           'Utilities': <Tag size={16} />,
           'Management Fees': <Tag size={16} />,
@@ -46,20 +49,9 @@ const ExpensesPage = () => {
       return iconMap[category] || <Tag size={16}/>;
   }
 
-  if (isLoading) return <div className="text-center p-8">Loading expenses...</div>;
-  if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch expenses.</div>;
-
-  return (
-    <div>
-      <LogExpenseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-dark-text">Manage Expenses</h1>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
-          <Plus size={18} /><span>Log Expense</span>
-        </button>
-      </div>
-      
-      <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
+  // Desktop Table View Component
+  const DesktopView = () => (
+    <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-border-color">
@@ -99,6 +91,68 @@ const ExpensesPage = () => {
           </table>
         </div>
       </div>
+  );
+
+  // Mobile Card View Component
+  const MobileView = () => (
+    <div className="grid grid-cols-1 gap-4">
+        {expenses.map((expense: any) => (
+            <div key={expense._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm">
+                <h3 className="font-bold text-dark-text text-lg mb-2">{expense.description}</h3>
+                <p className="text-light-text text-sm flex items-center gap-2 mb-1">
+                    <Building size={14}/> Property: {expense.propertyId?.name || 'N/A'}
+                    {expense.paidToAgentId && <span className="text-xs text-gray-400"> (for {expense.paidToAgentId.name})</span>}
+                </p>
+                <p className="text-light-text text-sm flex items-center gap-2 mb-1">
+                    <Calendar size={14}/> Date: {formatDate(expense.date)}
+                </p>
+                <p className="text-light-text text-sm flex items-center gap-2 mb-1">
+                    {getCategoryIcon(expense.category)} Category: {expense.category}
+                </p>
+                <p className="text-red-600 text-lg font-semibold flex items-center gap-2">
+                    <DollarSign size={16}/> Amount: -${expense.amount.toFixed(2)}
+                </p>
+                
+                {expense.documentUrl && (
+                    <div className="flex justify-end items-center gap-4 mt-4 border-t border-border-color pt-3">
+                        <a href={`${import.meta.env.VITE_API_URL}${expense.documentUrl}`} target="_blank" rel="noopener noreferrer" className="text-light-text hover:text-brand-primary flex items-center gap-1" title="Download Document">
+                            <Download size={18} /> Document
+                        </a>
+                        <button onClick={() => handleShare(expense._id)} disabled={shareMutation.isPending} className="text-light-text hover:text-brand-primary disabled:text-gray-300 flex items-center gap-1" title="Copy Share Link">
+                            {copiedLinkId === expense._id ? <Check size={18} className="text-green-500" /> : <Share2 size={18} />} Copy Link
+                        </button>
+                    </div>
+                )}
+            </div>
+        ))}
+    </div>
+  );
+
+  if (isLoading) return <div className="text-center p-8">Loading expenses...</div>;
+  if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch expenses.</div>;
+
+  return (
+    <div>
+      <LogExpenseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-dark-text">Manage Expenses</h1>
+        <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
+          <Plus size={18} /><span>Log Expense</span>
+        </button>
+      </div>
+      
+       {expenses.length === 0 ? (
+            <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
+                <h3 className="text-xl font-semibold text-dark-text">No Expenses Recorded</h3>
+                <p className="text-light-text mt-2 mb-4">Log your first expense to start tracking.</p>
+                <button onClick={() => setIsModalOpen(true)} className="text-sm font-semibold text-brand-primary hover:underline">
+                    + Log Your First Expense
+                </button>
+            </div>
+       ) : (
+            // Conditionally render DesktopView or MobileView based on screen width
+            width < 768 ? <MobileView /> : <DesktopView />
+       )}
     </div>
   );
 };
