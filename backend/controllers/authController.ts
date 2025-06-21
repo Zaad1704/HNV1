@@ -1,14 +1,14 @@
 // backend/controllers/authController.ts
 
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler'; // FIX: Add this import
-import * as jwt from 'jsonwebtoken'; // FIX: Change import to use namespace for jwt
+import asyncHandler from 'express-async-handler';
+import * as jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
-export const registerUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => { // FIX: Added type for req.body
+export const registerUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
     const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
@@ -36,7 +36,8 @@ export const registerUser = asyncHandler(async (req: Request<any, any, any>, res
         await organization.save();
     } else {
         res.status(400);
-        throw new new Error('Agent registration must be done via invitation.'); // FIX: Corrected syntax of new Error
+        // FIX: Removed the extra 'new' keyword
+        throw new Error('Agent registration must be done via invitation.');
     }
 
     const user = await User.create({ name, email, password, role, organizationId, status: 'active' });
@@ -54,7 +55,7 @@ export const registerUser = asyncHandler(async (req: Request<any, any, any>, res
     }
 });
 
-export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => { // FIX: Added type for req.body, FIX: Added export
+export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password').populate({
         path: 'organizationId',
@@ -95,7 +96,7 @@ export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: R
     }
 });
 
-export const getMe = asyncHandler(async (req: Request, res: Response) => { // FIX: Added export
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
     if (req.user) {
         const user = await User.findById(req.user._id).populate({
             path: 'organizationId',
@@ -108,7 +109,7 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => { // FI
     }
 });
 
-export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => { // FIX: Added export
+export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
         res.status(401);
         throw new Error('User not authenticated after Google callback');
