@@ -1,11 +1,11 @@
 // frontend/src/App.tsx
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'; // FIX: Import useLocation hook
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
-import axios from 'axios';
+import axios from 'axios'; // Import axios to check for Axios errors
 
 // --- Layout & Route Components ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -31,7 +31,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FeaturesPage from './pages/FeaturesPage';
-import ResubscribePage from './pages/ResubscribePage';
+import ResubscribePage from './pages/ResubscribePage'; // Import the new page
 
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
@@ -64,7 +64,6 @@ const FullScreenLoader = () => <div className="h-screen w-full flex items-center
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
-  const location = useLocation(); // FIX: Initialize useLocation hook
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -73,38 +72,29 @@ function App() {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
+          // If the user's status is inactive/suspended or subscription is inactive,
+          // the backend /auth/me would return 403, and the client.ts interceptor would redirect to /resubscribe.
+          // In that case, the setUser here might not run, or it will run before the redirect happens.
+          // The key is that logout() must NOT be called here for 403.
         } catch (error) {
-          // Check if the error is an Axios error
-          if (axios.isAxiosError(error) && error.response) {
-            // FIX: If it's a 403 AND we are on the /resubscribe page, DO NOT logout.
-            // The resubscribe page expects the user to be logged in to fetch billing info.
-            if (error.response.status === 403 && location.pathname === '/resubscribe') {
-              console.warn("User session check received 403 on /resubscribe page. Preserving token state.");
-              // Do nothing, let ResubscribePage handle its own loading/error state with the token
-            } else if (error.response.status === 403) {
-              // If it's a 403 on any other non-protected route (like landing page directly),
-              // it implies an inactive user trying to access public content with a persistent token.
-              // In this case, clear the token to prevent redirect loops from the public page.
-              console.warn("User session check received 403 on public context. Clearing token to prevent loop.");
-              logout(); // Effectively logs them out from a public view
-            }
-            else {
-              // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
-              // perform a full logout to clear the session and redirect to login.
-              console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
-              logout();
-            }
+          // Check if the error is an Axios error and if it's a 403 Forbidden status
+          if (axios.isAxiosError(error) && error.response && error.response.status === 403) {
+            // If it's a 403 (e.g., account inactive, subscription expired),
+            // the client.ts interceptor is already handling the redirect to /resubscribe.
+            // DO NOT call logout() here, as it would clear the token and cause a redirect to /login.
+            console.warn("User session check received 403. Interceptor will handle redirection, preserving token state.");
           } else {
-            // Non-Axios errors, or errors without a response (e.g., network down)
-            console.error("Non-Axios error during session check. Logging out.", error);
-            logout();
+            // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
+            // perform a full logout to clear the session and redirect to login.
+            console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
+            logout(); // Clear auth state, which will lead to /login redirect via ProtectedRoute
           }
         }
       }
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout, location.pathname]); // FIX: Add location.pathname to dependency array
+  }, [token, user, setUser, logout]);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
