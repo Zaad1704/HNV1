@@ -1,20 +1,36 @@
-import mongoose, { Document, Schema } from "mongoose";
+import { Router } from 'express';
+// FIX: Import the necessary controller functions from orgController
+import { 
+    getOrganizationDetails, 
+    listOrganizations, 
+    setOrgStatus 
+} from '../controllers/orgController';
+import { protect } from '../middleware/authMiddleware';
+import { authorize } from '../middleware/rbac';
+import { orgContext } from '../middleware/orgContext'; // Assuming you want orgContext middleware
 
-export interface PropertyDocument extends Document {
-  organizationId: mongoose.Types.ObjectId;
-  // Add other fields as needed, for example:
-  name: string;
-  address?: string;
-  // etc.
-}
+const router = Router();
 
-const PropertySchema = new Schema<PropertyDocument>({
-  organizationId: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
-  name: { type: String, required: true },
-  address: { type: String }
-  // Define other fields as needed
-});
+// FIX: Apply protect and authorize middleware as needed for org routes
+router.use(protect); // All org routes should be protected
 
-const Property = mongoose.model<PropertyDocument>("Property", PropertySchema);
+// @route   GET /api/orgs/me
+// @desc    Get details for the logged-in user's organization
+// @access  Private (Landlord, Agent, Tenant - depending on what details are shared)
+router.get('/me', getOrganizationDetails);
 
-export default Property;
+// @route   GET /api/orgs
+// @desc    List all organizations (Super Admin only)
+// @access  Private (Super Admin)
+router.get('/', authorize(['Super Admin']), listOrganizations);
+
+// @route   PUT /api/orgs/:id/status
+// @desc    Set organization status (Super Admin only)
+// @access  Private (Super Admin)
+router.put('/:id/status', authorize(['Super Admin']), setOrgStatus);
+
+// You might also have routes for updating organization branding, inviting members, etc.
+// Example:
+// router.put('/me/branding', authorize(['Landlord']), updateOrgBranding);
+
+export default router;
