@@ -36,12 +36,11 @@ const SettingsPage = () => {
   });
 
   const handleLanguageChange = (newLangCode: string) => {
-    setLang(newLangCode); // Update context and local storage
-    setIsLangMenuOpen(false); // Close menu after selection
+    setLang(newLangCode);
+    setIsLangMenuOpen(false);
   };
 
   useEffect(() => {
-    // Ensure user and organization branding data is available before setting state
     if (user && user.organizationId && typeof user.organizationId === 'object' && 'branding' in user.organizationId) {
       setBranding(user.organizationId.branding);
     }
@@ -55,7 +54,7 @@ const SettingsPage = () => {
           setMessage({ type: 'error', text: 'No file selected for upload.' });
           return;
       }
-      uploadLogoMutation.mutate(e.target.files[0]); // Call the mutation with the file
+      uploadLogoMutation.mutate(e.target.files[0]); // <--- THIS LINE MUST BE UNCOMMENTED AND CALLED
   };
 
   const handleUpdateBranding = (e: React.FormEvent) => {
@@ -87,9 +86,9 @@ const SettingsPage = () => {
           <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-sm">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Globe /> Language Settings</h2>
             {/* Language Toggle for Settings */}
-            <div className="relative"> {/* Added relative for positioning */}
+            <div className="relative">
               <button
-                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} // Toggle visibility of mini-dropdown
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
                 className="flex items-center gap-2 px-4 py-2 bg-brand-bg border border-border-color rounded-lg text-dark-text font-semibold hover:bg-gray-100 transition-colors"
                 title={`Current Language: ${currentLanguageName}`}
               >
