@@ -5,6 +5,7 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
+import MaintenanceRequest from '../models/MaintenanceRequest'; // FIX: Import MaintenanceRequest model
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
@@ -77,16 +78,26 @@ export const updateUserByAdmin = asyncHandler(async (req: Request, res: Response
     res.status(200).json({ success: true, message: 'User updated successfully.', data: user });
 });
 
-// NEW: Function to get all moderators
 export const getModerators = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const moderators = await User.find({ role: 'Super Moderator' });
     res.status(200).json({ success: true, data: moderators });
 });
 
-// NEW: Function to get all billing/subscription data
 export const getGlobalBilling = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const subscriptions = await Subscription.find({})
         .populate({ path: 'organizationId', select: 'name' })
         .populate({ path: 'planId', select: 'name' });
     res.status(200).json({ success: true, data: subscriptions });
+});
+
+// FIX: NEW FUNCTION to get all maintenance requests for Super Admin
+export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const requests = await MaintenanceRequest.find({})
+        .populate('propertyId', 'name')
+        .populate({
+            path: 'organizationId',
+            select: 'name'
+        })
+        .sort({ createdAt: -1 }); // Sort by newest first
+    res.status(200).json({ success: true, data: requests });
 });
