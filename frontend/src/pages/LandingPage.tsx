@@ -1,20 +1,25 @@
+// frontend/src/pages/LandingPage.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import apiClient from '../api/client';
 import { useWindowSize } from '../hooks/useWindowSize';
+
+// Import Section Components
+import InstallAppSection from '../components/landing/InstallAppSection';
+import ContactSection from '../components/landing/ContactSection';
+
 import {
     ChevronRight, Home, ShieldCheck, Briefcase,
-    DownloadCloud, ArrowRight, CheckCircle
+    Star, CheckCircle
 } from 'lucide-react';
 
 const FullPageLoader = () => <div className="min-h-screen bg-primary flex items-center justify-center text-white">Loading...</div>;
 
 // ===================================================================================
-// 1. DESKTOP LAYOUT COMPONENTS
-//    (Improved version of the original design with the new vibrant color palette)
+// DESKTOP LAYOUT
 // ===================================================================================
-
 const DesktopSection = ({ id, children, className = '' }) => (
     <section id={id} className={`py-20 md:py-28 ${className}`}>
         <div className="container mx-auto px-6">{children}</div>
@@ -34,7 +39,7 @@ const DesktopLayout = ({ settings, plans }) => (
 
         {/* Features Section */}
         <DesktopSection id="featuresPage">
-            <div className="text-center">
+             <div className="text-center">
                 <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings.featuresPage?.title}</h2>
                 <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                 <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
@@ -55,7 +60,7 @@ const DesktopLayout = ({ settings, plans }) => (
                 <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings?.pricingSection?.subtitle}</p>
                 <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {plans.map(plan => (
-                        <div key={plan._id} className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg">
+                        <div key={plan._id} className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg hover:-translate-y-2 transition-transform">
                            <h3 className="text-2xl font-bold text-primary">{plan.name}</h3>
                            <p className="mt-4 text-4xl font-extrabold text-dark-text dark:text-dark-text-dark">
                                {plan.price === 0 ? "Free" : `$${(plan.price / 100).toFixed(2)}`}
@@ -73,22 +78,28 @@ const DesktopLayout = ({ settings, plans }) => (
             </div>
         </DesktopSection>
         
-        {/* Install and Contact can be added here in the same DesktopSection format */}
+        {/* Install App Section */}
+        <DesktopSection id="installAppSection">
+            <InstallAppSection />
+        </DesktopSection>
 
+        {/* Contact Section */}
+        <DesktopSection id="contact" className="bg-primary/5 dark:bg-dark-card/50">
+            <ContactSection />
+        </DesktopSection>
     </div>
 );
 
-
 // ===================================================================================
-// 2. MOBILE LAYOUT COMPONENTS
-//    (The new "Daraz-style" design)
+// MOBILE LAYOUT
 // ===================================================================================
 
 const IconMap = { "Centralized Dashboard": Home, "Secure Document Storage": ShieldCheck, "Audit Trails & Security": Briefcase };
 const getFeatureIcon = (title) => IconMap[title] || Star;
 
 const MobileLayout = ({ settings, plans }) => {
-    const [installPrompt, setInstallPrompt] = useState<any>(null);
+    // Mobile layout code remains the same as previous turn...
+     const [installPrompt, setInstallPrompt] = useState<any>(null);
 
     useEffect(() => {
         const handleInstallPrompt = (e) => { e.preventDefault(); setInstallPrompt(e); };
@@ -97,13 +108,15 @@ const MobileLayout = ({ settings, plans }) => {
     }, []);
 
     const handleInstallClick = () => {
-        if (!installPrompt) { return; }
+        if (!installPrompt) {
+             alert("To install, use your browser's 'Add to Home Screen' or 'Install App' feature.");
+            return;
+        }
         installPrompt.prompt();
     };
 
     return (
         <div className="bg-light-bg">
-            {/* Top "Install" Banner */}
             <div className="flex items-center justify-between p-2 bg-light-card border-b border-border-color sticky top-0 z-20">
                 <div className="flex items-center gap-3">
                     <img src={settings?.logos?.faviconUrl} alt="logo" className="h-8 w-8" />
@@ -114,8 +127,6 @@ const MobileLayout = ({ settings, plans }) => {
                 </div>
                 <button onClick={handleInstallClick} className="bg-primary text-white font-bold text-sm py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700">Install</button>
             </div>
-
-            {/* Hero Banner */}
             <div className="p-2">
                  <div className="relative h-48 bg-cover bg-center rounded-lg overflow-hidden my-2 shadow-lg" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`}}>
                     <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-4">
@@ -124,8 +135,6 @@ const MobileLayout = ({ settings, plans }) => {
                     </div>
                 </div>
             </div>
-
-            {/* Quick Links Icon Grid */}
             <div className="grid grid-cols-4 gap-2 p-2 text-center text-xs">
                 {settings.featuresPage?.features?.slice(0, 4).map(feature => {
                     const Icon = getFeatureIcon(feature.title);
@@ -135,8 +144,6 @@ const MobileLayout = ({ settings, plans }) => {
                     </Link>);
                 })}
             </div>
-
-            {/* Card Section for Pricing */}
             <div className="my-4">
                 <div className="flex justify-between items-center px-4 mb-2">
                     <h3 className="text-lg font-bold text-dark-text">Choose Your Plan</h3>
@@ -158,10 +165,8 @@ const MobileLayout = ({ settings, plans }) => {
 };
 
 // ===================================================================================
-// 3. MAIN COMPONENT
-//    (Decides which layout to show based on screen size)
+// MAIN COMPONENT
 // ===================================================================================
-
 const LandingPage = () => {
     const { data: settings, isLoading, isError } = useSiteSettings();
     const [plans, setPlans] = useState<any[]>([]);
@@ -177,7 +182,7 @@ const LandingPage = () => {
         return <FullPageLoader />;
     }
 
-    const isMobile = width < 768; // md breakpoint
+    const isMobile = width < 768;
 
     if (isMobile) {
         return <MobileLayout settings={settings} plans={plans} />;
