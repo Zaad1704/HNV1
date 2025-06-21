@@ -7,29 +7,31 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
+       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
-      colors: {
-        'primary': '#3B82F6',       // Vibrant Blue
-        'secondary': '#64748B',     // Clean Gray
-        'accent': '#FACC15',        // Bright Yellow
-        'success': '#22C55E',       // Positive Green
-        'warning': '#F59E0B',       // Notice Orange
-        'danger': '#EF4444',        // Alert Red
-        'light': '#F9FAFB',         // Very Light Gray Background
-        'dark': '#1E293B',          // Dark Gray Text/Background
+       colors: {
+        // New Vibrant Palette
+        'primary': '#4f46e5', // Vibrant Indigo
+        'secondary': '#64748b',   // Slate Gray
+        'accent': '#f59e0b',      // Bright Amber/Orange
+        'success': '#10b981',     // Emerald Green
+        'danger': '#ef4444',      // Red
+        
+        // Light Theme
+        'light-bg': '#f8fafc',    // Very Light Slate
+        'light-card': '#ffffff',  // White
+        'dark-text': '#1e293b',    // Dark Slate Text
+        'light-text': '#64748b',   // Medium Slate Text
+        'border-color': '#e2e8f0',// Light Slate Border
 
-        // Semantic colors for light mode
-        'light-bg': '#F9FAFB',
-        'light-text': '#374151',     // Darker Gray Text
-        'light-accent': '#FACC15',
-
-        // Semantic colors for dark mode
-        'dark-bg': '#1E293B',
-        'dark-text': '#E5E7EB',      // Lighter Gray Text
-        'dark-accent': '#FACC15',
-      },
+        // Dark Theme
+        'dark-bg': '#0f172a',      // Darkest Slate
+        'dark-card': '#1e293b',   // Dark Slate
+        'light-text-dark': '#cbd5e1', // Light Slate Text
+        'dark-text-dark': '#f8fafc',  // White/Lightest Slate Text
+        'border-color-dark': '#334155', // Medium Slate Border
+      }
     },
   },
   plugins: [],
