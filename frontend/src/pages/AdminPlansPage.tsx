@@ -38,7 +38,7 @@ const AdminPlansPage = () => {
         }
      };
 
-    if (loading) return <div className="text-center p-8">Loading plans...</div>;
+    if (loading) return <div className="text-center p-8 text-dark-text">Loading plans...</div>; // Text color added
     if (error) return <div className="text-red-500 text-center p-8">{error}</div>;
 
     return (
@@ -63,6 +63,7 @@ const AdminPlansPage = () => {
                                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Plan Name</th>
                                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Price</th>
                                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Limits</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Public</th> {/* Added column for clarity */}
                                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Actions</th>
                             </tr>
                         </thead>
@@ -73,6 +74,9 @@ const AdminPlansPage = () => {
                                     <td className="p-4 text-light-text">${(plan.price / 100).toFixed(2)} / {plan.duration}</td>
                                     <td className="p-4 text-sm text-light-text">
                                         Prop: {plan.limits.maxProperties}, Tenants: {plan.limits.maxTenants}, Agents: {plan.limits.maxAgents}
+                                    </td>
+                                    <td className="p-4 text-center"> {/* Centered checkbox */}
+                                        <input type="checkbox" checked={plan.isPublic} disabled className="h-4 w-4 text-brand-primary rounded"/>
                                     </td>
                                     <td className="p-4 space-x-4">
                                         <button onClick={() => handleEdit(plan)} className="font-medium text-brand-primary hover:underline">Edit</button>
