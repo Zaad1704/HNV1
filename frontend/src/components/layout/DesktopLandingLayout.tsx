@@ -7,34 +7,36 @@ import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-// Import all necessary Lucide icons statically
-import { Home, ShieldCheck, Briefcase, Star, Lock } from 'lucide-react'; // Added Lock icon
+// Import all necessary Lucide icons statically, including Wrench
+import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react'; // Added Wrench, Users, CreditCard for completeness
 
 interface DesktopLandingLayoutProps {
     settings: ISiteSettings;
     plans: any[]; 
 }
 
-// Map icon names (from SiteSettings 'icon' field) to Lucide icon components
+// Map icon names (strings from SiteSettings) to Lucide icon components
 const IconMap: { [key: string]: React.ElementType } = {
     // These strings come directly from backend/models/SiteSettings.ts default features.
-    "briefcase": Briefcase, // For 'Centralized Dashboard'
-    "lock": Lock,           // For 'Secure Document Storage'
-    "shield-check": ShieldCheck, // For 'Audit Trails & Security'
-    "home": Home, // If "home" string is used
-    // Add other specific icon string mappings as needed from your SiteSettings
+    "briefcase": Briefcase, // For 'Centralized Dashboard' title, or if icon string is 'briefcase'
+    "lock": Lock,           // For 'Secure Document Storage' title, or if icon string is 'lock'
+    "shield-check": ShieldCheck, // For 'Audit Trails & Security' title, or if icon string is 'shield-check'
+    "home": Home,
+    "users": Users,
+    "credit-card": CreditCard,
+    "wrench": Wrench, // Explicitly mapped
+    // Add more mappings as needed based on exact strings in your SiteSettings 'icon' fields
 };
 
-// Helper to get the correct icon component
+// Helper to get the correct icon component, gracefully handling missing ones
 const getFeatureIconComponent = (iconName: string): React.ElementType => {
-    return IconMap[iconName] || Star; // Fallback to Star if no specific icon is mapped
+    return IconMap[iconName.toLowerCase()] || Star; // Normalize to lowercase, fallback to Star
 };
 
 
 const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, plans }) => {
     return (
         <div className="bg-light-bg text-dark-text">
-            {/* Desktop Hero Section */}
             <section id="hero" className="text-white text-center py-40" style={{ background: `linear-gradient(135deg, #3D52A0, #7091E6), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{settings.heroSection?.title}</h1>
@@ -45,13 +47,11 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            {/* Desktop Features Section */}
             <section id="featuresPage" className="py-20 md:py-28">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
                     <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                        {/* Ensure settings.featuresPage.features exists before mapping */}
                         {settings.featuresPage?.features?.map((feature, index) => {
                             const IconComponent = getFeatureIconComponent(feature.icon); // Use feature.icon string
                             return (
