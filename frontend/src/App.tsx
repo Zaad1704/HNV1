@@ -67,7 +67,6 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      // If a token exists but user object is not yet loaded, try to fetch user details
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
@@ -77,14 +76,10 @@ function App() {
           // This catch block can now be simplified to only handle unexpected errors
           // or non-Axios errors, which would also indicate a need to logout.
           if (axios.isAxiosError(error) && error.response) {
-            // For 401/403, the interceptor already called logout().
-            // So, no need to call logout() again here, as it's handled.
-            // The user will be redirected by ProtectedRoute as isAuthenticated will be false.
             console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
           } else {
-            // Non-Axios errors (e.g., network down) or unexpected errors
             console.error("Non-Axios error during session check. Logging out.", error);
-            logout(); // Clear auth state for definitive logout
+            logout();
           }
         }
       }
