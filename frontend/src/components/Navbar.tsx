@@ -14,13 +14,13 @@ const Navbar = () => {
     { name: 'Features', href: '#featuresPage' },
     { name: 'About', href: '#aboutPage' },
     { name: 'Pricing', href: '#pricingSection' },
+    { name: 'Install App', href: '#installAppSection' }, // Added Install App Link
     { name: 'Contact', href: '#contact' },
   ];
-  
+
   const sectionIds = navLinks.map(link => link.href.substring(1));
   const activeId = useScrollSpy(sectionIds, 150);
 
-  // Smooth scroll handler
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
     e.preventDefault();
     const targetId = href.substring(1);
@@ -60,11 +60,11 @@ const Navbar = () => {
             {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
         </a>
-        
+
         <nav className="hidden lg:flex items-center space-x-6">
           <NavLinksContent />
         </nav>
-        
+
         <div className="hidden lg:flex items-center space-x-4">
           <Link to="/login" className="font-semibold text-white hover:text-yellow-400">Portal Log In</Link>
           <Link to="/register" className="flex items-center gap-2 font-bold text-slate-900 bg-yellow-500 hover:bg-yellow-400 py-2 px-5 rounded-lg">
@@ -78,7 +78,7 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-      
+
       {isMenuOpen && (
         <nav className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-slate-900 shadow-xl">
           <NavLinksContent isMobile={true} />
