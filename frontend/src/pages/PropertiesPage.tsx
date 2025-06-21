@@ -1,24 +1,38 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/PropertiesPage.tsx
+import React, { useState } from 'react';
 import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
-import { useWindowSize } from '../hooks/useWindowSize'; // FIX: Import useWindowSize
-import { Home, MapPin, SquareActivity } from 'lucide-react'; // FIX: Added icons for mobile view
+import { useWindowSize } from '../hooks/useWindowSize';
+import { Home, MapPin, SquareActivity } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query'; // Import useQuery and useQueryClient
+
+// Define fetch function for React Query
+const fetchProperties = async () => {
+    const { data } = await apiClient.get('/properties');
+    return data.data; // Assuming data.data contains the array of properties
+};
 
 const PropertiesPage = () => {
-  const [properties, setProperties] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [properties, setProperties] = useState<any[]>([]); // This state is now managed by useQuery
+  // const [loading, setLoading] = useState(true); // This state is now managed by useQuery
+  const queryClient = useQueryClient(); // Get query client instance for invalidation
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { width } = useWindowSize(); // FIX: Get window width
+  const { width } = useWindowSize();
 
-  useEffect(() => {
-    // FIX: Use React Query for better data management, or keep this if you prefer manual fetch
-    apiClient.get('/properties').then(res => {
-        setProperties(res.data.data);
-    }).finally(() => setLoading(false));
-  }, []);
+  // Use useQuery for data fetching
+  const { data: properties = [], isLoading, isError } = useQuery({
+      queryKey: ['properties'], // Unique key for this query
+      queryFn: fetchProperties, // The async function to fetch data
+      staleTime: 5 * 60 * 1000, // Data considered fresh for 5 minutes
+  });
 
   const handlePropertyAdded = (newProperty: any) => {
-    setProperties(prev => [...prev, newProperty]);
+    // Instead of directly updating state, invalidate the query to refetch latest data
+    queryClient.invalidateQueries({ queryKey: ['properties'] });
+    // You could also optimistically update the cache:
+    /*
+    queryClient.setQueryData(['properties'], (old: any) => [...(old || []), newProperty]);
+    */
   };
 
   const getStatusClass = (status: string) => {
@@ -29,7 +43,7 @@ const PropertiesPage = () => {
     }
   };
 
-  // FIX: Desktop Table View
+  // Desktop Table View
   const DesktopView = () => (
     <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
         <div className="overflow-x-auto">
@@ -44,7 +58,7 @@ const PropertiesPage = () => {
             </tr>
             </thead>
             <tbody className="divide-y divide-border-color">
-            {properties.map((prop) => (
+            {properties.map((prop: any) => ( // Cast to any because TS might not infer fully from query data
                 <tr key={prop._id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-semibold text-dark-text">{prop.name}</td>
                     <td className="p-4 text-light-text">{prop.address.formattedAddress}</td>
@@ -59,10 +73,10 @@ const PropertiesPage = () => {
     </div>
   );
 
-  // FIX: Mobile Card View for properties
+  // Mobile Card View for properties
   const MobileView = () => (
     <div className="grid grid-cols-1 gap-4">
-        {properties.map((prop) => (
+        {properties.map((prop: any) => ( // Cast to any
             <div key={prop._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-dark-text text-lg">{prop.name}</h3>
@@ -82,12 +96,13 @@ const PropertiesPage = () => {
     </div>
   );
 
-  if (loading) return <div className="text-center p-8">Loading properties...</div>;
-  
+  if (isLoading) return <div className="text-center p-8">Loading properties...</div>;
+  if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch properties.</div>;
+
   return (
     <div>
-      <AddPropertyModal 
-        isOpen={isModalOpen} 
+      <AddPropertyModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onPropertyAdded={handlePropertyAdded}
       />
@@ -100,7 +115,7 @@ const PropertiesPage = () => {
           <span>+ Add Property</span>
         </button>
       </div>
-      
+
        {properties.length === 0 ? (
             <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
                 <h3 className="text-xl font-semibold text-dark-text">No Properties Found</h3>
@@ -110,7 +125,6 @@ const PropertiesPage = () => {
                 </button>
             </div>
        ) : (
-            // FIX: Conditionally render DesktopView or MobileView based on screen width
             width < 768 ? <MobileView /> : <DesktopView />
        )}
     </div>
