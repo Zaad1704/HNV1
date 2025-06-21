@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import { useSiteSettings } from '../hooks/useSiteSettings'; // FIX: Adjusted import path to relative
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { Chrome } from 'lucide-react'; 
 
 const LoginPage: React.FC = () => {
@@ -20,8 +20,16 @@ const LoginPage: React.FC = () => {
     setError('');
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      loginAction(response.data.token);
-      navigate('/dashboard');
+      loginAction(response.data.token); // Store token in local storage and auth store
+
+      // NEW LOGIC: Check status from backend response for immediate redirection
+      if (response.data.userStatus && response.data.userStatus !== 'active') {
+        // Redirect to a dedicated resubscribe/account-inactive page
+        navigate(`/resubscribe?status=${response.data.userStatus}`, { replace: true });
+      } else {
+        // User is active, proceed to dashboard
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed.');
     } finally {
@@ -39,7 +47,7 @@ const LoginPage: React.FC = () => {
       <div className="text-center my-8">
         <Link to="/" className="inline-flex items-center gap-3">
             {/* Implement logo based on site settings */}
-            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" />
+            <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="logo" className="h-10 w-10" />
             <span className="text-2xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
         </Link>
       </div>
