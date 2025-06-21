@@ -1,46 +1,48 @@
 // frontend/src/components/Navbar.tsx
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // Keep useState, for now, not removing it completely just in case it's used elsewhere
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { useScrollSpy } from '../hooks/useScrollSpy';
-import { ArrowRight, Menu, X } from 'lucide-react';
+// import { useScrollSpy } from '../hooks/useScrollSpy'; // No longer needed for Navbar mobile
+import { ArrowRight } from 'lucide-react'; // Removed Menu, X
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false); // No longer needed for mobile hamburger
 
+  // Nav links for desktop (and potentially public routes like Terms/Privacy that don't have sections)
   const navLinks = [
-    { name: 'Features', href: '#featuresPage' },
-    { name: 'About', href: '#aboutPage' },
-    { name: 'Pricing', href: '#pricingSection' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Features', href: '/#featuresPage' }, // Changed to full path for robustness
+    { name: 'About', href: '/#aboutPage' },
+    { name: 'Pricing', href: '/#pricingSection' },
+    { name: 'Contact', href: '/#contact' },
   ];
   
-  const sectionIds = navLinks.map(link => link.href.substring(1));
-  const activeId = useScrollSpy(sectionIds, 150);
+  // const sectionIds = navLinks.map(link => link.href.substring(1)); // No longer used for Navbar's active state
+  // const activeId = useScrollSpy(sectionIds, 150);
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
-    e.preventDefault();
-    const targetId = href.substring(1);
-    const targetElement = document.getElementById(targetId);
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
+    if (href.startsWith('/#')) { // Only apply smooth scroll for section links
+        e.preventDefault();
+        const targetId = href.substring(2); // Remove '/#'
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ behavior: 'smooth' });
+        }
     }
-    setIsMenuOpen(false);
+    // setIsMenuOpen(false); // No longer needed
   };
 
-  const NavLinksContent = ({ isMobile = false }) => (
+  const NavLinksContent = () => ( // Simplified, removed isMobile prop
     <>
       {navLinks.map((link) => {
-        const isActive = activeId === link.href.substring(1);
+        // Active state for desktop can still be based on scroll spy or simple path match
+        // For simplicity, removed dynamic active class for desktop to match new mobile design philosophy
         return (
           <a
             key={link.name}
             href={link.href}
             onClick={(e) => handleScroll(e, link.href)}
-            className={`font-medium transition-colors rounded-md ${
-              isMobile ? 'block w-full text-left py-2' : 'px-3 py-2'
-            } ${isActive ? 'text-white bg-brand-primary' : 'text-gray-300 hover:text-white'}`}
+            className={`font-medium transition-colors rounded-md px-3 py-2 text-gray-300 hover:text-white`}
           >
             {link.name}
           </a>
@@ -59,10 +61,12 @@ const Navbar = () => {
           </span>
         </a>
         
+        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-2">
           <NavLinksContent />
         </nav>
         
+        {/* Desktop Auth Links */}
         <div className="hidden lg:flex items-center space-x-4">
           <Link to="/login" className="font-semibold text-white hover:text-gray-300">Portal Log In</Link>
           <Link to="/register" className="flex items-center gap-2 font-bold text-brand-dark bg-white hover:bg-gray-200 py-2 px-5 rounded-lg">
@@ -70,21 +74,18 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <div className="lg:hidden">
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+        {/* Mobile-specific Header Links (simplified) */}
+        {/* These will be visible on mobile where the bottom nav is used */}
+        <div className="lg:hidden flex items-center space-x-4">
+            <Link to="/login" className="font-semibold text-white hover:text-gray-300 text-sm">Log In</Link>
+            <Link to="/register" className="font-bold text-brand-dark bg-white hover:bg-gray-200 py-1.5 px-3 rounded-lg text-sm">
+                Sign Up
+            </Link>
         </div>
       </div>
       
-      {isMenuOpen && (
-        <nav className="lg:hidden px-6 pt-2 pb-4 space-y-2 absolute w-full bg-brand-dark shadow-xl">
-          <NavLinksContent isMobile={true} />
-          <hr className="my-2 border-gray-700" />
-          <Link to="/login" className="block py-2 text-gray-300 font-semibold hover:text-white">Portal Log In</Link>
-          <Link to="/register" className="block w-full mt-2 text-center bg-white hover:bg-gray-200 text-brand-dark font-semibold py-2 px-4 rounded-lg">Get Started</Link>
-        </nav>
-      )}
+      {/* Mobile Hamburger Menu (Removed, replaced by PublicBottomNavBar) */}
+      {/* {isMenuOpen && ( ... )} */}
     </header>
   );
 };
