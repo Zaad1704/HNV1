@@ -11,26 +11,26 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // New Vibrant Palette
-        'primary': '#4f46e5', // Vibrant Indigo
-        'secondary': '#64748b',   // Slate Gray
-        'accent': '#f59e0b',      // Bright Amber/Orange
-        'success': '#10b981',     // Emerald Green
-        'danger': '#ef4444',      // Red
-        
-        // Light Theme
-        'light-bg': '#f8fafc',    // Very Light Slate
-        'light-card': '#ffffff',  // White
-        'dark-text': '#1e293b',    // Dark Slate Text
-        'light-text': '#64748b',   // Medium Slate Text
-        'border-color': '#e2e8f0',// Light Slate Border
+        // New Shopify-Inspired Palette
+        'brand-dark': '#3D52A0',    // Dark Slate Blue
+        'brand-primary': '#7091E6', // Primary Periwinkle
+        'brand-secondary': '#8697C4',// Dusty Blue
+        'brand-subtle': '#ADBBDA',   // Light Steel Blue
+        'brand-bg': '#F7F8FA',      // Very Light Gray/Blue (similar to EDE8F5 but cleaner)
 
-        // Dark Theme
-        'dark-bg': '#0f172a',      // Darkest Slate
-        'dark-card': '#1e293b',   // Dark Slate
-        'light-text-dark': '#cbd5e1', // Light Slate Text
-        'dark-text-dark': '#f8fafc',  // White/Lightest Slate Text
-        'border-color-dark': '#334155', // Medium Slate Border
+        // Light Theme Semantics
+        'light-bg': '#F7F8FA',
+        'light-card': '#FFFFFF',
+        'dark-text': '#111827',
+        'light-text': '#6b7280',
+        'border-color': '#e5e7eb',
+
+        // Dark Theme Semantics
+        'dark-bg': '#0f172a',
+        'dark-card': '#1e293b',
+        'dark-text-dark': '#f8fafc',
+        'light-text-dark': '#cbd5e1',
+        'border-color-dark': '#334155',
       }
     },
   },
