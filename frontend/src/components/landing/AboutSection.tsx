@@ -3,7 +3,8 @@ import Trans from "../Trans";
 
 export default function AboutSection() {
   return (
-    <section id="about" className="py-16 md:py-24 bg-white">
+    // FIX: Change id to 'aboutPage' to match Navbar.tsx link
+    <section id="aboutPage" className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-indigo-700 mb-4">
