@@ -22,31 +22,34 @@ const InstallAppSection = () => {
     }, []);
 
     const handleInstallClick = async () => {
-        if (installPrompt) {
-            installPrompt.prompt();
-            const { outcome } = await installPrompt.userChoice;
-            console.log(`User response to the install prompt: ${outcome}`);
-            setInstallPrompt(null); // Prompt can only be used once
-        } else {
-            // Fallback for browsers that don't support the event or on desktop
-            alert('To install the app, look for the "Install" icon in your browser\'s address bar or menu.');
+        if (!installPrompt) {
+            alert("Installation is handled by your browser. Please look for an 'Install' icon in the address bar or browser menu.");
+            return;
         }
+        
+        installPrompt.prompt();
+        
+        const { outcome } = await installPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        }
+        
+        setInstallPrompt(null);
     };
 
     return (
-        <section id="installAppSection" className="py-20 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+        <section id="installAppSection" className="py-20 bg-primary/5 dark:bg-dark-bg">
             <div className="container mx-auto px-6 text-center">
-                <h2 className="text-4xl font-bold text-indigo-700 dark:text-indigo-400">{settings?.installAppSection?.title}</h2>
-                <p className="mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">{settings?.installAppSection?.subtitle}</p>
+                <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.installAppSection?.title}</h2>
+                <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.installAppSection?.subtitle}</p>
 
-                <button
+                <button 
                     onClick={handleInstallClick}
-                    className="mt-8 inline-flex items-center gap-3 bg-indigo-600 dark:bg-indigo-500 text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-indigo-500 dark:hover:bg-indigo-400 transition-transform transform hover:scale-105 shadow-md"
+                    className="mt-10 inline-flex items-center gap-3 bg-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-indigo-700 shadow-xl transition-transform transform hover:scale-105"
                 >
                     <DownloadCloud />
-                    Install App on Your Device
+                    Install App
                 </button>
-                <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">(Look for an install icon in your browser's address bar or menu if the button above doesn't function immediately.)</p>
             </div>
         </section>
     );
