@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client";
 
 export function useOrganizations() {
   const [organizations, setOrganizations] = useState<any[]>([]);
 
   const fetchOrganizations = async () => {
-    const res = await api.get("/org");
+    const res = await apiClient.get("/org");
     setOrganizations(res.data);
   };
 
