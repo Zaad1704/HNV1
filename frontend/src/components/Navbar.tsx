@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
