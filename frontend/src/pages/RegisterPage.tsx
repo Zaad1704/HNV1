@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/client"; 
 import { useAuthStore } from "../store/authStore";
-import { useSiteSettings } from "../hooks/useSiteSettings"; // Import hook for logo
+import { useSiteSettings } from "../hooks/useSiteSettings"; // NEW: Import useSiteSettings
+import { Chrome } from 'lucide-react'; // NEW: Import Chrome icon for Google button
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '' });
@@ -10,7 +11,7 @@ const RegisterPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const loginAction = useAuthStore((state) => state.login);
-  const { data: settings } = useSiteSettings(); // Use settings for logo
+  const { data: settings } = useSiteSettings(); // NEW: Use settings for logo
 
   const handleRoleSelect = (role: string) => {
     setFormData({ ...formData, role });
@@ -40,6 +41,11 @@ const RegisterPage: React.FC = () => {
     }
   };
 
+  // NEW: Handle Google Signup (same endpoint as login, backend handles new users)
+  const handleGoogleSignup = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google`; // Directs to backend Google OAuth initiation
+  };
+
   const roleCardClasses = "role-card p-5 border-2 rounded-lg cursor-pointer transition-all duration-200 text-center";
   const selectedRoleClasses = "border-brand-primary ring-2 ring-brand-primary/50 shadow-md bg-indigo-50";
 
@@ -50,7 +56,8 @@ const RegisterPage: React.FC = () => {
         <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center">
             <div className="mb-8">
                  <Link to="/" className="inline-flex items-center gap-3">
-                    <img src={settings?.logos?.faviconUrl} alt="logo" className="h-8 w-8" />
+                    {/* NEW: Implement logo based on site settings */}
+                    <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="logo" className="h-8 w-8" />
                     <span className="text-xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
                 </Link>
             </div>
@@ -83,6 +90,17 @@ const RegisterPage: React.FC = () => {
                     </button>
                 </div>
             </form>
+
+            {/* NEW: Google Signup Button */}
+            <div className="relative flex items-center justify-center py-4">
+                <div className="flex-grow border-t border-border-color"></div>
+                <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
+                <div className="flex-grow border-t border-border-color"></div>
+            </div>
+            <button onClick={handleGoogleSignup} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-white hover:bg-gray-100 transition-colors">
+                <Chrome size={20} /> Sign Up with Google
+            </button>
+
         </div>
         {/* Gradient Promo Column */}
         <div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #3D52A0, #7091E6)'}}>
