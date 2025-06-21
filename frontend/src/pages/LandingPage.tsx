@@ -1,24 +1,32 @@
 // frontend/src/pages/LandingPage.tsx
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import apiClient from '../api/client';
 import { CheckCircle, DownloadCloud } from 'lucide-react';
 
+// Import the new sections
+import PricingSection from '../components/landing/PricingSection';
+import InstallAppSection from '../components/landing/InstallAppSection';
+import ContactSection from '../components/landing/ContactSection';
+
 const FullPageLoader = () => <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>;
 
 const BlurredBackgroundSection = ({ id, children, className = '' }) => {
     const { data: settings } = useSiteSettings();
+    // A bit of logic to match the ID to the correct settings key
     const sectionKey = id.endsWith('Section') ? id : `${id}Section`;
     const bgImageUrl = settings?.[sectionKey]?.backgroundImageUrl;
 
     return (
         <section id={id} className={`relative py-20 md:py-28 overflow-hidden text-white bg-slate-900 ${className}`}>
+            {/* Background Image and Overlay */}
             <div className="absolute inset-0 z-0">
                 {bgImageUrl && <img src={bgImageUrl} alt="background" className="w-full h-full object-cover filter blur-sm scale-105" />}
                 <div className="absolute inset-0 bg-slate-900/80"></div>
             </div>
+            {/* Content */}
             <div className="relative z-10 container mx-auto px-6">
                 {children}
             </div>
@@ -29,22 +37,12 @@ const BlurredBackgroundSection = ({ id, children, className = '' }) => {
 
 const LandingPage = () => {
     const { data: settings, isLoading, isError } = useSiteSettings();
-    const [pricingPlans, setPricingPlans] = useState<any[]>([]);
     
-    useEffect(() => {
-        const fetchPlans = async () => {
-            try {
-                const response = await apiClient.get('/plans');
-                setPricingPlans(response.data.data.filter((p: any) => p.isPublic !== false));
-            } catch (error) { console.error("Failed to fetch pricing plans:", error); }
-        };
-        fetchPlans();
-    }, []);
-
     if (isLoading || isError || !settings) return <FullPageLoader />;
 
     return (
         <div className="bg-slate-900">
+            {/* Hero Section */}
             <BlurredBackgroundSection id="heroSection">
                 <div className="text-center py-12">
                     <h1 className="text-5xl md:text-6xl font-extrabold">{settings.heroSection?.title}</h1>
@@ -55,6 +53,7 @@ const LandingPage = () => {
                 </div>
             </BlurredBackgroundSection>
 
+            {/* Features Section */}
             <BlurredBackgroundSection id="featuresPage">
                  <div className="text-center">
                     <h2 className="text-4xl font-bold">{settings.featuresPage?.title}</h2>
@@ -70,6 +69,7 @@ const LandingPage = () => {
                 </div>
             </BlurredBackgroundSection>
             
+            {/* About Section */}
             <BlurredBackgroundSection id="aboutPage">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold">{settings.aboutPage?.title}</h2>
@@ -87,6 +87,16 @@ const LandingPage = () => {
                     </div>
                 </div>
             </BlurredBackgroundSection>
+
+            {/* === ADDED SECTIONS START HERE === */}
+            
+            <PricingSection />
+
+            <InstallAppSection />
+
+            <ContactSection />
+
+            {/* === ADDED SECTIONS END HERE === */}
         </div>
     );
 };
