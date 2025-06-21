@@ -11,17 +11,17 @@ const FinancialChart: React.FC<{ data: FinancialData[] }> = ({ data }) => {
     return (
         <ResponsiveContainer width="100%" height={320}>
             <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
                 <Tooltip 
-                    cursor={{fill: 'rgba(71, 85, 105, 0.5)'}}
-                    contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '0.5rem' }}
-                    formatter={(value: number) => `$${value.toFixed(2)}`}
+                    cursor={{fill: 'rgba(229, 231, 235, 0.5)'}}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}
+                    formatter={(value: number) => `$${value.toLocaleString()}`}
                 />
                 <Legend wrapperStyle={{ fontSize: '14px' }}/>
-                <Bar dataKey="Revenue" fill="#22d3ee" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Expenses" fill="#f472b6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Revenue" fill="#7091E6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Expenses" fill="#ADBBDA" radius={[4, 4, 0, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );
