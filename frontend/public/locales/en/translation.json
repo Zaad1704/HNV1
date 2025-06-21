@@ -220,7 +220,7 @@
         "delete": "মুছুন",
         "edit_subscription_plan": "সাবস্ক্রিপশন পরিকল্পনা সম্পাদনা করুন",
         "create_new_plan": "নতুন পরিকল্পনা তৈরি করুন",
-        "price_usd": "মূল্য (USD)",
+        "price_usd": "মূল্য (BDT)",
         "billing_cycle": "বিলিং চক্র",
         "subscription_limits": "সাবস্ক্রিপশন সীমা",
         "max_properties": "সর্বোচ্চ সম্পত্তি",
