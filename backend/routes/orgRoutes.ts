@@ -1,9 +1,10 @@
+// backend/routes/orgRoutes.ts
 import { Router } from 'express';
-// FIX: Import the necessary controller functions from orgController
-import { 
-    getOrganizationDetails, 
-    listOrganizations, 
-    setOrgStatus 
+// CORRECTED: Import the necessary controller functions from orgController
+import {
+    getOrganizationDetails,
+    listOrganizations, // CORRECTED: Ensure this is imported
+    setOrgStatus // CORRECTED: Ensure this is imported
 } from '../controllers/orgController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
