@@ -1,3 +1,5 @@
+// frontend/src/components/layout/DashboardLayout.tsx
+
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -12,6 +14,12 @@ const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // FIX: Define handleLogout BEFORE its usage in DesktopSidebar
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     // The desktop sidebar is now a sub-component
     const DesktopSidebar = () => {
@@ -37,6 +45,7 @@ const DashboardLayout = () => {
                 </nav>
                 <div className="p-4 border-t border-white/10">
                     <Link to="/dashboard/settings" className={getLinkClass('/dashboard/settings')}><Settings size={20} /><span>Settings</span></Link>
+                    {/* handleLogout is now defined and accessible here */}
                     <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-indigo-200 hover:bg-red-800/20 hover:text-white">
                         <LogOut size={20} /><span>Logout</span>
                     </button>
