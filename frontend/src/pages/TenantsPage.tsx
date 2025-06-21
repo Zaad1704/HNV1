@@ -13,21 +13,17 @@ const TenantsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: tenants = [], isLoading, isError } = useQuery(['tenants'], fetchTenants);
 
-  const handleGenerateInvoice = (tenantId: string) => {
-    const token = localStorage.getItem('token');
-    const invoiceUrl = `${import.meta.env.VITE_API_URL || ''}/api/invoices/rent/${tenantId}?token=${token}`;
-    window.open(invoiceUrl, '_blank');
-  };
-  
   const handleDownloadCollectionSheet = () => {
     const sheetUrl = `${import.meta.env.VITE_API_URL || ''}/api/reports/monthly-collection-sheet`;
-    window.open(sheetUrl, '_blank');
+    // Add token for authorization if required by the backend endpoint
+    const token = localStorage.getItem('token');
+    window.open(`${sheetUrl}?token=${token}`, '_blank');
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Active': return 'bg-green-100 text-green-800';
-      case 'Late': return 'bg-yellow-100 text-yellow-800';
+      case 'Late': return 'bg-amber-100 text-amber-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -57,12 +53,9 @@ const TenantsPage = () => {
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <button 
-                        onClick={() => handleGenerateInvoice(tenant._id)}
-                        className="font-medium text-brand-orange hover:opacity-80 flex items-center gap-1 ml-auto"
-                      >
+                      <button className="font-medium text-brand-primary hover:underline flex items-center gap-1 ml-auto">
                          <FileDown size={16}/>
-                         Invoice
+                         Manage
                       </button>
                     </td>
                   </tr>
@@ -73,47 +66,26 @@ const TenantsPage = () => {
       </div>
   );
   
-  const MobileView = () => (
-    <div className="space-y-4">
-        {tenants.map((tenant: any) => (
-            <div key={tenant._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="font-bold text-dark-text">{tenant.name}</h3>
-                        <p className="text-sm text-light-text mt-1">{tenant.propertyId?.name || 'N/A'}, Unit {tenant.unit}</p>
-                    </div>
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(tenant.status)}`}>{tenant.status}</span>
-                </div>
-                <div className="mt-4 pt-4 border-t border-border-color text-right">
-                     <button onClick={() => handleGenerateInvoice(tenant._id)} className="font-semibold text-sm bg-brand-orange/10 text-brand-orange py-1.5 px-4 rounded-lg">
-                        Generate Invoice
-                    </button>
-                </div>
-            </div>
-        ))}
-    </div>
-  );
-
   if (isLoading) return <div className="text-center p-8">Loading tenants...</div>;
   if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch tenants.</div>;
 
   return (
     <div>
-      <AddTenantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onTenantAdded={() => {}}/>
+      <AddTenantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-dark-text">Manage Tenants</h1>
         <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadCollectionSheet}
-              className="flex items-center space-x-2 px-4 py-2 bg-white border border-border-color text-dark-text font-semibold rounded-lg hover:bg-gray-50"
+              className="flex items-center space-x-2 px-4 py-2.5 bg-light-card border border-border-color text-dark-text font-semibold rounded-lg hover:bg-gray-50"
             >
               <ClipboardList size={18} />
               <span>Collection Sheet</span>
             </button>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-brand-orange hover:opacity-90 text-white font-bold rounded-lg shadow-sm"
+              className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors"
             >
               <Plus size={18} />
               <span>Add Tenant</span>
@@ -121,10 +93,6 @@ const TenantsPage = () => {
         </div>
       </div>
       
-      <div className="hidden md:block"><DesktopView /></div>
-      <div className="block md:hidden"><MobileView /></div>
-    </div>
-  );
-};
-
-export default TenantsPage;
+      {tenants.length > 0 ? <DesktopView /> : (
+           <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
+                <h3 className="text-xl font-semibold text-dark-text">No
