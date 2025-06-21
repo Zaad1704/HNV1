@@ -22,11 +22,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT_SECRET not defined in environment variables');
     }
-
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
-
+    
     const user = await User.findById(decoded.id);
-
+    
     if (!user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });
     }
