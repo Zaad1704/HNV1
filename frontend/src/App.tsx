@@ -72,22 +72,26 @@ function App() {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
-          // If the user's status is inactive/suspended or subscription is inactive,
-          // the backend /auth/me would return 403, and the client.ts interceptor would redirect to /resubscribe.
-          // In that case, the setUser here might not run, or it will run before the redirect happens.
-          // The key is that logout() must NOT be called here for 403.
         } catch (error) {
-          // Check if the error is an Axios error and if it's a 403 Forbidden status
-          if (axios.isAxiosError(error) && error.response && error.response.status === 403) {
+          // Check if the error is an Axios error
+          if (axios.isAxiosError(error) && error.response) {
             // If it's a 403 (e.g., account inactive, subscription expired),
-            // the client.ts interceptor is already handling the redirect to /resubscribe.
-            // DO NOT call logout() here, as it would clear the token and cause a redirect to /login.
-            console.warn("User session check received 403. Interceptor will handle redirection, preserving token state.");
+            // and we are on a public route, it means we should consider them logged out
+            // from the perspective of public content, to prevent redirect loops.
+            // If they then try to log in, the LoginPage will handle the redirect to /resubscribe.
+            if (error.response.status === 403) {
+              console.warn("User session check received 403 on a public context. Clearing token to prevent loop.");
+              logout(); // Clear auth state, effectively logging them out from public view
+            } else {
+              // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
+              // perform a full logout to clear the session and redirect to login.
+              console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
+              logout();
+            }
           } else {
-            // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
-            // perform a full logout to clear the session and redirect to login.
-            console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
-            logout(); // Clear auth state, which will lead to /login redirect via ProtectedRoute
+            // Non-Axios errors, or errors without a response (e.g., network down)
+            console.error("Non-Axios error during session check. Logging out.", error);
+            logout();
           }
         }
       }
