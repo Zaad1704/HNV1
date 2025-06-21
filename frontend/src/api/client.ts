@@ -37,35 +37,16 @@ apiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
 
-      if (status === 401) {
-        // Token invalid or expired - force logout to clear session
-        console.error('API Error: 401 Unauthorized - Token expired or invalid.');
-        logout(); // Clear auth state
-        window.location.href = '/login?message=session_expired'; // Redirect to login page
-      } else if (status === 403) {
-        // Forbidden - access denied based on user role or subscription status
-        console.error('API Error: 403 Forbidden - Access denied.', data.message);
-
-        // Check if the message indicates a specific account or subscription issue
-        if (data && typeof data.message === 'string') {
-          if (data.message.includes('subscription is inactive')) {
-            // Specific handling for inactive subscription
-            window.location.href = '/dashboard/billing?status=subscription_inactive'; // Redirect to billing
-          } else if (data.message.includes('account is inactive') || data.message.includes('account is suspended')) {
-            // Specific handling for inactive/suspended user account
-            // FIXED: Redirect to billing page instead of login for inactive/suspended accounts
-            window.location.href = '/dashboard/billing?status=account_inactive'; 
-          } else {
-            // General 403 for other reasons (e.g., insufficient role for specific action)
-            // User remains logged in but is shown an access denied alert/message on current page
-            // Or redirected to a safe dashboard overview
-            window.location.href = '/dashboard/overview?status=access_denied';
-          }
-        } else {
-          // Fallback for generic 403 without specific message
-          window.location.href = '/dashboard/overview?status=access_denied';
+      if (status === 401 || status === 403) {
+        // Token invalid/expired (401) or Forbidden (403 - e.g., inactive account/subscription)
+        // In both cases, the user's session is effectively invalid for protected content.
+        console.error(`API Error: ${status} - Access denied.`, data.message);
+        logout(); // Clear auth state. This will cause ProtectedRoute to redirect to /login.
+        // DO NOT use window.location.href here for 403. Let React Router handle navigation.
+        // For 401, a specific redirect to login with a message can be helpful for debugging.
+        if (status === 401) {
+            window.location.href = '/login?message=session_expired'; // Direct hard reload for session expiry
         }
-
       } else if (status >= 500) {
         // Server errors
         console.error(`API Error: ${status} Server Error`, data.message);
