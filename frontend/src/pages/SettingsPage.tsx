@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building, Save, User as UserIcon, Palette, Globe, Sun, Moon, ChevronDown } from 'lucide-react'; // Import Sun, Moon, ChevronDown icons
+import { Building, Save, User as UserIcon, Palette, Globe, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useLang } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'; // Necessary for useTranslation hook if used elsewhere, but main language state handled by useLang
 
 const SettingsPage = () => {
   const { user } = useAuthStore((state) => ({ user: state.user }));
@@ -13,32 +13,34 @@ const SettingsPage = () => {
 
   const [branding, setBranding] = useState({ companyName: '', companyLogoUrl: '', companyAddress: '' });
   const [message, setMessage] = useState({ type: '', text: '' });
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false); // State for language mini-dropdown
+  // Removed isLangMenuOpen from SettingsPage state, as the language toggle is now a direct cycle button
+  // const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
-  const { lang, setLang, getNextLanguage, supportedLanguages } = useLang();
+  // Use useLang context for language state and toggling options
+  const { lang, setLang, getNextToggleLanguage, currentLanguageName, toggleLanguages } = useLang();
+  // Use useTheme context for theme state and toggling
   const { theme, toggleTheme } = useTheme();
-  const { i18n } = useTranslation();
-
-  const handleLanguageChange = (newLangCode: string) => {
-    setLang(newLangCode); // Update context and local storage
-    setIsLangMenuOpen(false); // Close menu
-  };
 
   useEffect(() => {
+    // Ensure user and organization branding data is available before setting state
     if (user && user.organizationId && typeof user.organizationId === 'object' && 'branding' in user.organizationId) {
       setBranding(user.organizationId.branding);
     }
   }, [user]);
 
+  // Handle changes to branding input fields
   const handleBrandingChange = (e: React.ChangeEvent<HTMLInputElement>) => setBranding({ ...branding, [e.target.name]: e.target.value });
   
+  // Placeholder for logo upload logic (would typically involve a mutation to /upload/image)
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files?.[0]) return;
       const file = e.target.files[0];
-      const mockImageUrl = URL.createObjectURL(file);
+      const mockImageUrl = URL.createObjectURL(file); // For temporary visual
       setBranding(prev => ({ ...prev, companyLogoUrl: mockImageUrl }));
+      // In a real app: uploadMutation.mutate(file); then in onSuccess update the state with actual backend URL
   };
 
+  // Handle saving branding changes (placeholder for backend API call)
   const handleUpdateBranding = (e: React.FormEvent) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
@@ -62,32 +64,26 @@ const SettingsPage = () => {
             <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><UserIcon /> Your Profile</h2>
             <p className="text-light-text mb-4">Name: {user?.name || 'N/A'}</p>
             <p className="text-light-text">Email: {user?.email || 'N/A'}</p>
+            {/* Password change form or profile update form can be added here */}
           </div>
 
           {/* Localization Settings */}
           <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-sm">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Globe /> Language Settings</h2>
-            {/* Language Switcher for Settings (mini-dropdown style) */}
-            <div className="relative">
-              <button
-                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-brand-bg border border-border-color rounded-lg text-dark-text font-semibold hover:bg-gray-100 transition-colors"
-                title={`Current Language: ${supportedLanguages.find(l => l.code === lang)?.name || lang.toUpperCase()}`}
-              >
-                {supportedLanguages.find(l => l.code === lang)?.name || lang.toUpperCase()} <ChevronDown size={16} />
-              </button>
-              {isLangMenuOpen && (
-                <div className="absolute left-0 mt-2 w-36 bg-light-card border border-border-color rounded-md shadow-lg z-20">
-                  {supportedLanguages.map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => handleLanguageChange(l.code)}
-                      className={`block w-full text-left px-4 py-2 text-sm ${lang === l.code ? 'bg-gray-50 text-brand-primary' : 'text-dark-text hover:bg-gray-50'}`}
-                    >
-                      {l.name}
-                    </button>
-                  ))}
-                </div>
+            {/* Language Toggle for Settings */}
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-light-text">Current Language: {currentLanguageName}</span>
+              {toggleLanguages.length > 1 && ( // Only show toggle button if there's more than one language option
+                <button 
+                  onClick={() => setLang(getNextToggleLanguage().code)} // Cycle to the next language in toggleLanguages
+                  className="px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-brand-dark transition-colors flex items-center gap-2"
+                  title={`Switch to ${getNextToggleLanguage().name}`}
+                >
+                  <Globe size={16} /> Switch to {getNextToggleLanguage().name}
+                </button>
+              )}
+              {toggleLanguages.length <= 1 && ( // Message if only one language is available
+                <span className="text-sm text-gray-500">Only English available for your region.</span>
               )}
             </div>
             <p className="text-sm text-light-text mt-4">Select the language for the application interface.</p>
