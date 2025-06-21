@@ -16,9 +16,10 @@ const MaintenanceRequestsPage = () => {
     const queryClient = useQueryClient();
     const { data: requests = [], isLoading } = useQuery(['maintenanceRequests'], fetchRequests);
 
-    const mutation = useMutation(updateRequestStatus, {
+    const mutation = useMutation({
+        mutationFn: updateRequestStatus,
         onSuccess: () => {
-            queryClient.invalidateQueries(['maintenanceRequests']);
+            queryClient.invalidateQueries({ queryKey: ['maintenanceRequests'] });
         },
     });
 
@@ -28,45 +29,45 @@ const MaintenanceRequestsPage = () => {
 
     const getStatusBadge = (status: string) => {
         const statusMap: { [key: string]: string } = {
-            Open: 'bg-blue-500/20 text-blue-300',
-            'In Progress': 'bg-amber-500/20 text-amber-300',
-            Resolved: 'bg-green-500/20 text-green-300',
-            Closed: 'bg-slate-600/50 text-slate-400'
+            'Open': 'bg-blue-100 text-blue-800',
+            'In Progress': 'bg-amber-100 text-amber-800',
+            'Resolved': 'bg-green-100 text-green-800',
+            'Closed': 'bg-gray-100 text-gray-800'
         };
-        return statusMap[status] || 'bg-gray-500/20 text-gray-300';
+        return statusMap[status] || 'bg-gray-100 text-gray-800';
     };
 
-    if (isLoading) return <div className="text-white text-center p-8">Loading requests...</div>;
+    if (isLoading) return <div className="text-center p-8">Loading requests...</div>;
 
     return (
-        <div className="text-white">
-            <h1 className="text-4xl font-bold mb-8">Maintenance Requests</h1>
-            <div className="bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+        <div className="text-dark-text">
+            <h1 className="text-3xl font-bold mb-8">Maintenance Requests</h1>
+            <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-slate-900">
+                        <thead className="bg-gray-50 border-b border-border-color">
                             <tr>
-                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Date</th>
-                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Tenant</th>
-                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Property</th>
-                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Issue</th>
-                                <th className="p-4 text-sm font-semibold text-slate-400 uppercase">Status</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Date</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Tenant</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Property</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Issue</th>
+                                <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-700">
+                        <tbody className="divide-y divide-border-color">
                             {requests.length > 0 ? (
                                 requests.map((req: any) => (
-                                <tr key={req._id}>
-                                    <td className="p-4 text-slate-300">{new Date(req.createdAt).toLocaleDateString()}</td>
-                                    <td className="p-4 font-bold text-white">{req.tenantId?.name || 'N/A'}</td>
-                                    <td className="p-4 text-slate-300">{req.propertyId?.name || 'N/A'}</td>
-                                    <td className="p-4 text-slate-300">{req.description}</td>
+                                <tr key={req._id} className="hover:bg-gray-50">
+                                    <td className="p-4 text-light-text">{new Date(req.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-4 font-semibold text-dark-text">{req.requestedBy?.name || 'N/A'}</td>
+                                    <td className="p-4 text-light-text">{req.propertyId?.name || 'N/A'}</td>
+                                    <td className="p-4 text-light-text">{req.description}</td>
                                     <td className="p-4">
                                         <select 
                                             value={req.status} 
                                             onChange={(e) => handleStatusChange(req._id, e.target.value)}
                                             className={`border-0 rounded-md py-1 px-2 text-xs font-semibold ${getStatusBadge(req.status)}`}
-                                            style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}
+                                            style={{ appearance: 'none' }}
                                         >
                                             <option value="Open">Open</option>
                                             <option value="In Progress">In Progress</option>
@@ -78,7 +79,7 @@ const MaintenanceRequestsPage = () => {
                             ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-slate-400">No maintenance requests found.</td>
+                                    <td colSpan={5} className="p-8 text-center text-light-text">No maintenance requests found.</td>
                                 </tr>
                             )}
                         </tbody>
