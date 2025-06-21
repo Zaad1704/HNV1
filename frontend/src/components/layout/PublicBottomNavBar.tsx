@@ -4,18 +4,20 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Info, DollarSign, Mail, LogIn } from 'lucide-react';
 import { useScrollSpy } from '../../hooks/useScrollSpy';
+import { useTranslation } from 'react-i18next'; // Import useTranslation for translation keys
 
 const PublicBottomNavBar = () => {
     const location = useLocation();
+    const { t } = useTranslation(); // Initialize useTranslation
 
     // Define public navigation items with their target section IDs
     // Login link stays here for mobile bottom nav
     const navItems = [
-        { name: 'Features', href: '/#featuresPage', icon: Home, sectionId: 'featuresPage' },
-        { name: 'About', href: '/#aboutPage', icon: Info, sectionId: 'aboutPage' },
-        { name: 'Pricing', href: '/#pricingSection', icon: DollarSign, sectionId: 'pricingSection' },
-        { name: 'Contact', href: '/#contact', icon: Mail, sectionId: 'contact' },
-        { name: 'Login', href: '/login', icon: LogIn, sectionId: 'login' }, // Direct link to login page
+        { name: t('header.features'), href: '/#featuresPage', icon: Home, sectionId: 'featuresPage' },
+        { name: t('header.about'), href: '/#aboutPage', icon: Info, sectionId: 'aboutPage' },
+        { name: t('header.pricing'), href: '/#pricingSection', icon: DollarSign, sectionId: 'pricingSection' },
+        { name: 'Contact', href: '/#contact', icon: Mail, sectionId: 'contact' }, // Assuming 'Contact' is not in header.contact for simplicity, or use t()
+        { name: t('header.login'), href: '/login', icon: LogIn, sectionId: 'login' }, // Direct link to login page
     ];
 
     const sectionIds = navItems.filter(item => item.href.startsWith('/#')).map(item => item.sectionId || '');
@@ -56,7 +58,7 @@ const PublicBottomNavBar = () => {
                         className={getLinkClass(item.href, item.sectionId)}
                     >
                         <item.icon size={20} />
-                        <span className="font-medium mt-1">{item.label}</span>
+                        <span className="font-medium mt-1">{item.name}</span>
                     </Link>
                 ))}
             </div>
