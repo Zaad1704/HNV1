@@ -73,37 +73,25 @@ function App() {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
         } catch (error) {
-          // Check if the error is an Axios error
+          // The apiClient interceptor now handles logging out for 401/403.
+          // This catch block can now be simplified to only handle unexpected errors
+          // or non-Axios errors, which would also indicate a need to logout.
           if (axios.isAxiosError(error) && error.response) {
-            // If it's a 403, and the message indicates account/subscription status,
-            // we let the interceptor handle the redirect. We explicitly DO NOT logout.
-            if (
-              error.response.status === 403 &&
-              (error.response.data?.message?.includes('account is inactive') ||
-               error.response.data?.message?.includes('account is suspended') ||
-               error.response.data?.message?.includes('subscription is inactive'))
-            ) {
-              console.warn("User session check received expected 403 (account/sub inactive). Interceptor will handle redirection, preserving token state.");
-              // Do nothing here; the apiClient interceptor will trigger window.location.href
-              // to the /resubscribe page, which then handles setting up its own state.
-            }
-            else {
-              // For 401 (Unauthorized - token invalid/expired), or other unexpected 403s,
-              // network errors, or any other unexpected errors, perform a full logout.
-              console.error("Session token is invalid or expired, or another unexpected error occurred during session check. Logging out.", error);
-              logout(); // Clear auth state
-            }
+            // For 401/403, the interceptor already called logout().
+            // So, no need to call logout() again here, as it's handled.
+            // The user will be redirected by ProtectedRoute as isAuthenticated will be false.
+            console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
           } else {
-            // Non-Axios errors, or errors without a response (e.g., network down)
+            // Non-Axios errors (e.g., network down) or unexpected errors
             console.error("Non-Axios error during session check. Logging out.", error);
-            logout();
+            logout(); // Clear auth state for definitive logout
           }
         }
       }
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout]); // Removed `location.pathname` as discussed previously
+  }, [token, user, setUser, logout]);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
