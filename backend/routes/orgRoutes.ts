@@ -1,4 +1,3 @@
-// backend/routes/orgRoutes.ts
 import { Router } from 'express';
 import {
     getOrganizationDetails,
@@ -28,5 +27,9 @@ router.get('/', authorize(['Super Admin']), listOrganizations);
 // @desc    Set organization status (Super Admin only)
 // @access  Private (Super Admin)
 router.put('/:id/status', authorize(['Super Admin']), setOrgStatus);
+
+// You might also have routes for updating organization branding, inviting members, etc.
+// Example:
+// router.put('/me/branding', authorize(['Landlord']), updateOrgBranding);
 
 export default router; // This line ensures the router is exported as the default
