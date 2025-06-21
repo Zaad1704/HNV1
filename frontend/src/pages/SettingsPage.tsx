@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query'; // Ensure useMutation is imported
-import { Building, Save, User as UserIcon, Palette, Globe, Sun, Moon, ChevronDown } from 'lucide-react';
-import { useLang } from '../contexts/LanguageContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
+import { Building, Save, User as UserIcon, Palette, Globe, Sun, Moon, ChevronDown } from 'lucide-react'; // Ensure all icons are imported
+import { useLang } from '../contexts/LanguageContext'; // Ensure useLang is imported
+import { useTheme } from '../contexts/ThemeContext'; // Ensure useTheme is imported
+import { useTranslation } from 'react-i18next'; // Ensure useTranslation is imported
 
 const SettingsPage = () => {
   const { user } = useAuthStore((state) => ({ user: state.user }));
@@ -13,7 +13,8 @@ const SettingsPage = () => {
 
   const [branding, setBranding] = useState({ companyName: '', companyLogoUrl: '', companyAddress: '' });
   const [message, setMessage] = useState({ type: '', text: '' });
-  
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false); // State for language mini-dropdown (used in complex toggle)
+
   const { lang, setLang, getNextToggleLanguage, currentLanguageName, toggleLanguages } = useLang();
   const { theme, toggleTheme } = useTheme();
 
@@ -35,10 +36,12 @@ const SettingsPage = () => {
   });
 
   const handleLanguageChange = (newLangCode: string) => {
-    setLang(newLangCode);
+    setLang(newLangCode); // Update context and local storage
+    setIsLangMenuOpen(false); // Close menu after selection
   };
 
   useEffect(() => {
+    // Ensure user and organization branding data is available before setting state
     if (user && user.organizationId && typeof user.organizationId === 'object' && 'branding' in user.organizationId) {
       setBranding(user.organizationId.branding);
     }
@@ -46,13 +49,13 @@ const SettingsPage = () => {
 
   const handleBrandingChange = (e: React.ChangeEvent<HTMLInputElement>) => setBranding({ ...branding, [e.target.name]: e.target.value });
   
-  // Corrected handleLogoUpload to use the mutation
+  // CORRECTED: handleLogoUpload to use the mutation
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!e.target.files?.[0]) {
           setMessage({ type: 'error', text: 'No file selected for upload.' });
           return;
       }
-      uploadLogoMutation.mutate(e.target.files[0]);
+      uploadLogoMutation.mutate(e.target.files[0]); // Call the mutation with the file
   };
 
   const handleUpdateBranding = (e: React.FormEvent) => {
@@ -83,19 +86,27 @@ const SettingsPage = () => {
 
           <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-sm">
             <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Globe /> Language Settings</h2>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-light-text">Current Language: {currentLanguageName}</span>
-              {toggleLanguages.length > 1 && (
-                <button 
-                  onClick={() => setLang(getNextToggleLanguage().code)}
-                  className="px-4 py-2 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-brand-dark transition-colors flex items-center gap-2"
-                  title={`Switch to ${getNextToggleLanguage().name}`}
-                >
-                  <Globe size={16} /> Switch to {getNextToggleLanguage().name}
-                </button>
-              )}
-              {toggleLanguages.length <= 1 && (
-                <span className="text-sm text-gray-500">Only English available for your region.</span>
+            {/* Language Toggle for Settings */}
+            <div className="relative"> {/* Added relative for positioning */}
+              <button
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} // Toggle visibility of mini-dropdown
+                className="flex items-center gap-2 px-4 py-2 bg-brand-bg border border-border-color rounded-lg text-dark-text font-semibold hover:bg-gray-100 transition-colors"
+                title={`Current Language: ${currentLanguageName}`}
+              >
+                {currentLanguageName} <ChevronDown size={16} />
+              </button>
+              {isLangMenuOpen && (
+                <div className="absolute left-0 mt-2 w-36 bg-light-card border border-border-color rounded-md shadow-lg z-20">
+                  {toggleLanguages.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => handleLanguageChange(l.code)}
+                      className={`block w-full text-left px-4 py-2 text-sm ${lang === l.code ? 'bg-gray-50 text-brand-primary' : 'text-dark-text hover:bg-gray-50'}`}
+                    >
+                      {l.name}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
             <p className="text-sm text-light-text mt-4">Select the language for the application interface.</p>
