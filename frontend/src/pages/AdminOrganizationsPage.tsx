@@ -18,9 +18,35 @@ const AdminOrganizationsPage = () => {
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to update status.'),
     });
 
+    // FIX: New mutations for lifetime access
+    const grantLifetimeMutation = useMutation({
+        mutationFn: (orgId: string) => apiClient.put(`/super-admin/organizations/${orgId}/grant-lifetime`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
+        onError: (err: any) => alert(err.response?.data?.message || 'Failed to grant lifetime access.'),
+    });
+
+    const revokeLifetimeMutation = useMutation({
+        mutationFn: (orgId: string) => apiClient.put(`/super-admin/organizations/${orgId}/revoke-lifetime`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
+        onError: (err: any) => alert(err.response?.data?.message || 'Failed to revoke lifetime access.'),
+    });
+
     const handleUpdateStatus = (orgId: string, status: string) => {
         if (window.confirm(`Are you sure you want to set this organization's subscription to '${status}'?`)) {
             updateStatusMutation.mutate({ orgId, status });
+        }
+    };
+
+    // FIX: New handlers for lifetime access
+    const handleGrantLifetime = (orgId: string) => {
+        if (window.confirm('Are you sure you want to grant lifetime access to this organization?')) {
+            grantLifetimeMutation.mutate(orgId);
+        }
+    };
+
+    const handleRevokeLifetime = (orgId: string) => {
+        if (window.confirm('Are you sure you want to revoke lifetime access for this organization?')) {
+            revokeLifetimeMutation.mutate(orgId);
         }
     };
     
@@ -59,8 +85,40 @@ const AdminOrganizationsPage = () => {
                                     </span>
                                 </td>
                                 <td className="p-4 space-x-2 whitespace-nowrap">
-                                    <button onClick={() => handleUpdateStatus(org._id, 'active')} className="font-medium text-xs bg-green-100 text-green-700 p-2 rounded-md hover:bg-green-200" title="Activate Subscription"><CheckCircle size={16}/></button>
-                                    <button onClick={() => handleUpdateStatus(org._id, 'inactive')} className="font-medium text-xs bg-red-100 text-red-700 p-2 rounded-md hover:bg-red-200" title="Deactivate Subscription"><XCircle size={16}/></button>
+                                    <button 
+                                        onClick={() => handleUpdateStatus(org._id, 'active')} 
+                                        className="font-medium text-xs bg-green-100 text-green-700 p-2 rounded-md hover:bg-green-200" 
+                                        title="Activate Subscription"
+                                        disabled={updateStatusMutation.isLoading || org.subscription?.status === 'active'}
+                                    >
+                                        <CheckCircle size={16}/>
+                                    </button>
+                                    <button 
+                                        onClick={() => handleUpdateStatus(org._id, 'inactive')} 
+                                        className="font-medium text-xs bg-red-100 text-red-700 p-2 rounded-md hover:bg-red-200" 
+                                        title="Deactivate Subscription"
+                                        disabled={updateStatusMutation.isLoading || org.subscription?.status === 'inactive'}
+                                    >
+                                        <XCircle size={16}/>
+                                    </button>
+                                    {/* FIX: Add Grant Lifetime Access Button */}
+                                    <button 
+                                        onClick={() => handleGrantLifetime(org._id)} 
+                                        className="font-medium text-xs bg-purple-100 text-purple-700 p-2 rounded-md hover:bg-purple-200" 
+                                        title="Grant Lifetime Access"
+                                        disabled={grantLifetimeMutation.isLoading || org.subscription?.isLifetime}
+                                    >
+                                        <ShieldCheck size={16}/>
+                                    </button>
+                                    {/* FIX: Add Revoke Lifetime Access Button */}
+                                    <button 
+                                        onClick={() => handleRevokeLifetime(org._id)} 
+                                        className="font-medium text-xs bg-orange-100 text-orange-700 p-2 rounded-md hover:bg-orange-200" 
+                                        title="Revoke Lifetime Access"
+                                        disabled={revokeLifetimeMutation.isLoading || !org.subscription?.isLifetime}
+                                    >
+                                        <ShieldOff size={16}/>
+                                    </button>
                                 </td>
                             </tr>
                         ))}
