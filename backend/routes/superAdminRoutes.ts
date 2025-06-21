@@ -4,14 +4,15 @@ import {
     getDashboardStats, 
     getAllOrganizations,
     getAllUsers,
+    updateSubscriptionStatus, // ADDED THIS IMPORT
     grantLifetimeAccess,
     revokeLifetimeAccess,
     updateUserByAdmin,
     getModerators,
     getGlobalBilling,
     getAllMaintenanceRequests,
-    getPlatformGrowth, // Import new function
-    getPlanDistribution // Import new function
+    getPlatformGrowth,
+    getPlanDistribution
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
