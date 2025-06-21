@@ -5,7 +5,8 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
-import MaintenanceRequest from '../models/MaintenanceRequest'; // FIX: Import MaintenanceRequest model
+import MaintenanceRequest from '../models/MaintenanceRequest';
+import Plan from '../models/Plan'; // Import Plan model to get plan names
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
@@ -90,7 +91,6 @@ export const getGlobalBilling = asyncHandler(async (req: Request, res: Response,
     res.status(200).json({ success: true, data: subscriptions });
 });
 
-// FIX: NEW FUNCTION to get all maintenance requests for Super Admin
 export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const requests = await MaintenanceRequest.find({})
         .populate('propertyId', 'name')
@@ -98,6 +98,43 @@ export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: 
             path: 'organizationId',
             select: 'name'
         })
-        .sort({ createdAt: -1 }); // Sort by newest first
+        .sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: requests });
+});
+
+// --- NEW FUNCTIONS FOR ADMIN DASHBOARD CHARTS ---
+
+// Mock data for Platform Growth
+export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const mockData = [
+        { name: 'Jan', 'New Users': 400, 'New Organizations': 240 },
+        { name: 'Feb', 'New Users': 300, 'New Organizations': 139 },
+        { name: 'Mar', 'New Users': 200, 'New Organizations': 980 },
+        { name: 'Apr', 'New Users': 278, 'New Organizations': 390 },
+        { name: 'May', 'New Users': 189, 'New Organizations': 480 },
+        { name: 'Jun', 'New Users': 239, 'New Organizations': 380 },
+        { name: 'Jul', 'New Users': 349, 'New Organizations': 430 },
+    ];
+    res.status(200).json({ success: true, data: mockData });
+});
+
+// Mock data for Plan Distribution
+export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // You'd typically aggregate data from the Subscription and Plan models here.
+    // For demonstration, using mock data that includes actual plan names.
+    const plans = await Plan.find({ isPublic: true }).select('name');
+    const mockData = plans.map((plan, index) => ({
+        name: plan.name,
+        value: (index + 1) * 10 // Example mock value
+    }));
+
+    if (mockData.length === 0) {
+        mockData.push(
+            { name: 'Free Trial', value: 30 },
+            { name: 'Landlord Plan', value: 50 },
+            { name: 'Agent Plan', value: 20 }
+        );
+    }
+
+    res.status(200).json({ success: true, data: mockData });
 });
