@@ -1,87 +1,155 @@
 // frontend/src/pages/LandingPage.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import PricingSection from '../components/landing/PricingSection';
-import InstallAppSection from '../components/landing/InstallAppSection';
-import ContactSection from '../components/landing/ContactSection';
+import apiClient from '../api/client';
+import {
+    ChevronRight, Home, ShieldCheck, Briefcase, CreditCard,
+    Star, MessageSquare, DownloadCloud, ArrowRight
+} from 'lucide-react';
 
-const FullPageLoader = () => <div className="min-h-screen bg-primary flex items-center justify-center text-white">Loading...</div>;
+// --- Helper Icon Component ---
+const IconMap = {
+    "Centralized Dashboard": <Home className="w-8 h-8" />,
+    "Secure Document Storage": <ShieldCheck className="w-8 h-8" />,
+    "Audit Trails & Security": <Briefcase className="w-8 h-8" />,
+    "Default": <Star className="w-8 h-8" />
+};
 
-const BlurredBackgroundSection = ({ id, children, className = '' }) => {
-    const { data: settings } = useSiteSettings();
-    const sectionKey = id.endsWith('Section') ? id : `${id}Section`;
-    const bgImageUrl = settings?.[sectionKey]?.backgroundImageUrl;
+const getFeatureIcon = (title: string) => IconMap[title] || IconMap["Default"];
+
+// --- App Install Banner Component ---
+const AppInstallBanner = () => {
+    const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e: Event) => {
+            e.preventDefault();
+            setInstallPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }, []);
+
+    const handleInstallClick = () => {
+        if (!installPrompt) {
+            alert("To install, use your browser's 'Add to Home Screen' or 'Install App' feature.");
+            return;
+        }
+        installPrompt.prompt();
+    };
 
     return (
-        <section id={id} className={`relative py-20 md:py-28 overflow-hidden ${className}`}>
-            <div className="absolute inset-0 z-0">
-                {bgImageUrl && <img src={bgImageUrl} alt="background" className="w-full h-full object-cover filter blur-sm scale-105" />}
-                <div className="absolute inset-0 bg-light-bg/80 dark:bg-dark-bg/80"></div>
+        <div className="flex items-center justify-between p-2 bg-light-card dark:bg-dark-card border-b border-border-color dark:border-border-color-dark">
+            <div className="flex items-center gap-3">
+                <DownloadCloud className="w-8 h-8 text-primary" />
+                <div>
+                    <p className="font-bold text-sm text-dark-text dark:text-dark-text-dark">Install the HNV App</p>
+                    <p className="text-xs text-light-text">For a better experience</p>
+                </div>
             </div>
-            <div className="relative z-10 container mx-auto px-6">
-                {children}
-            </div>
-        </section>
+            <button
+                onClick={handleInstallClick}
+                className="bg-primary text-white font-bold text-sm py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700"
+            >
+                Install
+            </button>
+        </div>
     );
 };
 
+// --- Hero Banner Component ---
+const HeroBanner = ({ settings }) => (
+    <div
+        className="relative h-64 bg-cover bg-center rounded-lg overflow-hidden my-4 mx-2 shadow-lg"
+        style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})` }}
+    >
+        <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-center text-white p-4">
+            <h1 className="text-3xl font-extrabold">{settings.heroSection?.title}</h1>
+            <p className="text-sm mt-2">{settings.heroSection?.subtitle}</p>
+            <Link
+                to="/register"
+                className="mt-4 inline-flex items-center gap-2 bg-accent text-primary-dark font-bold py-2 px-5 rounded-lg shadow-xl"
+            >
+                {settings.heroSection?.ctaText} <ArrowRight size={16} />
+            </Link>
+        </div>
+    </div>
+);
 
+// --- Quick Links Grid Component ---
+const QuickLinksGrid = ({ settings }) => (
+    <div className="grid grid-cols-4 gap-2 p-2 text-center text-xs">
+        {settings.featuresPage?.features?.slice(0, 4).map(feature => (
+            <Link to="/#featuresPage" key={feature.title} className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-primary/10">
+                <div className="w-16 h-16 flex items-center justify-center bg-primary/10 text-primary rounded-full">
+                    {getFeatureIcon(feature.title)}
+                </div>
+                <span className="font-medium text-dark-text dark:text-light-text-dark">{feature.title}</span>
+            </Link>
+        ))}
+    </div>
+);
+
+// --- Section Component with Cards ---
+const CardSection = ({ title, link, children }) => (
+    <div className="my-6">
+        <div className="flex justify-between items-center px-4 mb-2">
+            <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{title}</h2>
+            <Link to={link} className="flex items-center text-sm font-semibold text-primary">
+                Shop More <ChevronRight size={16} />
+            </Link>
+        </div>
+        <div className="flex gap-4 overflow-x-auto p-4 -mt-2">
+            {children}
+        </div>
+    </div>
+);
+
+// --- Main Landing Page ---
 const LandingPage = () => {
     const { data: settings, isLoading, isError } = useSiteSettings();
+    const [plans, setPlans] = useState<any[]>([]);
 
-    if (isLoading || isError || !settings) return <FullPageLoader />;
+    useEffect(() => {
+        apiClient.get('/plans').then(res => {
+            setPlans(res.data.data.filter(p => p.isPublic));
+        }).catch(err => console.error("Failed to fetch plans", err));
+    }, []);
+
+    if (isLoading || isError || !settings) {
+        return <div className="min-h-screen bg-light-bg flex items-center justify-center">Loading...</div>;
+    }
 
     return (
-        <div className="bg-light-bg dark:bg-dark-bg">
-            <BlurredBackgroundSection id="heroSection" className="text-center text-white">
-                 <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary to-indigo-700"></div>
-                 <div className="relative z-10 py-12">
-                    <h1 className="text-5xl md:text-6xl font-extrabold">{settings.heroSection?.title}</h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-xl text-indigo-200">{settings.heroSection?.subtitle}</p>
-                    <Link to="/register" className="mt-10 inline-block bg-accent text-primary-dark font-bold py-4 px-8 rounded-lg text-lg hover:bg-amber-400 shadow-xl transition-transform transform hover:scale-105">
-                        {settings.heroSection?.ctaText}
-                    </Link>
-                </div>
-            </BlurredBackgroundSection>
+        <div className="bg-light-bg dark:bg-dark-bg min-h-screen">
+            {/* These components are designed for mobile first */}
+            <AppInstallBanner />
+            <HeroBanner settings={settings} />
+            <QuickLinksGrid settings={settings} />
 
-            <BlurredBackgroundSection id="featuresPage">
-                 <div className="text-center">
-                    <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings.featuresPage?.title}</h2>
-                    <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
-                    <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                        {settings.featuresPage?.features.map((feature, index) => (
-                            <div key={index} className="bg-light-card/80 dark:bg-dark-card/80 p-8 rounded-xl backdrop-blur-sm border border-border-color dark:border-border-color-dark shadow-md">
-                                <h3 className="text-2xl font-bold text-primary mb-2">{feature.title}</h3>
-                                <p className="text-light-text">{feature.text}</p>
+            <CardSection title="Pricing Plans" link="/#pricingSection">
+                {plans.map(plan => (
+                    <div key={plan._id} className="flex-shrink-0 w-48 bg-light-card dark:bg-dark-card rounded-lg shadow-md p-3 border border-border-color dark:border-border-color-dark">
+                        <div className="relative">
+                            <img src={`https://placehold.co/400x400/e0e7ff/4f46e5?text=${plan.name.charAt(0)}`} alt={plan.name} className="w-full h-24 object-cover rounded-md" />
+                            <div className="absolute top-1 right-1 bg-danger text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                SAVE
                             </div>
-                        ))}
+                        </div>
+                        <h3 className="font-bold text-dark-text dark:text-dark-text-dark mt-2 truncate">{plan.name}</h3>
+                        <p className="text-lg font-bold text-primary">${(plan.price / 100).toFixed(2)}</p>
+                        <p className="text-xs text-light-text line-through">${(plan.price / 100 * 1.5).toFixed(2)}</p>
+                        <div className="w-full bg-red-100 rounded-full h-2 mt-2">
+                            <div className="bg-danger h-2 rounded-full" style={{ width: '70%' }}></div>
+                        </div>
                     </div>
-                </div>
-            </BlurredBackgroundSection>
-            
-            <BlurredBackgroundSection id="aboutPage">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings.aboutPage?.title}</h2>
-                    <p className="text-light-text dark:text-light-text-dark mt-4 max-w-2xl mx-auto">{settings.aboutPage?.subtitle}</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-                    <div className="bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-md">
-                        <h3 className="text-2xl font-bold text-primary mb-4">{settings.aboutPage?.missionTitle}</h3>
-                        <p className="mb-8 text-light-text leading-relaxed">{settings.aboutPage?.missionStatement}</p>
-                        <h3 className="text-2xl font-bold text-primary mb-4">{settings.aboutPage?.visionTitle}</h3>
-                        <p className="text-light-text leading-relaxed">{settings.aboutPage?.visionStatement}</p>
-                    </div>
-                    <div className="rounded-2xl overflow-hidden shadow-xl">
-                        <img src={settings.aboutPage?.imageUrl} alt="About Us" className="w-full h-auto object-cover"/>
-                    </div>
-                </div>
-            </BlurredBackgroundSection>
+                ))}
+            </CardSection>
 
-            <PricingSection />
-            <InstallAppSection />
-            <ContactSection />
+            {/* You can add more CardSection components here as needed */}
+
         </div>
     );
 };
