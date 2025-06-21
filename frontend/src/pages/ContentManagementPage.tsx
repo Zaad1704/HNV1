@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../api/client";
+import apiClient from "../api/client";
 
 const ContentManagementPage: React.FC = () => {
   const [content, setContent] = useState<any>({});
@@ -7,7 +7,7 @@ const ContentManagementPage: React.FC = () => {
 
   const fetchContent = async () => {
     setLoading(true);
-    const res = await api.get("/admin/content");
+    const res = await apiClient.get("/admin/content");
     setContent(res.data);
     setLoading(false);
   };
@@ -21,7 +21,7 @@ const ContentManagementPage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    await api.put("/admin/content", content);
+    await apiClient.put("/admin/content", content);
     alert("Content updated");
   };
 
