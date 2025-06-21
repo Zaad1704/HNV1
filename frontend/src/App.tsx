@@ -72,9 +72,6 @@ function App() {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
         } catch (error) {
-          // The apiClient interceptor now handles logging out for 401/403.
-          // This catch block can now be simplified to only handle unexpected errors
-          // or non-Axios errors, which would also indicate a need to logout.
           if (axios.isAxiosError(error) && error.response) {
             console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
           } else {
@@ -104,7 +101,7 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            
+
             {/* Payment related public pages */}
             <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
@@ -143,7 +140,7 @@ function App() {
               <Route path="tenant" element={<TenantDashboardPage />} />
             </Route>
           </Route>
-        
+
           {/* Admin Protected Routes - Rendered with AdminLayout */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
