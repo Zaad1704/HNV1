@@ -6,23 +6,21 @@ import { useAuthStore } from '../../store/authStore';
 import { 
     Home, Building, Users, CreditCard, Shield, Settings, 
     LogOut, Star, Menu, X, FileText, Wrench, BarChart2, Bell, MessageSquare, Briefcase
-} from 'lucide-react'; // FIX: Added more Lucide icons for new links
+} from 'lucide-react';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
 import BottomNavBar from './BottomNavBar';
-import RoleGuard from '../RoleGuard'; // FIX: Import RoleGuard for conditional rendering
+import RoleGuard from '../RoleGuard';
 
 const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Define handleLogout BEFORE its usage in DesktopSidebar
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
-    // The desktop sidebar is now a sub-component
     const DesktopSidebar = () => {
         const getLinkClass = (path) => {
             const base = 'flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors';
@@ -52,7 +50,10 @@ const DashboardLayout = () => {
                         <Link to="/dashboard/tenants" className={getLinkClass('/dashboard/tenants')}><Users size={20} /><span>Tenants</span></Link>
                         <Link to="/dashboard/expenses" className={getLinkClass('/dashboard/expenses')}><CreditCard size={20} /><span>Expenses</span></Link>
                         <Link to="/dashboard/maintenance" className={getLinkClass('/dashboard/maintenance')}><Wrench size={20} /><span>Maintenance</span></Link>
-                        <Link to="/dashboard/users" className={getLinkClass('/dashboard/users')}><Users size={20} /><span>Users & Invites</span></Link>
+                        {/* Users & Invites link wrapped with RoleGuard */}
+                        <RoleGuard allowed={['Landlord', 'Agent']}> {/* This guard applies here */}
+                            <Link to="/dashboard/users" className={getLinkClass('/dashboard/users')}><Users size={20} /><span>Users & Invites</span></Link>
+                        </RoleGuard>
                         <Link to="/dashboard/billing" className={getLinkClass('/dashboard/billing')}><CreditCard size={20} /><span>Billing</span></Link>
                         <Link to="/dashboard/audit-log" className={getLinkClass('/dashboard/audit-log')}><FileText size={20} /><span>Audit Log</span></Link>
                     </RoleGuard>
