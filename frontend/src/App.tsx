@@ -1,11 +1,11 @@
 // frontend/src/App.tsx
 
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'; // FIX: Import useLocation hook
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
-import axios from 'axios'; // Import axios to check for Axios errors
+import axios from 'axios';
 
 // --- Layout & Route Components ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -31,7 +31,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FeaturesPage from './pages/FeaturesPage';
-import ResubscribePage from './pages/ResubscribePage'; // Import the new page
+import ResubscribePage from './pages/ResubscribePage';
 
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
@@ -64,6 +64,7 @@ const FullScreenLoader = () => <div className="h-screen w-full flex items-center
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
+  const location = useLocation(); // FIX: Initialize useLocation hook
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -75,14 +76,19 @@ function App() {
         } catch (error) {
           // Check if the error is an Axios error
           if (axios.isAxiosError(error) && error.response) {
-            // If it's a 403 (e.g., account inactive, subscription expired),
-            // and we are on a public route, it means we should consider them logged out
-            // from the perspective of public content, to prevent redirect loops.
-            // If they then try to log in, the LoginPage will handle the redirect to /resubscribe.
-            if (error.response.status === 403) {
-              console.warn("User session check received 403 on a public context. Clearing token to prevent loop.");
-              logout(); // Clear auth state, effectively logging them out from public view
-            } else {
+            // FIX: If it's a 403 AND we are on the /resubscribe page, DO NOT logout.
+            // The resubscribe page expects the user to be logged in to fetch billing info.
+            if (error.response.status === 403 && location.pathname === '/resubscribe') {
+              console.warn("User session check received 403 on /resubscribe page. Preserving token state.");
+              // Do nothing, let ResubscribePage handle its own loading/error state with the token
+            } else if (error.response.status === 403) {
+              // If it's a 403 on any other non-protected route (like landing page directly),
+              // it implies an inactive user trying to access public content with a persistent token.
+              // In this case, clear the token to prevent redirect loops from the public page.
+              console.warn("User session check received 403 on public context. Clearing token to prevent loop.");
+              logout(); // Effectively logs them out from a public view
+            }
+            else {
               // For 401 (Unauthorized - token invalid/expired), network errors, or any other unexpected errors,
               // perform a full logout to clear the session and redirect to login.
               console.error("Session token is invalid or expired, or another error occurred during session check. Logging out.", error);
@@ -98,7 +104,7 @@ function App() {
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout]);
+  }, [token, user, setUser, logout, location.pathname]); // FIX: Add location.pathname to dependency array
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
