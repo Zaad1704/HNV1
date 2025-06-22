@@ -36,6 +36,7 @@ import ResubscribePage from './pages/ResubscribePage';
 // Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
 import PropertiesPage from './pages/PropertiesPage';
+import PropertyDetailsPage from './pages/PropertyDetailsPage';
 import TenantsPage from './pages/TenantsPage';
 import ExpensesPage from './pages/ExpensesPage';
 import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
@@ -61,7 +62,7 @@ import AdminDataManagementPage from './pages/AdminDataManagementPage';
 import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
 
 import NotFound from './pages/NotFound';
-import { LangProvider } from './contexts/LanguageContext'; // Ensure LangProvider is imported
+import { LangProvider } from './contexts/LanguageContext';
 
 const FullScreenLoader = () => <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text"><p>Loading Platform...</p></div>;
 
@@ -128,6 +129,7 @@ function App() {
                 <Route index element={<OverviewPage />} /> 
                 <Route path="overview" element={<OverviewPage />} />
                 <Route path="properties" element={<PropertiesPage />} />
+                <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
                 <Route path="tenants" element={<TenantsPage />} />
                 <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
                 <Route path="expenses" element={<ExpensesPage />} />
@@ -152,8 +154,8 @@ function App() {
                   <Route path="users" element={<AdminUsersPage />} />
                   <Route path="moderators" element={<AdminModeratorsPage />} />
                   <Route path="plans" element={<AdminPlansPage />} />
-                  <Route path="billing" element={<AdminBillingPage />} />
                   <Route path="site-editor" element={<SiteEditorPage />} />
+                  <Route path="billing" element={<AdminBillingPage />} />
                   <Route path="maintenance" element={<AdminMaintenancePage />} />
                   <Route path="data-management" element={<AdminDataManagementPage />} />
               </Route>
