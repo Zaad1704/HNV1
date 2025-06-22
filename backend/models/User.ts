@@ -1,4 +1,4 @@
-// backend/models/User.ts
+]// backend/models/User.ts
 
 import mongoose, { Document, Schema, Model } from "mongoose";
 import jwt, { SignOptions } from "jsonwebtoken";
@@ -14,7 +14,7 @@ export interface IUser extends Document {
   password?: string; // Password can be optional for Google OAuth users
   role: UserRole; // Corrected: Use the specific UserRole type
   name?: string;
-  status?: string;
+  status: 'active' | 'inactive' | 'suspended';
   permissions?: string[];
   organizationId?: mongoose.Types.ObjectId; // Corrected to ObjectId
   googleId?: string; // For Google OAuth
@@ -32,11 +32,11 @@ const userSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, minlength: 6, select: false },
-    role: { 
-        type: String, 
-        required: true, 
+    role: {
+        type: String,
+        required: true,
         enum: ["Super Admin", "Super Moderator", "Landlord", "Agent", "Tenant"], // Enforce roles at schema level
-        default: "Tenant" 
+        default: "Tenant"
     },
     name: { type: String },
     googleId: { type: String },
