@@ -1,75 +1,48 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Info, DollarSign, Mail, LogIn, UserPlus } from 'lucide-react';
-import { useScrollSpy } from '../../hooks/useScrollSpy';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
-const PublicBottomNavBar: React.FC = () => {
-    const location = useLocation();
-    const { t } = useTranslation();
+export default function HeaderMobileLanding() {
+  const { t } = useTranslation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-    const navItems = [
-        { name: t('header.features'), href: '/#featuresPage', icon: Home, sectionId: 'featuresPage' },
-        { name: t('header.pricing'), href: '/#pricingSection', icon: DollarSign, sectionId: 'pricingSection' },
-        { name: t('header.login'), href: '/login', icon: LogIn, sectionId: 'login', isHighlight: true }, // Explicitly highlight Login
-        { name: t('header.sign_up'), href: '/register', icon: UserPlus, sectionId: 'register' },
-        { name: t('header.contact'), href: '/#contact', icon: Mail, sectionId: 'contact' }, // Use translation key for Contact
-    ];
-
-    const sectionIds = navItems.filter(item => item.href && item.href.startsWith('/#')).map(item => item.sectionId || '');
-    const activeSectionId = useScrollSpy(sectionIds, 150);
-
-    const getLinkClass = (itemHref: string, itemSectionId?: string, isHighlight?: boolean) => {
-        const base = 'flex flex-col items-center justify-center text-xs transition-colors h-full px-1 flex-1 relative z-10'; // Added relative z-10 for layering
-        const isActive = (itemSectionId && location.pathname === '/' && activeSectionId === itemSectionId) ||
-                         (itemHref && location.pathname.startsWith(itemHref)); // Check for active hash or direct path
-
-        // Styling for the highlighted item (Login)
-        if (isHighlight) {
-            return `
-                ${base}
-                bg-brand-primary text-white font-bold rounded-lg shadow-lg
-                -mt-4 py-2 mx-1
-                transition-all duration-300 transform scale-110
-                flex-grow-0
-                relative overflow-hidden
-                before:content-[''] before:absolute before:inset-0
-                before:bg-[url('/crowned-badge-bg.png')] before:bg-no-repeat before:bg-center before:bg-contain
-                before:opacity-20 before:z-0
-            `;
-        }
-        // Styling for non-highlighted items
-        return `${base} ${isActive ? 'text-brand-primary font-semibold' : 'text-light-text hover:text-dark-text'}`;
-    };
-
-    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
-        if (href.startsWith('/#')) {
-            e.preventDefault();
-            const targetId = href.substring(2);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    };
-
-    return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
-            <div className="flex justify-around items-start h-full px-2"> {/* items-start to push text down from highlighted item */}
-                {navItems.map(item => (
-                    <Link
-                        key={item.name}
-                        to={item.href}
-                        onClick={(e) => handleScroll(e, item.href)}
-                        className={getLinkClass(item.href, item.sectionId, item.isHighlight)}
-                    >
-                        <item.icon size={item.isHighlight ? 24 : 20} className={item.isHighlight ? "text-white" : ""} /> {/* Ensure icon color for highlighted */}
-                        <span className="font-medium mt-1 text-inherit">{item.name}</span> {/* text-inherit to keep color from parent */}
-                    </Link>
-                ))}
-            </div>
-        </nav>
-    );
-};
-
-export default PublicBottomNavBar;
+  return (
+    <header className="bg-indigo-700 px-2 py-3 flex items-center justify-between">
+      <Link to="/" className="font-bold text-white text-lg">HNV</Link>
+      <nav className="flex-1 flex justify-center items-center space-x-1">
+        <Link to="#services" className="text-white px-2 py-1 text-sm">{t("header.services")}</Link>
+        <Link to="#leadership" className="text-white px-2 py-1 text-sm">{t("header.leadership")}</Link>
+        <Link to="#install-app" className="text-white px-2 py-1 text-sm">{t("header.install_app")}</Link>
+      </nav>
+      <div className="flex items-center space-x-2">
+        {/* Highlighted Login Button */}
+        <Link
+          to="/login"
+          className="bg-white text-indigo-700 font-bold px-4 py-1.5 rounded-full shadow border-2 border-indigo-700 text-base mx-auto"
+          style={{ minWidth: 90, textAlign: "center" }}
+        >
+          {t("header.login")}
+        </Link>
+        {/* Hamburger for more */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="ml-2 focus:outline-none"
+          aria-label="Open menu"
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+      {/* Drawer/Dropdown for secondary links */}
+      {menuOpen && (
+        <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg w-44 z-50">
+          <Link to="#about" className="block px-4 py-2 text-gray-800">{t('header.about')}</Link>
+          <Link to="#pricing" className="block px-4 py-2 text-gray-800">{t('header.pricing')}</Link>
+          <Link to="#contact" className="block px-4 py-2 text-gray-800">{t('header.contact')}</Link>
+          <Link to="/signup" className="block px-4 py-2 text-indigo-700 font-bold">{t('header.sign_up')}</Link>
+        </div>
+      )}
+    </header>
+  );
+}
