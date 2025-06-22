@@ -37,15 +37,19 @@ export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [lang, setLangState] = useState<LangCode>(() => {
     const persistedLang = localStorage.getItem("preferredLang") as LangCode;
-    if (persistedLang && ALL_SUPPORTED_LANGUAGES_MAP[persistedLang]) {
-      return persistedLang;
-    }
-    return (ALL_SUPPORTED_LANGUAGES_MAP[i18n.language as LangCode]
-      ? i18n.language
-      : "en") as LangCode;
+    return (persistedLang && ALL_SUPPORTED_LANGUAGES_MAP[persistedLang]) ? persistedLang : "en";
   });
 
-  const [currencyInfo, setCurrencyInfo] = useState({ code: "USD", name: "$" });
+  // --- THIS IS THE KEY CHANGE ---
+  // The currency information is now derived directly from the current language state.
+  const currencyInfo = useMemo(() => {
+    if (lang === 'bn') {
+      return { code: 'BDT', name: '৳' };
+    }
+    // Default currency
+    return { code: 'USD', name: '$' };
+  }, [lang]);
+
 
   useEffect(() => {
     if (i18n.language !== lang) {
@@ -55,44 +59,16 @@ export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     document.documentElement.lang = lang;
   }, [lang, i18n]);
 
-  useEffect(() => {
-    // Only auto-detect if no user preference
-    if (!localStorage.getItem("preferredLang")) {
-      const fetchLocale = async () => {
-        try {
-          const { data } = await apiClient.get("/localization/detect");
-          setCurrencyInfo({
-            code: data.currency || "USD",
-            name: data.currency === "BDT" ? "৳" : "$",
-          });
-          setLangState(data.lang);
-        } catch (error) {
-          setCurrencyInfo({ code: "USD", name: "$" });
-          setLangState("en");
-        }
-      };
-      fetchLocale();
-    }
-  }, []);
-
   const toggleLanguages = useMemo(() => {
-    const options: LangOption[] = [ALL_SUPPORTED_LANGUAGES_MAP["en"]];
-    if (
-      ALL_SUPPORTED_LANGUAGES_MAP["bn"] &&
-      !options.some((o) => o.code === "bn")
-    ) {
-      options.push(ALL_SUPPORTED_LANGUAGES_MAP["bn"]);
-    }
-    return options;
+    return Object.values(ALL_SUPPORTED_LANGUAGES_MAP);
   }, []);
 
   const getNextToggleLanguage = () => {
-    const idx = toggleLanguages.findIndex((l) => l.code === lang);
-    return toggleLanguages[(idx + 1) % toggleLanguages.length];
+    const currentIndex = toggleLanguages.findIndex((l) => l.code === lang);
+    return toggleLanguages[(currentIndex + 1) % toggleLanguages.length];
   };
 
-  const currentLanguageName =
-    ALL_SUPPORTED_LANGUAGES_MAP[lang]?.name || "English";
+  const currentLanguageName = ALL_SUPPORTED_LANGUAGES_MAP[lang]?.name || "English";
 
   return (
     <LangContext.Provider
