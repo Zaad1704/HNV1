@@ -6,7 +6,7 @@ import {
   deleteUser,
   getOrgUsers,
   getManagedAgents,
-  updatePassword // Import the new controller
+  updatePassword // This import will now work
 } from '../controllers/userController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -15,8 +15,7 @@ const router = Router();
 
 router.use(protect);
 
-// Add this new route for password updates
-router.put('/update-password', updatePassword);
+router.put('/update-password', updatePassword); // The route for the new function
 
 router.route('/').get(authorize(['Super Admin']), getUsers);
 
