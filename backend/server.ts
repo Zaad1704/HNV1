@@ -8,8 +8,8 @@ import path from 'path';
 import passport from 'passport';
 import session from 'express-session';
 import helmet from 'helmet'; 
-import morgan from 'morgan'; // Added import
-import cookieParser from 'cookie-parser'; // Added import
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 import './config/passport-setup';
 
@@ -89,8 +89,8 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev')); // Added morgan for request logging (useful in dev)
-app.use(cookieParser()); // Added cookie-parser for parsing cookies
+app.use(morgan('dev'));
+app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -113,15 +113,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// CSP Configuration
+// Use helmet for general security headers, but remove the CSP middleware
+app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
-  directives: {
-    ...helmet.contentSecurityPolicy.getDefaultDirectives(), 
-    "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com"], 
-    "frame-src": ["'self'", "https://accounts.google.com"], 
-    "connect-src": ["'self'", "https://accounts.google.com"], 
-  },
-}));
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "https://accounts.google.com"],
+      "frame-src": ["'self'", "https://accounts.google.com"],
+      "connect-src": ["'self'", "https://accounts.google.com"],
+    },
+  }));
 
 
 // API Routes
