@@ -12,24 +12,19 @@ import bodyParser from 'body-parser';
 
 dotenv.config();
 
-// --- Register Passport strategies BEFORE using routes that require them ---
 import './config/passport-setup';
 
-// --- ROUTE FILE IMPORTS (make sure all these files exist in your repo) ---
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import invitationRoutes from './routes/invitationRoutes';
-import propertyRoutes from './routes/propertyRoutes';
-import tenantRoutes from './routes/tenantRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import notificationRoutes from './routes/notificationRoutes';
-// Add more route imports here as your repo grows
+// DO NOT import propertyRoutes or tenantRoutes (they do not exist)
 
 const app = express();
 
-// --- MIDDLEWARE ---
 app.use(helmet());
 app.use(
   helmet.contentSecurityPolicy({
@@ -50,7 +45,6 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// --- SESSION AND PASSPORT MIDDLEWARE ---
 if (!process.env.SESSION_SECRET) {
   console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
 }
@@ -68,20 +62,14 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- ROUTES ---
-// The paths here match the REST API design in your repo. Adjust as needed.
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/invitations', invitationRoutes);
-app.use('/api/properties', propertyRoutes);
-app.use('/api/tenants', tenantRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
-// Add more app.use() lines here as new routes are created
 
-// --- STATIC FILES FOR FRONTEND (if deployed together) ---
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist')));
   app.get('*', (req, res) => {
@@ -89,13 +77,11 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// --- ERROR HANDLING ---
-app.use((err, req, res, next) => {
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Server error:', err);
   res.status(err.status || 500).json({ message: err.message || 'Server error' });
 });
 
-// --- DATABASE CONNECTION AND SERVER START ---
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/hnv';
 
