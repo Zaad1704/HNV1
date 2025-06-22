@@ -1,48 +1,90 @@
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Compass, Tag, Phone, LogIn, MoreHorizontal } from 'lucide-react';
+import { useScrollSpy } from '../../hooks/useScrollSpy';
+import { useTranslation } from 'react-i18next';
 
-export default function HeaderMobileLanding() {
-  const { t } = useTranslation();
-  const [menuOpen, setMenuOpen] = useState(false);
+const PublicBottomNavBar = () => {
+    const location = useLocation();
+    const { t } = useTranslation();
+    const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
 
-  return (
-    <header className="bg-indigo-700 px-2 py-3 flex items-center justify-between">
-      <Link to="/" className="font-bold text-white text-lg">HNV</Link>
-      <nav className="flex-1 flex justify-center items-center space-x-1">
-        <Link to="#services" className="text-white px-2 py-1 text-sm">{t("header.services")}</Link>
-        <Link to="#leadership" className="text-white px-2 py-1 text-sm">{t("header.leadership")}</Link>
-        <Link to="#install-app" className="text-white px-2 py-1 text-sm">{t("header.install_app")}</Link>
-      </nav>
-      <div className="flex items-center space-x-2">
-        {/* Highlighted Login Button */}
-        <Link
-          to="/login"
-          className="bg-white text-indigo-700 font-bold px-4 py-1.5 rounded-full shadow border-2 border-indigo-700 text-base mx-auto"
-          style={{ minWidth: 90, textAlign: "center" }}
-        >
-          {t("header.login")}
-        </Link>
-        {/* Hamburger for more */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="ml-2 focus:outline-none"
-          aria-label="Open menu"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      {/* Drawer/Dropdown for secondary links */}
-      {menuOpen && (
-        <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg w-44 z-50">
-          <Link to="#about" className="block px-4 py-2 text-gray-800">{t('header.about')}</Link>
-          <Link to="#pricing" className="block px-4 py-2 text-gray-800">{t('header.pricing')}</Link>
-          <Link to="#contact" className="block px-4 py-2 text-gray-800">{t('header.contact')}</Link>
-          <Link to="/signup" className="block px-4 py-2 text-indigo-700 font-bold">{t('header.sign_up')}</Link>
-        </div>
-      )}
-    </header>
-  );
-}
+    const navItems = [
+        { name: t('header.features', 'Features'), href: '/#featuresPage', icon: Compass, sectionId: 'featuresPage' },
+        { name: t('header.about', 'About'), href: '/#aboutPage', icon: Home, sectionId: 'aboutPage' },
+        { name: t('header.pricing', 'Pricing'), href: '/#pricingSection', icon: Tag, sectionId: 'pricingSection' },
+        { name: t('header.contact', 'Contact'), href: '/#contact', icon: Phone, sectionId: 'contact' },
+    ];
+    
+    // Split items for layout
+    const leftItems = navItems.slice(0, 2);
+    const rightItems = navItems.slice(2, 3); // Just pricing
+    const moreMenuItems = navItems.slice(3); // Contact and others
+
+    const sectionIds = navItems.map(item => item.sectionId);
+    const activeSectionId = useScrollSpy(sectionIds, 150);
+
+    const getLinkClass = (itemHref: string, itemSectionId?: string) => {
+        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
+        const isActive = (itemSectionId && location.pathname === '/' && activeSectionId === itemSectionId);
+        return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text group-hover:text-brand-primary'}`;
+    };
+
+    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
+        setMoreMenuOpen(false); // Close menu on click
+        if (href.startsWith('/#')) {
+            e.preventDefault();
+            const targetId = href.substring(2);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
+    return (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
+            {isMoreMenuOpen && (
+                <div className="absolute bottom-16 right-4 w-40 bg-white rounded-lg shadow-lg border border-border-color p-2">
+                    {moreMenuItems.map(item => (
+                        <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100">
+                           <item.icon size={16} /> {item.name}
+                        </a>
+                    ))}
+                </div>
+            )}
+            <div className="grid grid-cols-5 h-full">
+                {/* Left Items */}
+                {leftItems.map(item => (
+                    <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className={`${getLinkClass(item.href, item.sectionId)} group`}>
+                        <item.icon size={20} />
+                        <span className="font-medium mt-1">{item.name}</span>
+                    </a>
+                ))}
+                
+                {/* Centered Login Button */}
+                <div className="relative flex justify-center">
+                    <Link to="/login" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg">
+                        <LogIn size={24} />
+                    </Link>
+                </div>
+                
+                {/* Right Items */}
+                {rightItems.map(item => (
+                     <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className={`${getLinkClass(item.href, item.sectionId)} group`}>
+                        <item.icon size={20} />
+                        <span className="font-medium mt-1">{item.name}</span>
+                    </a>
+                ))}
+
+                {/* More Button */}
+                <button onClick={() => setMoreMenuOpen(!isMoreMenuOpen)} className="flex flex-col items-center justify-center w-full h-full text-xs text-light-text">
+                    <MoreHorizontal size={20} />
+                    <span className="font-medium mt-1">More</span>
+                </button>
+            </div>
+        </nav>
+    );
+};
+
+export default PublicBottomNavBar;
