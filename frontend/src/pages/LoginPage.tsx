@@ -20,14 +20,18 @@ const LoginPage: React.FC = () => {
     setError('');
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      loginAction(response.data.token); // Store token in local storage and auth store
+      
+      // --- THIS IS THE FIX ---
+      // Pass both the token AND the user object to the login action
+      if (response.data.token && response.data.user) {
+        loginAction(response.data.token, response.data.user);
+      } else {
+        throw new Error("Login response was missing token or user data.");
+      }
 
-      // NEW LOGIC: Check status from backend response for immediate redirection
       if (response.data.userStatus && response.data.userStatus !== 'active') {
-        // Redirect to a dedicated resubscribe/account-inactive page
         navigate(`/resubscribe?status=${response.data.userStatus}`, { replace: true });
       } else {
-        // User is active, proceed to dashboard
         navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
@@ -37,16 +41,14 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // Handle Google Login
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google`; // Directs to backend Google OAuth initiation
+    window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/auth/google`;
   };
 
   return (
     <div className="min-h-screen bg-brand-bg flex flex-col p-4">
       <div className="text-center my-8">
         <Link to="/" className="inline-flex items-center gap-3">
-            {/* Implement logo based on site settings */}
             <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="logo" className="h-10 w-10" />
             <span className="text-2xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
         </Link>
@@ -73,7 +75,6 @@ const LoginPage: React.FC = () => {
             </div>
         </form>
 
-        {/* Google Login Button */}
         <div className="relative flex items-center justify-center py-4">
             <div className="flex-grow border-t border-border-color"></div>
             <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
@@ -82,7 +83,6 @@ const LoginPage: React.FC = () => {
         <button onClick={handleGoogleLogin} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-white hover:bg-gray-100 transition-colors">
             <Chrome size={20} /> Sign In with Google
         </button>
-
       </div>
 
        <p className="text-center text-sm text-light-text mt-8 py-4">
