@@ -1,8 +1,10 @@
+// backend/controllers/communicationController.ts
+
 import { Request, Response } from 'express';
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 import User from '../models/User';
-import Property from '../models/Property'; // Import IProperty if not already
+import Property from '../models/Property';
 
 export const sendCustomEmail = async (req: Request, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
@@ -12,8 +14,8 @@ export const sendCustomEmail = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: 'Recipient, subject, and message are required.' });
     }
 
-    if (!sender) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!sender || !sender.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
 
     try {
@@ -40,7 +42,6 @@ export const sendCustomEmail = async (req: Request, res: Response) => {
     }
 };
 
-// --- MODIFIED FUNCTION: sendRentReminder ---
 export const sendRentReminder = async (req: Request, res: Response) => {
     const { tenantId } = req.body;
     const sender = req.user;
@@ -49,13 +50,12 @@ export const sendRentReminder = async (req: Request, res: Response) => {
         res.status(400);
         throw new Error('Tenant ID is required.');
     }
-    if (!sender) {
+    if (!sender || !sender.organizationId) {
         res.status(401);
-        throw new Error('Not authorized.');
+        throw new Error('Not authorized or not part of an organization.');
     }
 
     try {
-        // --- CHANGE: Populate propertyId to access its 'name' property ---
         const tenant = await Tenant.findById(tenantId).populate('propertyId', 'name'); 
 
         if (!tenant || tenant.organizationId.toString() !== sender.organizationId.toString()) {
@@ -66,7 +66,6 @@ export const sendRentReminder = async (req: Request, res: Response) => {
         const senderName = sender.name || (sender.role === 'Landlord' ? 'Your Landlord' : 'Your Agent');
         const senderEmail = sender.email;
 
-        // Ensure propertyId is populated before accessing name
         const propertyName = (tenant.propertyId as any)?.name || 'your property';
 
         const subject = `Rent Payment Reminder for Unit ${tenant.unit} - ${propertyName}`;
