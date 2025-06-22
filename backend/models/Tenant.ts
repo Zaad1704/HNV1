@@ -21,7 +21,6 @@ export interface ITenant extends Document {
     email: string;
     phone?: string;
     
-    // FIX: Allow these fields to be either an ID or the full populated object
     propertyId: Types.ObjectId | IProperty;
     organizationId: Types.ObjectId | IOrganization;
 
@@ -39,6 +38,9 @@ export interface ITenant extends Document {
     numberOfOccupants?: number;
     additionalAdults?: IAdditionalAdult[];
     createdAt: Date;
+    // NEW FIELDS for D.2: Rent Discount
+    discountAmount?: number; // Amount of temporary discount
+    discountExpiresAt?: Date; // Date when the discount expires
 }
 
 // The Schema definition does NOT change. It still defines the underlying storage type.
@@ -69,6 +71,9 @@ const TenantSchema: Schema<ITenant> = new Schema({
         phone: { type: String },
         idCardUrl: { type: String },
     }],
+    // NEW SCHEMA FIELDS for D.2
+    discountAmount: { type: Number, default: 0 },
+    discountExpiresAt: { type: Date },
 }, { timestamps: true });
 
 export default model<ITenant>('Tenant', TenantSchema);
