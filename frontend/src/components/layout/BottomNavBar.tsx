@@ -1,14 +1,12 @@
-// frontend/src/components/layout/BottomNavBar.tsx
-
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react'; // FIX: Added LogOut icon
+import { useAuthStore } from '../../store/authStore'; // Import useAuthStore
 
 const BottomNavBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { logout } = useAuthStore();
+    const { logout } = useAuthStore(); // Get logout function
 
     const handleLogout = () => {
         logout();
@@ -16,67 +14,39 @@ const BottomNavBar = () => {
     };
 
     const navItems = [
-        { href: '/dashboard/properties', icon: Building, label: 'Props' },
+        { href: '/dashboard/overview', icon: Home, label: 'Home' },
+        { href: '/dashboard/properties', icon: Building, label: 'Properties' },
         { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true }, // Crown Home button
         { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses' },
+        { href: '/dashboard/maintenance', icon: Wrench, label: 'Maint.' },
         { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-        { action: handleLogout, icon: LogOut, label: 'Logout' }
+        // Add Logout item
+        { action: handleLogout, icon: LogOut, label: 'Logout' } // Use 'action' for logout button
     ];
 
-    // This function will ONLY return the className string
-    const getLinkClassesString = (itemHref: string, isCrown?: boolean) => {
-        let isActive = false; 
-        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        isActive = location.pathname.startsWith(itemHref);
-
-        const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
-
-        // NEW: Apply all crown-specific classes directly here, no inline style for them
-        const crownClasses = isCrown ? 
-            'flex-grow-0 w-16 h-16 -mt-4 mx-2 rounded-xl text-white shadow-md relative z-20 flex-shrink-0 ' + 
-            'bg-brand-primary border-4 border-light-card ' + 
-            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
-            'flex-grow';
-        
-        const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
-
-        return `${base} ${activeColor} ${crownClasses} ${crownActiveColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card ${isCrown ? 'dark:bg-brand-primary dark:border-dark-bg' : ''}`;
-    };
-
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30 dark:bg-dark-card dark:border-border-color-dark">
-            <div className="flex justify-around items-end h-full">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
+            <div className="flex justify-around items-center h-full">
                 {navItems.map(item => {
+                    const isActive = location.pathname.startsWith(item.href || ''); // Handle action items not having href
+                    
+                    // Render Link for navigation items, button for action items
                     if (item.href) {
                         return (
-                            <Link 
-                                key={item.label} 
-                                to={item.href} 
-                                className={getLinkClassesString(item.href, item.isCrown)} // Pass classes string here
-                                // NEW: Apply background-image directly in style prop if it's a crown
-                                style={item.isCrown ? { 
-                                    backgroundImage: `url('/crowned-badge-bg.png')`,
-                                    backgroundSize: 'contain',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                } : undefined} 
-                            >
-                                <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                                    <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
-                                    <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.label}</span>
-                                </div>
+                            <Link key={item.label} to={item.href} className={`flex flex-col items-center justify-center w-full h-full text-xs transition-colors ${isActive ? 'text-brand-primary' : 'text-light-text'}`}>
+                                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <span className="font-medium mt-1">{item.label}</span>
                             </Link>
                         );
                     } else if (item.action) {
                         return (
-                            <button key={item.label} onClick={item.action} className="flex flex-col items-center justify-center w-full h-full text-xs transition-colors text-light-text hover:text-red-500 dark:text-light-text-dark dark:hover:text-red-400">
+                            <button key={item.label} onClick={item.action} className="flex flex-col items-center justify-center w-full h-full text-xs transition-colors text-light-text hover:text-red-500">
                                 <item.icon size={20} strokeWidth={2} />
                                 <span className="font-medium mt-1">{item.label}</span>
                             </button>
                         );
                     }
-                    return null;
+                    return null; // Should not happen
                 })}
             </div>
         </nav>
