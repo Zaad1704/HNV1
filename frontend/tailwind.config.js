@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
+  darkMode: 'class', // <--- Correctly set to 'class'
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -28,8 +28,8 @@ export default {
         // Dark Theme Semantics (Optional, for dashboard)
         'dark-bg': '#0f172a',
         'dark-card': '#1e293b',
-        'dark-text-dark': '#f8fafc',
-        'light-text-dark': '#cbd5e1',
+        'dark-text-dark': '#f8fafc', // For elements that are dark in light mode, become light in dark mode
+        'light-text-dark': '#cbd5e1', // For elements that are light in light mode, become light gray in dark mode
         'border-color-dark': '#334155',
       }
     },
