@@ -1,51 +1,95 @@
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { Home, Building, Users, MoreHorizontal, DollarSign } from 'lucide-react';
+import MoreMenuModal from '../common/MoreMenuModal';
+import RoleGuard from '../RoleGuard';
 
-export default function HeaderMobileDashboard() {
-  const { t } = useTranslation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
+const BottomNavBar = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout } = useAuthStore();
+    const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
 
-  return (
-    <header className="bg-indigo-700 px-2 py-3 flex items-center justify-between">
-      <Link to="/dashboard" className="font-bold text-white text-lg">HNV</Link>
-      <nav className="flex-1 flex justify-center items-center space-x-1">
-        {/* Highlighted Home Button */}
-        <Link
-          to="/dashboard"
-          className={`font-bold px-4 py-1.5 rounded-full border-2 shadow text-base mx-auto ${
-            location.pathname === "/dashboard"
-              ? "bg-white text-indigo-700 border-indigo-700"
-              : "bg-indigo-500 text-white border-indigo-500"
-          }`}
-          style={{ minWidth: 90, textAlign: "center" }}
-        >
-          {t("dashboard.overview")}
-        </Link>
-      </nav>
-      <div className="flex items-center space-x-2">
-        {/* Hamburger for more */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="ml-2 focus:outline-none"
-          aria-label="Open menu"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-      {menuOpen && (
-        <div className="absolute top-16 right-4 bg-white shadow-lg rounded-lg w-44 z-50">
-          <Link to="/properties" className="block px-4 py-2 text-gray-800">{t('dashboard.properties')}</Link>
-          <Link to="/tenants" className="block px-4 py-2 text-gray-800">{t('dashboard.tenants')}</Link>
-          <Link to="/expenses" className="block px-4 py-2 text-gray-800">{t('dashboard.expenses')}</Link>
-          <Link to="/maintenance" className="block px-4 py-2 text-gray-800">{t('dashboard.maintenance')}</Link>
-          <Link to="/profile" className="block px-4 py-2 text-gray-800">{t('dashboard.settings')}</Link>
-          <Link to="/logout" className="block px-4 py-2 text-red-600 font-bold">{t('dashboard.logout')}</Link>
-        </div>
-      )}
-    </header>
-  );
-}
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const getLinkClass = (path: string, isButton: boolean = false) => {
+        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
+        const isActive = !isButton && location.pathname.startsWith(path);
+        return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text'}`;
+    };
+
+    // Define items for the "More" menu
+    const moreNavItems = [
+        { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/maintenance', icon: Wrench, label: 'Maintenance', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/users', icon: Users, label: 'Users & Invites', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/billing', icon: CreditCard, label: 'Billing', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/audit-log', icon: FileText, label: 'Audit Log', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+        { action: handleLogout, icon: LogOut, label: 'Logout' }
+    ];
+    
+    // Primary items visible on the bar
+    const mainNavItems = [
+        { href: '/dashboard/properties', icon: Building, label: 'Properties', roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/tenants', icon: Users, label: 'Tenants', roles: ['Landlord', 'Agent'] }
+    ];
+
+    const rightNavItems = [
+        { href: '/dashboard/cashflow', icon: DollarSign, label: 'Cash Flow', roles: ['Landlord', 'Agent'] }
+    ];
+
+    return (
+        <>
+            <MoreMenuModal
+                isOpen={isMoreMenuOpen}
+                onClose={() => setMoreMenuOpen(false)}
+                navItems={moreNavItems}
+                userRole={user?.role}
+                handleLogout={handleLogout}
+            />
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
+                <div className="grid grid-cols-5 h-full">
+                    {/* Left Items */}
+                    <RoleGuard allowed={['Landlord', 'Agent']}>
+                        {mainNavItems.map(item => (
+                             <Link key={item.label} to={item.href} className={getLinkClass(item.href)}>
+                                <item.icon size={20} strokeWidth={location.pathname.startsWith(item.href) ? 2.5 : 2} />
+                                <span className="font-medium mt-1">{item.label}</span>
+                            </Link>
+                        ))}
+                    </RoleGuard>
+
+                    {/* Centered Home Button */}
+                    <div className="relative flex justify-center">
+                        <Link to="/dashboard/overview" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg">
+                            <Home size={24} />
+                        </Link>
+                    </div>
+
+                    {/* Right Items */}
+                    <RoleGuard allowed={['Landlord', 'Agent']}>
+                         {rightNavItems.map(item => (
+                             <Link key={item.label} to={item.href} className={getLinkClass(item.href)}>
+                                <item.icon size={20} strokeWidth={location.pathname.startsWith(item.href) ? 2.5 : 2} />
+                                <span className="font-medium mt-1">{item.label}</span>
+                            </Link>
+                        ))}
+                    </RoleGuard>
+
+                    {/* More Button */}
+                    <button onClick={() => setMoreMenuOpen(true)} className={getLinkClass('', true)}>
+                        <MoreHorizontal size={20} />
+                        <span className="font-medium mt-1">More</span>
+                    </button>
+                </div>
+            </nav>
+        </>
+    );
+};
+
+export default BottomNavBar;
