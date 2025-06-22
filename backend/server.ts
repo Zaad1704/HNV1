@@ -40,6 +40,8 @@ import invoiceRoutes from './routes/invoiceRoutes';
 import receiptRoutes from './routes/receiptRoutes'; 
 import tenantPortalRoutes from './routes/tenantPortalRoutes'; 
 import communicationRoutes from './routes/communicationRoutes'; 
+// NEW IMPORT for G: CashFlow Routes
+import cashFlowRoutes from './routes/cashFlowRoutes'; 
 
 
 dotenv.config();
@@ -66,13 +68,11 @@ connectDB();
 const allowedOrigins: string[] = [
   process.env.CORS_ORIGIN || '',
   'http://localhost:3000',
-  // FIX: Ensure your Render frontend URL is here for production deployments
   'https://hnv-saas-frontend.onrender.com' 
 ].filter(Boolean);
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true); 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -81,15 +81,13 @@ const corsOptions: CorsOptions = {
     }
   },
   credentials: true,
-  // Allow common methods and headers for API calls
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type,Authorization,X-Org-Id', // X-Org-Id for organization context
+  allowedHeaders: 'Content-Type,Authorization,X-Org-Id',
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // Body parser for JSON
-app.use(express.urlencoded({ extended: true })); // Body parser for URL-encoded data
-// Serve static files from the 'public' directory (for uploads, shared documents)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -97,8 +95,6 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Session and Passport Middleware
 if (!process.env.SESSION_SECRET) {
     console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
-    // In production, you might want to exit, but for dev, you could default to a string
-    // process.exit(1);
 }
 app.use(session({
     secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev', 
@@ -144,13 +140,15 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/receipts', receiptRoutes); 
 app.use('/api/tenant-portal', tenantPortalRoutes); 
 app.use('/api/communication', communicationRoutes); 
+// NEW ROUTE for G: Cash Flow
+app.use('/api/cashflow', cashFlowRoutes); 
 
 
 app.get('/', (req: Request, res: Response) => {
   res.send('HNV SaaS API is running');
 });
 
-// FIX: Global Error Handler - It should be the last middleware
+// Global Error Handler
 import { errorHandler } from './middleware/errorHandler';
 app.use(errorHandler);
 
