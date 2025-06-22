@@ -1,9 +1,9 @@
 // frontend/src/components/layout/BottomNavBar.tsx
 
 import React from 'react';
-import { Link, useLocation, useNavigate } => 'react-router-dom';
-import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } => 'lucide-react';
-import { useAuthStore } => '../../store/authStore';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // --- CHANGE: '=>' changed to 'from' ---
+import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react'; // --- CHANGE: '=>' changed to 'from' ---
+import { useAuthStore } from '../../store/authStore'; // --- CHANGE: '=>' changed to 'from' ---
 
 const BottomNavBar = () => {
     const location = useLocation();
@@ -42,7 +42,7 @@ const BottomNavBar = () => {
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30 dark:bg-dark-card dark:border-border-color-dark">
-            <div className="flex justify-around items-end h-full"> {/* Changed align-items to end for crown effect */}
+            <div className="flex justify-around items-end h-full">
                 {navItems.map(item => {
                     if (item.href) {
                         return (
