@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import apiClient from '../api/client';
-import AddTenantModal from '../components/common/AddTenantModal'; // Existing Add modal
+import AddTenantModal from '../components/common/AddTenantModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, FileDown, ClipboardList, Edit } from 'lucide-react'; // Added Edit icon
+import { Plus, FileDown, ClipboardList, Edit, Eye } from 'lucide-react'; // Added Eye icon
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 // Define interface for tenant data, including new discount fields
 export interface ITenant {
@@ -17,11 +18,10 @@ export interface ITenant {
         name: string;
     };
     organizationId: string;
-    leaseEndDate?: string; // Existing
-    rentAmount?: number; // Existing
-    discountAmount?: number; // NEW
-    discountExpiresAt?: string; // NEW
-    // Add other existing fields as necessary for the form
+    leaseEndDate?: string;
+    rentAmount?: number;
+    discountAmount?: number;
+    discountExpiresAt?: string;
 }
 
 const fetchTenants = async () => {
@@ -33,8 +33,8 @@ const fetchTenants = async () => {
 interface EditTenantModalProps {
     isOpen: boolean;
     onClose: () => void;
-    tenant: ITenant; // The tenant data to edit
-    onTenantUpdated: () => void; // Callback to refetch data
+    tenant: ITenant;
+    onTenantUpdated: () => void;
 }
 
 const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tenant, onTenantUpdated }) => {
@@ -42,12 +42,12 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
         name: tenant.name || '',
         email: tenant.email || '',
         phone: tenant.phone || '',
-        propertyId: tenant.propertyId?._id || '', // Pre-populate with existing property ID
+        propertyId: tenant.propertyId?._id || '',
         unit: tenant.unit || '',
         leaseEndDate: tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toISOString().split('T')[0] : '',
         rentAmount: tenant.rentAmount || 0,
-        discountAmount: tenant.discountAmount || 0, // NEW
-        discountExpiresAt: tenant.discountExpiresAt ? new Date(tenant.discountExpiresAt).toISOString().split('T')[0] : '', // NEW
+        discountAmount: tenant.discountAmount || 0,
+        discountExpiresAt: tenant.discountExpiresAt ? new Date(tenant.discountExpiresAt).toISOString().split('T')[0] : '',
     });
     const [error, setError] = useState('');
 
@@ -56,7 +56,7 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
     const mutation = useMutation({
         mutationFn: (updatedTenantData: Partial<ITenant>) => apiClient.put(`/tenants/${tenant._id}`, updatedTenantData),
         onSuccess: () => {
-            onTenantUpdated(); // Refetch tenants
+            onTenantUpdated();
             onClose();
         },
         onError: (err: any) => setError(err.response?.data?.message || 'Failed to update tenant.')
@@ -69,13 +69,12 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        // Send only the fields that can be updated, and ensure types are correct
         const dataToSubmit = {
             ...formData,
             rentAmount: Number(formData.rentAmount),
-            discountAmount: Number(formData.discountAmount), // Ensure number type
-            leaseEndDate: formData.leaseEndDate || undefined, // Allow clearing
-            discountExpiresAt: formData.discountExpiresAt || undefined, // Allow clearing
+            discountAmount: Number(formData.discountAmount),
+            leaseEndDate: formData.leaseEndDate || undefined,
+            discountExpiresAt: formData.discountExpiresAt || undefined,
         };
         mutation.mutate(dataToSubmit);
     };
@@ -129,9 +128,11 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
 
 // --- Main TenantsPage Component ---
 const TenantsPage = () => {
+  const navigate = useNavigate(); // Initialize navigate hook
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // New state for edit modal
-  const [selectedTenant, setSelectedTenant] = useState<ITenant | null>(null); // New state for selected tenant
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<ITenant | null>(null);
 
   const queryClient = useQueryClient();
   const { data: tenants = [], isLoading, isError } = useQuery({ queryKey: ['tenants'], queryFn: fetchTenants });
@@ -159,18 +160,18 @@ const TenantsPage = () => {
                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Tenant Name</th>
                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Property</th>
                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Unit</th>
-                <th className="p-4 text-sm font-semibold text-light-text uppercase">Rent / Discount</th> {/* Modified column header */}
+                <th className="p-4 text-sm font-semibold text-light-text uppercase">Rent / Discount</th>
                 <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
                 <th className="p-4 text-sm font-semibold text-light-text uppercase text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-color">
-              {tenants.map((tenant: ITenant) => ( // Use ITenant type
+              {tenants.map((tenant: ITenant) => (
                   <tr key={tenant._id} className="hover:bg-gray-50">
                     <td className="p-4 font-semibold text-dark-text">{tenant.name}</td>
                     <td className="p-4 text-light-text">{tenant.propertyId?.name || 'N/A'}</td>
                     <td className="p-4 text-light-text">{tenant.unit}</td>
-                    <td className="p-4 text-light-text"> {/* Display rent and discount */}
+                    <td className="p-4 text-light-text">
                         ${tenant.rentAmount?.toFixed(2) || '0.00'}
                         {tenant.discountAmount && tenant.discountAmount > 0 && (
                             <span className="text-sm text-red-500 block">
@@ -183,13 +184,23 @@ const TenantsPage = () => {
                         {tenant.status}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="p-4 text-right flex items-center justify-end gap-2"> {/* Added flex for action buttons */}
                       <button
-                         onClick={() => { setSelectedTenant(tenant); setIsEditModalOpen(true); }} // New: Open Edit Modal
-                         className="font-medium text-brand-primary hover:underline flex items-center gap-1 ml-auto"
+                         onClick={() => { setSelectedTenant(tenant); setIsEditModalOpen(true); }}
+                         className="font-medium text-brand-primary hover:underline flex items-center gap-1"
+                         title="Edit Tenant Details"
                       >
-                         <Edit size={16}/> {/* Changed icon to Edit */}
-                         Manage
+                         <Edit size={16}/>
+                         Edit
+                      </button>
+                      {/* NEW: View Statement Button */}
+                      <button
+                         onClick={() => navigate(`/dashboard/tenants/${tenant._id}/statement`)}
+                         className="font-medium text-blue-500 hover:underline flex items-center gap-1"
+                         title="View Monthly Statement"
+                      >
+                         <Eye size={16}/>
+                         Statement
                       </button>
                     </td>
                   </tr>
@@ -206,12 +217,12 @@ const TenantsPage = () => {
   return (
     <div>
       <AddTenantModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-      {selectedTenant && ( // Render Edit Modal if a tenant is selected
+      {selectedTenant && (
         <EditTenantModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           tenant={selectedTenant}
-          onTenantUpdated={() => queryClient.invalidateQueries({ queryKey: ['tenants'] })} // Invalidate to refetch
+          onTenantUpdated={() => queryClient.invalidateQueries({ queryKey: ['tenants'] })}
         />
       )}
 
