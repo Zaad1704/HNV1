@@ -1,25 +1,11 @@
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
-import fs from 'fs'; // Import the file system module
+// Removed 'fs' import as it's no longer needed for disk operations.
+// import fs from 'fs'; 
 
-// Configure how files are stored
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadPath = path.join(__dirname, '..', 'public', 'uploads'); // Define absolute path
-        
-        // Ensure the directory exists. Create it if it doesn't.
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true }); // `recursive: true` ensures parent directories are also created
-        }
-        cb(null, uploadPath); // Pass the absolute path to Multer
-    },
-    filename: function (req, file, cb) {
-        // Create a unique filename to prevent overwrites
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Configure how files are stored: in memory
+const storage = multer.memoryStorage(); // <--- CHANGE: Use memoryStorage instead of diskStorage
 
 // File filter to only allow image files
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -31,7 +17,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
 };
 
 const upload = multer({ 
-    storage: storage,
+    storage: storage, // <--- Use the memory storage
     limits: {
         fileSize: 1024 * 1024 * 5 // 5MB file size limit
     },
