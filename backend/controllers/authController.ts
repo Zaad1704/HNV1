@@ -1,21 +1,16 @@
-// backend/controllers/authController.ts
-
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
-// registerUser function remains the same...
-export const registerUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
-    // ... existing implementation
-    // This part of the code was not in the provided error logs, assuming it's correct.
+// Email/Password Registration
+export const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
-
     if (userExists) {
         res.status(400);
         throw new Error('User already exists');
@@ -23,30 +18,27 @@ export const registerUser = asyncHandler(async (req: Request<any, any, any>, res
 
     let organization;
     if (role === 'Landlord') {
-        // Create a new organization for the landlord
         organization = new Organization({ name: `${name}'s Organization` });
         await organization.save();
 
-        // Create a default trial subscription for the new organization
-        const defaultPlan = await Plan.findOne({ name: 'Free Trial' }); // Assuming 'Free Trial' plan exists
+        const defaultPlan = await Plan.findOne({ name: 'Free Trial' });
         if (!defaultPlan) {
             res.status(500);
             throw new Error('Default plan not found. Please create default plans.');
         }
 
         const trialExpiresAt = new Date();
-        trialExpiresAt.setDate(trialExpiresAt.getDate() + 14); // 14-day trial
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + 14);
 
         const subscription = new Subscription({
             organizationId: organization._id,
             planId: defaultPlan._id,
             status: 'trialing',
-            trialExpiresAt: trialExpiresAt,
-            currentPeriodEndsAt: trialExpiresAt, // For trial, it's when trial ends
+            trialExpiresAt,
+            currentPeriodEndsAt: trialExpiresAt,
         });
         await subscription.save();
 
-        // Link subscription to organization
         organization.subscription = subscription._id;
         await organization.save();
     }
@@ -56,7 +48,7 @@ export const registerUser = asyncHandler(async (req: Request<any, any, any>, res
         email,
         password,
         role,
-        organizationId: organization ? organization._id : undefined, // Assign organization only if created
+        organizationId: organization ? organization._id : undefined,
     });
 
     if (user) {
@@ -78,7 +70,8 @@ export const registerUser = asyncHandler(async (req: Request<any, any, any>, res
     }
 });
 
-export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
+// Email/Password Login
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password').populate({
         path: 'organizationId',
@@ -90,7 +83,6 @@ export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: R
 
     if (user && user.password && (await user.matchPassword(password))) {
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '30d' });
-        
         let redirectStatus = 'active';
         let message = 'Login successful';
         const userOrg = user.organizationId as any;
@@ -116,15 +108,14 @@ export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: R
             userStatus: redirectStatus,
             message
         });
-        // No explicit return needed here as res.json() terminates the response.
     } else {
         res.status(401);
         throw new Error('Invalid email or password');
     }
 });
 
+// Get Current User
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
-    // This part of the code was not in the provided error logs, assuming it's correct.
     const user = await User.findById(req.user!._id).select('-password').populate({
         path: 'organizationId',
         populate: {
@@ -141,61 +132,13 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     }
 });
 
-export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
-    // This function is reached after Passport successfully authenticates the user
-    // req.user should be populated by passport-google-oauth20 strategy
-    if (!req.user) {
-        res.status(401).json({ success: false, message: 'Google authentication failed. User not found in session.' });
-        return; // Explicitly return void after sending response
+// Google OAuth Callback: REDIRECT with token
+export const googleAuthCallback = (req: Request, res: Response) => {
+    // The Passport Google strategy must attach the JWT token to req.user.token
+    const token = req.user && (req.user as any).token;
+    if (!token) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=no-token`);
     }
-
-    try {
-        const user = req.user as any;
-        const fullUser = await User.findById(user._id).select('+password').populate({
-            path: 'organizationId',
-            populate: {
-                path: 'subscription',
-                populate: { path: 'planId', model: 'Plan' }
-            }
-        });
-
-        if (!fullUser) {
-            res.status(404).json({ success: false, message: 'Authenticated user profile not found in database.' });
-            return; // Explicitly return void after sending response
-        }
-
-        const token = fullUser.getSignedJwtToken();
-
-        let redirectStatus = 'active';
-        let message = 'Login successful';
-        const userOrg = fullUser.organizationId as any;
-
-        if (fullUser.status && fullUser.status !== 'active') {
-            redirectStatus = 'account_inactive';
-            message = `Your account is ${fullUser.status}.`;
-        } else if (userOrg && fullUser.role !== 'Super Admin' && userOrg.subscription) {
-            const subscription = userOrg.subscription as any;
-            if (subscription.status !== 'active' && !subscription.isLifetime) {
-                redirectStatus = 'subscription_inactive';
-                message = 'Organization subscription is inactive.';
-            }
-        }
-
-        const userObject = fullUser.toObject();
-        delete userObject.password;
-
-        res.json({
-            success: true,
-            token,
-            user: userObject,
-            userStatus: redirectStatus,
-            message
-        });
-        // No explicit return needed here as res.json() terminates the response.
-
-    } catch (error) {
-        console.error('Error in Google Auth Callback:', error);
-        res.status(500).json({ success: false, message: 'Server error during authentication process.' });
-        // No explicit return needed here as res.status().json() terminates the response.
-    }
-});
+    // Redirect to dashboard with the token as a query param
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+};
