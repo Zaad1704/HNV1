@@ -14,7 +14,7 @@ type AuthState = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  loading: boolean;
+  loading: boolean; // Indicates if the auth state itself is loading/rehydrating
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   login: (token: string, user: User) => void;
@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      loading: false,
+      loading: false, // Initial state, will be managed externally in App.tsx
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setToken: (token) => set({ token }),
       login: (token, user) =>
