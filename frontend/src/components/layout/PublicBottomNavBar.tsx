@@ -23,7 +23,7 @@ const PublicBottomNavBar = () => {
 
     const getLinkClass = (itemHref: string, itemSectionId?: string, isCrown?: boolean) => {
         const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        let isActive = false;
+        const isActive = false;
 
         if (itemSectionId && location.pathname === '/') {
              isActive = activeSectionId === itemSectionId;
@@ -33,17 +33,35 @@ const PublicBottomNavBar = () => {
 
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-        // NEW: Smaller Crown Style, more balanced
-        const crownStyle = isCrown ? 
-            'flex-grow-0 w-16 h-16 -mt-4 mx-2 rounded-xl text-white shadow-md relative z-20 flex-shrink-0 ' + // Reduced size, offset, shadow, rounded less
-            'bg-brand-primary border-4 border-light-card ' + // Fallback colors
-            'bg-contain bg-no-repeat bg-center ' + // Styles for background image
-            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
-            'flex-grow';
-        
+        // More robust Crown Style with direct inline styling
+        const crownStyle = isCrown ? {
+            flexGrow: 0,
+            width: '24px',
+            height: '24px',
+            marginTop: '-10px',
+            marginLeft: '8px',
+            marginRight: '8px',
+            borderRadius: '12px',
+            backgroundColor: 'rgb(79, 70, 229)', /* Use the brand primary color directly */
+            border: '4px solid white', /* Keep the white border */
+            color: 'white', /* Keep the white text */
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)', /* Keep the shadow */
+            position: 'relative',
+            zIndex: 20,
+            flexShrink: 0,
+            backgroundImage: `url('/crowned-badge-bg.png')`, /* Explicitly set the background image */
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            transform: 'scale(1.05)',
+            transitionProperty: 'transform',
+            transitionDuration: '200ms',
+            transitionTimingFunction: 'ease-in-out',
+        } : { flexGrow: 1 }; // Default style
+
         const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
 
-        return `${base} ${activeColor} ${crownStyle} ${crownActiveColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card ${isCrown ? 'dark:bg-brand-primary dark:border-dark-bg' : ''}`;
+        return `${base} ${activeColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card`;
     };
 
     const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
@@ -66,10 +84,10 @@ const PublicBottomNavBar = () => {
                         to={item.href}
                         onClick={(e) => handleScroll(e, item.href)}
                         className={getLinkClass(item.href, item.sectionId, item.isCrown)}
-                        style={item.isCrown ? { backgroundImage: `url('/crowned-badge-bg.png')` } : {}}
+                        style={item.isCrown ? getLinkClass(item.href, item.sectionId, item.isCrown) : {}} // Apply crown styles inline
                     >
                         <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                            <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} /> {/* Reduced icon size for crowned */}
+                            <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
                             <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.name}</span>
                         </div>
                     </Link>
