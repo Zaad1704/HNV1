@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { google } from 'googleapis';
 import path from 'path';
-import { Readable } from 'stream'; // Import the Readable stream class
+import { Readable } from 'stream';
 
-// --- Google Drive API Setup (remains the same) ---
+// --- Google Drive API Setup (no changes here) ---
 let auth;
 try {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON || '{}');
@@ -35,11 +35,9 @@ export const uploadImage = async (req: Request, res: Response) => {
 
     try {
         const file = req.file;
-
-        // --- FIX: Convert Buffer to a Readable Stream ---
         const bufferStream = new Readable();
         bufferStream.push(file.buffer);
-        bufferStream.push(null); // Signals the end of the stream
+        bufferStream.push(null);
 
         const uniqueFilename = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 15)}${path.extname(file.originalname)}`;
 
@@ -51,7 +49,7 @@ export const uploadImage = async (req: Request, res: Response) => {
             },
             media: {
                 mimeType: file.mimetype,
-                body: bufferStream, // Use the new stream here instead of file.buffer
+                body: bufferStream,
             },
             fields: 'id',
         });
@@ -70,7 +68,9 @@ export const uploadImage = async (req: Request, res: Response) => {
             },
         });
 
-        const directEmbeddableUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+        // --- THIS IS THE CORRECTED LINE ---
+        // Using a more direct and reliable URL format for embedding.
+        const directEmbeddableUrl = `https://drive.google.com/uc?id=${fileId}`;
 
         res.status(200).json({
             success: true,
