@@ -15,8 +15,8 @@ try {
         scopes: ['https://www.googleapis.com/auth/drive'],
     });
 } catch (e) {
-    console.error("FATAL ERROR: Failed to parse Google credentials from GOOGLE_CREDENTIALS_JSON env var. Ensure it's correctly set.", e);
-    throw new Error("Google Drive credentials are not correctly configured. Check GOOGLE_CREDENTIALS_JSON environment variable.");
+    console.error("FATAL ERROR: Failed to parse Google credentials. Please check the environment variable.", e);
+    throw new Error("Google Drive credentials are not correctly configured.");
 }
 
 const drive = google.drive({ version: 'v3', auth });
@@ -27,10 +27,9 @@ if (!UPLOAD_FOLDER_ID) {
     throw new Error("Google Drive upload folder ID is not configured.");
 }
 
-
 export const uploadImage = async (req: Request, res: Response) => {
     if (!req.file || !req.file.buffer) {
-        return res.status(400).json({ success: false, message: 'No file uploaded or file buffer is empty.' });
+        return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
 
     try {
@@ -57,7 +56,7 @@ export const uploadImage = async (req: Request, res: Response) => {
         const fileId = response.data.id;
 
         if (!fileId) {
-            return res.status(500).json({ success: false, message: 'Failed to obtain file ID from Google Drive after upload.' });
+            return res.status(500).json({ success: false, message: 'Failed to get file ID from Google Drive.' });
         }
 
         await drive.permissions.create({
@@ -68,24 +67,18 @@ export const uploadImage = async (req: Request, res: Response) => {
             },
         });
 
-        // --- THIS IS THE CORRECTED LINE ---
-        // Using a more direct and reliable URL format for embedding.
-        const directEmbeddableUrl = `https://drive.google.com/uc?id=${fileId}`;
+        // --- NEW, MORE RELIABLE URL FORMAT ---
+        // This format uses Google's thumbnail generator. &sz=w1000 requests an image with a width of 1000px.
+        const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
 
         res.status(200).json({
             success: true,
             message: 'File uploaded successfully to Google Drive.',
-            imageUrl: directEmbeddableUrl
+            imageUrl: thumbnailUrl // Send this new thumbnail URL
         });
 
     } catch (error: any) {
         console.error('Error uploading file to Google Drive:', error);
-        let errorMessage = 'Failed to upload file to Google Drive.';
-        if (error.code && error.errors) {
-            errorMessage = `Google Drive API Error: ${error.errors[0]?.message || error.message}`;
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        res.status(500).json({ success: false, message: errorMessage });
+        res.status(500).json({ success: false, message: 'Failed to upload file to Google Drive.' });
     }
 };
