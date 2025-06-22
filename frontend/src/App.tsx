@@ -47,7 +47,6 @@ import OrganizationPage from './pages/OrganizationPage';
 import TenantDashboardPage from './pages/TenantDashboardPage';
 import CashFlowPage from './pages/CashFlowPage'; 
 import TenantStatementPage from './pages/TenantStatementPage'; 
-// NEW IMPORT for Reminders Page
 import RemindersPage from './pages/RemindersPage'; 
 
 // Admin Pages
@@ -62,15 +61,19 @@ import AdminDataManagementPage from './pages/AdminDataManagementPage';
 import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
 
 import NotFound from './pages/NotFound';
+import { LangProvider } from './contexts/LanguageContext'; // Ensure LangProvider is imported
 
 const FullScreenLoader = () => <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text"><p>Loading Platform...</p></div>;
 
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
+  // NEW: State for initial locale data
+  const [initialLocaleData, setInitialLocaleData] = useState<{ lang: string; currency: string; name: string; } | null>(null);
 
   useEffect(() => {
-    const checkUserSession = async () => {
+    const checkUserSessionAndFetchLocale = async () => {
+      // First, check user session
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
@@ -84,82 +87,97 @@ function App() {
           }
         }
       }
+      
+      // NEW: Fetch initial locale data
+      try {
+        const { data } = await apiClient.get('/localization/detect');
+        setInitialLocaleData(data);
+      } catch (error) {
+        console.error('Failed to detect initial locale:', error);
+        // Fallback to default if detection fails
+        setInitialLocaleData({ lang: 'en', currency: 'USD', name: '$' });
+      }
+
       setSessionLoading(false);
     };
-    checkUserSession();
+    checkUserSessionAndFetchLocale();
   }, [token, user, setUser, logout]);
 
-  if (isSessionLoading) {
+  if (isSessionLoading || !initialLocaleData) { // Wait for initialLocaleData to load
     return <FullScreenLoader />;
   }
 
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPolicyPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
-            <Route path="/payment-success" element={<PaymentSuccessPage />} />
-            <Route path="/payment-cancel" element={<PaymentCancelPage />} />
-          </Route>
+        {/* Pass initialLocaleData to LangProvider */}
+        <LangProvider initialLocaleData={initialLocaleData}>
+          <Routes>
+            {/* Public Routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
 
-          {/* Authentication Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-          <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-          <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
-          <Route path="/resubscribe" element={<ResubscribePage />} />
-
-          {/* Protected Routes - Dashboard */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<OverviewPage />} /> 
-              <Route path="overview" element={<OverviewPage />} />
-              <Route path="properties" element={<PropertiesPage />} />
-              <Route path="tenants" element={<TenantsPage />} />
-              <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
-              <Route path="expenses" element={<ExpensesPage />} />
-              <Route path="maintenance" element={<MaintenanceRequestsPage />} />
-              <Route path="cashflow" element={<CashFlowPage />} /> 
-              <Route path="reminders" element={<RemindersPage />} /> {/* NEW ROUTE */}
-              <Route path="users" element={<UsersPage />} />
-              <Route path="billing" element={<BillingPage />} />
-              <Route path="audit-log" element={<AuditLogPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="organization" element={<OrganizationPage />} />
-              <Route path="tenant" element={<TenantDashboardPage />} />
+              <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
+              <Route path="/payment-success" element={<PaymentSuccessPage />} />
+              <Route path="/payment-cancel" element={<PaymentCancelPage />} />
             </Route>
-          </Route>
 
-          {/* Admin Protected Routes */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboardPage />} />
-                <Route path="dashboard" element={<AdminDashboardPage />} />
-                <Route path="organizations" element={<AdminOrganizationsPage />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="moderators" element={<AdminModeratorsPage />} />
-                <Route path="plans" element={<AdminPlansPage />} />
-                <Route path="billing" element={<AdminBillingPage />} />
-                <Route path="site-editor" element={<SiteEditorPage />} />
-                <Route path="maintenance" element={<AdminMaintenancePage />} />
-                <Route path="data-management" element={<AdminDataManagementPage />} />
+            {/* Authentication Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+            <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+            <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+            <Route path="/resubscribe" element={<ResubscribePage />} />
+
+            {/* Protected Routes - Dashboard */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<OverviewPage />} /> 
+                <Route path="overview" element={<OverviewPage />} />
+                <Route path="properties" element={<PropertiesPage />} />
+                <Route path="tenants" element={<TenantsPage />} />
+                <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
+                <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="maintenance" element={<MaintenanceRequestsPage />} />
+                <Route path="cashflow" element={<CashFlowPage />} /> 
+                <Route path="reminders" element={<RemindersPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="billing" element={<BillingPage />} />
+                <Route path="audit-log" element={<AuditLogPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="organization" element={<OrganizationPage />} />
+                <Route path="tenant" element={<TenantDashboardPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Fallback for any unmatched routes */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Admin Protected Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="dashboard" element={<AdminDashboardPage />} />
+                  <Route path="organizations" element={<AdminOrganizationsPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
+                  <Route path="moderators" element={<AdminModeratorsPage />} />
+                  <Route path="plans" element={<AdminPlansPage />} />
+                  <Route path="billing" element={<AdminBillingPage />} />
+                  <Route path="site-editor" element={<SiteEditorPage />} />
+                  <Route path="maintenance" element={<AdminMaintenancePage />} />
+                  <Route path="data-management" element={<AdminDataManagementPage />} />
+              </Route>
+            </Route>
+
+            {/* Fallback for any unmatched routes */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </LangProvider>
       </Router>
     </Suspense>
   );
