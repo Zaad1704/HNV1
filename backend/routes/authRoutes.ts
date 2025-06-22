@@ -1,9 +1,8 @@
-// backend/routes/authRoutes.ts
-import { Router } from "express";
+import { Router } from 'express';
 import passport from 'passport';
-import { 
-    registerUser, 
-    loginUser, 
+import {
+    registerUser,
+    loginUser,
     getMe,
     googleAuthCallback
 } from '../controllers/authController';
@@ -13,24 +12,23 @@ import { registerSchema } from "../validators/userValidator";
 
 const router = Router();
 
-// Standard Auth
 router.post('/register', validate(registerSchema), registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getMe);
 
-// Google OAuth Routes
+// Google OAuth
 router.get(
     '/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] }) // Initiates Google OAuth
+    passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 router.get(
     '/google/callback',
-    passport.authenticate('google', { 
-        failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`, // Redirect on failure
-        session: false // We are using JWTs, not sessions for authentication after callback
+    passport.authenticate('google', {
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
+        session: false
     }),
-    googleAuthCallback // This controller runs on successful Google authentication
+    googleAuthCallback
 );
 
 export default router;
