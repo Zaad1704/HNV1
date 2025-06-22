@@ -1,22 +1,22 @@
-// backend/controllers/reminderController.ts
-
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
-import Reminder from '../models/Reminder';
+import Reminder, { IReminder } from '../models/Reminder'; // --- CHANGE: Import IReminder ---
 import Tenant from '../models/Tenant';
-import emailService from '../services/emailService'; // Re-use email service for actual sending
-import { addDays, addWeeks, addMonths, addYears } from 'date-fns'; // For calculating next run date
+import emailService from '../services/emailService';
+import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
 
 // Helper to calculate next run date
-const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
+const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => { // IReminder is now recognized
   switch (frequency) {
     case 'daily': return addDays(currentDate, 1);
     case 'weekly': return addWeeks(currentDate, 1);
     case 'monthly': return addMonths(currentDate, 1);
     case 'yearly': return addYears(currentDate, 1);
-    default: return addDays(currentDate, 1); // Fallback
+    default: return addDays(currentDate, 1);
   }
 };
+
+// ... (rest of the controller functions remain the same) ...
 
 // @desc    Create a new reminder
 // @route   POST /api/reminders
@@ -123,16 +123,10 @@ export const deleteReminder = asyncHandler(async (req: Request, res: Response) =
 });
 
 // --- NEW FUNCTION for the scheduled job (runs externally) ---
-// This function would be called by a cron job or a separate worker process.
-// It iterates through active reminders and sends them.
 // @desc    Process and send overdue reminders
 // @route   (Internal/Cron Job Triggered) /api/reminders/process-overdue
 // @access  Private (Admin-only or internal API key protected)
 export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => {
-  // IMPORTANT: This endpoint should be protected by an internal API key or IP whitelist,
-  // NOT by standard user authentication, as it's meant for a cron job.
-  // For simplicity here, we're assuming it's accessed securely.
-
   const now = new Date();
   const overdueReminders = await Reminder.find({
     nextRunDate: { $lte: now },
@@ -142,7 +136,7 @@ export const processOverdueReminders = asyncHandler(async (req: Request, res: Re
   let sentCount = 0;
   for (const reminder of overdueReminders) {
     try {
-      const tenant = reminder.tenantId as any; // Cast for populated data
+      const tenant = reminder.tenantId as any;
       const propertyName = (reminder.propertyId as any)?.name || 'your property';
 
       if (!tenant || !tenant.email) {
@@ -164,24 +158,21 @@ export const processOverdueReminders = asyncHandler(async (req: Request, res: Re
         await emailService.sendEmail(
           tenant.email,
           subject,
-          'customMessage', // Use a generic email template
+          'customMessage',
           { senderName: 'The Management', messageBody: messageBody.replace(/\n/g, '<br>') }
         );
         console.log(`Email reminder sent to ${tenant.email} for reminder ${reminder._id}`);
       } 
-      // Placeholder for SMS/App reminders - these would call relevant services (B.1, B.2)
       else if (reminder.type === 'sms_rent_reminder') {
-        // smsService.sendSms(tenant.phone, `Reminder: Rent due for ${propertyName} - Unit ${tenant.unit}.`);
         console.log(`SMS reminder (mock) for ${tenant.phone} for reminder ${reminder._id}`);
       }
       else if (reminder.type === 'app_rent_reminder') {
-        // notificationService.createNotification(tenant._id, tenant.organizationId, `Rent due for ${propertyName} - Unit ${tenant.unit}.`);
         console.log(`App notification (mock) for tenant ${tenant._id} for reminder ${reminder._id}`);
       }
 
-      reminder.status = 'active'; // Reset status to active for next cycle
+      reminder.status = 'active';
       reminder.lastSentDate = now;
-      reminder.nextRunDate = calculateNextRunDate(now, reminder.frequency); // Schedule next run
+      reminder.nextRunDate = calculateNextRunDate(now, reminder.frequency);
       reminder.sentCount += 1;
       await reminder.save();
       sentCount++;
