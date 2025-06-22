@@ -18,29 +18,30 @@ const BottomNavBar = () => {
     const navItems = [
         { href: '/dashboard/properties', icon: Building, label: 'Props' },
         { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true },
+        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true }, // Crown Home button
         { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses' },
         { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
         { action: handleLogout, icon: LogOut, label: 'Logout' }
     ];
 
-    const getLinkClass = (itemHref: string, isCrown?: boolean) => {
-        let isActive = false; // --- CHANGE: 'const' to 'let' ---
+    // This function will ONLY return the className string
+    const getLinkClassesString = (itemHref: string, isCrown?: boolean) => {
+        let isActive = false; 
         const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        isActive = location.pathname.startsWith(itemHref); // Reassignment
+        isActive = location.pathname.startsWith(itemHref);
 
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-        const crownStyle = isCrown ?
-            'flex-grow-0 w-24 h-24 -mt-10 mx-2 text-white shadow-xl relative z-20 flex-shrink-0 ' +
-            'bg-brand-primary border-4 border-light-card ' +
-            'bg-contain bg-no-repeat bg-center ' +
-            'transform hover:scale-105 transition-transform duration-200 ease-in-out' :
+        // NEW: Apply all crown-specific classes directly here, no inline style for them
+        const crownClasses = isCrown ? 
+            'flex-grow-0 w-16 h-16 -mt-4 mx-2 rounded-xl text-white shadow-md relative z-20 flex-shrink-0 ' + 
+            'bg-brand-primary border-4 border-light-card ' + 
+            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
             'flex-grow';
         
         const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
 
-        return `${base} ${activeColor} ${crownStyle} ${crownActiveColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card ${isCrown ? 'dark:bg-brand-primary dark:border-dark-bg' : ''}`;
+        return `${base} ${activeColor} ${crownClasses} ${crownActiveColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card ${isCrown ? 'dark:bg-brand-primary dark:border-dark-bg' : ''}`;
     };
 
     return (
@@ -52,11 +53,17 @@ const BottomNavBar = () => {
                             <Link 
                                 key={item.label} 
                                 to={item.href} 
-                                className={getLinkClass(item.href, item.isCrown)}
-                                style={item.isCrown ? { backgroundImage: `url('/crowned-badge-bg.png')` } : {}}
+                                className={getLinkClassesString(item.href, item.isCrown)} // Pass classes string here
+                                // NEW: Apply background-image directly in style prop if it's a crown
+                                style={item.isCrown ? { 
+                                    backgroundImage: `url('/crowned-badge-bg.png')`,
+                                    backgroundSize: 'contain',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'center',
+                                } : undefined} 
                             >
                                 <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                                    <item.icon size={item.isCrown ? 32 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
+                                    <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
                                     <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.label}</span>
                                 </div>
                             </Link>
