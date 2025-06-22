@@ -13,11 +13,13 @@ export interface IOrganization extends Document {
   members: mongoose.Types.ObjectId[];
   status: 'active' | 'inactive' | 'pending_deletion';
   subscription: mongoose.Types.ObjectId;
-  branding?: IBranding; // Add the optional branding field
+  branding?: IBranding;
   dataManagement?: {
     dataExportRequestedAt?: Date;
     accountDeletionRequestedAt?: Date;
   };
+  // NEW FIELD for A.2: Control self-service data deletion
+  allowSelfDeletion: boolean; 
 }
 
 const OrganizationSchema: Schema<IOrganization> = new Schema({
@@ -27,7 +29,6 @@ const OrganizationSchema: Schema<IOrganization> = new Schema({
   status: { type: String, enum: ['active', 'inactive', 'pending_deletion'], default: 'active' },
   subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' },
   
-  // --- NEW: Branding Schema ---
   branding: {
     companyName: { type: String, default: '' },
     companyLogoUrl: { type: String, default: '' },
@@ -38,6 +39,8 @@ const OrganizationSchema: Schema<IOrganization> = new Schema({
     dataExportRequestedAt: Date,
     accountDeletionRequestedAt: Date,
   },
+  // NEW SCHEMA FIELD for A.2
+  allowSelfDeletion: { type: Boolean, default: true }, 
 }, { timestamps: true });
 
 export default model<IOrganization>('Organization', OrganizationSchema);
