@@ -1,18 +1,17 @@
-import { Request, Response } from 'express'; // FIX: Import Request
-// FIX: AuthenticatedRequest is no longer needed.
+// backend/controllers/sharingController.ts
+import { Request, Response } from 'express';
 import ShareableLink from '../models/ShareableLink';
-import Expense from '../models/Expense'; // We need this to find the document URL
+import Expense from '../models/Expense';
 import path from 'path';
 
-// @desc    Create a secure, shareable link for a document
-// @route   POST /api/share/expense-document/:expenseId
-export const createShareLink = async (req: Request, res: Response) => { // FIX: Use Request
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+export const createShareLink = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
     try {
         const expense = await Expense.findById(req.params.expenseId);
         
-        // Security check: ensure the expense exists, has a document, and belongs to the user's organization
         if (!expense || !expense.documentUrl || expense.organizationId.toString() !== req.user.organizationId.toString()) {
             return res.status(404).json({ success: false, message: 'Document not found or access denied.' });
         }
@@ -32,24 +31,19 @@ export const createShareLink = async (req: Request, res: Response) => { // FIX: 
     }
 };
 
-// @desc    Access a shared document using a token
-// @route   GET /api/share/view/:token
 export const viewSharedDocument = async (req: Request, res: Response) => {
     try {
         const link = await ShareableLink.findOne({ 
             token: req.params.token,
-            expiresAt: { $gt: new Date() } // Check if the link has expired
+            expiresAt: { $gt: new Date() }
         });
 
         if (!link) {
             return res.status(404).send('<h1>Link is invalid or has expired</h1>');
         }
 
-        // IMPORTANT: For this to work, you must have a static file server configured to serve the 'public' directory
-        // We will add this to server.ts in the next step.
         const filePath = path.join(__dirname, '..', 'public', link.documentUrl);
         
-        // This will send the file to the user's browser
         res.sendFile(filePath, (err) => {
             if (err) {
                 console.error("File serving error:", err);
