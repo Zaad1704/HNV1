@@ -1,98 +1,171 @@
-import express from 'express';
-import cors from 'cors';
+// backend/server.ts
+
+import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import passport from 'passport';
-import session from 'express-session';
+import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
-import cookieParser from 'cookie-parser';
-import bodyParser from 'body-parser';
-
-dotenv.config();
+import passport from 'passport';
+import session from 'express-session';
+import helmet from 'helmet'; 
+import morgan from 'morgan'; // Added import
+import cookieParser from 'cookie-parser'; // Added import
 
 import './config/passport-setup';
 
+// Route imports
 import authRoutes from './routes/authRoutes';
+import superAdminRoutes from './routes/superAdminRoutes';
+import propertiesRoutes from './routes/propertiesRoutes';
+import tenantsRoutes from './routes/tenantsRoutes';
+import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
+import auditRoutes from './routes/auditRoutes';
+import setupRoutes from './routes/setupRoutes';
+import feedbackRoutes from './routes/feedbackRoutes';
+import planRoutes from './routes/planRoutes';
+import billingRoutes from './routes/billingRoutes';
+import siteSettingsRoutes from './routes/siteSettingsRoutes';
+import passwordResetRoutes from './routes/passwordResetRoutes';
+import translationRoutes from './routes/translationRoutes';
 import invitationRoutes from './routes/invitationRoutes';
+import sharingRoutes from './routes/sharingRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import maintenanceRoutes from './routes/maintenanceRoutes';
+import localizationRoutes from './routes/localizationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
-import notificationRoutes from './routes/notificationRoutes';
-// DO NOT import propertyRoutes or tenantRoutes (they do not exist)
+import uploadRoutes from './routes/uploadRoutes';
+import notificationRoutes from './routes/notificationRoutes'; 
+import orgRoutes from './routes/orgRoutes'; 
+import invoiceRoutes from './routes/invoiceRoutes'; 
+import receiptRoutes from './routes/receiptRoutes'; 
+import communicationRoutes from './routes/communicationRoutes'; 
+import cashFlowRoutes from './routes/cashFlowRoutes'; 
+import reminderRoutes from './routes/reminderRoutes'; 
+import tenantPortalRoutes from './routes/tenantPortalRoutes';
 
-const app = express();
 
-app.use(helmet());
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
-      "frame-src": ["'self'", "https://accounts.google.com"],
-      "connect-src": ["'self'", "https://accounts.google.com"],
+dotenv.config();
+
+const app: Express = express();
+
+const connectDB = async (): Promise<void> => {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not defined');
     }
-  })
-);
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-}));
-app.use(morgan('dev'));
-app.use(cookieParser());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB Connected...');
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+    }
+    process.exit(1);
+  }
+};
+connectDB();
 
+// CORS Configuration
+const allowedOrigins: string[] = [
+  process.env.CORS_ORIGIN || '',
+  'http://localhost:3000',
+  'https://hnv-saas-frontend.onrender.com' 
+].filter(Boolean);
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); 
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Content-Type,Authorization,X-Org-Id',
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev')); // Added morgan for request logging (useful in dev)
+app.use(cookieParser()); // Added cookie-parser for parsing cookies
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
+
+// Session and Passport Middleware
 if (!process.env.SESSION_SECRET) {
-  console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
+    console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
 }
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax',
-  }
+    secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev', 
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', 
+        httpOnly: true, 
+        sameSite: 'lax', 
+    }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// CSP Configuration
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    ...helmet.contentSecurityPolicy.getDefaultDirectives(), 
+    "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com"], 
+    "frame-src": ["'self'", "https://accounts.google.com"], 
+    "connect-src": ["'self'", "https://accounts.google.com"], 
+  },
+}));
+
+
+// API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/super-admin', superAdminRoutes);
+app.use('/api/properties', propertiesRoutes);
+app.use('/api/tenants', tenantsRoutes);
+app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/setup', setupRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/plans', planRoutes);
+app.use('/api/billing', billingRoutes);
+app.use('/api/site-settings', siteSettingsRoutes);
+app.use('/api/translate', translationRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/share', sharingRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/localization', localizationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/orgs', orgRoutes); 
+app.use('/api/invoices', invoiceRoutes); 
+app.use('/api/receipts', receiptRoutes); 
+app.use('/api/tenant-portal', tenantPortalRoutes);
+app.use('/api/communication', communicationRoutes); 
+app.use('/api/cashflow', cashFlowRoutes); 
+app.use('/api/reminders', reminderRoutes); 
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-  });
-}
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Server error:', err);
-  res.status(err.status || 500).json({ message: err.message || 'Server error' });
+app.get('/', (req: Request, res: Response) => {
+  res.send('HNV SaaS API is running');
 });
 
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/hnv';
+// Global Error Handler
+import { errorHandler } from './middleware/errorHandler';
+app.use(errorHandler);
 
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err);
-    process.exit(1);
-  });
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+export default app;
