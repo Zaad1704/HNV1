@@ -1,9 +1,9 @@
 // frontend/src/components/layout/BottomNavBar.tsx
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // --- CHANGE: '=>' changed to 'from' ---
-import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react'; // --- CHANGE: '=>' changed to 'from' ---
-import { useAuthStore } from '../../store/authStore'; // --- CHANGE: '=>' changed to 'from' ---
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const BottomNavBar = () => {
     const location = useLocation();
@@ -30,9 +30,12 @@ const BottomNavBar = () => {
 
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-        // NEW Crown Style: Larger, distinct background, more prominent shadow
+        // NEW: Smaller Crown Style, more balanced
         const crownStyle = isCrown ? 
-            'flex-grow-0 w-24 h-24 -mt-10 mx-2 rounded-2xl bg-brand-primary border-4 border-light-card text-white shadow-xl relative z-20 flex-shrink-0 transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
+            'flex-grow-0 w-16 h-16 -mt-4 mx-2 text-white shadow-md relative z-20 flex-shrink-0 ' + // Reduced size, offset, shadow, rounded less
+            'bg-brand-primary border-4 border-light-card ' + // Fallback colors
+            'bg-contain bg-no-repeat bg-center ' + // Styles for background image
+            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
             'flex-grow';
         
         const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
@@ -46,9 +49,14 @@ const BottomNavBar = () => {
                 {navItems.map(item => {
                     if (item.href) {
                         return (
-                            <Link key={item.label} to={item.href} className={getLinkClass(item.href, item.isCrown)}>
+                            <Link 
+                                key={item.label} 
+                                to={item.href} 
+                                className={getLinkClass(item.href, item.isCrown)}
+                                style={item.isCrown ? { backgroundImage: `url('/crowned-badge-bg.png')` } : {}}
+                            >
                                 <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                                    <item.icon size={item.isCrown ? 32 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
+                                    <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
                                     <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.label}</span>
                                 </div>
                             </Link>
