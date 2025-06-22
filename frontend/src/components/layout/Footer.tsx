@@ -23,32 +23,32 @@ const Footer = () => {
     );
 
     return (
-        <footer className="bg-slate-950 border-t border-slate-800 text-slate-400">
+        <footer className="bg-slate-950 border-t border-slate-800 text-slate-400 dark:bg-dark-bg dark:border-border-color-dark dark:text-light-text-dark"> {/* Added dark mode classes */}
             <div className="container mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div className="col-span-1 md:col-span-2">
                         <Link to="/">
-                            <img src={settings.logos?.footerLogoUrl} alt="Company Logo" className="h-8 mb-4 filter grayscale brightness-150"/>
+                            {/* NEW: Use navbarLogoUrl for consistency, or a dedicated headerLogoUrl if it exists */}
+                            <img src={settings.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-8 mb-4 filter grayscale brightness-150"/>
                         </Link>
                         <p className="max-w-md">{settings.footer.description}</p>
                     </div>
                     <div>
-                        <h3 className="font-bold text-white mb-4">Quick Links</h3>
+                        <h3 className="font-bold text-white mb-4 dark:text-dark-text-dark">Quick Links</h3> {/* Added dark mode class */}
                         {renderLinks(settings.footer.quickLinks)}
                     </div>
                     <div>
-                        <h3 className="font-bold text-white mb-4">Legal</h3>
+                        <h3 className="font-bold text-white mb-4 dark:text-dark-text-dark">Legal</h3> {/* Added dark mode class */}
                         {renderLinks(settings.footer.legalLinks)}
                     </div>
-                    {/* Add social links section if desired and defined in SiteSettings */}
                     {settings.footer.socialLinks && settings.footer.socialLinks.length > 0 && (
                          <div>
-                            <h3 className="font-bold text-white mb-4">Social</h3>
+                            <h3 className="font-bold text-white mb-4 dark:text-dark-text-dark">Social</h3> {/* Added dark mode class */}
                             {renderLinks(settings.footer.socialLinks)}
                         </div>
                     )}
                 </div>
-                <div className="mt-12 border-t border-slate-700 pt-8 text-center text-sm">
+                <div className="mt-12 border-t border-slate-700 pt-8 text-center text-sm dark:border-border-color-dark"> {/* Added dark mode class */}
                     <p>&copy; {new Date().getFullYear()} {settings.footer.copyrightText}</p>
                 </div>
             </div>
