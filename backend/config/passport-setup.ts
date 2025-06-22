@@ -1,51 +1,35 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User';
-import Organization from '../models/Organization';
+import jwt from 'jsonwebtoken';
 
-passport.serializeUser((user: any, done) => {
-  done(null, user._id.toString());
-});
-
-passport.deserializeUser(async (id: string, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user ? user.toObject() : undefined);
-  } catch (err) {
-    done(err, undefined);
-  }
-});
-
-passport.use(
-  new GoogleStrategy(
+passport.use(new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: '/api/auth/google/callback',
+        clientID: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackURL: `${process.env.BACKEND_URL}/api/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile, done) => {
-      try {
-        let existingUser = await User.findOne({ googleId: profile.id });
-        if (existingUser) return done(null, existingUser.toObject());
-        const orgName = profile.displayName + "'s Organization";
-        let organization = await Organization.findOne({ name: orgName });
-        if (!organization) {
-          organization = new Organization({ name: orgName });
-          await organization.save();
+        try {
+            let user = await User.findOne({ googleId: profile.id });
+            if (!user) {
+                user = await User.create({
+                    googleId: profile.id,
+                    name: profile.displayName,
+                    email: profile.emails?.[0].value,
+                    // Add additional fields as needed
+                });
+            }
+            // ISSUE JWT
+            const token = jwt.sign(
+                { id: user._id, role: user.role, email: user.email },
+                process.env.JWT_SECRET!,
+                { expiresIn: '7d' }
+            );
+            // Attach token to user object
+            return done(null, { ...user.toObject(), token });
+        } catch (err) {
+            return done(err, undefined);
         }
-        const newUser = new User({
-          googleId: profile.id,
-          name: profile.displayName,
-          email: profile.emails?.[0].value,
-          organizationId: organization._id,
-          role: 'Landlord',
-          status: 'active'
-        });
-        await newUser.save();
-        return done(null, newUser.toObject());
-      } catch (err) {
-        return done(err as Error, undefined);
-      }
     }
-  )
-);
+));
