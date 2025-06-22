@@ -1,7 +1,9 @@
+// backend/config/passport-setup.ts
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User';
-import jwt from 'jsonwebtoken';
+// REMOVED: No longer need jwt here
+// import jwt from 'jsonwebtoken'; 
 
 passport.use(new GoogleStrategy(
     {
@@ -17,17 +19,12 @@ passport.use(new GoogleStrategy(
                     googleId: profile.id,
                     name: profile.displayName,
                     email: profile.emails?.[0].value,
-                    // Add additional fields as needed
+                    // Role will be the default 'Tenant' from the schema
                 });
             }
-            // ISSUE JWT
-            const token = jwt.sign(
-                { id: user._id, role: user.role, email: user.email },
-                process.env.JWT_SECRET!,
-                { expiresIn: '7d' }
-            );
-            // Attach token to user object
-            return done(null, { ...user.toObject(), token });
+            // THE FIX: Pass the user object directly without the token.
+            // The controller will now handle token creation.
+            return done(null, user);
         } catch (err) {
             return done(err, undefined);
         }
