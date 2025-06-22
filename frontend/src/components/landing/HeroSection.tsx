@@ -1,25 +1,36 @@
 import React from "react";
-import Trans from "../Trans";
-import { Link } from 'react-router-dom';
-import { useSiteSettings } from '../../hooks/useSiteSettings';
-// Removed: import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
+import { Link } from "react-router-dom";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
+import { useTranslation } from "react-i18next";
 
 export default function HeroSection() {
   const { data: settings } = useSiteSettings();
-
-  // Removed: useDynamicTranslation calls
+  const { t } = useTranslation();
 
   return (
-    <section className="hero-bg text-white py-20 md:py-32" style={{backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('${settings?.heroSection?.backgroundImageUrl || "https://placehold.co/1600x900/6366F1/FFFFFF?text=Modern+Apartments"}')`, backgroundSize: "cover", backgroundPosition: "center"}}>
+    <section
+      className="hero-bg text-white py-20 md:py-32"
+      style={{
+        backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('${
+          settings?.heroSection?.backgroundImageUrl ||
+          "https://placehold.co/1600x900/6366F1/FFFFFF?text=Modern+Apartments"
+        }')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          {settings?.heroSection?.title || 'The All-in-One Platform for Modern Property Management'}
+          {t("hero.title")}
         </h1>
         <p className="text-lg sm:text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
-          {settings?.heroSection?.subtitle || 'Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.'}
+          {t("hero.subtitle")}
         </p>
-        <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105">
-          {settings?.heroSection?.ctaText || 'Start Your Free Trial'}
+        <Link
+          to="/register"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          {t("hero.cta")}
         </Link>
       </div>
     </section>
