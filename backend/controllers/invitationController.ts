@@ -1,24 +1,29 @@
+// backend/controllers/invitationController.ts
+
 import { Request, Response } from 'express';
 import AgentInvitation from '../models/AgentInvitation';
 import User from '../models/User';
 import Property from '../models/Property';
 import emailService from '../services/emailService';
 
-// Renamed from inviteAgent to be more generic
 export const inviteUser = async (req: Request, res: Response) => {
     const { recipientEmail, role, propertyId } = req.body;
     const inviter = req.user!;
 
+    if (!inviter.organizationId) {
+        return res.status(401).json({ success: false, message: 'User not part of an organization.'});
+    }
+
     if (!recipientEmail || !role || !propertyId) {
         return res.status(400).json({ success: false, message: 'Recipient email, role, and property are required.' });
     }
-    // ... (rest of the new invite logic)
+    
     try {
         const property = await Property.findById(propertyId);
         if (!property || !property.organizationId.equals(inviter.organizationId)) {
             return res.status(404).json({ success: false, message: 'Property not found in your organization.' });
         }
-        // ... (rest of the function)
+        
         const invitation = await AgentInvitation.create({
             organizationId: inviter.organizationId,
             inviterId: inviter._id,
@@ -36,7 +41,6 @@ export const inviteUser = async (req: Request, res: Response) => {
 };
 
 export const getInvitationDetails = async (req: Request, res: Response) => {
-    // ... (existing implementation)
     try {
         const invitation = await AgentInvitation.findOne({ token: req.params.token }).populate('inviterId', 'name');
         if (!invitation || invitation.status !== 'pending' || new Date() > invitation.expiresAt) {
@@ -57,13 +61,12 @@ export const getInvitationDetails = async (req: Request, res: Response) => {
 };
 
 export const acceptInvitation = async (req: Request, res: Response) => {
-    // ... (existing implementation)
      try {
         const invitation = await AgentInvitation.findOne({ token: req.params.token, status: 'pending', expiresAt: { $gt: new Date() } });
         if (!invitation) {
             return res.status(400).json({ success: false, message: 'Invalid or expired token.' });
         }
-        // ... logic to create or update user
+        
         const user = new User({ email: invitation.recipientEmail, password: req.body.password, role: invitation.role, organizationId: invitation.organizationId, status: 'active' });
         await user.save();
         invitation.status = 'accepted';
