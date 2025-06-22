@@ -2,7 +2,6 @@ import React from 'react';
 import { ISiteSettings } from '../../../../backend/models/SiteSettings';
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
-import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection';
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
@@ -29,7 +28,6 @@ const FeatureIconMap: { [key: string]: React.ElementType } = {
     "layers": Layers,
     "settings": Settings,
     "globe": Globe,
-    // Add more mappings as needed
 };
 
 // Helper to get the correct icon component, gracefully handling missing ones
@@ -72,12 +70,6 @@ const MobileLandingLayout: React.FC<MobileLandingLayoutProps> = ({ settings, pla
             <section id="servicesSection" className="py-8 bg-gray-100">
                 <div className="container mx-auto px-6">
                     <ServicesSection />
-                </div>
-            </section>
-
-            <section id="leadershipSection" className="py-8">
-                <div className="container mx-auto px-6">
-                    <LeadershipSection />
                 </div>
             </section>
 
