@@ -33,9 +33,12 @@ const PublicBottomNavBar = () => {
 
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-        // NEW Crown Style: Larger, distinct background, more prominent shadow
+        // NEW: Smaller Crown Style, more balanced
         const crownStyle = isCrown ? 
-            'flex-grow-0 w-24 h-24 -mt-10 mx-2 rounded-2xl bg-brand-primary border-4 border-light-card text-white shadow-xl relative z-20 flex-shrink-0 transform hover:scale-105 transition-transform duration-200 ease-in-out' : // Larger, square-ish rounded, more elevation
+            'flex-grow-0 w-16 h-16 -mt-4 mx-2 rounded-xl text-white shadow-md relative z-20 flex-shrink-0 ' + // Reduced size, offset, shadow, rounded less
+            'bg-brand-primary border-4 border-light-card ' + // Fallback colors
+            'bg-contain bg-no-repeat bg-center ' + // Styles for background image
+            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
             'flex-grow';
         
         const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
@@ -56,16 +59,17 @@ const PublicBottomNavBar = () => {
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30 dark:bg-dark-card dark:border-border-color-dark">
-            <div className="flex justify-around items-end h-full"> {/* Changed align-items to end for crown effect */}
+            <div className="flex justify-around items-end h-full">
                 {navItems.map(item => (
                     <Link
                         key={item.name}
                         to={item.href}
                         onClick={(e) => handleScroll(e, item.href)}
                         className={getLinkClass(item.href, item.sectionId, item.isCrown)}
+                        style={item.isCrown ? { backgroundImage: `url('/crowned-badge-bg.png')` } : {}}
                     >
                         <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                            <item.icon size={item.isCrown ? 32 : 20} strokeWidth={item.isCrown ? 2.5 : 2} /> {/* Increased icon size for crown */}
+                            <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} /> {/* Reduced icon size for crowned */}
                             <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.name}</span>
                         </div>
                     </Link>
