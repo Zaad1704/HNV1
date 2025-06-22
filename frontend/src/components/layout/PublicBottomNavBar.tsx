@@ -13,7 +13,7 @@ const PublicBottomNavBar = () => {
     const navItems = [
         { name: t('header.features'), href: '/#featuresPage', icon: Home, sectionId: 'featuresPage' },
         { name: t('header.about'), href: '/#aboutPage', icon: Info, sectionId: 'aboutPage' },
-        { name: t('header.login'), href: '/login', icon: LogIn, sectionId: 'login', isCrown: true }, // Central Crown Login button
+        { name: t('header.login'), href: '/login', icon: LogIn, sectionId: 'login', isCrown: true },
         { name: t('header.pricing'), href: '/#pricingSection', icon: DollarSign, sectionId: 'pricingSection' },
         { name: t('header.contact'), href: '/#contact', icon: Mail, sectionId: 'contact' },
     ];
@@ -22,8 +22,7 @@ const PublicBottomNavBar = () => {
     const activeSectionId = useScrollSpy(sectionIds, 150);
 
     const getLinkClass = (itemHref: string, itemSectionId?: string, isCrown?: boolean) => {
-        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        const isActive = false;
+        let isActive = false; // --- CHANGE: 'const' to 'let' ---
 
         if (itemSectionId && location.pathname === '/') {
              isActive = activeSectionId === itemSectionId;
@@ -31,9 +30,9 @@ const PublicBottomNavBar = () => {
             isActive = location.pathname.startsWith(itemHref);
         }
 
+        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-        // More robust Crown Style with direct inline styling
         const crownStyle = isCrown ? {
             flexGrow: 0,
             width: '24px',
@@ -42,14 +41,14 @@ const PublicBottomNavBar = () => {
             marginLeft: '8px',
             marginRight: '8px',
             borderRadius: '12px',
-            backgroundColor: 'rgb(79, 70, 229)', /* Use the brand primary color directly */
-            border: '4px solid white', /* Keep the white border */
-            color: 'white', /* Keep the white text */
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)', /* Keep the shadow */
+            backgroundColor: 'rgb(79, 70, 229)',
+            border: '4px solid white',
+            color: 'white',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
             position: 'relative',
             zIndex: 20,
             flexShrink: 0,
-            backgroundImage: `url('/crowned-badge-bg.png')`, /* Explicitly set the background image */
+            backgroundImage: `url('/crowned-badge-bg.png')`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
@@ -57,7 +56,7 @@ const PublicBottomNavBar = () => {
             transitionProperty: 'transform',
             transitionDuration: '200ms',
             transitionTimingFunction: 'ease-in-out',
-        } : { flexGrow: 1 }; // Default style
+        } : { flexGrow: 1 };
 
         const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
 
@@ -84,7 +83,7 @@ const PublicBottomNavBar = () => {
                         to={item.href}
                         onClick={(e) => handleScroll(e, item.href)}
                         className={getLinkClass(item.href, item.sectionId, item.isCrown)}
-                        style={item.isCrown ? getLinkClass(item.href, item.sectionId, item.isCrown) : {}} // Apply crown styles inline
+                        style={item.isCrown ? getLinkClass(item.href, item.sectionId, item.isCrown) : {}}
                     >
                         <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
                             <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
