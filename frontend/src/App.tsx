@@ -45,6 +45,8 @@ import SettingsPage from './pages/SettingsPage';
 import AuditLogPage from './pages/AuditLogPage';
 import OrganizationPage from './pages/OrganizationPage';
 import TenantDashboardPage from './pages/TenantDashboardPage';
+// NEW IMPORT for G: CashFlowPage
+import CashFlowPage from './pages/CashFlowPage'; 
 
 // Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -117,26 +119,23 @@ function App() {
           <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
           <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
 
-          {/* NEW: Dedicated Resubscribe Page (no layout initially, or minimal PublicLayout if desired) */}
-          {/* This page should handle its own auth/redirect logic for simplicity */}
           <Route path="/resubscribe" element={<ResubscribePage />} />
 
           {/* Protected Routes - Rendered with DashboardLayout */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
-              {/* Main dashboard overview, default to OverviewPage as per typical setup */}
               <Route index element={<OverviewPage />} /> 
               <Route path="overview" element={<OverviewPage />} />
               <Route path="properties" element={<PropertiesPage />} />
               <Route path="tenants" element={<TenantsPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
               <Route path="maintenance" element={<MaintenanceRequestsPage />} />
+              <Route path="cashflow" element={<CashFlowPage />} /> {/* NEW ROUTE */}
               <Route path="users" element={<UsersPage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="audit-log" element={<AuditLogPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="organization" element={<OrganizationPage />} />
-              {/* Specific tenant dashboard route */}
               <Route path="tenant" element={<TenantDashboardPage />} />
             </Route>
           </Route>
