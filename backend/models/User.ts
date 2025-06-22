@@ -15,7 +15,7 @@ export interface IUser extends Document {
   role: UserRole;
   name?: string;
   status: 'active' | 'inactive' | 'suspended';
-  permissions?: string[];
+  permissions: string[]; // THE FIX: This is now a required property
   organizationId?: mongoose.Types.ObjectId;
   googleId?: string; // For Google OAuth
   passwordResetToken?: string;
@@ -41,7 +41,8 @@ const userSchema = new Schema<IUser>(
     name: { type: String },
     googleId: { type: String },
     status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
-    permissions: [{ type: String }],
+    // THE FIX: Provide a default value for the permissions array
+    permissions: { type: [String], default: [] },
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization' },
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
