@@ -1,4 +1,4 @@
-]// backend/models/User.ts
+// backend/models/User.ts
 
 import mongoose, { Document, Schema, Model } from "mongoose";
 import jwt, { SignOptions } from "jsonwebtoken";
@@ -12,16 +12,16 @@ type UserRole = "Super Admin" | "Super Moderator" | "Landlord" | "Agent" | "Tena
 export interface IUser extends Document {
   email: string;
   password?: string; // Password can be optional for Google OAuth users
-  role: UserRole; // Corrected: Use the specific UserRole type
+  role: UserRole;
   name?: string;
   status: 'active' | 'inactive' | 'suspended';
   permissions?: string[];
-  organizationId?: mongoose.Types.ObjectId; // Corrected to ObjectId
+  organizationId?: mongoose.Types.ObjectId;
   googleId?: string; // For Google OAuth
   passwordResetToken?: string;
   passwordResetExpires?: Date;
-  managedAgentIds?: mongoose.Types.ObjectId[]; // Corrected to ObjectId
-  associatedLandlordIds?: mongoose.Types.ObjectId[]; // Corrected to ObjectId
+  managedAgentIds?: mongoose.Types.ObjectId[];
+  associatedLandlordIds?: mongoose.Types.ObjectId[];
   // Methods
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
@@ -35,7 +35,7 @@ const userSchema = new Schema<IUser>(
     role: {
         type: String,
         required: true,
-        enum: ["Super Admin", "Super Moderator", "Landlord", "Agent", "Tenant"], // Enforce roles at schema level
+        enum: ["Super Admin", "Super Moderator", "Landlord", "Agent", "Tenant"],
         default: "Tenant"
     },
     name: { type: String },
