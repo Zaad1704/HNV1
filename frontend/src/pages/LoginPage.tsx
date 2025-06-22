@@ -39,9 +39,9 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // --- THIS IS THE CORRECTED FUNCTION ---
   const handleGoogleLogin = () => {
-    // Construct the URL safely from the apiClient's configured base URL
+    // FIX: Construct the URL safely using the configured base URL from the API client.
+    // This prevents the /api/api duplication issue.
     const googleAuthUrl = `${apiClient.defaults.baseURL}/auth/google`;
     window.location.href = googleAuthUrl;
   };
