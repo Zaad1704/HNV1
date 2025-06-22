@@ -1,14 +1,17 @@
 {
     "header": {
-        "features": "বৈশিষ্ট্য",
-        "about": "আমাদের সম্পর্কে",
-        "pricing": "মূল্য নির্ধারণ",
-        "contact": "যোগাযোগ",
-        "portal_login": "পোর্টাল লগ ইন",
-        "get_started": "শুরু করুন",
-        "login": "লগ ইন",
-        "sign_up": "সাইন আপ"
-    },
+  "features": "বৈশিষ্ট্য",
+  "about": "আমাদের সম্পর্কে",
+  "services": "সেবা সমূহ",             
+  "leadership": "নেতৃত্ব",               
+  "install_app": "অ্যাপ ইন্সটল করুন",   
+  "pricing": "মূল্য নির্ধারণ",
+  "contact": "যোগাযোগ",
+  "portal_login": "পোর্টাল লগ ইন",
+  "get_started": "শুরু করুন",
+  "login": "লগ ইন",
+  "sign_up": "সাইন আপ"
+},
     "language_toggle": {
         "en_display": "English",
         "bn_display": "বাংলা",
