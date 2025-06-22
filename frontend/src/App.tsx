@@ -68,10 +68,10 @@ const FullScreenLoader = () => <div className="h-screen w-full flex items-center
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
-  // REMOVED: State for initial locale data
+  // REMOVED: State for initial locale data (initialLocaleData)
 
   useEffect(() => {
-    const checkUserSession = async () => { // Renamed function
+    const checkUserSession = async () => {
       // Check user session
       if (token && !user) {
         try {
@@ -88,7 +88,7 @@ function App() {
       }
       
       // REMOVED: Fetch initial locale data here
-
+      
       setSessionLoading(false);
     };
     checkUserSession();
