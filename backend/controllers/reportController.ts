@@ -1,14 +1,16 @@
+// backend/controllers/reportController.ts
 import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
-import Tenant from '../models/Tenant'; // NEW IMPORT
-import Invoice from '../models/Invoice'; // NEW IMPORT
-import Payment from '../models/Payment'; // NEW IMPORT
-import Lease from '../models/Lease'; // NEW IMPORT
-import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns'; // NEW IMPORTS for date calculations
-
+import Tenant from '../models/Tenant';
+import Invoice from '../models/Invoice';
+import Payment from '../models/Payment';
+import Lease from '../models/Lease';
+import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
 
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
     try {
         const activeTenants = await Tenant.find({ 
@@ -69,15 +71,13 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
     }
 };
 
-// --- NEW FUNCTION for C.2: Get Tenant Monthly Statement (Montrose Table) ---
-// @desc    Get monthly payment statement for a specific tenant over a period
-// @route   GET /api/reports/tenant-statement/:tenantId
-// @access  Private (Landlord, Agent)
 export const getTenantMonthlyStatement = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
     const { tenantId } = req.params;
-    const { startMonth, endMonth } = req.query; // YYYY-MM format
+    const { startMonth, endMonth } = req.query;
 
     try {
         const tenant = await Tenant.findById(tenantId);
@@ -87,42 +87,34 @@ export const getTenantMonthlyStatement = async (req: Request, res: Response) => 
 
         const today = new Date();
         const endDate = endMonth ? endOfMonth(new Date(String(endMonth))) : endOfMonth(today);
-        const startDate = startMonth ? startOfMonth(new Date(String(startMonth))) : startOfMonth(subMonths(today, 11)); // Default last 12 months
+        const startDate = startMonth ? startOfMonth(new Date(String(startMonth))) : startOfMonth(subMonths(today, 11));
 
-        // Generate an array of months within the interval
         const months = eachMonthOfInterval({ start: startDate, end: endDate });
 
         const statement = [];
-        let runningBalance = 0; // Keep track of cumulative balance
+        let runningBalance = 0;
 
         for (const monthStart of months) {
             const monthEnd = endOfMonth(monthStart);
-            const formattedMonth = format(monthStart, 'MMM yyyy');
+            const formattedMonth = format(monthStart, 'MMMꗢ');
 
-            // Find invoices for this tenant for this month
             const invoices = await Invoice.find({
                 tenantId: tenant._id,
-                dueDate: { $gte: monthStart, $lte: monthEnd }, // Invoices due this month
+                dueDate: { $gte: monthStart, $lte: monthEnd },
             }).sort({ dueDate: 1 });
 
-            // Sum expected amounts for the month (considering discounts)
             let expectedDue = 0;
             for (const inv of invoices) {
                 expectedDue += inv.amount;
             }
             
-            // Adjust expected rent by active discount for this month
-            let effectiveRentForMonth = tenant.rentAmount || 0; // Default from tenant's rent
+            let effectiveRentForMonth = tenant.rentAmount || 0;
             if (tenant.discountAmount && tenant.discountAmount > 0 && 
                 tenant.discountExpiresAt && tenant.discountExpiresAt >= monthStart) {
-                
-                // If the discount is active for this month, apply it
                 effectiveRentForMonth = Math.max(0, effectiveRentForMonth - tenant.discountAmount);
-                expectedDue = effectiveRentForMonth; // If using simple rent, apply directly
-                // If using invoices, you might apply discount per invoice item or track separately
+                expectedDue = effectiveRentForMonth;
             }
 
-            // Find payments received for this tenant within this month
             const payments = await Payment.find({
                 tenantId: tenant._id,
                 paymentDate: { $gte: monthStart, $lte: monthEnd },
@@ -131,7 +123,7 @@ export const getTenantMonthlyStatement = async (req: Request, res: Response) => 
 
             const amountPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
-            const monthlyBalanceChange = amountPaid - expectedDue; // Positive if overpaid, negative if underpaid
+            const monthlyBalanceChange = amountPaid - expectedDue;
             runningBalance += monthlyBalanceChange;
 
             statement.push({
