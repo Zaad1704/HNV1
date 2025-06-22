@@ -143,28 +143,25 @@
         "billing": "Billing",
         "audit_log": "Audit Log",
         "admin_panel": "Admin Panel",
-        "settings": "Profile & Settings",
+        "settings": "Settings",
         "logout": "Logout",
+        "monthly_revenue": "Monthly Revenue",
         "total_properties": "Total Properties",
         "active_tenants": "Active Tenants",
-        "monthly_revenue": "Monthly Revenue",
         "occupancy_rate": "Occupancy Rate",
-        "financials": "Financials (Last 6 Months)",
-        "occupancy_growth": "Occupancy Growth",
+        "financials_chart_title": "Financials (Last 6 Months)",
+        "occupancy_chart_title": "Occupancy Growth",
+        "financial_chart": {
+            "revenue": "Revenue",
+            "expenses": "Expenses"
+        },
+        "occupancy_chart": {
+            "new_tenants": "New Tenants"
+        },
         "overdue_rent_reminders": "Overdue Rent Reminders",
-        "send_reminder": "Send Reminder",
-        "no_late_tenants": "No tenants are currently late on rent.",
         "upcoming_lease_expirations": "Upcoming Lease Expirations",
-        "renew_lease": "Renew Lease",
-        "no_expiring_leases": "No leases expiring in the next 60 days.",
-        "loading_dashboard_data": "Loading Dashboard Data...",
-        "loading_your_dashboard": "Loading Your Dashboard...",
-        "access_issue": "Access Issue",
-        "fetching_subscription_details_error": "We encountered an issue fetching your subscription details:",
-        "invalid_session_prompt": "This might be due to an invalid session. Please try logging in again.",
-        "no_subscription_found": "No Subscription Found",
-        "no_associated_subscription_prompt": "It looks like your account doesn't have an associated subscription. Please contact support or choose a new plan.",
-        "go_back_to_login": "Go Back to Login"
+        "send_reminder": "Send Reminder",
+        "renew_lease": "Renew Lease"
     },
     "profile_settings": {
         "your_profile": "Your Profile",
