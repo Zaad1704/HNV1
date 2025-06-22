@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { Home, Building, Users, MoreHorizontal, DollarSign } from 'lucide-react';
+import { Home, Building, Users, MoreHorizontal, DollarSign, CreditCard, Wrench, FileText, Settings, LogOut } from 'lucide-react';
 import MoreMenuModal from '../common/MoreMenuModal';
 import RoleGuard from '../RoleGuard';
 
