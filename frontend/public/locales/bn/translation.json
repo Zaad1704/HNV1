@@ -12,7 +12,11 @@
     "language_toggle": {
         "en_display": "English",
         "bn_display": "বাংলা",
-        "switch_to": "স্যুইচ করুন"
+        "es_display": "স্প্যানিশ",
+        "de_display": "জার্মান",
+        "hi_display": "হিন্দি",
+        "fr_display": "ফরাসি",
+        "switch_to": "পরিবর্তন করুন"
     },
     "hero": {
         "title": "আধুনিক সম্পত্তি ব্যবস্থাপনার জন্য অল-ইন-ওয়ান প্ল্যাটফর্ম",
@@ -81,7 +85,7 @@
         "i_am_agent": "আমি একজন এজেন্ট",
         "full_name": "পুরো নাম",
         "create_password": "পাসওয়ার্ড তৈরি করুন",
-        "confirm_password": "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+        "confirm_new_password": "নতুন পাসওয়ার্ড নিশ্চিত করুন",
         "creating_account": "অ্যাকাউন্ট তৈরি হচ্ছে...",
         "smarter_management_title": "সম্পত্তি ব্যবস্থাপনার একটি স্মার্ট উপায়।",
         "smarter_management_subtitle": "আমাদের প্ল্যাটফর্ম আপনার ব্যবসা বাড়াতে প্রয়োজনীয় সরঞ্জাম, নিরাপত্তা এবং সমর্থন সরবরাহ করে।",
@@ -163,7 +167,7 @@
         "email": "ইমেইল",
         "role": "ভূমিকা",
         "language_settings": "ভাষা সেটিংস",
-        "select_language": "ভাষা নির্বাচন করুন",
+        "current_language": "বর্তমান ভাষা",
         "theme_settings": "থিম সেটিংস",
         "current_theme": "বর্তমান থিম",
         "toggle_theme": "থিম টগল করুন",
@@ -216,7 +220,7 @@
         "delete": "মুছুন",
         "edit_subscription_plan": "সাবস্ক্রিপশন পরিকল্পনা সম্পাদনা করুন",
         "create_new_plan": "নতুন পরিকল্পনা তৈরি করুন",
-        "price_usd": "মূল্য (USD)",
+        "price_usd": "মূল্য (BDT)",
         "billing_cycle": "বিলিং চক্র",
         "subscription_limits": "সাবস্ক্রিপশন সীমা",
         "max_properties": "সর্বোচ্চ সম্পত্তি",
@@ -280,7 +284,7 @@
         "adult_phone": "প্রাপ্তবয়স্কের ফোন",
         "add_another_adult": "অন্য প্রাপ্তবয়স্ক যোগ করুন",
         "save_tenant": "ভাড়াটে সংরক্ষণ করুন",
-        "loading_tenants": "ভাড়াটে লোড হচ্ছে..."
+        "loading_tenants": "লোড হচ্ছে..."
     },
     "expenses_page": {
         "manage_expenses": "খরচ পরিচালনা করুন",
