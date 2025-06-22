@@ -28,17 +28,18 @@ interface LeaseInfo {
     leaseEndDate?: string;
 }
 
-// NEW: Interface for upcoming dues line item
 interface DueLineItem {
     description: string;
     amount: number;
 }
 
-// NEW: Interface for upcoming dues
+// NEW: Updated UpcomingDues interface to match backend Invoice structure
 interface UpcomingDues {
+    invoiceId: string; // NEW: ID of the outstanding invoice
+    invoiceNumber: string; // NEW: Invoice number
     totalAmount: number;
     lineItems: DueLineItem[];
-    dueDate: string; // From backend
+    dueDate: string;
 }
 
 interface Payment {
@@ -51,7 +52,7 @@ interface Payment {
 interface TenantDashboardData {
     leaseInfo?: LeaseInfo;
     paymentHistory: Payment[];
-    upcomingDues?: UpcomingDues; // NEW: Include upcomingDues
+    upcomingDues?: UpcomingDues; // Now represents a real outstanding invoice
 }
 
 // Fetch Tenant Dashboard Data
@@ -61,9 +62,9 @@ const fetchTenantDashboardData = async (): Promise<TenantDashboardData> => {
 };
 
 // Mutation function for initiating rent payment
-// Now accepts lineItems
-const createRentSession = async (lineItems: DueLineItem[]) => {
-    const { data } = await apiClient.post('/billing/create-rent-payment', { lineItems });
+// Now accepts invoiceId and lineItems
+const createRentSession = async ({ invoiceId, lineItems }: { invoiceId: string; lineItems: DueLineItem[]; }) => {
+    const { data } = await apiClient.post('/billing/create-rent-payment', { invoiceId, lineItems });
     return data;
 };
 
@@ -87,13 +88,15 @@ const TenantDashboardPage = () => {
     });
 
     const handlePayRent = () => {
-        // Pass the upcomingDues.lineItems to the mutation
-        if (data?.upcomingDues?.lineItems && data.upcomingDues.lineItems.length > 0) {
-            mutation.mutate(data.upcomingDues.lineItems);
-        } else {
-            // Fallback for no breakdown, use the total rent amount from lease info
-            mutation.mutate([{ description: 'Monthly Rent', amount: data?.leaseInfo?.rentAmount || 0 }]);
+        if (!data?.upcomingDues?.invoiceId) {
+            alert('No outstanding invoice found to pay.');
+            return;
         }
+        // Pass the invoiceId and lineItems to the mutation
+        mutation.mutate({
+            invoiceId: data.upcomingDues.invoiceId,
+            lineItems: data.upcomingDues.lineItems
+        });
     };
 
     const formatDate = (dateString?: string) => {
@@ -102,7 +105,12 @@ const TenantDashboardPage = () => {
     };
 
     if (isLoading) return <div className="text-white text-center p-8">Loading Your Dashboard...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8">Error: {error?.message || 'Failed to load dashboard data.'}</div>;
+    if (isError) return (
+        <div className="text-red-400 text-center p-8">
+            Error: {error?.message || 'Failed to load dashboard data.'}
+            <p className="mt-4">Ensure your backend has active invoices for tenants, or try generating some from the admin panel.</p>
+        </div>
+    );
 
     if (!data?.leaseInfo && !data?.paymentHistory && !data?.upcomingDues) {
         return (
@@ -118,11 +126,10 @@ const TenantDashboardPage = () => {
 
     const leaseInfo = data.leaseInfo || {};
     const paymentHistory = data.paymentHistory || [];
-    const upcomingDues = data.upcomingDues; // Get upcoming dues
+    const upcomingDues = data.upcomingDues;
     
-    // Determine the next payment due date from upcomingDues if available, otherwise fallback
     const nextPaymentDueDateDisplay = upcomingDues?.dueDate ? formatDate(upcomingDues.dueDate) : 'N/A';
-    const nextPaymentAmountDisplay = upcomingDues?.totalAmount !== undefined ? `$${upcomingDues.totalAmount.toFixed(2)}` : 'N/A';
+    const nextPaymentAmountDisplay = upcomingDues?.totalAmount !== undefined ? `$${upcomingDues.totalAmount.toFixed(2)}` : '$0.00';
 
 
     return (
@@ -138,17 +145,19 @@ const TenantDashboardPage = () => {
                         <p className="text-blue-200">Next Payment Due:</p>
                         <p className="text-3xl font-bold">{nextPaymentDueDateDisplay}</p>
                         <p className="text-lg font-mono opacity-80">{nextPaymentAmountDisplay}</p>
+                        {upcomingDues && <p className="text-blue-200 text-sm">Invoice: {upcomingDues.invoiceNumber}</p>}
                     </div>
                     <button
                         onClick={handlePayRent}
-                        disabled={mutation.isLoading || (upcomingDues?.totalAmount === 0 && upcomingDues.lineItems.length === 0)}
+                        // Disable if no outstanding invoice is found or amount is 0
+                        disabled={mutation.isLoading || !upcomingDues?.invoiceId || upcomingDues.totalAmount === 0}
                         className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-blue-600 font-bold rounded-lg shadow-xl hover:bg-slate-100 transition-all transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
                     >
                         <CreditCard />
                         {mutation.isLoading ? 'Redirecting...' : 'Pay Rent Now'}
                     </button>
                 </div>
-                {/* NEW: Display upcoming dues breakdown */}
+                {/* Display upcoming dues breakdown */}
                 {upcomingDues && upcomingDues.lineItems.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-blue-400/50">
                         <p className="text-blue-200 text-sm font-semibold mb-2">Breakdown of Next Payment:</p>
