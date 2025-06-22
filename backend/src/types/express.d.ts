@@ -1,11 +1,11 @@
-// backend/src/types/asexpress.d.ts
+// backend/src/types/express.d.ts
 import { Types } from 'mongoose';
 
 declare global {
   namespace Express {
     interface User {
       _id: Types.ObjectId;
-      name?: string; // Corrected: Made name optional
+      name?: string;
       email: string;
       password?: string;
       role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
@@ -17,6 +17,7 @@ declare global {
       googleId?: string;
       passwordResetToken?: string;
       passwordResetExpires?: Date;
+      token?: string; // This line is added
     }
 
     interface Request {
