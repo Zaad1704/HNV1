@@ -1,5 +1,5 @@
 // frontend/src/hooks/useDynamicTranslation.ts
-import { useState, useEffect, useRef } from 'react'; // Import useRef
+import { useState, useEffect, useRef } from 'react';
 import apiClient from '../api/client';
 import { useTranslation } from 'react-i18next';
 
@@ -10,47 +10,59 @@ export const useDynamicTranslation = (textToTranslate: string) => {
   const { i18n } = useTranslation();
   const targetLanguage = i18n.language;
 
+  // Use state for the translated text, initialized with the input text
   const [translatedText, setTranslatedText] = useState(textToTranslate);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Use a ref to track the last text value that was successfully translated or set,
-  // to avoid redundant state updates in cases where props might re-render.
+  // Refs to track the last values that successfully triggered or completed a translation/update
   const lastProcessedTextRef = useRef(textToTranslate);
   const lastProcessedLanguageRef = useRef(targetLanguage);
 
   useEffect(() => {
-    // If the text hasn't changed, or the target language hasn't changed since last processing,
-    // or if translation is not needed (English or empty text),
-    // and we're not currently loading, and the current translatedText already matches the input,
-    // then bail out to prevent unnecessary work and potential loops.
-    if (
-      !textToTranslate || // No text to translate
-      targetLanguage === 'en' || // English doesn't need translation
-      (textToTranslate === lastProcessedTextRef.current && targetLanguage === lastProcessedLanguageRef.current) // Input hasn't changed meaningfully
-    ) {
-      // Ensure the displayed text is the original if no translation is needed
-      if (translatedText !== textToTranslate) {
-          setTranslatedText(textToTranslate);
-      }
-      setIsLoading(false); // Ensure loading is false if nothing is being done
-      return;
-    }
+    // Phase 1: Determine if any action is needed (translation, cache update, or reset)
 
-    const cacheKey = `${targetLanguage}:${textToTranslate}`;
-    if (translationCache.has(cacheKey)) {
-      const cached = translationCache.get(cacheKey)!;
-      if (translatedText !== cached) { // Only update if the state needs to change
-        setTranslatedText(cached);
+    // A. No translation needed or input is invalid
+    if (targetLanguage === 'en' || !textToTranslate) {
+      // If the current translatedText isn't already the original, update it.
+      if (translatedText !== textToTranslate) {
+        setTranslatedText(textToTranslate);
       }
-      setIsLoading(false); // Not loading if from cache
+      setIsLoading(false); // Ensure loading is off
+      // Update refs to reflect that this text/lang combo has been 'processed' to its original state
       lastProcessedTextRef.current = textToTranslate;
       lastProcessedLanguageRef.current = targetLanguage;
-      return;
+      return; // No further action for this effect cycle
     }
 
-    // If we reach here, we need to perform a translation.
-    // Set loading state and update refs for the current attempt.
+    // B. Check cache first
+    const cacheKey = `${targetLanguage}:${textToTranslate}`;
+    if (translationCache.has(cacheKey)) {
+      const cachedValue = translationCache.get(cacheKey)!;
+      // Only update state if the current translatedText is different from the cached value
+      if (translatedText !== cachedValue) {
+        setTranslatedText(cachedValue);
+      }
+      setIsLoading(false); // Not loading if from cache
+      // Update refs to mark this text/lang combo as processed via cache
+      lastProcessedTextRef.current = textToTranslate;
+      lastProcessedLanguageRef.current = targetLanguage;
+      return; // No further action for this effect cycle
+    }
+
+    // C. Decide if a new API call is needed (only if content or language has meaningfully changed)
+    // Only proceed to fetch if we are NOT currently loading,
+    // AND the text or language has changed from the last time we initiated a fetch.
+    if (
+      isLoading || // Already loading a translation
+      (textToTranslate === lastProcessedTextRef.current && targetLanguage === lastProcessedLanguageRef.current) // Input hasn't changed from last fetch attempt
+    ) {
+      return; // No new fetch needed right now
+    }
+
+    // Phase 2: Initiate API call if conditions met
     setIsLoading(true);
+    // Update refs immediately BEFORE initiating the fetch to prevent re-triggering the effect
+    // with the same "new" values in very fast re-renders.
     lastProcessedTextRef.current = textToTranslate;
     lastProcessedLanguageRef.current = targetLanguage;
 
@@ -62,17 +74,17 @@ export const useDynamicTranslation = (textToTranslate: string) => {
         });
         const newText = response.data.translatedText;
         translationCache.set(cacheKey, newText);
-        setTranslatedText(newText);
+        setTranslatedText(newText); // Update translatedText state
       } catch (error) {
         console.error('Translation failed:', error);
-        setTranslatedText(textToTranslate); // Fallback to original text on error
+        setTranslatedText(textToTranslate); // Fallback to original
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Always set loading to false after completion/error
       }
     };
 
     translate();
-  }, [textToTranslate, targetLanguage, translatedText, isLoading]); // Include all state and props used inside the effect as dependencies
+  }, [textToTranslate, targetLanguage, translatedText, isLoading]); // Dependencies for the effect
 
   return { translatedText, isLoading };
 };
