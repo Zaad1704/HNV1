@@ -20,12 +20,25 @@ interface LandlordInfo {
 }
 
 interface LeaseInfo {
-    property?: PropertyInfo; // Make optional as it might not be immediately available
+    property?: PropertyInfo;
     unit: string;
     status: string;
-    landlord?: LandlordInfo; // Make optional
-    rentAmount?: number; // Make optional
-    leaseEndDate?: string; // Add leaseEndDate to interface
+    landlord?: LandlordInfo;
+    rentAmount?: number;
+    leaseEndDate?: string;
+}
+
+// NEW: Interface for upcoming dues line item
+interface DueLineItem {
+    description: string;
+    amount: number;
+}
+
+// NEW: Interface for upcoming dues
+interface UpcomingDues {
+    totalAmount: number;
+    lineItems: DueLineItem[];
+    dueDate: string; // From backend
 }
 
 interface Payment {
@@ -36,8 +49,9 @@ interface Payment {
 }
 
 interface TenantDashboardData {
-    leaseInfo?: LeaseInfo; // Make optional as initial fetch might not have it
+    leaseInfo?: LeaseInfo;
     paymentHistory: Payment[];
+    upcomingDues?: UpcomingDues; // NEW: Include upcomingDues
 }
 
 // Fetch Tenant Dashboard Data
@@ -47,8 +61,9 @@ const fetchTenantDashboardData = async (): Promise<TenantDashboardData> => {
 };
 
 // Mutation function for initiating rent payment
-const createRentSession = async () => {
-    const { data } = await apiClient.post('/billing/create-rent-payment');
+// Now accepts lineItems
+const createRentSession = async (lineItems: DueLineItem[]) => {
+    const { data } = await apiClient.post('/billing/create-rent-payment', { lineItems });
     return data;
 };
 
@@ -72,29 +87,24 @@ const TenantDashboardPage = () => {
     });
 
     const handlePayRent = () => {
-        mutation.mutate();
-    };
-
-    // Dynamically calculate next payment due date
-    const calculateNextPaymentDueDate = (leaseEndDate?: string, status?: string): string => {
-        if (!leaseEndDate || status !== 'Active') return 'N/A';
-        try {
-            const lastEndDate = new Date(leaseEndDate);
-            // Assuming monthly payments and due on 1st of month after lease end
-            // This is a simplification; a real system would have payment cycles
-            const nextMonth = new Date(lastEndDate.getFullYear(), lastEndDate.getMonth() + 1, 1);
-            return nextMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        } catch (e) {
-            console.error("Error calculating next payment due date:", e);
-            return 'N/A';
+        // Pass the upcomingDues.lineItems to the mutation
+        if (data?.upcomingDues?.lineItems && data.upcomingDues.lineItems.length > 0) {
+            mutation.mutate(data.upcomingDues.lineItems);
+        } else {
+            // Fallback for no breakdown, use the total rent amount from lease info
+            mutation.mutate([{ description: 'Monthly Rent', amount: data?.leaseInfo?.rentAmount || 0 }]);
         }
     };
 
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
 
     if (isLoading) return <div className="text-white text-center p-8">Loading Your Dashboard...</div>;
     if (isError) return <div className="text-red-400 text-center p-8">Error: {error?.message || 'Failed to load dashboard data.'}</div>;
 
-    if (!data?.leaseInfo && !data?.paymentHistory) {
+    if (!data?.leaseInfo && !data?.paymentHistory && !data?.upcomingDues) {
         return (
             <div className="text-white text-center p-8">
                 <h1 className="text-4xl font-bold mb-4">Welcome, {user?.name}!</h1>
@@ -108,7 +118,12 @@ const TenantDashboardPage = () => {
 
     const leaseInfo = data.leaseInfo || {};
     const paymentHistory = data.paymentHistory || [];
-    const nextPaymentDueDate = calculateNextPaymentDueDate(leaseInfo.leaseEndDate, leaseInfo.status);
+    const upcomingDues = data.upcomingDues; // Get upcoming dues
+    
+    // Determine the next payment due date from upcomingDues if available, otherwise fallback
+    const nextPaymentDueDateDisplay = upcomingDues?.dueDate ? formatDate(upcomingDues.dueDate) : 'N/A';
+    const nextPaymentAmountDisplay = upcomingDues?.totalAmount !== undefined ? `$${upcomingDues.totalAmount.toFixed(2)}` : 'N/A';
+
 
     return (
         <div className="text-white space-y-8">
@@ -121,18 +136,36 @@ const TenantDashboardPage = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
                         <p className="text-blue-200">Next Payment Due:</p>
-                        <p className="text-3xl font-bold">{nextPaymentDueDate}</p>
-                        <p className="text-lg font-mono opacity-80">${leaseInfo.rentAmount?.toFixed(2) || '0.00'}</p>
+                        <p className="text-3xl font-bold">{nextPaymentDueDateDisplay}</p>
+                        <p className="text-lg font-mono opacity-80">{nextPaymentAmountDisplay}</p>
                     </div>
                     <button
                         onClick={handlePayRent}
-                        disabled={mutation.isLoading}
+                        disabled={mutation.isLoading || (upcomingDues?.totalAmount === 0 && upcomingDues.lineItems.length === 0)}
                         className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white text-blue-600 font-bold rounded-lg shadow-xl hover:bg-slate-100 transition-all transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
                     >
                         <CreditCard />
                         {mutation.isLoading ? 'Redirecting...' : 'Pay Rent Now'}
                     </button>
                 </div>
+                {/* NEW: Display upcoming dues breakdown */}
+                {upcomingDues && upcomingDues.lineItems.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-blue-400/50">
+                        <p className="text-blue-200 text-sm font-semibold mb-2">Breakdown of Next Payment:</p>
+                        <ul className="text-sm space-y-1">
+                            {upcomingDues.lineItems.map((item, index) => (
+                                <li key={index} className="flex justify-between">
+                                    <span>{item.description}</span>
+                                    <span>${item.amount.toFixed(2)}</span>
+                                </li>
+                            ))}
+                            <li className="flex justify-between font-bold pt-1 border-t border-blue-400/30">
+                                <span>Total</span>
+                                <span>${upcomingDues.totalAmount.toFixed(2)}</span>
+                            </li>
+                        </ul>
+                    </div>
+                )}
             </div>
 
             {/* Lease Info Card */}
