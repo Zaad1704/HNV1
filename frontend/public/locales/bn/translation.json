@@ -145,26 +145,23 @@
         "admin_panel": "অ্যাডমিন প্যানেল",
         "settings": "সেটিংস",
         "logout": "লগ আউট",
+        "monthly_revenue": "মাসিক আয়",
         "total_properties": "মোট সম্পত্তি",
         "active_tenants": "সক্রিয় ভাড়াটে",
-        "monthly_revenue": "মাসিক আয়",
         "occupancy_rate": "দখলদারিত্বের হার",
-        "financials": "আর্থিক (গত ৬ মাস)",
-        "occupancy_growth": "দখলদারিত্বের বৃদ্ধি",
+        "financials_chart_title": "আর্থিক সারাংশ (শেষ ৬ মাস)",
+        "occupancy_chart_title": "দখলদারিত্ব বৃদ্ধি",
+        "financial_chart": {
+            "revenue": "আয়",
+            "expenses": "ব্যয়"
+        },
+        "occupancy_chart": {
+            "new_tenants": "নতুন ভাড়াটে"
+        },
         "overdue_rent_reminders": "বকেয়া ভাড়া অনুস্মারক",
+        "upcoming_lease_expirations": "আসন্ন ইজারা মেয়াদোত্তীর্ণ",
         "send_reminder": "অনুস্মারক পাঠান",
-        "no_late_tenants": "বর্তমানে কোনো ভাড়াটে ভাড়া দিতে দেরি করেনি।",
-        "upcoming_lease_expirations": "আসন্ন ইজারা মেয়াদ শেষ",
-        "renew_lease": "ইজারা নবায়ন করুন",
-        "no_expiring_leases": "আগামী ৬০ দিনের মধ্যে কোনো ইজারা শেষ হচ্ছে না।",
-        "loading_dashboard_data": "ড্যাশবোর্ড ডেটা লোড হচ্ছে...",
-        "loading_your_dashboard": "আপনার ড্যাশবোর্ড লোড হচ্ছে...",
-        "access_issue": "অ্যাক্সেস সমস্যা",
-        "fetching_subscription_details_error": "আপনার সাবস্ক্রিপশন বিবরণ আনতে সমস্যা হয়েছে:",
-        "invalid_session_prompt": "এটি একটি অবৈধ সেশনের কারণে হতে পারে। অনুগ্রহ করে আবার লগ ইন করার চেষ্টা করুন।",
-        "no_subscription_found": "কোনো সাবস্ক্রিপশন পাওয়া যায়নি",
-        "no_associated_subscription_prompt": "মনে হচ্ছে আপনার অ্যাকাউন্টের সাথে কোনো সাবস্ক্রিপশন যুক্ত নেই। অনুগ্রহ করে সহায়তার সাথে যোগাযোগ করুন অথবা একটি নতুন পরিকল্পনা বেছে নিন।",
-        "go_back_to_login": "লগ ইনে ফিরে যান"
+        "renew_lease": "ইজারা নবায়ন করুন"
     },
     "profile_settings": {
         "your_profile": "আপনার প্রোফাইল",
