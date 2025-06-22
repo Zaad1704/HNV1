@@ -17,9 +17,9 @@ const BottomNavBar: React.FC = () => {
 
     // Define all possible navigation items for the dashboard, including role-guarded ones.
     const allDashboardNavItems = [
-        { href: '/dashboard/overview', icon: Home, label: 'Home', isHighlight: true }, // Highlighted Home
         { href: '/dashboard/properties', icon: Building, label: 'Prop.' }, // Abbreviated
         { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
+        { href: '/dashboard/overview', icon: Home, label: 'Home', isHighlight: true }, // Highlighted Home
         { href: '/dashboard/expenses', icon: CreditCard, label: 'Exp.' }, // Abbreviated
         { href: '/dashboard/maintenance', icon: Wrench, label: 'Maint.' }, // Abbreviated
         
