@@ -11,13 +11,13 @@ declare global {
       role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
       status: 'active' | 'inactive' | 'suspended';
       permissions: string[];
-      organizationId: Types.ObjectId;
-      managedAgentIds: Types.ObjectId[];
-      associatedLandlordIds: Types.ObjectId[];
+      // THE FIX: Make these properties optional to match the data model
+      organizationId?: Types.ObjectId;
+      managedAgentIds?: Types.ObjectId[];
+      associatedLandlordIds?: Types.ObjectId[];
       googleId?: string;
       passwordResetToken?: string;
       passwordResetExpires?: Date;
-      token?: string; // This line is added
     }
 
     interface Request {
