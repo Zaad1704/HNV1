@@ -1,5 +1,6 @@
+// backend/controllers/tenantsController.ts
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler'; // Ensure this is imported if used
+import asyncHandler from 'express-async-handler';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
@@ -7,7 +8,9 @@ import mongoose from 'mongoose';
 
 export const getTenants = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     const tenants = await Tenant.find({ organizationId: req.user.organizationId }).populate('propertyId', 'name');
     res.status(200).json({ success: true, count: tenants.length, data: tenants });
   } catch (error) {
@@ -17,7 +20,9 @@ export const getTenants = async (req: Request, res: Response) => {
 
 export const createTenant = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     const { propertyId } = req.body;
     const property = await Property.findById(propertyId);
     if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
@@ -44,7 +49,9 @@ export const createTenant = async (req: Request, res: Response) => {
 
 export const getTenantById = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     const tenant = await Tenant.findById(req.params.id);
     if (!tenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
@@ -57,17 +64,17 @@ export const getTenantById = async (req: Request, res: Response) => {
   }
 };
 
-// --- MODIFIED FUNCTION ---
 export const updateTenant = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     let tenant = await Tenant.findById(req.params.id);
     if (!tenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to update this tenant' });
     }
 
-    // NEW: Allow updating discountAmount and discountExpiresAt
     const { discountAmount, discountExpiresAt, ...otherUpdates } = req.body;
 
     const updates: any = { ...otherUpdates };
@@ -75,8 +82,8 @@ export const updateTenant = async (req: Request, res: Response) => {
         updates.discountAmount = discountAmount;
     }
     if (discountExpiresAt !== undefined) {
-        updates.discountExpiresAt = discountExpiresAt ? new Date(discountExpiresAt) : null; // Convert to Date or null
-    } else if (discountAmount === 0) { // If discount is set to 0, clear expiry
+        updates.discountExpiresAt = discountExpiresAt ? new Date(discountExpiresAt) : null;
+    } else if (discountAmount === 0) {
         updates.discountExpiresAt = null;
     }
     
@@ -89,7 +96,6 @@ export const updateTenant = async (req: Request, res: Response) => {
             { 
                 tenantId: tenant._id.toString(), 
                 tenantName: tenant.name,
-                // Add discount details to audit log if they were updated
                 ...(discountAmount !== undefined && { discountAmount: tenant.discountAmount }),
                 ...(discountExpiresAt !== undefined && { discountExpiresAt: tenant.discountExpiresAt })
             }
@@ -103,7 +109,9 @@ export const updateTenant = async (req: Request, res: Response) => {
 
 export const deleteTenant = async (req: Request, res: Response) => {
   try {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     const tenant = await Tenant.findById(req.params.id);
     if (!tenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
