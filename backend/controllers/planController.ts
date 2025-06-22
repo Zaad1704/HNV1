@@ -1,12 +1,9 @@
+// backend/controllers/planController.ts
 import { Request, Response } from 'express';
 import Plan from '../models/Plan';
-// FIX: AuthenticatedRequest is no longer needed.
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-// @desc    Get all subscription plans
-// @route   GET /api/plans
-// @access  Public
 export const getPlans = async (req: Request, res: Response) => {
     try {
         const plans = await Plan.find({}).sort({ price: 1 });
@@ -16,13 +13,10 @@ export const getPlans = async (req: Request, res: Response) => {
     }
 };
 
-// @desc    Create a new subscription plan
-// @route   POST /api/plans
-// @access  Private (Super Admin)
-export const createPlan = async (req: Request, res: Response) => { // FIX: Use Request
+export const createPlan = async (req: Request, res: Response) => {
     try {
-        if (!req.user) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         }
         const newPlan = await Plan.create(req.body);
         
@@ -38,13 +32,10 @@ export const createPlan = async (req: Request, res: Response) => { // FIX: Use R
     }
 };
 
-// @desc    Update an existing subscription plan
-// @route   PUT /api/plans/:id
-// @access  Private (Super Admin)
-export const updatePlan = async (req: Request, res: Response) => { // FIX: Use Request
+export const updatePlan = async (req: Request, res: Response) => {
     try {
-        if (!req.user) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         }
         const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -66,13 +57,10 @@ export const updatePlan = async (req: Request, res: Response) => { // FIX: Use R
     }
 };
 
-// @desc    Delete a subscription plan
-// @route   DELETE /api/plans/:id
-// @access  Private (Super Admin)
-export const deletePlan = async (req: Request, res: Response) => { // FIX: Use Request
+export const deletePlan = async (req: Request, res: Response) => {
     try {
-        if (!req.user) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         }
         const plan = await Plan.findById(req.params.id);
         if (!plan) {
