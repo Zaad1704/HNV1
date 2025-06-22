@@ -5,9 +5,9 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { 
     Home, Building, Users, CreditCard, Shield, Settings, 
-    LogOut, Star, Menu, X, FileText, Wrench, BarChart2, Bell, MessageSquare, Briefcase
-} from 'lucide-react';
-import NotificationsPanel from '../dashboard/NotificationsPanel';
+    LogOut, Star, Menu, X, FileText, Wrench, BarChart2, Bell, MessageSquare, Briefcase, DollarSign
+} from 'lucide-react'; // Added DollarSign for cash flow
+import NotificationsPanel from '../components/dashboard/NotificationsPanel';
 import BottomNavBar from './BottomNavBar';
 import RoleGuard from '../RoleGuard';
 
@@ -50,8 +50,8 @@ const DashboardLayout = () => {
                         <Link to="/dashboard/tenants" className={getLinkClass('/dashboard/tenants')}><Users size={20} /><span>Tenants</span></Link>
                         <Link to="/dashboard/expenses" className={getLinkClass('/dashboard/expenses')}><CreditCard size={20} /><span>Expenses</span></Link>
                         <Link to="/dashboard/maintenance" className={getLinkClass('/dashboard/maintenance')}><Wrench size={20} /><span>Maintenance</span></Link>
-                        {/* Users & Invites link wrapped with RoleGuard */}
-                        <RoleGuard allowed={['Landlord', 'Agent']}> {/* This guard applies here */}
+                        <Link to="/dashboard/cashflow" className={getLinkClass('/dashboard/cashflow')}><DollarSign size={20} /><span>Cash Flow</span></Link> {/* NEW LINK */}
+                        <RoleGuard allowed={['Landlord', 'Agent']}>
                             <Link to="/dashboard/users" className={getLinkClass('/dashboard/users')}><Users size={20} /><span>Users & Invites</span></Link>
                         </RoleGuard>
                         <Link to="/dashboard/billing" className={getLinkClass('/dashboard/billing')}><CreditCard size={20} /><span>Billing</span></Link>
