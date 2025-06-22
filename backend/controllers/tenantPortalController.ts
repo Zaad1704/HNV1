@@ -3,7 +3,9 @@ import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import Payment from '../models/Payment';
 import User from '../models/User';
-import Lease from '../models/Lease'; // Import Lease model
+import Lease from '../models/Lease';
+import Invoice from '../models/Invoice'; // NEW IMPORT: Invoice model
+import { startOfMonth } from 'date-fns'; // NEW IMPORT: for date comparison
 
 export const getTenantDashboardData = async (req: Request, res: Response) => {
     if (!req.user || req.user.role !== 'Tenant') {
@@ -16,11 +18,11 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
             organizationId: req.user.organizationId 
         }).populate({
             path: 'propertyId',
-            select: 'name address createdBy', // Fetch property details
+            select: 'name address createdBy',
             populate: {
-                path: 'createdBy', // This is the Landlord/Agent user
+                path: 'createdBy',
                 model: 'User',
-                select: 'name email' // Fetch landlord's contact info
+                select: 'name email'
             }
         });
 
@@ -28,29 +30,30 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Tenant profile not found.' });
         }
 
-        // Find the active lease for this tenant to get current rentAmount
         const activeLease = await Lease.findOne({ tenantId: tenantInfo._id, status: 'active' });
 
-        // Find recent payments for this tenant
         const paymentHistory = await Payment.find({ tenantId: tenantInfo._id })
             .sort({ paymentDate: -1 })
             .limit(10);
             
-        // NEW: Mock Upcoming Dues Breakdown
-        // In a real system, this would come from generated invoices or calculated based on lease and utility bills.
-        // For now, let's simulate a basic breakdown for the current month's rent.
-        const upcomingDues = {
-            totalAmount: tenantInfo.rentAmount || 0, // Base on tenant's rentAmount
-            lineItems: [
-                { description: 'Monthly Rent', amount: tenantInfo.rentAmount || 0 },
-                // You could add mock utility bills here if needed for testing frontend
-                // { description: 'Electricity Bill', amount: 50.00 },
-                // { description: 'Water Bill', amount: 30.00 }
-            ],
-            dueDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString().split('T')[0], // 1st of next month
-        };
+        // NEW: Fetch Real Upcoming Dues/Outstanding Invoices
+        const today = new Date();
+        const currentMonthStart = startOfMonth(today);
 
-        // Construct the dashboard data object
+        const outstandingInvoice = await Invoice.findOne({
+            tenantId: tenantInfo._id,
+            status: 'pending', // Only pending invoices are "due"
+            dueDate: { $gte: currentMonthStart }, // Due date is today or in the future
+        }).sort({ dueDate: 1 }); // Get the soonest due invoice
+
+        const upcomingDues = outstandingInvoice ? {
+            invoiceId: outstandingInvoice._id, // Pass invoice ID
+            invoiceNumber: outstandingInvoice.invoiceNumber, // Pass invoice number
+            totalAmount: outstandingInvoice.amount,
+            lineItems: outstandingInvoice.lineItems,
+            dueDate: outstandingInvoice.dueDate.toISOString().split('T')[0], // YYYY-MM-DD
+        } : undefined;
+
         const dashboardData = {
             leaseInfo: {
                 property: {
@@ -64,11 +67,11 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
                     name: (tenantInfo.propertyId as any)?.createdBy.name,
                     email: (tenantInfo.propertyId as any)?.createdBy.email,
                 },
-                rentAmount: tenantInfo.rentAmount, // Include rentAmount
-                leaseEndDate: tenantInfo.leaseEndDate, // Include leaseEndDate
+                rentAmount: tenantInfo.rentAmount,
+                leaseEndDate: tenantInfo.leaseEndDate,
             },
             paymentHistory,
-            upcomingDues, // NEW: Include upcomingDues
+            upcomingDues, // Now this will be a real invoice or undefined
         };
 
         res.status(200).json({ success: true, data: dashboardData });
