@@ -1,14 +1,14 @@
 // frontend/src/pages/OverviewPage.tsx
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react'; // Import useState
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; // Import useMutation
 import apiClient from '../api/client';
 import FinancialChart from '../components/charts/FinancialChart';
 import OccupancyChart from '../components/charts/OccupancyChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import { DollarSign, Building2, Users } from 'lucide-react';
 
-// --- API Fetching Functions ---
+// API Fetching Functions
 const fetchOverviewStats = async () => {
     const { data } = await apiClient.get('/dashboard/overview-stats');
     return data.data;
@@ -30,6 +30,13 @@ const fetchOccupancySummary = async () => {
     return data.data;
 };
 
+// NEW: Mutation function for sending rent reminders
+const sendRentReminder = async (tenantId: string) => {
+    const { data } = await apiClient.post('/communication/send-rent-reminder', { tenantId });
+    return data.message;
+};
+
+
 const StatCard = ({ title, value, icon, currency = '' }) => (
     <div className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm flex items-center justify-between">
         <div>
@@ -45,11 +52,42 @@ const StatCard = ({ title, value, icon, currency = '' }) => (
 );
 
 const OverviewPage = () => {
+    const queryClient = useQueryClient(); // NEW: Get queryClient
     const { data: stats, isLoading: isLoadingStats } = useQuery({ queryKey: ['overviewStats'], queryFn: fetchOverviewStats });
     const { data: lateTenants, isLoading: isLoadingLate } = useQuery({ queryKey: ['lateTenants'], queryFn: fetchLateTenants });
     const { data: expiringLeases, isLoading: isLoadingLeases } = useQuery({ queryKey: ['expiringLeases'], queryFn: fetchExpiringLeases });
     const { data: financialData, isLoading: isLoadingFinancial } = useQuery({ queryKey: ['financialSummary'], queryFn: fetchFinancialSummary });
     const { data: occupancyData, isLoading: isLoadingOccupancy } = useQuery({ queryKey: ['occupancySummary'], queryFn: fetchOccupancySummary });
+
+    // NEW: State for tracking reminder sending
+    const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
+
+    // NEW: Mutation for sending reminders
+    const reminderMutation = useMutation({
+        mutationFn: sendRentReminder,
+        onMutate: (tenantId) => {
+            setSendingReminderId(tenantId); // Set which item is currently sending
+        },
+        onSuccess: (message, tenantId) => {
+            alert(message); // Show success message
+            // Optionally, invalidate queries if you want to refresh the late tenants list
+            // queryClient.invalidateQueries({ queryKey: ['lateTenants'] }); 
+        },
+        onError: (err: any) => {
+            alert(`Failed to send reminder: ${err.response?.data?.message || err.message}`);
+        },
+        onSettled: () => {
+            setSendingReminderId(null); // Reset sending state regardless of success/failure
+        },
+    });
+
+    // Handler function for ActionItemWidget's "Send Reminder" button
+    const handleSendReminder = (tenantId: string) => {
+        if (window.confirm('Are you sure you want to send a rent reminder email to this tenant?')) {
+            reminderMutation.mutate(tenantId);
+        }
+    };
+
 
     const isLoading = isLoadingStats || isLoadingLate || isLoadingLeases || isLoadingFinancial || isLoadingOccupancy;
 
@@ -83,14 +121,15 @@ const OverviewPage = () => {
                     title="Overdue Rent Reminders"
                     items={lateTenants?.map(t => ({ id: t._id, primaryText: t.name, secondaryText: `Property: ${t.propertyId?.name || 'N/A'}` }))}
                     actionText="Send Reminder"
-                    emptyText="No tenants are currently late on rent."
-                    linkTo="/dashboard/tenants"
+                    linkTo="/dashboard/tenants" // This is the fallback link
+                    onActionClick={handleSendReminder} // NEW: Pass the handler function
+                    isActionLoading={reminderMutation.isLoading} // NEW: Pass loading state
+                    loadingItemId={sendingReminderId} // NEW: Pass current item being sent
                 />
                 <ActionItemWidget
                     title="Upcoming Lease Expirations"
                     items={expiringLeases?.map(t => ({ id: t._id, primaryText: t.name, secondaryText: `Expires on: ${new Date(t.leaseEndDate).toLocaleDateString()}` }))}
                     actionText="Renew Lease"
-                    emptyText="No leases are expiring within the next 60 days."
                     linkTo="/dashboard/tenants"
                 />
             </div>
