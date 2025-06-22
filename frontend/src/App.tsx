@@ -72,11 +72,13 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
+      // If a token exists but the user object is not in the store, try to fetch user details
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
         } catch (error) {
+          // If token is invalid or expired, the axios interceptor will handle logout
           if (axios.isAxiosError(error) && error.response) {
             console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
           } else {
@@ -85,11 +87,12 @@ function App() {
           }
         }
       }
-      setSessionLoading(false);
+      setSessionLoading(false); // Mark session loading as complete
     };
     checkUserSession();
-  }, [token, user, setUser, logout]);
+  }, [token, user, setUser, logout]); // Re-run if token or user changes
 
+  // Display a full-screen loader while the session is being checked
   if (isSessionLoading) {
     return <FullScreenLoader />;
   }
@@ -124,6 +127,7 @@ function App() {
             <Route path="/resubscribe" element={<ResubscribePage />} />
 
             {/* Protected Routes - Dashboard */}
+            {/* These routes require the user to be authenticated */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} /> 
@@ -146,6 +150,7 @@ function App() {
             </Route>
 
             {/* Admin Protected Routes */}
+            {/* These routes require Super Admin or Super Moderator role */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboardPage />} />
