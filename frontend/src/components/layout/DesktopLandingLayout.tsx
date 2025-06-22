@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ISiteSettings } from '../../../../backend/models/SiteSettings';
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
-import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
@@ -24,7 +23,6 @@ const IconMap: { [key: string]: React.ElementType } = {
     "users": Users,
     "credit-card": CreditCard,
     "wrench": Wrench,
-    // Add more mappings as needed
 };
 
 // Helper to get the correct icon component, gracefully handling missing ones
@@ -73,10 +71,6 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
 
             <section id="servicesSection" className="py-16 md:py-24 bg-gray-100">
                 <ServicesSection />
-            </section>
-
-            <section id="leadershipSection" className="py-16 md:py-24 bg-white">
-                <LeadershipSection />
             </section>
 
             <section id="pricingSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
