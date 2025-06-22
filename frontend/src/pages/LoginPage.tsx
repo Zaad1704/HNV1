@@ -31,7 +31,8 @@ const LoginPage: React.FC = () => {
       if (response.data.userStatus && response.data.userStatus !== 'active') {
         navigate(`/resubscribe?status=${response.data.userStatus}`, { replace: true });
       } else {
-        navigate('/dashboard', { replace: true });
+        // This is the line that should navigate to the dashboard
+        navigate('/dashboard', { replace: true }); 
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed.');
