@@ -20,8 +20,6 @@ try {
     });
 } catch (e) {
     console.error("FATAL ERROR: Failed to parse Google credentials from GOOGLE_CREDENTIALS_JSON env var. Ensure it's correctly set.", e);
-    // In a real production app, you might want to gracefully shut down or log critical error.
-    // For now, we'll throw to ensure the app doesn't start with bad config.
     throw new Error("Google Drive credentials are not correctly configured. Check GOOGLE_CREDENTIALS_JSON environment variable.");
 }
 
