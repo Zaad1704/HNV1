@@ -7,9 +7,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import passport from 'passport';
 import session from 'express-session';
-import helmet from 'helmet'; 
-
-import './config/passport-setup';
+import helmet from 'helmet'; // Import helmet
 
 // Route imports
 import authRoutes from './routes/authRoutes';
@@ -40,7 +38,8 @@ import receiptRoutes from './routes/receiptRoutes';
 import communicationRoutes from './routes/communicationRoutes'; 
 import cashFlowRoutes from './routes/cashFlowRoutes'; 
 import reminderRoutes from './routes/reminderRoutes'; 
-import tenantPortalRoutes from './routes/tenantPortalRoutes'; // Corrected and simplified import
+import tenantPortalRoutes from './routes/tenantPortalRoutes';
+
 
 dotenv.config();
 
@@ -107,7 +106,17 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(helmet()); 
+
+// --- START CSP FIX ---
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    ...helmet.contentSecurityPolicy.getDefaultDirectives(), // Keep Helmet's default strictness for other directives
+    "script-src": ["'self'", "'unsafe-inline'", "https://accounts.google.com"], // Allow scripts from self, unsafe-inline for OAuth callbacks, and Google Accounts
+    "frame-src": ["'self'", "https://accounts.google.com"], // Allow iframes from self and Google Accounts (for popups/redirects)
+    "connect-src": ["'self'", "https://accounts.google.com"], // Allow connections from self and Google Accounts
+  },
+}));
+// --- END CSP FIX ---
 
 
 // API Routes
