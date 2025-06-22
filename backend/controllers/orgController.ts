@@ -3,22 +3,22 @@ import { Request, Response, NextFunction } from 'express';
 import Organization, { IOrganization } from '../models/Organization';
 import User from '../models/User';
 import Subscription from '../models/Subscription';
-import Plan from '../models/Plan'; // Assuming Plan model is needed for subscription details
+import Plan from '../models/Plan';
 
 export const getOrganizationDetails = async (req: Request, res: Response) => {
-    if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
     try {
         const organization = await Organization.findById(req.user.organizationId)
-            .populate('owner', 'name email') // Populate owner to get name and email
+            .populate('owner', 'name email')
             .populate({
                 path: 'subscription',
                 model: 'Subscription',
                 populate: {
                     path: 'planId',
                     model: 'Plan',
-                    select: 'name price duration' // Select relevant plan details
+                    select: 'name price duration'
                 }
             });
 
@@ -32,7 +32,6 @@ export const getOrganizationDetails = async (req: Request, res: Response) => {
     }
 };
 
-// CORRECTED: Ensure listOrganizations is exported
 export const listOrganizations = async (req: Request, res: Response) => {
     try {
         const organizations = await Organization.find({})
@@ -62,7 +61,6 @@ export const listOrganizations = async (req: Request, res: Response) => {
     }
 };
 
-// CORRECTED: Ensure setOrgStatus is exported
 export const setOrgStatus = async (req: Request, res: Response) => {
     const { orgId, status } = req.body;
     if (!orgId || !status) {
