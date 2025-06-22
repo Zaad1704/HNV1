@@ -39,8 +39,13 @@ import invoiceRoutes from './routes/invoiceRoutes';
 import receiptRoutes from './routes/receiptRoutes'; 
 import communicationRoutes from './routes/communicationRoutes'; 
 import cashFlowRoutes from './routes/cashFlowRoutes'; 
-// NEW IMPORT for B.4: Reminder Routes
 import reminderRoutes from './routes/reminderRoutes'; 
+// --- CHANGE START ---
+// Original: import tenantPortalRoutes from './routes/tenantPortalRoutes';
+// Attempting more explicit import to help TypeScript resolve 'tenantPortalRoutes'
+import * as tenantPortalRoutesModule from './routes/tenantPortalRoutes';
+const tenantPortalRoutes = tenantPortalRoutesModule.default;
+// --- CHANGE END ---
 
 
 dotenv.config();
@@ -137,10 +142,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/orgs', orgRoutes); 
 app.use('/api/invoices', invoiceRoutes); 
 app.use('/api/receipts', receiptRoutes); 
-app.use('/api/tenant-portal', tenantPortalRoutes); 
+app.use('/api/tenant-portal', tenantPortalRoutes); // This line is causing the error.
 app.use('/api/communication', communicationRoutes); 
 app.use('/api/cashflow', cashFlowRoutes); 
-// NEW ROUTE for B.4: Reminders
 app.use('/api/reminders', reminderRoutes); 
 
 
