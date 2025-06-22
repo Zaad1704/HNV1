@@ -18,8 +18,8 @@ interface LangContextType {
   toggleLanguages: LangOption[];
   currentLanguageName: string;
   getNextToggleLanguage: () => LangOption;
-  currencyCode: string;
-  currencyName: string;
+  currencyCode: string; // This remains, will default to USD
+  currencyName: string; // This remains, will default to $
 }
 
 const LangContext = createContext<LangContextType | undefined>(undefined);
@@ -41,7 +41,6 @@ export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (persistedLang && ALL_SUPPORTED_LANGUAGES_MAP[persistedLang]) {
         return persistedLang;
     }
-    // Fallback to i18n's detected language, then 'en'
     return (ALL_SUPPORTED_LANGUAGES_MAP[i18n.language as LangCode] ? i18n.language : 'en') as LangCode;
   });
 
@@ -49,7 +48,6 @@ export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [currencyInfo, setCurrencyInfo] = useState({ code: 'USD', name: '$' });
 
   useEffect(() => {
-    // Sync i18n and persist language
     if (i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
