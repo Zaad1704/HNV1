@@ -45,8 +45,9 @@ import SettingsPage from './pages/SettingsPage';
 import AuditLogPage from './pages/AuditLogPage';
 import OrganizationPage from './pages/OrganizationPage';
 import TenantDashboardPage from './pages/TenantDashboardPage';
-// NEW IMPORT for G: CashFlowPage
 import CashFlowPage from './pages/CashFlowPage'; 
+// NEW IMPORT for C.2 Frontend
+import TenantStatementPage from './pages/TenantStatementPage'; 
 
 // Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -128,9 +129,10 @@ function App() {
               <Route path="overview" element={<OverviewPage />} />
               <Route path="properties" element={<PropertiesPage />} />
               <Route path="tenants" element={<TenantsPage />} />
+              <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} /> {/* NEW ROUTE */}
               <Route path="expenses" element={<ExpensesPage />} />
               <Route path="maintenance" element={<MaintenanceRequestsPage />} />
-              <Route path="cashflow" element={<CashFlowPage />} /> {/* NEW ROUTE */}
+              <Route path="cashflow" element={<CashFlowPage />} /> 
               <Route path="users" element={<UsersPage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="audit-log" element={<AuditLogPage />} />
