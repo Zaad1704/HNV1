@@ -1,40 +1,55 @@
-import { create } from "zustand";
+import create from "zustand";
+import { persist } from "zustand/middleware";
 
-// This defines the shape of the User object we get from the backend
-export interface User {
-  id: string;
-  email: string;
+// Define your user type
+type User = {
+  _id: string;
   name: string;
+  email: string;
   role: string;
-}
+  // ...add other fields as needed
+};
 
-// This defines the complete state of our store
-interface AuthState {
+type AuthState = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
   setUser: (user: User | null) => void;
-  login: (token: string) => void;
+  setToken: (token: string | null) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
-}
+};
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
-  
-  // Sets the user object in the store
-  setUser: (user) => set({ user }),
-
-  // Called after a successful login or registration
-  login: (token) => {
-    localStorage.setItem('token', token);
-    set({ token, isAuthenticated: true });
-  },
-
-  // Clears the session
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, token: null, isAuthenticated: false });
-  },
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      loading: false,
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setToken: (token) => set({ token }),
+      login: (token, user) =>
+        set({
+          token,
+          user,
+          isAuthenticated: true,
+        }),
+      logout: () =>
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+        }),
+    }),
+    {
+      name: "auth-storage", // localStorage key
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+);
