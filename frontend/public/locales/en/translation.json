@@ -2,9 +2,9 @@
     "header": {
   "features": "Features",
   "about": "About Us",
-  "services": "Services",           // <-- add this
-  "leadership": "Leadership",       // <-- add this
-  "install_app": "Install App",     // <-- add this
+  "services": "Services",           
+  "leadership": "Leadership",       
+  "install_app": "Install App",     
   "pricing": "Pricing",
   "contact": "Contact",
   "portal_login": "Portal Login",
