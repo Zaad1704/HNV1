@@ -1,11 +1,11 @@
-import { Request, Response } from 'express'; // FIX: Import Request
+import { Request, Response } from 'express';
+import asyncHandler from 'express-async-handler'; // Ensure this is imported if used
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
-// FIX: AuthenticatedRequest is no longer needed.
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-export const getTenants = async (req: Request, res: Response) => { // FIX: Use Request
+export const getTenants = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenants = await Tenant.find({ organizationId: req.user.organizationId }).populate('propertyId', 'name');
@@ -15,7 +15,7 @@ export const getTenants = async (req: Request, res: Response) => { // FIX: Use R
   }
 };
 
-export const createTenant = async (req: Request, res: Response) => { // FIX: Use Request
+export const createTenant = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const { propertyId } = req.body;
@@ -42,7 +42,7 @@ export const createTenant = async (req: Request, res: Response) => { // FIX: Use
   }
 };
 
-export const getTenantById = async (req: Request, res: Response) => { // FIX: Use Request
+export const getTenantById = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenant = await Tenant.findById(req.params.id);
@@ -57,7 +57,8 @@ export const getTenantById = async (req: Request, res: Response) => { // FIX: Us
   }
 };
 
-export const updateTenant = async (req: Request, res: Response) => { // FIX: Use Request
+// --- MODIFIED FUNCTION ---
+export const updateTenant = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     let tenant = await Tenant.findById(req.params.id);
@@ -65,13 +66,33 @@ export const updateTenant = async (req: Request, res: Response) => { // FIX: Use
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to update this tenant' });
     }
-    tenant = await Tenant.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+    // NEW: Allow updating discountAmount and discountExpiresAt
+    const { discountAmount, discountExpiresAt, ...otherUpdates } = req.body;
+
+    const updates: any = { ...otherUpdates };
+    if (discountAmount !== undefined) {
+        updates.discountAmount = discountAmount;
+    }
+    if (discountExpiresAt !== undefined) {
+        updates.discountExpiresAt = discountExpiresAt ? new Date(discountExpiresAt) : null; // Convert to Date or null
+    } else if (discountAmount === 0) { // If discount is set to 0, clear expiry
+        updates.discountExpiresAt = null;
+    }
+    
+    tenant = await Tenant.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
     if (tenant) {
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
             'TENANT_UPDATE',
-            { tenantId: tenant._id.toString(), tenantName: tenant.name }
+            { 
+                tenantId: tenant._id.toString(), 
+                tenantName: tenant.name,
+                // Add discount details to audit log if they were updated
+                ...(discountAmount !== undefined && { discountAmount: tenant.discountAmount }),
+                ...(discountExpiresAt !== undefined && { discountExpiresAt: tenant.discountExpiresAt })
+            }
         );
     }
     res.status(200).json({ success: true, data: tenant });
@@ -80,7 +101,7 @@ export const updateTenant = async (req: Request, res: Response) => { // FIX: Use
   }
 };
 
-export const deleteTenant = async (req: Request, res: Response) => { // FIX: Use Request
+export const deleteTenant = async (req: Request, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
     const tenant = await Tenant.findById(req.params.id);
