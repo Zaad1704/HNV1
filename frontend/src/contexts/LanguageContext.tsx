@@ -1,7 +1,7 @@
 // frontend/src/contexts/LanguageContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
-// Removed: import apiClient from '../api/client'; // apiClient is now passed from App.tsx
+import apiClient from '../api/client'; // RE-ADDED: import apiClient
 
 // Define all *potential* supported languages that the system knows about.
 export const ALL_SUPPORTED_LANGUAGES_MAP = {
@@ -32,13 +32,8 @@ export const useLang = () => {
   return context;
 };
 
-// NEW: Accept initialLocaleData prop
-interface LangProviderProps {
-  children: ReactNode;
-  initialLocaleData: { lang: string; currency: string; name: string; };
-}
-
-export const LangProvider: React.FC<LangProviderProps> = ({ children, initialLocaleData }) => {
+// REMOVED: initialLocaleData prop from LangProviderProps
+export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) => { 
   const { i18n } = useTranslation();
   
   const [lang, setLangState] = useState<LangCode>(() => {
@@ -46,17 +41,15 @@ export const LangProvider: React.FC<LangProviderProps> = ({ children, initialLoc
     if (persistedLang && ALL_SUPPORTED_LANGUAGES_MAP[persistedLang]) {
         return persistedLang;
     }
-    // Use initialLocaleData.lang if available, otherwise default to 'en'
-    return (ALL_SUPPORTED_LANGUAGES_MAP[initialLocaleData.lang as LangCode] ? initialLocaleData.lang : 'en') as LangCode;
+    // Fallback to i18n's detected language, then 'en'
+    return (ALL_SUPPORTed_LANGUAGES_MAP[i18n.language as LangCode] ? i18n.language : 'en') as LangCode;
   });
 
-  // NEW: Initialize currencyInfo from initialLocaleData
-  const [currencyInfo, setCurrencyInfo] = useState({ 
-    code: initialLocaleData.currency || 'USD', 
-    name: initialLocaleData.name || '$' 
-  }); 
+  // RE-ADDED: State for currency and fetch logic
+  const [currencyInfo, setCurrencyInfo] = useState({ code: 'USD', name: '$' });
 
   useEffect(() => {
+    // Sync i18n and persist language
     if (i18n.language !== lang) {
       i18n.changeLanguage(lang);
     }
@@ -64,7 +57,24 @@ export const LangProvider: React.FC<LangProviderProps> = ({ children, initialLoc
     document.documentElement.lang = lang;
   }, [lang, i18n]);
 
-  // Removed: useEffect that fetched locale data from apiClient
+  useEffect(() => {
+    // RE-ADDED: Fetch detected locale/currency from backend
+    const fetchLocale = async () => {
+      try {
+        const { data } = await apiClient.get('/localization/detect');
+        setCurrencyInfo({
+          code: data.currency || 'USD',
+          name: data.currency === 'BDT' ? '৳' : '$' // Assign symbol based on code
+        });
+        i18n.changeLanguage(data.lang); // Also update i18n language based on detection
+      } catch (error) {
+        console.error('Failed to detect locale in LanguageContext:', error);
+        setCurrencyInfo({ code: 'USD', name: '$' });
+        i18n.changeLanguage('en'); // Fallback language
+      }
+    };
+    fetchLocale();
+  }, []); // Run once on mount
 
   const toggleLanguages = useMemo(() => {
     const options: LangOption[] = [ALL_SUPPORTED_LANGUAGES_MAP['en']];
