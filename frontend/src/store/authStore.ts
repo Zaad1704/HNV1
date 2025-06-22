@@ -1,13 +1,19 @@
 import create from "zustand";
 import { persist } from "zustand/middleware";
 
-// Define your user type
+// Define a more complete User type to match the backend response
 type User = {
   _id: string;
   name: string;
   email: string;
   role: string;
-  // ...add other fields as needed
+  organizationId?: {
+    _id: string;
+    name: string;
+    branding?: {
+      companyName?: string;
+    }
+  };
 };
 
 type AuthState = {
@@ -17,7 +23,7 @@ type AuthState = {
   loading: boolean;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: User) => void; // Expects both token and user
   logout: () => void;
 };
 
@@ -30,21 +36,20 @@ export const useAuthStore = create<AuthState>()(
       loading: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setToken: (token) => set({ token }),
-      login: (token, user) =>
-        set({
-          token,
-          user,
-          isAuthenticated: true,
-        }),
-      logout: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        }),
+      // The login action now correctly sets both token and user
+      login: (token, user) => set({
+        token,
+        user,
+        isAuthenticated: true,
+      }),
+      logout: () => set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+      }),
     }),
     {
-      name: "auth-storage", // localStorage key
+      name: "auth-storage", 
       partialize: (state) => ({
         user: state.user,
         token: state.token,
