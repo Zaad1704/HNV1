@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom'; // Import Link
 import apiClient from '../api/client';
+import { useLang } from '../contexts/LanguageContext'; // NEW: Import useLang
 
 const PaymentSummaryPage = () => {
     const { planId } = useParams();
     const navigate = useNavigate();
-    const [plan, setPlan] = useState(null);
+    const [plan, setPlan] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { currencyName } = useLang(); // NEW: Get currencyName
 
     useEffect(() => {
         const fetchPlanDetails = async () => {
@@ -17,10 +19,8 @@ const PaymentSummaryPage = () => {
                 return;
             }
             try {
-                // In a real app, you might have a public GET /api/plans/:id endpoint.
-                // For now, we fetch all and find the one we need.
                 const response = await apiClient.get('/plans');
-                const selectedPlan = response.data.data.find(p => p._id === planId);
+                const selectedPlan = response.data.data.find((p: any) => p._id === planId);
                 if (selectedPlan) {
                     setPlan(selectedPlan);
                 } else {
@@ -41,7 +41,6 @@ const PaymentSummaryPage = () => {
         try {
             const response = await apiClient.post('/billing/create-checkout-session', { planId });
             if (response.data.redirectUrl) {
-                // In a real app, this redirects to 2Checkout. Here it goes to our mock success page.
                 window.location.href = response.data.redirectUrl;
             }
         } catch (err) {
@@ -63,7 +62,8 @@ const PaymentSummaryPage = () => {
                 <div className="bg-slate-700/50 p-6 rounded-lg mb-6">
                     <h2 className="text-2xl font-bold text-yellow-400">{plan.name}</h2>
                     <p className="text-4xl font-extrabold text-white mt-2">
-                        ${(plan.price / 100).toFixed(2)}
+                        {/* NEW: Display currency based on detected currency */}
+                        {currencyName}{(plan.price / 100).toFixed(2)}
                         <span className="text-lg font-medium text-slate-400"> / {plan.duration}</span>
                     </p>
                     <ul className="text-slate-300 space-y-2 mt-4 text-sm">
