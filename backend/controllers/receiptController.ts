@@ -1,12 +1,12 @@
-import { Request, Response } from 'express'; // FIX: Import Request
-// FIX: AuthenticatedRequest is no longer needed.
+// backend/controllers/receiptController.ts
+import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import PDFDocument from 'pdfkit';
 
-// @desc    Generate a PDF receipt for a single payment
-// @route   GET /api/receipts/payment/:paymentId
-export const generatePaymentReceipt = async (req: Request, res: Response) => { // FIX: Use Request
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+export const generatePaymentReceipt = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
     try {
         const paymentId = req.params.paymentId;
@@ -28,7 +28,6 @@ export const generatePaymentReceipt = async (req: Request, res: Response) => { /
 
         doc.pipe(res);
 
-        // --- PDF Content ---
         doc.fontSize(20).font('Helvetica-Bold').text((payment.organizationId as any).name, { align: 'center' });
         doc.moveDown();
         doc.fontSize(16).font('Helvetica-Bold').text('PAYMENT RECEIPT', { align: 'center' });
