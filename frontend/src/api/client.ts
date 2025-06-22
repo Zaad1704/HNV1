@@ -1,4 +1,3 @@
-// frontend/src/api/client.ts
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
@@ -19,32 +18,22 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     const { logout } = useAuthStore.getState();
-
     if (error.response) {
-      const { status, data } = error.response;
-
-      if (status === 401 || status === 403) {
-        console.error(`API Error: ${status} - Access denied.`, data.message);
-        logout(); // Clear auth state.
-        // For 401 (session invalid/expired), force a hard redirect to login page.
-        // For 403 (account/subscription inactive), ProtectedRoute will handle the redirect
-        // after logout() is called, sending them to /login if not already on /resubscribe (which now works).
-        if (status === 401) {
-            window.location.href = '/login?message=session_expired';
-        }
-      } else if (status >= 500) {
-        console.error(`API Error: ${status} Server Error`, data.message);
+      const { status, config } = error.response;
+      // Only logout for protected API calls, not for /translate or public endpoints
+      if (
+        (status === 401 || status === 403) &&
+        !(config.url && config.url.startsWith('/translate'))
+      ) {
+        logout();
+        if (status === 401) window.location.href = '/login?message=session_expired';
       }
     }
     return Promise.reject(error);
