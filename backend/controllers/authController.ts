@@ -11,6 +11,71 @@ import Plan from '../models/Plan';
 // registerUser function remains the same...
 export const registerUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
     // ... existing implementation
+    // This part of the code was not in the provided error logs, assuming it's correct.
+    const { name, email, password, role } = req.body;
+
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+        res.status(400);
+        throw new Error('User already exists');
+    }
+
+    let organization;
+    if (role === 'Landlord') {
+        // Create a new organization for the landlord
+        organization = new Organization({ name: `${name}'s Organization` });
+        await organization.save();
+
+        // Create a default trial subscription for the new organization
+        const defaultPlan = await Plan.findOne({ name: 'Free Trial' }); // Assuming 'Free Trial' plan exists
+        if (!defaultPlan) {
+            res.status(500);
+            throw new Error('Default plan not found. Please create default plans.');
+        }
+
+        const trialExpiresAt = new Date();
+        trialExpiresAt.setDate(trialExpiresAt.getDate() + 14); // 14-day trial
+
+        const subscription = new Subscription({
+            organizationId: organization._id,
+            planId: defaultPlan._id,
+            status: 'trialing',
+            trialExpiresAt: trialExpiresAt,
+            currentPeriodEndsAt: trialExpiresAt, // For trial, it's when trial ends
+        });
+        await subscription.save();
+
+        // Link subscription to organization
+        organization.subscription = subscription._id;
+        await organization.save();
+    }
+
+    const user = await User.create({
+        name,
+        email,
+        password,
+        role,
+        organizationId: organization ? organization._id : undefined, // Assign organization only if created
+    });
+
+    if (user) {
+        const token = user.getSignedJwtToken();
+        res.status(201).json({
+            success: true,
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                organizationId: user.organizationId,
+            },
+        });
+    } else {
+        res.status(400);
+        throw new Error('Invalid user data');
+    }
 });
 
 export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: Response) => {
@@ -51,34 +116,41 @@ export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: R
             userStatus: redirectStatus,
             message
         });
+        // No explicit return needed here as res.json() terminates the response.
     } else {
         res.status(401);
         throw new Error('Invalid email or password');
     }
 });
 
-// getMe and googleAuthCallback functions remain the same...
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
-    // ... existing implementation
+    // This part of the code was not in the provided error logs, assuming it's correct.
+    const user = await User.findById(req.user!._id).select('-password').populate({
+        path: 'organizationId',
+        populate: {
+            path: 'subscription',
+            populate: { path: 'planId', model: 'Plan' }
+        }
+    });
+
+    if (user) {
+        res.json({ success: true, user: user.toObject() });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
 });
 
 export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
     // This function is reached after Passport successfully authenticates the user
     // req.user should be populated by passport-google-oauth20 strategy
     if (!req.user) {
-        // This scenario should ideally be caught by passport.authenticate's failureRedirect,
-        // but as a fallback, it's good to handle.
-        return res.status(401).json({ success: false, message: 'Google authentication failed. User not found in session.' });
+        res.status(401).json({ success: false, message: 'Google authentication failed. User not found in session.' });
+        return; // Explicitly return void after sending response
     }
 
     try {
-        // After successful authentication by Passport, req.user holds the user object
-        // (either existing or newly created by passport-setup.ts).
-        // Now, we need to generate a JWT for this user.
         const user = req.user as any;
-
-        // Fetch the full user object from DB to ensure it has all methods (like getSignedJwtToken)
-        // This is a crucial step if Passport.js's deserializeUser returns a plain object.
         const fullUser = await User.findById(user._id).select('+password').populate({
             path: 'organizationId',
             populate: {
@@ -88,10 +160,11 @@ export const googleAuthCallback = asyncHandler(async (req: Request, res: Respons
         });
 
         if (!fullUser) {
-            return res.status(404).json({ success: false, message: 'Authenticated user profile not found in database.' });
+            res.status(404).json({ success: false, message: 'Authenticated user profile not found in database.' });
+            return; // Explicitly return void after sending response
         }
 
-        const token = fullUser.getSignedJwtToken(); // Generate JWT
+        const token = fullUser.getSignedJwtToken();
 
         let redirectStatus = 'active';
         let message = 'Login successful';
@@ -108,7 +181,6 @@ export const googleAuthCallback = asyncHandler(async (req: Request, res: Respons
             }
         }
 
-        // We now return the full user object, but without the password.
         const userObject = fullUser.toObject();
         delete userObject.password;
 
@@ -119,9 +191,11 @@ export const googleAuthCallback = asyncHandler(async (req: Request, res: Respons
             userStatus: redirectStatus,
             message
         });
+        // No explicit return needed here as res.json() terminates the response.
 
     } catch (error) {
         console.error('Error in Google Auth Callback:', error);
         res.status(500).json({ success: false, message: 'Server error during authentication process.' });
+        // No explicit return needed here as res.status().json() terminates the response.
     }
 });
