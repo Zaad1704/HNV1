@@ -42,7 +42,7 @@ export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return persistedLang;
     }
     // Fallback to i18n's detected language, then 'en'
-    return (ALL_SUPPORTed_LANGUAGES_MAP[i18n.language as LangCode] ? i18n.language : 'en') as LangCode;
+    return (ALL_SUPPORTED_LANGUAGES_MAP[i18n.language as LangCode] ? i18n.language : 'en') as LangCode;
   });
 
   // RE-ADDED: State for currency and fetch logic
