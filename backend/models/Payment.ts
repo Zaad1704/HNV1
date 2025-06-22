@@ -1,14 +1,17 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
 export interface IPayment extends Document {
-  tenantId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-  propertyId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-  organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-  recordedBy: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
+  tenantId: mongoose.Types.ObjectId;
+  propertyId: mongoose.Types.ObjectId;
+  organizationId: mongoose.Types.ObjectId;
+  recordedBy: mongoose.Types.ObjectId;
   amount: number;
   paymentDate: Date;
   status: 'Paid' | 'Pending' | 'Failed';
   transactionId?: string;
+  // NEW FIELDS for Payment Breakdown
+  lineItems?: { description: string; amount: number; }[]; // e.g., Rent, Maintenance, Utilities
+  paidForMonth?: Date; // The month for which this payment applies
 }
 
 const PaymentSchema: Schema<IPayment> = new Schema({
@@ -20,6 +23,12 @@ const PaymentSchema: Schema<IPayment> = new Schema({
   paymentDate: { type: Date, default: Date.now },
   status: { type: String, enum: ['Paid', 'Pending', 'Failed'], default: 'Paid' },
   transactionId: { type: String },
+  // NEW SCHEMA FIELDS
+  lineItems: [{ // Array of sub-documents
+    description: { type: String, required: true },
+    amount: { type: Number, required: true },
+  }],
+  paidForMonth: { type: Date }, // Store as Date, frontend can send 'YYYY-MM-DD'
 }, { timestamps: true });
 
 export default model<IPayment>('Payment', PaymentSchema);
