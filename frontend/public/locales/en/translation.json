@@ -1,17 +1,17 @@
 {
     "header": {
-  "features": "Features",
-  "about": "About Us",
-  "services": "Services",           
-  "leadership": "Leadership",       
-  "install_app": "Install App",     
-  "pricing": "Pricing",
-  "contact": "Contact",
-  "portal_login": "Portal Login",
-  "get_started": "Get Started",
-  "login": "Login",
-  "sign_up": "Sign Up"
-},
+        "features": "Features",
+        "about": "About Us",
+        "services": "Services",
+        "leadership": "Leadership",
+        "install_app": "Install App",
+        "pricing": "Pricing",
+        "contact": "Contact",
+        "portal_login": "Portal Login",
+        "get_started": "Get Started",
+        "login": "Login",
+        "sign_up": "Sign Up"
+    },
     "language_toggle": {
         "en_display": "English",
         "bn_display": "বাংলা",
@@ -137,6 +137,8 @@
         "tenants": "Tenants",
         "expenses": "Expenses",
         "maintenance": "Maintenance",
+        "cash_flow": "Cash Flow",
+        "reminders": "Reminders",
         "users_invites": "Users & Invites",
         "billing": "Billing",
         "audit_log": "Audit Log",
