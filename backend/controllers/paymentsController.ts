@@ -1,12 +1,12 @@
+// backend/controllers/paymentsController.ts
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
 import mongoose from 'mongoose';
 
-// This function already exists
 export const getPayments = async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
     const payments = await Payment.find({ organizationId: req.user.organizationId })
       .populate('tenantId', 'name')
@@ -16,14 +16,11 @@ export const getPayments = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, count: payments.length, data: payments });
 };
 
-// --- MODIFIED FUNCTION ---
-// @desc    Record a new manual payment
-// @route   POST /api/payments
-// @access  Private (Landlord, Agent)
 export const createPayment = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
-    // Destructure new fields: lineItems, paidForMonth
     const { tenantId, amount, paymentDate, status, lineItems, paidForMonth } = req.body;
 
     if (!tenantId || !amount || !paymentDate) {
@@ -44,9 +41,8 @@ export const createPayment = async (req: Request, res: Response) => {
             propertyId: tenant.propertyId,
             organizationId: req.user.organizationId,
             recordedBy: req.user._id,
-            // NEW: Save lineItems and paidForMonth
-            lineItems: lineItems || [], // Ensure it's an array, even if empty
-            paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined, // Convert to Date object
+            lineItems: lineItems || [],
+            paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined,
         });
 
         res.status(201).json({ success: true, data: newPayment });
