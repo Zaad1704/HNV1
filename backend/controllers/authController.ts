@@ -41,15 +41,13 @@ export const loginUser = asyncHandler(async (req: Request<any, any, any>, res: R
             }
         }
 
-        // --- THIS IS THE FIX ---
-        // We now return the full user object, but without the password.
         const userObject = user.toObject();
         delete userObject.password;
 
         res.json({
             success: true,
             token,
-            user: userObject, // Return the user object
+            user: userObject,
             userStatus: redirectStatus,
             message
         });
@@ -65,5 +63,65 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
-    // ... existing implementation
+    // This function is reached after Passport successfully authenticates the user
+    // req.user should be populated by passport-google-oauth20 strategy
+    if (!req.user) {
+        // This scenario should ideally be caught by passport.authenticate's failureRedirect,
+        // but as a fallback, it's good to handle.
+        return res.status(401).json({ success: false, message: 'Google authentication failed. User not found in session.' });
+    }
+
+    try {
+        // After successful authentication by Passport, req.user holds the user object
+        // (either existing or newly created by passport-setup.ts).
+        // Now, we need to generate a JWT for this user.
+        const user = req.user as any;
+
+        // Fetch the full user object from DB to ensure it has all methods (like getSignedJwtToken)
+        // This is a crucial step if Passport.js's deserializeUser returns a plain object.
+        const fullUser = await User.findById(user._id).select('+password').populate({
+            path: 'organizationId',
+            populate: {
+                path: 'subscription',
+                populate: { path: 'planId', model: 'Plan' }
+            }
+        });
+
+        if (!fullUser) {
+            return res.status(404).json({ success: false, message: 'Authenticated user profile not found in database.' });
+        }
+
+        const token = fullUser.getSignedJwtToken(); // Generate JWT
+
+        let redirectStatus = 'active';
+        let message = 'Login successful';
+        const userOrg = fullUser.organizationId as any;
+
+        if (fullUser.status && fullUser.status !== 'active') {
+            redirectStatus = 'account_inactive';
+            message = `Your account is ${fullUser.status}.`;
+        } else if (userOrg && fullUser.role !== 'Super Admin' && userOrg.subscription) {
+            const subscription = userOrg.subscription as any;
+            if (subscription.status !== 'active' && !subscription.isLifetime) {
+                redirectStatus = 'subscription_inactive';
+                message = 'Organization subscription is inactive.';
+            }
+        }
+
+        // We now return the full user object, but without the password.
+        const userObject = fullUser.toObject();
+        delete userObject.password;
+
+        res.json({
+            success: true,
+            token,
+            user: userObject,
+            userStatus: redirectStatus,
+            message
+        });
+
+    } catch (error) {
+        console.error('Error in Google Auth Callback:', error);
+        res.status(500).json({ success: false, message: 'Server error during authentication process.' });
+    }
 });
