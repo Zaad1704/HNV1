@@ -34,7 +34,6 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Plan not found.' });
         }
 
-        // Corrected: Provide fallback for optional user.name
         const userName = user.name || 'Valued Customer';
 
         const payload = {
@@ -62,31 +61,55 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     }
 };
 
+// --- MODIFIED FUNCTION ---
+// @desc    Create a checkout session for a one-time rent payment
+// @route   POST /api/billing/create-rent-payment
 export const createRentPaymentSession = async (req: Request, res: Response) => {
     const user = req.user;
     if (!user) return res.status(401).json({ success: false, message: 'User not authenticated.' });
+
+    // NEW: Accept lineItems from the request body
+    const { lineItems } = req.body; 
+
     try {
         const tenant = await Tenant.findOne({ email: user.email });
         if (!tenant) return res.status(404).json({ success: false, message: 'Tenant profile not found.' });
-        const rentAmount = tenant.rentAmount || 1200.00; // Use actual rent amount
+        
+        const totalRentAmount = tenant.rentAmount || 1200.00; // Default or fetch from lease/invoice
+
+        // Construct items for 2Checkout payload
+        const paymentItems = lineItems && lineItems.length > 0 
+            ? lineItems.map((item: { description: string; amount: number; }) => ({
+                Name: item.description,
+                Price: { Amount: item.amount.toFixed(2), Currency: 'USD', Type: 'DYNAMIC' },
+                Quantity: 1,
+                Tangible: '0'
+            }))
+            : [{
+                Name: `Rent Payment - ${tenant.unit}`,
+                Price: { Amount: totalRentAmount.toFixed(2), Currency: 'USD', Type: 'DYNAMIC' },
+                Quantity: 1,
+                Tangible: '0'
+            }];
+
         const payload = {
             BillingDetails: {
                 FirstName: tenant.name.split(' ')[0],
                 LastName: tenant.name.split(' ')[1] || 'Tenant',
                 Email: tenant.email,
             },
-            Items: [{
-                Name: `Rent Payment - ${tenant.unit}`,
-                Price: { Amount: rentAmount.toFixed(2), Currency: 'USD', Type: 'DYNAMIC' },
-                Quantity: 1,
-                Tangible: '0'
-            }],
+            Items: paymentItems, // Use the constructed payment items
             PaymentDetails: { Currency: 'USD', PaymentMethod: { Type: 'CARD', EesToken: null } },
             DevStudio: true,
+            // You might pass additional metadata here that 2Checkout sends back via webhook
+            // to link this payment to a specific invoice, tenant, or month.
+            // e.g., ReturnURL: `${process.env.FRONTEND_URL}/payment-success?invoiceId=${invoice._id}`
         };
+
         console.log("Simulating 2Checkout rent payment API call with payload:", JSON.stringify(payload, null, 2));
         const redirectUrl = `https://hnv-1-frontend.onrender.com/payment-success?session_id=mock_session_rent_${new Date().getTime()}`;
         res.status(200).json({ success: true, redirectUrl: redirectUrl });
+
     } catch (error) {
         console.error('Rent payment session error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -95,5 +118,7 @@ export const createRentPaymentSession = async (req: Request, res: Response) => {
 
 export const handlePaymentWebhook = async (req: Request, res: Response) => {
     console.log('Webhook received:', req.body);
+    // In a real application, you would verify the webhook signature,
+    // process the payment confirmation, update subscription/payment status in your DB.
     res.status(200).send('Webhook processed');
 };
