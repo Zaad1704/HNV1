@@ -18,23 +18,23 @@ const BottomNavBar = () => {
     const navItems = [
         { href: '/dashboard/properties', icon: Building, label: 'Props' },
         { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true }, // Crown Home button
+        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true },
         { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses' },
         { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
         { action: handleLogout, icon: LogOut, label: 'Logout' }
     ];
 
     const getLinkClass = (itemHref: string, isCrown?: boolean) => {
+        let isActive = false; // --- CHANGE: 'const' to 'let' ---
         const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        const isActive = location.pathname.startsWith(itemHref);
+        isActive = location.pathname.startsWith(itemHref); // Reassignment
 
         const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
 
-          // NEW Crown Style: Larger, distinct background, more prominent shadow
         const crownStyle = isCrown ?
-            'flex-grow-0 w-24 h-24 -mt-10 mx-2 text-white shadow-xl relative z-20 flex-shrink-0 ' + // Base size, shadow, positioning
-            'bg-brand-primary border-4 border-light-card ' + // Fallback colors
-            'bg-contain bg-no-repeat bg-center ' + // Styles for background image
+            'flex-grow-0 w-24 h-24 -mt-10 mx-2 text-white shadow-xl relative z-20 flex-shrink-0 ' +
+            'bg-brand-primary border-4 border-light-card ' +
+            'bg-contain bg-no-repeat bg-center ' +
             'transform hover:scale-105 transition-transform duration-200 ease-in-out' :
             'flex-grow';
         
@@ -53,7 +53,6 @@ const BottomNavBar = () => {
                                 key={item.label} 
                                 to={item.href} 
                                 className={getLinkClass(item.href, item.isCrown)}
-                                // Add inline style for background image
                                 style={item.isCrown ? { backgroundImage: `url('/crowned-badge-bg.png')` } : {}}
                             >
                                 <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
