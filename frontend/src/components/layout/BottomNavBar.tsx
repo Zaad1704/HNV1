@@ -1,5 +1,4 @@
 // frontend/src/components/layout/BottomNavBar.tsx
-
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react';
@@ -15,62 +14,48 @@ const BottomNavBar = () => {
         navigate('/login');
     };
 
+    // Redefine navItems to prioritize Home (Overview) in the middle
     const navItems = [
-        { href: '/dashboard/properties', icon: Building, label: 'Props' },
+        { href: '/dashboard/properties', icon: Building, label: 'Prop.' }, // Abbreviated for space
         { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-        { href: '/dashboard/overview', icon: Home, label: 'Home', isCrown: true }, // Crown Home button
-        { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses' },
-        { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-        { action: handleLogout, icon: LogOut, label: 'Logout' }
+        { href: '/dashboard/overview', icon: Home, label: 'Home', highlight: true }, // Highlighted item
+        { href: '/dashboard/expenses', icon: CreditCard, label: 'Exp.' }, // Abbreviated for space
+        { href: '/dashboard/maintenance', icon: Wrench, label: 'Maint.' },
+        // Consider removing settings/logout if too many items for a small screen, or group them.
+        // For now, keeping them to fit your request.
+        // { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+        // { action: handleLogout, icon: LogOut, label: 'Logout' }
     ];
 
-    // This function will ONLY return the className string
-    const getLinkClassesString = (itemHref: string, isCrown?: boolean) => {
-        let isActive = false; 
+    const getLinkClass = (itemHref: string, isHighlight?: boolean) => {
         const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        isActive = location.pathname.startsWith(itemHref);
+        const isActive = location.pathname.startsWith(itemHref || '');
 
-        const activeColor = isActive ? 'text-brand-primary' : 'text-light-text';
+        const activeClasses = 'text-brand-primary';
+        const inactiveClasses = 'text-light-text';
 
-        // NEW: Apply all crown-specific classes directly here, no inline style for them
-        const crownClasses = isCrown ? 
-            'flex-grow-0 w-16 h-16 -mt-4 mx-2 rounded-xl text-white shadow-md relative z-20 flex-shrink-0 ' + 
-            'bg-brand-primary border-4 border-light-card ' + 
-            'transform hover:scale-105 transition-transform duration-200 ease-in-out' : 
-            'flex-grow';
+        // Apply highlight specific classes
+        if (isHighlight) {
+            return `${base} bg-brand-primary text-white font-bold rounded-lg shadow-lg -mt-4 py-2 mx-1 transition-all duration-300 transform scale-110 flex-grow-0`; // Example highlight styles
+        }
         
-        const crownActiveColor = isCrown && isActive ? 'text-white' : (isCrown ? 'text-white' : activeColor);
-
-        return `${base} ${activeColor} ${crownClasses} ${crownActiveColor} dark:text-light-text-dark dark:border-border-color-dark dark:bg-dark-card ${isCrown ? 'dark:bg-brand-primary dark:border-dark-bg' : ''}`;
+        return `${base} ${isActive ? activeClasses : inactiveClasses}`;
     };
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30 dark:bg-dark-card dark:border-border-color-dark">
-            <div className="flex justify-around items-end h-full">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
+            <div className="flex justify-around items-center h-full px-2"> {/* Added px-2 for padding */}
                 {navItems.map(item => {
                     if (item.href) {
                         return (
-                            <Link 
-                                key={item.label} 
-                                to={item.href} 
-                                className={getLinkClassesString(item.href, item.isCrown)} // Pass classes string here
-                                // NEW: Apply background-image directly in style prop if it's a crown
-                                style={item.isCrown ? { 
-                                    backgroundImage: `url('/crowned-badge-bg.png')`,
-                                    backgroundSize: 'contain',
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'center',
-                                } : undefined} 
-                            >
-                                <div className={`flex flex-col items-center justify-center ${item.isCrown ? 'w-full h-full' : 'p-1'}`}>
-                                    <item.icon size={item.isCrown ? 24 : 20} strokeWidth={item.isCrown ? 2.5 : 2} />
-                                    <span className={`font-medium mt-1 ${item.isCrown ? 'text-white text-xs' : ''}`}>{item.label}</span>
-                                </div>
+                            <Link key={item.label} to={item.href} className={getLinkClass(item.href, item.highlight)}>
+                                <item.icon size={item.highlight ? 24 : 20} strokeWidth={item.highlight ? 2.5 : 2} />
+                                <span className="font-medium mt-1">{item.label}</span>
                             </Link>
                         );
                     } else if (item.action) {
                         return (
-                            <button key={item.label} onClick={item.action} className="flex flex-col items-center justify-center w-full h-full text-xs transition-colors text-light-text hover:text-red-500 dark:text-light-text-dark dark:hover:text-red-400">
+                            <button key={item.label} onClick={item.action} className="flex flex-col items-center justify-center w-full h-full text-xs transition-colors text-light-text hover:text-red-500">
                                 <item.icon size={20} strokeWidth={2} />
                                 <span className="font-medium mt-1">{item.label}</span>
                             </button>
