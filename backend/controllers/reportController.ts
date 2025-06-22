@@ -1,9 +1,13 @@
-import { Request, Response } from 'express'; // FIX: Import Request
-// FIX: AuthenticatedRequest is no longer needed.
-import Tenant from '../models/Tenant';
+import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
+import Tenant from '../models/Tenant'; // NEW IMPORT
+import Invoice from '../models/Invoice'; // NEW IMPORT
+import Payment from '../models/Payment'; // NEW IMPORT
+import Lease from '../models/Lease'; // NEW IMPORT
+import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns'; // NEW IMPORTS for date calculations
 
-export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => { // FIX: Use Request
+
+export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
@@ -62,5 +66,99 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
 
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+// --- NEW FUNCTION for C.2: Get Tenant Monthly Statement (Montrose Table) ---
+// @desc    Get monthly payment statement for a specific tenant over a period
+// @route   GET /api/reports/tenant-statement/:tenantId
+// @access  Private (Landlord, Agent)
+export const getTenantMonthlyStatement = async (req: Request, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+
+    const { tenantId } = req.params;
+    const { startMonth, endMonth } = req.query; // YYYY-MM format
+
+    try {
+        const tenant = await Tenant.findById(tenantId);
+        if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(404).json({ success: false, message: 'Tenant not found or access denied.' });
+        }
+
+        const today = new Date();
+        const endDate = endMonth ? endOfMonth(new Date(String(endMonth))) : endOfMonth(today);
+        const startDate = startMonth ? startOfMonth(new Date(String(startMonth))) : startOfMonth(subMonths(today, 11)); // Default last 12 months
+
+        // Generate an array of months within the interval
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+
+        const statement = [];
+        let runningBalance = 0; // Keep track of cumulative balance
+
+        for (const monthStart of months) {
+            const monthEnd = endOfMonth(monthStart);
+            const formattedMonth = format(monthStart, 'MMM yyyy');
+
+            // Find invoices for this tenant for this month
+            const invoices = await Invoice.find({
+                tenantId: tenant._id,
+                dueDate: { $gte: monthStart, $lte: monthEnd }, // Invoices due this month
+            }).sort({ dueDate: 1 });
+
+            // Sum expected amounts for the month (considering discounts)
+            let expectedDue = 0;
+            for (const inv of invoices) {
+                expectedDue += inv.amount;
+            }
+            
+            // Adjust expected rent by active discount for this month
+            let effectiveRentForMonth = tenant.rentAmount || 0; // Default from tenant's rent
+            if (tenant.discountAmount && tenant.discountAmount > 0 && 
+                tenant.discountExpiresAt && tenant.discountExpiresAt >= monthStart) {
+                
+                // If the discount is active for this month, apply it
+                effectiveRentForMonth = Math.max(0, effectiveRentForMonth - tenant.discountAmount);
+                expectedDue = effectiveRentForMonth; // If using simple rent, apply directly
+                // If using invoices, you might apply discount per invoice item or track separately
+            }
+
+            // Find payments received for this tenant within this month
+            const payments = await Payment.find({
+                tenantId: tenant._id,
+                paymentDate: { $gte: monthStart, $lte: monthEnd },
+                status: 'Paid',
+            });
+
+            const amountPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+
+            const monthlyBalanceChange = amountPaid - expectedDue; // Positive if overpaid, negative if underpaid
+            runningBalance += monthlyBalanceChange;
+
+            statement.push({
+                month: formattedMonth,
+                expectedDue: expectedDue,
+                amountPaid: amountPaid,
+                monthlyBalance: monthlyBalanceChange,
+                cumulativeBalance: runningBalance,
+                invoices: invoices.map(inv => ({
+                    id: inv._id,
+                    invoiceNumber: inv.invoiceNumber,
+                    amount: inv.amount,
+                    status: inv.status,
+                    dueDate: format(inv.dueDate, 'PPP')
+                })),
+                payments: payments.map(p => ({
+                    id: p._id,
+                    amount: p.amount,
+                    date: format(p.paymentDate, 'PPP')
+                })),
+            });
+        }
+
+        res.status(200).json({ success: true, data: statement, tenantName: tenant.name });
+
+    } catch (error) {
+        console.error('Error generating tenant monthly statement:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
