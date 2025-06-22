@@ -68,12 +68,11 @@ const FullScreenLoader = () => <div className="h-screen w-full flex items-center
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
-  // NEW: State for initial locale data
-  const [initialLocaleData, setInitialLocaleData] = useState<{ lang: string; currency: string; name: string; } | null>(null);
+  // REMOVED: State for initial locale data
 
   useEffect(() => {
-    const checkUserSessionAndFetchLocale = async () => {
-      // First, check user session
+    const checkUserSession = async () => { // Renamed function
+      // Check user session
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
@@ -88,30 +87,22 @@ function App() {
         }
       }
       
-      // NEW: Fetch initial locale data
-      try {
-        const { data } = await apiClient.get('/localization/detect');
-        setInitialLocaleData(data);
-      } catch (error) {
-        console.error('Failed to detect initial locale:', error);
-        // Fallback to default if detection fails
-        setInitialLocaleData({ lang: 'en', currency: 'USD', name: '$' });
-      }
+      // REMOVED: Fetch initial locale data here
 
       setSessionLoading(false);
     };
-    checkUserSessionAndFetchLocale();
+    checkUserSession();
   }, [token, user, setUser, logout]);
 
-  if (isSessionLoading || !initialLocaleData) { // Wait for initialLocaleData to load
+  if (isSessionLoading) { // REMOVED: !initialLocaleData check
     return <FullScreenLoader />;
   }
 
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
-        {/* Pass initialLocaleData to LangProvider */}
-        <LangProvider initialLocaleData={initialLocaleData}>
+        {/* LangProvider no longer receives initialLocaleData prop */}
+        <LangProvider> 
           <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
