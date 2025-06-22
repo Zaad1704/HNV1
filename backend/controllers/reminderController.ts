@@ -1,12 +1,12 @@
+// backend/controllers/reminderController.ts
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
-import Reminder, { IReminder } from '../models/Reminder'; // --- CHANGE: Import IReminder ---
+import Reminder, { IReminder } from '../models/Reminder';
 import Tenant from '../models/Tenant';
 import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
 
-// Helper to calculate next run date
-const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => { // IReminder is now recognized
+const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
     case 'daily': return addDays(currentDate, 1);
     case 'weekly': return addWeeks(currentDate, 1);
@@ -16,15 +16,10 @@ const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency
   }
 };
 
-// ... (rest of the controller functions remain the same) ...
-
-// @desc    Create a new reminder
-// @route   POST /api/reminders
-// @access  Private (Landlord, Agent)
 export const createReminder = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
+  if (!req.user || !req.user.organizationId) {
     res.status(401);
-    throw new Error('User not authorized');
+    throw new Error('User not authorized or not part of an organization');
   }
 
   const { tenantId, type, message, frequency, nextRunDate } = req.body;
@@ -43,7 +38,7 @@ export const createReminder = asyncHandler(async (req: Request, res: Response) =
   const reminder = await Reminder.create({
     organizationId: req.user.organizationId,
     tenantId: tenant._id,
-    propertyId: tenant.propertyId, // Link to tenant's property
+    propertyId: tenant.propertyId,
     type,
     message,
     nextRunDate: new Date(nextRunDate),
@@ -55,16 +50,13 @@ export const createReminder = asyncHandler(async (req: Request, res: Response) =
   res.status(201).json({ success: true, data: reminder });
 });
 
-// @desc    Get all reminders for the user's organization
-// @route   GET /api/reminders
-// @access  Private (Landlord, Agent, Super Admin)
 export const getReminders = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401);
     throw new Error('User not authorized');
   }
 
-  const query = req.user.role === 'Super Admin' ? {} : { organizationId: req.user.organizationId };
+  const query = (req.user.role === 'Super Admin' || !req.user.organizationId) ? {} : { organizationId: req.user.organizationId };
 
   const reminders = await Reminder.find(query)
     .populate('tenantId', 'name email unit')
@@ -74,13 +66,10 @@ export const getReminders = asyncHandler(async (req: Request, res: Response) => 
   res.status(200).json({ success: true, data: reminders });
 });
 
-// @desc    Update a reminder (e.g., status, message, next run date)
-// @route   PUT /api/reminders/:id
-// @access  Private (Landlord, Agent)
 export const updateReminder = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
+  if (!req.user || !req.user.organizationId) {
     res.status(401);
-    throw new Error('User not authorized');
+    throw new Error('User not authorized or not part of an organization');
   }
 
   const { id } = req.params;
@@ -101,13 +90,10 @@ export const updateReminder = asyncHandler(async (req: Request, res: Response) =
   res.status(200).json({ success: true, data: reminder });
 });
 
-// @desc    Delete a reminder
-// @route   DELETE /api/reminders/:id
-// @access  Private (Landlord, Agent)
 export const deleteReminder = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
+  if (!req.user || !req.user.organizationId) {
     res.status(401);
-    throw new Error('User not authorized');
+    throw new Error('User not authorized or not part of an organization');
   }
 
   const { id } = req.params;
@@ -122,10 +108,6 @@ export const deleteReminder = asyncHandler(async (req: Request, res: Response) =
   res.status(200).json({ success: true, message: 'Reminder deleted.' });
 });
 
-// --- NEW FUNCTION for the scheduled job (runs externally) ---
-// @desc    Process and send overdue reminders
-// @route   (Internal/Cron Job Triggered) /api/reminders/process-overdue
-// @access  Private (Admin-only or internal API key protected)
 export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => {
   const now = new Date();
   const overdueReminders = await Reminder.find({
