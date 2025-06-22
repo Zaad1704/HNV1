@@ -1,11 +1,8 @@
-// frontend/src/App.tsx
-
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
-import axios from 'axios';
 
 // --- Layout & Route Components ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -32,8 +29,6 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FeaturesPage from './pages/FeaturesPage';
 import ResubscribePage from './pages/ResubscribePage';
-
-// Dashboard Pages
 import OverviewPage from './pages/OverviewPage';
 import PropertiesPage from './pages/PropertiesPage';
 import PropertyDetailsPage from './pages/PropertyDetailsPage';
@@ -49,8 +44,6 @@ import TenantDashboardPage from './pages/TenantDashboardPage';
 import CashFlowPage from './pages/CashFlowPage'; 
 import TenantStatementPage from './pages/TenantStatementPage'; 
 import RemindersPage from './pages/RemindersPage'; 
-
-// Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -60,37 +53,33 @@ import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
 import AdminMaintenancePage from './pages/AdminMaintenancePage';
 import AdminDataManagementPage from './pages/AdminDataManagementPage';
 import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
-
 import NotFound from './pages/NotFound';
 import { LangProvider } from './contexts/LanguageContext';
 
 const FullScreenLoader = () => <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text"><p>Loading Platform...</p></div>;
 
 function App() {
-  const { token, user, setUser, logout } = useAuthStore();
-  const [isSessionLoading, setSessionLoading] = useState(true);
+  const { token, user, setUser, logout, _hasHydrated } = useAuthStore();
 
+  // This effect runs once after the store has rehydrated from localStorage
   useEffect(() => {
-    const checkUserSession = async () => {
+    if (_hasHydrated) {
       if (token && !user) {
-        try {
-          const response = await apiClient.get('/auth/me');
-          setUser(response.data.user);
-        } catch (error) {
-          if (axios.isAxiosError(error) && error.response) {
-            console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
-          } else {
-            console.error("Non-Axios error during session check. Logging out.", error);
+        // If there's a token but no user object, it means we need to fetch user details
+        apiClient.get('/auth/me')
+          .then(response => {
+            setUser(response.data.user);
+          })
+          .catch(() => {
+            // If the token is invalid, log the user out
             logout();
-          }
-        }
+          });
       }
-      setSessionLoading(false);
-    };
-    checkUserSession();
-  }, [token, user, setUser, logout]);
+    }
+  }, [_hasHydrated, token, user, setUser, logout]);
 
-  if (isSessionLoading) {
+  // Show a loader while the store rehydrates. This is the crucial fix.
+  if (!_hasHydrated) {
     return <FullScreenLoader />;
   }
 
@@ -107,7 +96,6 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/contact" element={<ContactPage />} />
-
               <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/payment-cancel" element={<PaymentCancelPage />} />
