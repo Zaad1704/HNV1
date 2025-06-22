@@ -21,14 +21,13 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check for saved theme in localStorage, or default to 'light'
     return (localStorage.getItem('theme') as Theme) || 'light';
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
-    root.classList.add(theme);
+    root.classList.add(theme); // <--- This line correctly adds 'light' or 'dark' class
     localStorage.setItem('theme', theme);
   }, [theme]);
 
