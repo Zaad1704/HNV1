@@ -115,14 +115,6 @@ app.use(passport.session());
 
 // Use helmet for general security headers, but remove the CSP middleware
 app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-    directives: {
-      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "https://accounts.google.com"],
-      "frame-src": ["'self'", "https://accounts.google.com"],
-      "connect-src": ["'self'", "https://accounts.google.com"],
-    },
-  }));
 
 
 // API Routes
