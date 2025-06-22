@@ -9,10 +9,9 @@ import passport from 'passport';
 import session from 'express-session';
 import helmet from 'helmet'; 
 
-// This line is crucial - it runs the configuration in passport-setup.ts
 import './config/passport-setup';
 
-// Route imports - FIX: Ensure all are imported correctly
+// Route imports
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
@@ -38,10 +37,10 @@ import notificationRoutes from './routes/notificationRoutes';
 import orgRoutes from './routes/orgRoutes'; 
 import invoiceRoutes from './routes/invoiceRoutes'; 
 import receiptRoutes from './routes/receiptRoutes'; 
-import tenantPortalRoutes from './routes/tenantPortalRoutes'; 
 import communicationRoutes from './routes/communicationRoutes'; 
-// NEW IMPORT for G: CashFlow Routes
 import cashFlowRoutes from './routes/cashFlowRoutes'; 
+// NEW IMPORT for B.4: Reminder Routes
+import reminderRoutes from './routes/reminderRoutes'; 
 
 
 dotenv.config();
@@ -112,7 +111,7 @@ app.use(passport.session());
 app.use(helmet()); 
 
 
-// API Routes - FIX: Ensure ALL relevant routes are mounted
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
@@ -140,8 +139,9 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/receipts', receiptRoutes); 
 app.use('/api/tenant-portal', tenantPortalRoutes); 
 app.use('/api/communication', communicationRoutes); 
-// NEW ROUTE for G: Cash Flow
 app.use('/api/cashflow', cashFlowRoutes); 
+// NEW ROUTE for B.4: Reminders
+app.use('/api/reminders', reminderRoutes); 
 
 
 app.get('/', (req: Request, res: Response) => {
