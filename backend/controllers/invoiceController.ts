@@ -1,20 +1,22 @@
+// backend/controllers/invoiceController.ts
 import { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
 import Lease from '../models/Lease';
-import { addMonths, startOfMonth, format } from 'date-fns'; // Import format for invoice number
+import { addMonths, startOfMonth, format } from 'date-fns';
 
 export const generateInvoices = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ message: 'Not authorized or not part of an organization' });
+    }
 
     try {
-        const targetDate = req.body.forMonth ? new Date(req.body.forMonth) : addMonths(new Date(), 1); // Default to next month
+        const targetDate = req.body.forMonth ? new Date(req.body.forMonth) : addMonths(new Date(), 1);
         const invoiceMonthStart = startOfMonth(targetDate);
         
-        // Fetch active leases for the organization
         const activeLeases = await Lease.find({ 
             organizationId: req.user.organizationId,
             status: 'active'
-        }).populate('tenantId').populate('propertyId'); // Populate for details
+        }).populate('tenantId').populate('propertyId');
 
         if (activeLeases.length === 0) {
             return res.status(200).json({ success: true, message: 'No active leases found to generate invoices for.' });
@@ -22,11 +24,10 @@ export const generateInvoices = async (req: Request, res: Response) => {
 
         const invoicesToCreate = [];
         for (const lease of activeLeases) {
-            // Check if an invoice already exists for this lease for the target month
             const existingInvoice = await Invoice.findOne({
                 leaseId: lease._id,
-                dueDate: invoiceMonthStart, // Assuming dueDate is the 1st of the month
-                status: { $in: ['pending', 'overdue'] } // Only create if not already paid/canceled
+                dueDate: invoiceMonthStart,
+                status: { $in: ['pending', 'overdue'] }
             });
 
             if (existingInvoice) {
@@ -34,19 +35,14 @@ export const generateInvoices = async (req: Request, res: Response) => {
                 continue;
             }
 
-            // Generate a simple invoice number (e.g., INV-ORGID-YYYYMM-COUNTER)
             const countForMonth = await Invoice.countDocuments({
                 organizationId: req.user.organizationId,
                 dueDate: invoiceMonthStart,
             });
             const invoiceNumber = `INV-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${format(invoiceMonthStart, 'yyyyMM')}-${(countForMonth + 1).toString().padStart(3, '0')}`;
 
-            // Example Line Items (you can expand this based on actual bills)
             const lineItems = [
                 { description: 'Monthly Rent', amount: lease.rentAmount },
-                // Add mock utility bills if needed for testing frontend
-                // { description: 'Electricity', amount: 50.00 },
-                // { description: 'Water', amount: 30.00 }
             ];
             const totalAmount = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
@@ -57,7 +53,7 @@ export const generateInvoices = async (req: Request, res: Response) => {
                 leaseId: lease._id,
                 invoiceNumber: invoiceNumber,
                 amount: totalAmount,
-                dueDate: invoiceMonthStart, // Invoice due on the 1st of the month
+                dueDate: invoiceMonthStart,
                 status: 'pending',
                 lineItems: lineItems,
             });
