@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { Home, Building, Users, MoreHorizontal, DollarSign, CreditCard, Wrench, FileText, Settings, LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next'; // Import the translation hook
+import { 
+    Home, Building, Users, MoreHorizontal, DollarSign, 
+    CreditCard, Wrench, FileText, Settings, LogOut, Repeat 
+} from 'lucide-react';
 import MoreMenuModal from '../common/MoreMenuModal';
 import RoleGuard from '../RoleGuard';
 
@@ -9,6 +13,7 @@ const BottomNavBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
+    const { t } = useTranslation(); // Initialize the translation hook
     const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
 
     const handleLogout = () => {
@@ -22,25 +27,25 @@ const BottomNavBar = () => {
         return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text'}`;
     };
 
-    // Define items for the "More" menu
+    // Use the t() function for all labels
     const moreNavItems = [
-        { href: '/dashboard/expenses', icon: CreditCard, label: 'Expenses', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/maintenance', icon: Wrench, label: 'Maintenance', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/users', icon: Users, label: 'Users & Invites', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/billing', icon: CreditCard, label: 'Billing', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/audit-log', icon: FileText, label: 'Audit Log', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-        { action: handleLogout, icon: LogOut, label: 'Logout' }
+        { href: '/dashboard/expenses', icon: CreditCard, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/maintenance', icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/reminders', icon: Repeat, label: t('dashboard.reminders'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/users', icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/billing', icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/audit-log', icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/settings', icon: Settings, label: t('dashboard.settings') },
+        { action: handleLogout, icon: LogOut, label: t('dashboard.logout') }
     ];
     
-    // Primary items visible on the bar
     const mainNavItems = [
-        { href: '/dashboard/properties', icon: Building, label: 'Properties', roles: ['Landlord', 'Agent'] },
-        { href: '/dashboard/tenants', icon: Users, label: 'Tenants', roles: ['Landlord', 'Agent'] }
+        { href: '/dashboard/properties', icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/tenants', icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] }
     ];
 
     const rightNavItems = [
-        { href: '/dashboard/cashflow', icon: DollarSign, label: 'Cash Flow', roles: ['Landlord', 'Agent'] }
+        { href: '/dashboard/cashflow', icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] }
     ];
 
     return (
@@ -84,7 +89,7 @@ const BottomNavBar = () => {
                     {/* More Button */}
                     <button onClick={() => setMoreMenuOpen(true)} className={getLinkClass('', true)}>
                         <MoreHorizontal size={20} />
-                        <span className="font-medium mt-1">More</span>
+                        <span className="font-medium mt-1">{t('dashboard.more')}</span>
                     </button>
                 </div>
             </nav>
