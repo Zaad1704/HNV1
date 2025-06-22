@@ -68,11 +68,9 @@ const FullScreenLoader = () => <div className="h-screen w-full flex items-center
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
-  // REMOVED: State for initial locale data (initialLocaleData)
 
   useEffect(() => {
     const checkUserSession = async () => {
-      // Check user session
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
@@ -86,22 +84,18 @@ function App() {
           }
         }
       }
-      
-      // REMOVED: Fetch initial locale data here
-      
       setSessionLoading(false);
     };
     checkUserSession();
   }, [token, user, setUser, logout]);
 
-  if (isSessionLoading) { // REMOVED: !initialLocaleData check
+  if (isSessionLoading) {
     return <FullScreenLoader />;
   }
 
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
-        {/* LangProvider no longer receives initialLocaleData prop */}
         <LangProvider> 
           <Routes>
             {/* Public Routes */}
