@@ -1,71 +1,68 @@
-// frontend/src/components/layout/BottomNavBar.tsx
+// frontend/src/components/common/MoreMenuModal.tsx
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Building, Users, Settings, CreditCard, Wrench, LogOut } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { Link } from 'react-router-dom';
+import { X, DollarSign, Repeat, Users, CreditCard, FileText, Shield, Settings, LogOut } from 'lucide-react';
 
-const BottomNavBar = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const { logout } = useAuthStore();
+interface MoreMenuModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    navItems: {
+        href?: string;
+        action?: () => void;
+        icon: React.ElementType;
+        label: string;
+        roles?: string[]; // To indicate if an item is role-guarded
+    }[];
+    userRole: string | undefined; // Pass current user's role
+    handleLogout: () => void; // Pass logout handler
+}
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
-    // Redefine navItems to prioritize Home (Overview) in the middle
-    const navItems = [
-        { href: '/dashboard/properties', icon: Building, label: 'Prop.' }, // Abbreviated for space
-        { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-        { href: '/dashboard/overview', icon: Home, label: 'Home', highlight: true }, // Highlighted item
-        { href: '/dashboard/expenses', icon: CreditCard, label: 'Exp.' }, // Abbreviated for space
-        { href: '/dashboard/maintenance', icon: Wrench, label: 'Maint.' },
-        // Consider removing settings/logout if too many items for a small screen, or group them.
-        // For now, keeping them to fit your request.
-        // { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-        // { action: handleLogout, icon: LogOut, label: 'Logout' }
-    ];
-
-    const getLinkClass = (itemHref: string, isHighlight?: boolean) => {
-        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
-        const isActive = location.pathname.startsWith(itemHref || '');
-
-        const activeClasses = 'text-brand-primary';
-        const inactiveClasses = 'text-light-text';
-
-        // Apply highlight specific classes
-        if (isHighlight) {
-            return `${base} bg-brand-primary text-white font-bold rounded-lg shadow-lg -mt-4 py-2 mx-1 transition-all duration-300 transform scale-110 flex-grow-0`; // Example highlight styles
-        }
-        
-        return `${base} ${isActive ? activeClasses : inactiveClasses}`;
-    };
+const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems, userRole, handleLogout }) => {
+    if (!isOpen) return null;
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
-            <div className="flex justify-around items-center h-full px-2"> {/* Added px-2 for padding */}
+        <div className="fixed inset-0 bg-light-bg z-50 flex flex-col animate-slideInFromBottom"> {/* Full screen slide-in */}
+            <div className="flex justify-between items-center p-4 border-b border-border-color">
+                <h2 className="text-xl font-bold text-dark-text">More Options</h2>
+                <button onClick={onClose} className="text-light-text hover:text-dark-text">
+                    <X size={24} />
+                </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-4 space-y-2">
                 {navItems.map(item => {
-                    if (item.href) {
-                        return (
-                            <Link key={item.label} to={item.href} className={getLinkClass(item.href, item.highlight)}>
-                                <item.icon size={item.highlight ? 24 : 20} strokeWidth={item.highlight ? 2.5 : 2} />
-                                <span className="font-medium mt-1">{item.label}</span>
-                            </Link>
-                        );
-                    } else if (item.action) {
-                        return (
-                            <button key={item.label} onClick={item.action} className="flex flex-col items-center justify-center w-full h-full text-xs transition-colors text-light-text hover:text-red-500">
-                                <item.icon size={20} strokeWidth={2} />
-                                <span className="font-medium mt-1">{item.label}</span>
-                            </button>
-                        );
+                    const isVisibleByRole = !item.roles || (userRole && item.roles.includes(userRole));
+                    
+                    if (isVisibleByRole) {
+                        if (item.href) {
+                            return (
+                                <Link
+                                    key={item.label}
+                                    to={item.href}
+                                    onClick={onClose} // Close modal on navigation
+                                    className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 transition-colors"
+                                >
+                                    <item.icon size={20} />
+                                    <span className="font-semibold">{item.label}</span>
+                                </Link>
+                            );
+                        } else if (item.action) {
+                            return (
+                                <button
+                                    key={item.label}
+                                    onClick={() => { item.action?.(); onClose(); handleLogout(); }} // Call action, close modal, then logout
+                                    className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 w-full text-left"
+                                >
+                                    <item.icon size={20} />
+                                    <span className="font-semibold">{item.label}</span>
+                                </button>
+                            );
+                        }
                     }
                     return null;
                 })}
-            </div>
-        </nav>
+            </nav>
+        </div>
     );
 };
 
-export default BottomNavBar;
+export default MoreMenuModal;
