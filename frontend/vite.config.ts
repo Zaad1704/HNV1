@@ -1,5 +1,4 @@
 // frontend/vite.config.ts
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -20,7 +19,6 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          // Using your proper PWA icons now
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
@@ -41,4 +39,8 @@ export default defineConfig({
       }
     })
   ],
-})
+  build: {
+    minify: false, // <--- Temporarily set to false for debugging
+    sourcemap: true, // <--- Generate source maps for easier debugging
+  }
+});
