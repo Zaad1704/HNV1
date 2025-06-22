@@ -27,7 +27,6 @@ const getUser = asyncHandler(async (req: Request, res: Response) => {
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
-    // Implementation for updating a user
     const user = await User.findById(req.params.id);
     if (user) {
         user.name = req.body.name || user.name;
@@ -55,8 +54,6 @@ const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     }
 });
 
-// --- FIX: START OF ADDED FUNCTIONS ---
-
 // @desc    Get all users within the same organization
 // @route   GET /api/users/organization
 // @access  Private (Landlord, Agent)
@@ -77,21 +74,53 @@ const getManagedAgents = asyncHandler(async (req: Request, res: Response) => {
         res.status(403);
         throw new Error('User is not a Landlord');
     }
-    
-    // Find users whose _id is in the current user's managedAgentIds array
     const agents = await User.find({ '_id': { $in: req.user.managedAgentIds } });
     res.status(200).json({ success: true, data: agents });
 });
 
-// --- FIX: END OF ADDED FUNCTIONS ---
+// @desc    Update user password
+// @route   PUT /api/users/update-password
+// @access  Private
+const updatePassword = asyncHandler(async (req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authenticated');
+    }
+    
+    const user = await User.findById(req.user._id).select('+password');
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    if (!(await user.matchPassword(currentPassword))) {
+        res.status(401);
+        throw new Error('Incorrect current password');
+    }
+
+    user.password = newPassword;
+    await user.save();
+    
+    const token = user.getSignedJwtToken();
+
+    res.status(200).json({
+        success: true,
+        message: 'Password updated successfully.',
+        token: token
+    });
+});
 
 
-// FIX: Corrected the export statement to include the new functions
+// --- FIX: Add 'updatePassword' to the export list ---
 export { 
     getUsers, 
     getUser, 
     updateUser, 
     deleteUser, 
     getOrgUsers, 
-    getManagedAgents 
+    getManagedAgents,
+    updatePassword 
 };
