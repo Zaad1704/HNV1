@@ -4,18 +4,12 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 
 // A map to associate country codes with language and currency information.
-// Only include mappings for explicitly supported languages.
 const localeMap: { [key: string]: { lang: string; currency: string; name: string; } } = {
-    'BD': { lang: 'bn', currency: 'BDT', name: 'বাংলা' }, // Bangladesh to Bengali
-    'US': { lang: 'en', currency: 'USD', name: 'English' }, // USA to English
-    'CA': { lang: 'en', currency: 'CAD', name: 'English' }, // Canada defaults to English now
-    'GB': { lang: 'en', currency: 'GBP', name: 'English' }, // UK defaults to English
-    'AU': { lang: 'en', currency: 'AUD', name: 'English' }  // Australia defaults to English
-    // Remove or re-map other countries to 'en' or 'bn' as desired if you don't have separate translation files.
-    // Example of re-mapping existing ones to English:
-    // 'ES': { lang: 'en', currency: 'EUR', name: 'English' }, 
-    // 'DE': { lang: 'en', currency: 'EUR', name: 'English' },
-    // 'IN': { lang: 'en', currency: 'INR', name: 'English' },
+    'BD': { lang: 'bn', currency: 'BDT', name: '৳' }, // Bangladesh to Bengali, BDT, and Bengali Taka symbol
+    'US': { lang: 'en', currency: 'USD', name: '$' }, // USA to English, USD, and Dollar symbol
+    'CA': { lang: 'en', currency: 'CAD', name: 'CAD' }, // Canada defaults to English now
+    'GB': { lang: 'en', currency: 'GBP', name: 'GBP' }, // UK defaults to English
+    'AU': { lang: 'en', currency: 'AUD', name: 'AUD' }  // Australia defaults to English
 };
 
 export const detectLocale = async (req: Request, res: Response) => {
@@ -32,12 +26,11 @@ export const detectLocale = async (req: Request, res: Response) => {
                 ...localeMap[countryCode]
             });
         } else {
-            // Default to English if country not in map or API fails
             res.status(200).json({
                 success: true,
                 lang: 'en',
                 currency: 'USD',
-                name: 'English'
+                name: '$', // Default to English/USD
             });
         }
     } catch (error) {
@@ -46,7 +39,7 @@ export const detectLocale = async (req: Request, res: Response) => {
             success: true,
             lang: 'en',
             currency: 'USD',
-            name: 'English',
+            name: '$',
             message: 'IP detection failed, defaulting to English.'
         });
     }
