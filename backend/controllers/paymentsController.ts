@@ -1,11 +1,10 @@
-import { Request, Response } from 'express'; // FIX: Import Request
+import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
-// FIX: AuthenticatedRequest is no longer needed.
 import mongoose from 'mongoose';
 
 // This function already exists
-export const getPayments = async (req: Request, res: Response) => { // FIX: Use Request
+export const getPayments = async (req: Request, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -17,14 +16,15 @@ export const getPayments = async (req: Request, res: Response) => { // FIX: Use 
     res.status(200).json({ success: true, count: payments.length, data: payments });
 };
 
-// --- NEW FUNCTION ---
+// --- MODIFIED FUNCTION ---
 // @desc    Record a new manual payment
 // @route   POST /api/payments
 // @access  Private (Landlord, Agent)
-export const createPayment = async (req: Request, res: Response) => { // FIX: Use Request
+export const createPayment = async (req: Request, res: Response) => {
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
-    const { tenantId, amount, paymentDate, status } = req.body;
+    // Destructure new fields: lineItems, paidForMonth
+    const { tenantId, amount, paymentDate, status, lineItems, paidForMonth } = req.body;
 
     if (!tenantId || !amount || !paymentDate) {
         return res.status(400).json({ success: false, message: 'Tenant, amount, and payment date are required.' });
@@ -40,10 +40,13 @@ export const createPayment = async (req: Request, res: Response) => { // FIX: Us
             tenantId,
             amount,
             paymentDate,
-            status: status || 'Paid', // Default to 'Paid' if not provided
+            status: status || 'Paid',
             propertyId: tenant.propertyId,
             organizationId: req.user.organizationId,
-            recordedBy: req.user._id // FIX: Use _id
+            recordedBy: req.user._id,
+            // NEW: Save lineItems and paidForMonth
+            lineItems: lineItems || [], // Ensure it's an array, even if empty
+            paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined, // Convert to Date object
         });
 
         res.status(201).json({ success: true, data: newPayment });
