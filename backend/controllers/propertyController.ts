@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 
 export const createProperty = async (req: Request, res: Response) => {
   const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+  if (!user || !user.organizationId) {
+    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
@@ -31,8 +31,8 @@ export const createProperty = async (req: Request, res: Response) => {
 
 export const getProperties = async (req: Request, res: Response) => {
   const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+  if (!user || !user.organizationId) {
+    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
@@ -43,11 +43,10 @@ export const getProperties = async (req: Request, res: Response) => {
   }
 };
 
-// ADDED THIS FUNCTION
 export const getPropertyById = async (req: Request, res: Response) => {
   const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+  if (!user || !user.organizationId) {
+    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
@@ -78,8 +77,8 @@ export const getPropertyById = async (req: Request, res: Response) => {
 
 export const updateProperty = async (req: Request, res: Response) => {
   const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+  if (!user || !user.organizationId) {
+    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
@@ -115,8 +114,8 @@ export const updateProperty = async (req: Request, res: Response) => {
 
 export const deleteProperty = async (req: Request, res: Response) => {
   const user = req.user;
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+  if (!user || !user.organizationId) {
+    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
