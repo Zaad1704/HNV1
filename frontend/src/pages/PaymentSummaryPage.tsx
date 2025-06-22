@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom'; // Import Link
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../api/client';
-import { useLang } from '../contexts/LanguageContext'; // NEW: Import useLang
+// Removed: import { useLang } from '../contexts/LanguageContext';
 
 const PaymentSummaryPage = () => {
     const { planId } = useParams();
     const navigate = useNavigate();
     const [plan, setPlan] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = true;
     const [error, setError] = useState('');
-    const { currencyName } = useLang(); // NEW: Get currencyName
+    // Removed: const { currencyName } = useLang();
 
     useEffect(() => {
         const fetchPlanDetails = async () => {
@@ -62,8 +62,7 @@ const PaymentSummaryPage = () => {
                 <div className="bg-slate-700/50 p-6 rounded-lg mb-6">
                     <h2 className="text-2xl font-bold text-yellow-400">{plan.name}</h2>
                     <p className="text-4xl font-extrabold text-white mt-2">
-                        {/* NEW: Display currency based on detected currency */}
-                        {currencyName}{(plan.price / 100).toFixed(2)}
+                        ${(plan.price / 100).toFixed(2)}
                         <span className="text-lg font-medium text-slate-400"> / {plan.duration}</span>
                     </p>
                     <ul className="text-slate-300 space-y-2 mt-4 text-sm">
