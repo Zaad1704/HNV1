@@ -46,8 +46,9 @@ import AuditLogPage from './pages/AuditLogPage';
 import OrganizationPage from './pages/OrganizationPage';
 import TenantDashboardPage from './pages/TenantDashboardPage';
 import CashFlowPage from './pages/CashFlowPage'; 
-// NEW IMPORT for C.2 Frontend
 import TenantStatementPage from './pages/TenantStatementPage'; 
+// NEW IMPORT for Reminders Page
+import RemindersPage from './pages/RemindersPage'; 
 
 // Admin Pages
 import AdminDashboardPage from './pages/AdminDashboardPage';
@@ -96,7 +97,7 @@ function App() {
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
         <Routes>
-          {/* Public Routes (e.g., Landing, Terms, Privacy) - wrapped with PublicLayout */}
+          {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/terms" element={<TermsPage />} />
@@ -104,14 +105,12 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/contact" element={<ContactPage />} />
-
-            {/* Payment related public pages */}
             <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/payment-cancel" element={<PaymentCancelPage />} />
           </Route>
 
-          {/* Authentication Routes (No Layout or minimal layout) */}
+          {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -119,20 +118,20 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
           <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
           <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
-
           <Route path="/resubscribe" element={<ResubscribePage />} />
 
-          {/* Protected Routes - Rendered with DashboardLayout */}
+          {/* Protected Routes - Dashboard */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<OverviewPage />} /> 
               <Route path="overview" element={<OverviewPage />} />
               <Route path="properties" element={<PropertiesPage />} />
               <Route path="tenants" element={<TenantsPage />} />
-              <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} /> {/* NEW ROUTE */}
+              <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
               <Route path="maintenance" element={<MaintenanceRequestsPage />} />
               <Route path="cashflow" element={<CashFlowPage />} /> 
+              <Route path="reminders" element={<RemindersPage />} /> {/* NEW ROUTE */}
               <Route path="users" element={<UsersPage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="audit-log" element={<AuditLogPage />} />
@@ -142,7 +141,7 @@ function App() {
             </Route>
           </Route>
 
-          {/* Admin Protected Routes - Rendered with AdminLayout */}
+          {/* Admin Protected Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboardPage />} />
