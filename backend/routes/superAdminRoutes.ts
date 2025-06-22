@@ -4,7 +4,7 @@ import {
     getDashboardStats, 
     getAllOrganizations,
     getAllUsers,
-    updateSubscriptionStatus, // ADDED THIS IMPORT
+    updateSubscriptionStatus,
     grantLifetimeAccess,
     revokeLifetimeAccess,
     updateUserByAdmin,
@@ -12,7 +12,10 @@ import {
     getGlobalBilling,
     getAllMaintenanceRequests,
     getPlatformGrowth,
-    getPlanDistribution
+    getPlanDistribution,
+    // NEW IMPORTS for A.1 and A.2
+    updateOrganizationSubscription, 
+    toggleSelfDeletion 
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -22,7 +25,6 @@ router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
 router.get('/dashboard-stats', getDashboardStats);
 
-// Add new routes for charts
 router.get('/platform-growth', getPlatformGrowth);
 router.get('/plan-distribution', getPlanDistribution);
 
@@ -30,6 +32,11 @@ router.get('/organizations', getAllOrganizations);
 router.put('/organizations/:id/status', updateSubscriptionStatus);
 router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess);
 router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess);
+
+// NEW ROUTE for A.1: Update an organization's subscription plan/status
+router.put('/organizations/:orgId/subscription', updateOrganizationSubscription); 
+// NEW ROUTE for A.2: Toggle self-service deletion
+router.put('/organizations/:orgId/toggle-self-deletion', toggleSelfDeletion); 
 
 router.get('/users', getAllUsers);
 router.put('/users/:userId/manage', updateUserByAdmin);
