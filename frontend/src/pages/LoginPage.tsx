@@ -21,8 +21,6 @@ const LoginPage: React.FC = () => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
       
-      // --- THIS IS THE FIX ---
-      // Pass both the token AND the user object to the login action
       if (response.data.token && response.data.user) {
         loginAction(response.data.token, response.data.user);
       } else {
@@ -41,8 +39,11 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // --- THIS IS THE CORRECTED FUNCTION ---
   const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/auth/google`;
+    // Construct the URL safely from the apiClient's configured base URL
+    const googleAuthUrl = `${apiClient.defaults.baseURL}/auth/google`;
+    window.location.href = googleAuthUrl;
   };
 
   return (
