@@ -5,9 +5,9 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { 
     Home, Building, Users, CreditCard, Shield, Settings, 
-    LogOut, Star, Menu, X, FileText, Wrench, BarChart2, Bell, MessageSquare, Briefcase, DollarSign
-} from 'lucide-react'; // Added DollarSign for cash flow
-import NotificationsPanel from '../components/dashboard/NotificationsPanel';
+    LogOut, Star, Menu, X, FileText, Wrench, BarChart2, Bell, MessageSquare, Briefcase, DollarSign, Repeat
+} from 'lucide-react'; // Added Repeat icon for Reminders
+import NotificationsPanel from '../dashboard/NotificationsPanel';
 import BottomNavBar from './BottomNavBar';
 import RoleGuard from '../RoleGuard';
 
@@ -50,7 +50,8 @@ const DashboardLayout = () => {
                         <Link to="/dashboard/tenants" className={getLinkClass('/dashboard/tenants')}><Users size={20} /><span>Tenants</span></Link>
                         <Link to="/dashboard/expenses" className={getLinkClass('/dashboard/expenses')}><CreditCard size={20} /><span>Expenses</span></Link>
                         <Link to="/dashboard/maintenance" className={getLinkClass('/dashboard/maintenance')}><Wrench size={20} /><span>Maintenance</span></Link>
-                        <Link to="/dashboard/cashflow" className={getLinkClass('/dashboard/cashflow')}><DollarSign size={20} /><span>Cash Flow</span></Link> {/* NEW LINK */}
+                        <Link to="/dashboard/cashflow" className={getLinkClass('/dashboard/cashflow')}><DollarSign size={20} /><span>Cash Flow</span></Link>
+                        <Link to="/dashboard/reminders" className={getLinkClass('/dashboard/reminders')}><Repeat size={20} /><span>Reminders</span></Link> {/* NEW LINK */}
                         <RoleGuard allowed={['Landlord', 'Agent']}>
                             <Link to="/dashboard/users" className={getLinkClass('/dashboard/users')}><Users size={20} /><span>Users & Invites</span></Link>
                         </RoleGuard>
