@@ -7,8 +7,8 @@ import LeadershipSection from '../landing/LeadershipSection';
 import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-// Import all necessary Lucide icons statically, including Wrench
-import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react'; // Added Wrench, Users, CreditCard for completeness
+// Import all necessary Lucide icons statically
+import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react';
 
 interface DesktopLandingLayoutProps {
     settings: ISiteSettings;
@@ -17,15 +17,14 @@ interface DesktopLandingLayoutProps {
 
 // Map icon names (strings from SiteSettings) to Lucide icon components
 const IconMap: { [key: string]: React.ElementType } = {
-    // These strings come directly from backend/models/SiteSettings.ts default features.
-    "briefcase": Briefcase, // For 'Centralized Dashboard' title, or if icon string is 'briefcase'
-    "lock": Lock,           // For 'Secure Document Storage' title, or if icon string is 'lock'
-    "shield-check": ShieldCheck, // For 'Audit Trails & Security' title, or if icon string is 'shield-check'
+    "briefcase": Briefcase,
+    "lock": Lock,
+    "shield-check": ShieldCheck,
     "home": Home,
     "users": Users,
     "credit-card": CreditCard,
-    "wrench": Wrench, // Explicitly mapped
-    // Add more mappings as needed based on exact strings in your SiteSettings 'icon' fields
+    "wrench": Wrench,
+    // Add more mappings as needed
 };
 
 // Helper to get the correct icon component, gracefully handling missing ones
@@ -53,7 +52,7 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                     <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                         {settings.featuresPage?.features?.map((feature, index) => {
-                            const IconComponent = getFeatureIconComponent(feature.icon); // Use feature.icon string
+                            const IconComponent = getFeatureIconComponent(feature.icon);
                             return (
                                 <div key={index} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
                                     <div className="text-brand-primary mb-4">
@@ -72,11 +71,11 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                  <AboutSection />
             </section>
 
-            <section id="services" className="py-16 md:py-24 bg-gray-100">
+            <section id="servicesSection" className="py-16 md:py-24 bg-gray-100">
                 <ServicesSection />
             </section>
 
-            <section id="leadership" className="py-16 md:py-24 bg-white">
+            <section id="leadershipSection" className="py-16 md:py-24 bg-white">
                 <LeadershipSection />
             </section>
 
