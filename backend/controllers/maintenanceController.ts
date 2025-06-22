@@ -1,3 +1,4 @@
+// backend/controllers/maintenanceController.ts
 import { Request, Response } from 'express';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Property from '../models/Property';
@@ -5,9 +6,10 @@ import auditService from '../services/auditService';
 import notificationService from '../services/notificationService';
 import mongoose from 'mongoose';
 
-// @desc    Create a new maintenance request
 export const createMaintenanceRequest = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
 
     const { propertyId, description, priority } = req.body;
     try {
@@ -27,18 +29,20 @@ export const createMaintenanceRequest = async (req: Request, res: Response) => {
     } catch(err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
-// @desc    Get all maintenance requests for an organization
 export const getOrgMaintenanceRequests = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     try {
         const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId }).populate('propertyId', 'name').populate('requestedBy', 'name');
         res.status(200).json({ success: true, data: requests });
     } catch(err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
-// @desc    Get a single maintenance request by ID
 export const getMaintenanceRequestById = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     try {
         const request = await MaintenanceRequest.findById(req.params.id);
         if (!request || request.organizationId.toString() !== req.user.organizationId.toString()) {
@@ -48,9 +52,10 @@ export const getMaintenanceRequestById = async (req: Request, res: Response) => 
     } catch(err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
-// @desc    Update a maintenance request (e.g., change its status)
 export const updateMaintenanceRequest = async (req: Request, res: Response) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     const { status } = req.body;
     try {
         const request = await MaintenanceRequest.findById(req.params.id);
@@ -63,9 +68,10 @@ export const updateMaintenanceRequest = async (req: Request, res: Response) => {
     } catch (err) { res.status(500).json({ success: false, message: 'Server Error' }); }
 };
 
-// @desc    Delete a maintenance request
 export const deleteMaintenanceRequest = async (req: Request, res: Response) => {
-     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
+     if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
     try {
         const request = await MaintenanceRequest.findById(req.params.id);
         if (!request || request.organizationId.toString() !== req.user.organizationId.toString()) {
