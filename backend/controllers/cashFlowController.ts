@@ -10,9 +10,9 @@ import mongoose from 'mongoose';
 // @route   POST /api/cashflow
 // @access  Private (Agent)
 export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+    if (!req.user || !req.user.organizationId) {
         res.status(401);
-        throw new Error('User not authorized');
+        throw new Error('User not authorized or not part of an organization');
     }
     // Only Agents should be able to create these records
     if (req.user.role !== 'Agent') {
@@ -32,12 +32,12 @@ export const createCashFlowRecord = asyncHandler(async (req: Request, res: Respo
     }
 
     // documentUrl comes from Multer's req.file processing
-    const documentUrl = req.file ? (req.file as any).imageUrl : undefined; // Assuming imageUrl is set by fileUploadController
+    const documentUrl = req.file ? (req.file as any).imageUrl : undefined;
 
     const newRecord = await CashFlow.create({
         organizationId: req.user.organizationId,
         fromUser: req.user._id,
-        toUser: type === 'cash_handover' ? toUser : undefined, // Only set if type is handover
+        toUser: type === 'cash_handover' ? toUser : undefined,
         amount: Number(amount),
         type,
         status: status || 'pending',
@@ -67,32 +67,25 @@ export const createCashFlowRecord = asyncHandler(async (req: Request, res: Respo
 // @route   GET /api/cashflow
 // @access  Private (Agent, Landlord, Super Admin)
 export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+    if (!req.user || !req.user.organizationId) {
         res.status(401);
-        throw new Error('User not authorized');
+        throw new Error('User not authorized or not part of an organization');
     }
 
     const organizationId = req.user.organizationId;
     let query: any = { organizationId };
 
-    // Agents should only see records they created or were involved in (fromUser)
     if (req.user.role === 'Agent') {
         query.fromUser = req.user._id;
     } 
-    // Landlords should only see records where they are the recipient (toUser)
     else if (req.user.role === 'Landlord') {
         query.toUser = req.user._id;
     }
-    // Super Admins see all records within their org (covered by organizationId query)
-    // Or if role is Super Admin, they can view all records across all orgs if query.organizationId is removed.
-    // For now, let's keep it scoped to their org unless explicitly requested platform-wide.
-
+    
     const records = await CashFlow.find(query)
-        .populate('fromUser', 'name email role') // Agent who handled
-        .populate('toUser', 'name email role') // Landlord who received
+        .populate('fromUser', 'name email role')
+        .populate('toUser', 'name email role')
         .sort({ transactionDate: -1 });
 
     res.status(200).json({ success: true, count: records.length, data: records });
 });
-
-// You might add update/delete functions later if needed
