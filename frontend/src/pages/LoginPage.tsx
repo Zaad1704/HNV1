@@ -1,3 +1,4 @@
+// frontend/src/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -40,8 +41,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // FIX: Construct the URL safely using the configured base URL from the API client.
-    // This prevents the /api/api duplication issue.
+    // Correct: Constructs the URL safely using the configured base URL from the API client.
     const googleAuthUrl = `${apiClient.defaults.baseURL}/auth/google`;
     window.location.href = googleAuthUrl;
   };
