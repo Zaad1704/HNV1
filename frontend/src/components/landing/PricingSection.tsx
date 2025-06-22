@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { CheckCircle } from 'lucide-react';
-import { useDynamicTranslation } from '../../hooks/useDynamicTranslation';
-import { useLang } from '../../contexts/LanguageContext';
+import { useDynamicTranslation } from '../../hooks/useDynamicTranslation'; // RE-ENABLED
+import { useLang } from '../../contexts/LanguageContext'; // RE-ENABLED
 
 const PricingSection = () => {
     const { data: settings } = useSiteSettings();
-    const { currencyName } = useLang();
+    const { currencyName } = useLang(); // RE-ENABLED
     const [plans, setPlans] = useState<any[]>([]);
 
+    // RE-ENABLED: Translate dynamic content from settings
     const { translatedText: translatedTitle } = useDynamicTranslation(settings?.pricingSection?.title || 'Choose The Plan That\'s Right For You');
     const { translatedText: translatedSubtitle } = useDynamicTranslation(settings?.pricingSection?.subtitle || 'Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.');
     const { translatedText: translatedDisclaimer } = useDynamicTranslation(settings?.pricingSection?.disclaimer || 'Subscription and billing are managed securely through our payment partner.');
@@ -29,7 +30,8 @@ const PricingSection = () => {
 
     const getPrice = (priceInCents: number) => {
         if (priceInCents === 0) return "Free";
-        const exchangeRate = currencyName === '৳' ? 110 : 1;
+        // Convert USD cents to BDT (mock rate for now, needs real API for accuracy)
+        const exchangeRate = currencyName === '৳' ? 110 : 1; // MOCK EXCHANGE RATE: 1 USD = 110 BDT
         return `${currencyName}${(priceInCents / 100 * exchangeRate).toFixed(2)}`;
     }
 
@@ -41,6 +43,7 @@ const PricingSection = () => {
 
                 <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {plans.map(plan => {
+                        // RE-ENABLED: Translate plan name and features
                         const { translatedText: translatedPlanName } = useDynamicTranslation(plan.name);
                         const translatedFeatures = plan.features.map((feature: string) => {
                             const { translatedText: translatedFeature } = useDynamicTranslation(feature);
@@ -57,7 +60,7 @@ const PricingSection = () => {
                                 <p className="mt-2 text-slate-500 dark:text-light-text-dark h-12">{plan.description || `For ${plan.name}s`}</p>
                                 
                                 <ul className="space-y-3 mt-8 flex-grow">
-                                    {translatedFeatures.map((feature: string, index: number) => ( // --- CHANGE: Removed misplaced comment ---
+                                    {translatedFeatures.map((feature: string, index: number) => (
                                         <li key={index} className="flex items-center text-dark-text dark:text-light-text-dark">
                                             <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
                                             <span>{feature}</span>
