@@ -3,10 +3,11 @@ import Property from '../models/Property';
 import { IUser } from '../models/User';
 import mongoose from 'mongoose';
 
-export const createProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const createProperty = async (req: Request, res: Response) => {
   const user = req.user;
   if (!user || !user.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    return;
   }
 
   try {
@@ -31,10 +32,11 @@ export const createProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const getProperties = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getProperties = async (req: Request, res: Response) => {
     const user = req.user;
     if (!user || !user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     try {
         const properties = await Property.find({ organizationId: user.organizationId });
@@ -44,18 +46,21 @@ export const getProperties = async (req: AuthenticatedRequest, res: Response) =>
     }
 };
 
-export const getPropertyById = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getPropertyById = async (req: Request, res: Response) => {
     const user = req.user;
     if (!user || !user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     try {
         const property = await Property.findById(req.params.id);
         if (!property) {
-            return res.status(404).json({ success: false, message: 'Property not found' });
+            res.status(404).json({ success: false, message: 'Property not found' });
+            return;
         }
         if (!property.organizationId.equals(user.organizationId)) {
-            return res.status(403).json({ success: false, message: 'Not authorized to view this property' });
+            res.status(403).json({ success: false, message: 'Not authorized to view this property' });
+            return;
         }
         res.status(200).json({ success: true, data: property });
     } catch (error: any) {
@@ -63,20 +68,23 @@ export const getPropertyById = async (req: AuthenticatedRequest, res: Response) 
     }
 };
 
-export const updateProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const updateProperty = async (req: Request, res: Response) => {
   const user = req.user;
   if (!user || !user.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    return;
   }
 
   try {
     let property = await Property.findById(req.params.id);
 
     if (!property) {
-      return res.status(404).json({ success: false, message: 'Property not found' });
+      res.status(404).json({ success: false, message: 'Property not found' });
+      return;
     }
     if (!property.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({ success: false, message: 'Not authorized to update this property' });
+      res.status(403).json({ success: false, message: 'Not authorized to update this property' });
+      return;
     }
 
     const updates = { ...req.body };
@@ -95,18 +103,21 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const deleteProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const deleteProperty = async (req: Request, res: Response) => {
     const user = req.user;
     if (!user || !user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     try {
         const property = await Property.findById(req.params.id);
         if (!property) {
-            return res.status(404).json({ success: false, message: 'Property not found' });
+            res.status(404).json({ success: false, message: 'Property not found' });
+            return;
         }
         if (!property.organizationId.equals(user.organizationId)) {
-            return res.status(403).json({ success: false, message: 'Not authorized to delete this property' });
+            res.status(403).json({ success: false, message: 'Not authorized to delete this property' });
+            return;
         }
         await property.deleteOne();
         res.status(200).json({ success: true, data: {} });
