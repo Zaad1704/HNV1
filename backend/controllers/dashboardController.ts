@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
@@ -6,8 +6,9 @@ import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import AuditLog from '../models/AuditLog'; // Import AuditLog model
 import { startOfMonth, endOfMonth, subMonths, format, addDays } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const getOverviewStats = asyncHandler(async (req: Request, res: Response) => {
+export const getOverviewStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     // ... this function remains the same
     if (!req.user) { 
         throw new Error('User not authorized');
@@ -38,24 +39,24 @@ export const getOverviewStats = asyncHandler(async (req: Request, res: Response)
     });
 });
 
-export const getLateTenants = asyncHandler(async (req: Request, res: Response) => {
+export const getLateTenants = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     // ... this function remains the same
 });
 
-export const getExpiringLeases = asyncHandler(async (req: Request, res: Response) => {
+export const getExpiringLeases = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     // ... this function remains the same
 });
 
-export const getFinancialSummary = asyncHandler(async (req: Request, res: Response) => {
+export const getFinancialSummary = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     // ... this function remains the same
 });
 
-export const getOccupancySummary = asyncHandler(async (req: Request, res: Response) => {
+export const getOccupancySummary = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     // ... this function remains the same
 });
 
 // --- NEW FUNCTION for Rent Status Chart ---
-export const getRentStatus = asyncHandler(async (req: Request, res: Response) => {
+export const getRentStatus = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
@@ -73,7 +74,7 @@ export const getRentStatus = asyncHandler(async (req: Request, res: Response) =>
 });
 
 // --- NEW FUNCTION for Recent Activity Feed ---
-export const getRecentActivity = asyncHandler(async (req: Request, res: Response) => {
+export const getRecentActivity = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
