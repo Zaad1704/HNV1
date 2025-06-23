@@ -7,9 +7,10 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // FIX: Import AuthenticatedRequest
 import { IUser } from '../models/User';
 import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
+import passport from 'passport'; // FIX: Import passport for googleAuthCallback
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
@@ -100,4 +101,12 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
         }
     });
     res.status(200).json({ success: true, data: user });
+};
+
+// FIX: Placeholder for Google OAuth callback as requested by routes/authRoutes.ts
+export const googleAuthCallback = (req: Request, res: Response) => {
+  // This function will be called after Google authenticates the user.
+  // The actual user data would be available in req.user from Passport.
+  // You would typically redirect to your frontend dashboard from here.
+  res.redirect('/dashboard'); // Example redirect
 };
