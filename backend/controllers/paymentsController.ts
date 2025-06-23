@@ -1,10 +1,11 @@
 // backend/controllers/paymentsController.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
 import mongoose from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const getPayments = async (req: Request, res: Response) => {
+export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
       return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
@@ -16,7 +17,7 @@ export const getPayments = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, count: payments.length, data: payments });
 };
 
-export const createPayment = async (req: Request, res: Response) => {
+export const createPayment = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
