@@ -1,6 +1,7 @@
 // This file safely duplicates the type definitions for the frontend,
 // removing the invalid dependency on the backend folder.
 
+// --- Sub-document Interfaces ---
 export interface ILink {
   text: string;
   url: string;
@@ -38,6 +39,7 @@ export interface IService {
     text: string;
 }
 
+// --- Main Settings Interface ---
 export interface ISiteSettings {
   logos: {
     companyName: string;
@@ -75,6 +77,21 @@ export interface ISiteSettings {
     backgroundImageUrl: string;
     executives: IExecutive[];
   };
+  leadershipSection: {
+      title: string;
+      subtitle: string;
+  };
+  pricingSection: {
+    title: string;
+    subtitle: string;
+    backgroundImageUrl: string;
+    disclaimer: string;
+  };
+  installAppSection: {
+    title: string;
+    subtitle: string;
+    backgroundImageUrl: string;
+  };
   contactPage: {
     title: string;
     subtitle: string;
@@ -91,4 +108,5 @@ export interface ISiteSettings {
   };
   termsPageContent?: ILegalContent;
   privacyPolicyPageContent?: ILegalContent;
+  updatedBy: string; // Changed from mongoose.Types.ObjectId to string for frontend use
 }
