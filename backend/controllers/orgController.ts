@@ -1,14 +1,13 @@
-// backend/controllers/orgController.ts
 import { Request, Response, NextFunction } from 'express';
 import Organization, { IOrganization } from '../models/Organization';
 import User from '../models/User';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
-
-export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getOrganizationDetails = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     try {
         const organization = await Organization.findById(req.user.organizationId)
@@ -24,7 +23,8 @@ export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Res
             });
 
         if (!organization) {
-            return res.status(404).json({ success: false, message: 'Organization not found' });
+            res.status(404).json({ success: false, message: 'Organization not found' });
+            return;
         }
         res.status(200).json({ success: true, data: organization });
     } catch (error) {
@@ -33,7 +33,7 @@ export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Res
     }
 };
 
-export const listOrganizations = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const listOrganizations = async (req: Request, res: Response) => {
     try {
         const organizations = await Organization.find({})
             .populate('owner', 'name email')
@@ -62,15 +62,17 @@ export const listOrganizations = async (req: AuthenticatedRequest, res: Response
     }
 };
 
-export const setOrgStatus = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const setOrgStatus = async (req: Request, res: Response) => {
     const { orgId, status } = req.body;
     if (!orgId || !status) {
-        return res.status(400).json({ success: false, message: 'Organization ID and status are required.' });
+        res.status(400).json({ success: false, message: 'Organization ID and status are required.' });
+        return;
     }
     try {
         const organization = await Organization.findByIdAndUpdate(orgId, { status }, { new: true });
         if (!organization) {
-            return res.status(404).json({ success: false, message: 'Organization not found.' });
+            res.status(404).json({ success: false, message: 'Organization not found.' });
+            return;
         }
         res.status(200).json({ success: true, message: `Organization ${organization.name} status updated to ${organization.status}.`, data: organization });
     } catch (error) {
