@@ -62,10 +62,11 @@ const connectDB = async () => {
 };
 connectDB();
 
-// FIX: Added your production domains to the list of allowed origins.
+// FINAL FIX: Add ALL frontend domains, including your custom domain (with and without www)
+// and the Render-provided URL. This is the most robust solution.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com',
+  'https://hnv-saas-frontend.onrender.com', 
   'https://www.hnvpm.com',
   'https://hnvpm.com'
 ];
@@ -87,6 +88,7 @@ app.use(helmet());
 app.use(passport.initialize());
 
 // --- Mount API Routes ---
+// (All app.use(...) calls for your routes go here)
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
