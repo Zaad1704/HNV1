@@ -4,9 +4,9 @@ import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
-export const getTenants = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getTenants = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -18,7 +18,7 @@ export const getTenants = async (req: AuthenticatedRequest, res: Response) => { 
   }
 };
 
-export const createTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const createTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -36,9 +36,9 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
         req.user.organizationId,
         'TENANT_CREATE',
         {
-            tenantId: tenant._id.toString(),
+            tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), // Fix: Cast to ObjectId
             tenantName: tenant.name,
-            propertyId: property._id.toString()
+            propertyId: (property._id as mongoose.Types.ObjectId).toString() // Fix: Cast to ObjectId
         }
     );
     res.status(201).json({ success: true, data: tenant });
@@ -47,7 +47,7 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const getTenantById = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getTenantById = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -64,7 +64,7 @@ export const getTenantById = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-export const updateTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const updateTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -95,7 +95,7 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
             req.user.organizationId,
             'TENANT_UPDATE',
             { 
-                tenantId: updatedTenant._id.toString(), 
+                tenantId: (updatedTenant._id as mongoose.Types.ObjectId).toString(), // Fix: Cast to ObjectId
                 tenantName: updatedTenant.name,
                 ...(Object.keys(changes).length > 0 && { changes })
             }
@@ -107,7 +107,7 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -123,7 +123,7 @@ export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => 
         req.user._id,
         req.user.organizationId,
         'TENANT_DELETE',
-        { tenantId: tenant._id.toString(), tenantName: tenant.name }
+        { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), tenantName: tenant.name } // Fix: Cast to ObjectId
     );
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
