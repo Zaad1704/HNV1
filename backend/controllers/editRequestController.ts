@@ -1,16 +1,11 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
 import notificationService from '../services/notificationService';
 import { Types } from 'mongoose'; 
 
-/**
- * @desc    Agent creates a request to edit a resource
- * @route   POST /api/edit-requests
- * @access  Private (Agent)
- */
-export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const createEditRequest = asyncHandler(async (req: Request, res: Response) => {
     const { resourceId, resourceModel, reason, approverId } = req.body;
     const requester = req.user!;
 
@@ -19,7 +14,6 @@ export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
         throw new Error('Resource details, reason, and approver are required.');
     }
     
-    // Optional: Check if the resource exists and belongs to the org
     if(resourceModel === 'CashFlow') {
         const resource = await CashFlow.findById(resourceId);
         if(!resource || resource.organizationId.toString() !== requester.organizationId?.toString()){
@@ -29,45 +23,34 @@ export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
     }
 
     const newRequest = await EditRequest.create({
-        resourceId: new Types.ObjectId(resourceId as string), // Fix: Cast string to ObjectId
+        resourceId: new Types.ObjectId(resourceId as string),
         resourceModel,
         reason,
         requester: requester._id,
-        approver: new Types.ObjectId(approverId as string), // Fix: Cast string to ObjectId
+        approver: new Types.ObjectId(approverId as string),
         organizationId: requester.organizationId,
         status: 'pending',
     });
     
-    // Create a notification for the approver (Landlord)
     const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
-    await notificationService.createNotification(new Types.ObjectId(approverId as string), requester.organizationId!, message, '/dashboard/approvals'); // Fix: Cast string to ObjectId
+    await notificationService.createNotification(new Types.ObjectId(approverId as string), requester.organizationId!, message, '/dashboard/approvals');
 
     res.status(201).json({ success: true, data: newRequest });
 });
 
-/**
- * @desc    Landlord gets their pending approval requests
- * @route   GET /api/edit-requests
- * @access  Private (Landlord)
- */
-export const getEditRequests = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getEditRequests = asyncHandler(async (req: Request, res: Response) => {
     const approverId = req.user!._id;
     const requests = await EditRequest.find({ approver: approverId, status: 'pending' })
         .populate('requester', 'name email')
         .populate({
             path: 'resourceId',
-            model: 'CashFlow' // Specify the model to populate from
+            model: 'CashFlow'
         }); 
         
     res.status(200).json({ success: true, data: requests });
 });
 
-/**
- * @desc    Landlord approves a request
- * @route   PUT /api/edit-requests/:id/approve
- * @access  Private (Landlord)
- */
-export const approveEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const approveEditRequest = asyncHandler(async (req: Request, res: Response) => {
     const request = await EditRequest.findById(req.params.id);
 
     if (!request || request.approver.toString() !== req.user!._id.toString()) {
@@ -78,19 +61,13 @@ export const approveEditRequest = asyncHandler(async (req: AuthenticatedRequest,
     request.status = 'approved';
     await request.save();
 
-    // Notify the original requester that their request was approved
     const message = `Your request to edit a ${request.resourceModel} record has been approved.`;
     await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
 
     res.status(200).json({ success: true, data: request });
 });
 
-/**
- * @desc    Landlord rejects a request
- * @route   PUT /api/edit-requests/:id/reject
- * @access  Private (Landlord)
- */
-export const rejectEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const rejectEditRequest = asyncHandler(async (req: Request, res: Response) => {
     const request = await EditRequest.findById(req.params.id);
     
     if (!request || request.approver.toString() !== req.user!._id.toString()) {
@@ -98,11 +75,8 @@ export const rejectEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
         throw new Error('Request not found or you are not authorized to reject it.');
     }
 
-    // You can either delete the request or mark it as rejected.
-    // Deleting it keeps the pending list clean.
     await request.deleteOne();
     
-    // Notify the original requester
     const message = `Your request to edit a ${request.resourceModel} record has been rejected.`;
     await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
 
