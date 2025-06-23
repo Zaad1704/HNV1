@@ -7,7 +7,7 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // FIX: Import AuthenticatedRequest
+import { AuthenticatedRequest } => '../middleware/authMiddleware'; // FIX: Import AuthenticatedRequest
 import { IUser } from '../models/User';
 import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
 import passport from 'passport'; // FIX: Import passport for googleAuthCallback
