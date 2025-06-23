@@ -3,9 +3,14 @@ import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User"; 
 import { Document } from "mongoose";
 
+// FIX: Define and export the AuthenticatedRequest interface
+export interface AuthenticatedRequest extends Request {
+  user?: (IUser & Document<any, any, any>) | null;
+}
+
 // Middleware to protect routes (JWT authentication)
 export const protect = async (
-  req: Request, // Express.Request is now globally augmented
+  req: AuthenticatedRequest, // Use the new interface here
   res: Response,
   next: NextFunction
 ) => {
@@ -21,7 +26,7 @@ export const protect = async (
       }
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
 
-      req.user = (await User.findById(decoded.id).select("-password")) as (IUser & Document<any, any, any>) | null;
+      req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) {
         return res
@@ -47,12 +52,13 @@ export const protect = async (
 
 // Middleware to authorize based on user role
 export const authorize = (...roles: IUser["role"][]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => { // Use the new interface here
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: `User role ${req.user?.role} is not authorized`,
       });
+      return;
     }
     next();
   };
