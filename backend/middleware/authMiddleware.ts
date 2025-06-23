@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User'; // Import IUser
 
-// FIX: Ensure AuthenticatedRequest is exported
+// FIX: Ensure AuthenticatedRequest is exported and user property is correctly typed with IUser
 export interface AuthenticatedRequest extends Request {
   user?: IUser;
 }
@@ -20,8 +20,8 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
       if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
       }
-      // If req.user is found, ensure its status is active (from superAdminController errors)
-      if (req.user.status === 'suspended' || req.user.status === 'pending') { // FIX: Check user status
+      // FIX: Check user status, as indicated by previous errors
+      if (req.user.status === 'suspended' || req.user.status === 'pending') {
         return res.status(401).json({ success: false, message: 'User account is not active.' });
       }
       next();
@@ -36,6 +36,7 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
 
 export const authorize = (...roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // FIX: Ensure req.user and req.user.role are correctly accessed
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ success: false, message: `User role ${req.user?.role} is not authorized` });
     }
