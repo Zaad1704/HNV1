@@ -1,11 +1,11 @@
 // backend/controllers/communicationController.ts
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 import User from '../models/User';
 import Property from '../models/Property';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
