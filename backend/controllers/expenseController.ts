@@ -3,7 +3,6 @@ import asyncHandler from 'express-async-handler';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 import { Types } from 'mongoose'; 
 
 /**
