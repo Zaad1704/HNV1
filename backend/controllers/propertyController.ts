@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 export const createProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   const user = req.user;
