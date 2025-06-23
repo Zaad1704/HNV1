@@ -1,3 +1,5 @@
+// frontend/src/pages/CashFlowPage.tsx
+
 import React, { useState } from 'react';
 import apiClient from '../api/client';
 import { useQuery } from '@tanstack/react-query';
@@ -42,8 +44,21 @@ const CashFlowPage: React.FC = () => {
         setIsRequestModalOpen(true);
     };
 
-    const getStatusBadge = (status: string) => { /* ... */ };
-    const getTypeIcon = (type: string) => { /* ... */ };
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'pending': return 'bg-yellow-100 text-yellow-800';
+            case 'completed': return 'bg-green-100 text-green-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getTypeIcon = (type: string) => {
+        switch (type) {
+            case 'cash_handover': return <ArrowRight size={16} className="text-purple-600" />;
+            case 'bank_deposit': return <DollarSign size={16} className="text-blue-600" />;
+            default: return null;
+        }
+    };
 
     if (isLoading) return <div className="text-center p-8">Loading cash flow records...</div>;
     if (isError) return <div className="text-red-500 text-center p-8">Failed to fetch cash flow records.</div>;
@@ -69,23 +84,60 @@ const CashFlowPage: React.FC = () => {
 
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                {/* ... Header and button remain the same */}
+                <h1 className="text-3xl font-bold text-dark-text">Cash Flow Management</h1>
+                <button
+                    onClick={() => setIsRecordModalOpen(true)}
+                    className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors"
+                >
+                    <PlusCircle size={18} />
+                    <span>Record New Transaction</span>
+                </button>
             </div>
 
-            {records.length === 0 ? ( /* ... */ ) : (
+            {/* Corrected conditional rendering block */}
+            {records.length === 0 ? (
+                <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
+                    <h3 className="text-xl font-semibold text-dark-text">No Cash Flow Records Found</h3>
+                    <p className="text-light-text mt-2">
+                        You haven't recorded any cash flow transactions yet.
+                    </p>
+                    <button onClick={() => setIsRecordModalOpen(true)} className="mt-4 px-4 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg flex items-center mx-auto">
+                        <PlusCircle size={18} className="mr-2" /> Record First Transaction
+                    </button>
+                </div>
+            ) : (
                 <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-border-color">
                                 <tr>
-                                    {/* ... other headers */}
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Date</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Type</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">From</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">To</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Amount</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
                                     <th className="p-4 text-sm font-semibold text-light-text uppercase text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-color">
                                 {records.map((record) => (
                                     <tr key={record._id} className="hover:bg-gray-50">
-                                        {/* ... other table cells */}
+                                        <td className="p-4 font-semibold text-dark-text">{new Date(record.transactionDate).toLocaleDateString()}</td>
+                                        <td className="p-4 flex items-center gap-2 text-light-text">
+                                            {getTypeIcon(record.type)} <span className="capitalize">{record.type.replace(/_/g, ' ')}</span>
+                                        </td>
+                                        <td className="p-4 text-light-text">{record.fromUser.name}</td>
+                                        <td className="p-4 text-light-text">{record.toUser?.name || 'Bank'}</td>
+                                        <td className="p-4 font-semibold text-dark-text">
+                                            <DollarSign size={14} className="inline-block mr-1 text-green-600" />
+                                            {record.amount.toFixed(2)}
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadge(record.status)}`}>
+                                                {record.status}
+                                            </span>
+                                        </td>
                                         <td className="p-4 text-right space-x-2">
                                             {/* --- 5. Conditional logic for buttons --- */}
                                             {user?.role === 'Landlord' ? (
