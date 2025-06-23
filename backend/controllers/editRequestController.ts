@@ -3,7 +3,8 @@ import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
 import notificationService from '../services/notificationService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { Types } from 'mongoose'; // Import Types for ObjectId
 
 /**
  * @desc    Agent creates a request to edit a resource
@@ -29,11 +30,11 @@ export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
     }
 
     const newRequest = await EditRequest.create({
-        resourceId,
+        resourceId: new Types.ObjectId(resourceId), // Fix: Cast string to ObjectId
         resourceModel,
         reason,
         requester: requester._id,
-        approver: approverId,
+        approver: new Types.ObjectId(approverId), // Fix: Cast string to ObjectId
         organizationId: requester.organizationId,
         status: 'pending',
     });
@@ -41,7 +42,7 @@ export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
     // Create a notification for the approver (Landlord)
     const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
     // The link should point to the page where landlords can approve requests
-    await notificationService.createNotification(approverId, requester.organizationId!, message, '/dashboard/approvals');
+    await notificationService.createNotification(new Types.ObjectId(approverId), requester.organizationId!, message, '/dashboard/approvals'); // Fix: Cast string to ObjectId
 
     res.status(201).json({ success: true, data: newRequest });
 });
