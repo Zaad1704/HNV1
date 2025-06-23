@@ -46,4 +46,36 @@ const RequestEditModal: React.FC<RequestEditModalProps> = ({ isOpen, onClose, re
         <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
             <div className="bg-light-card rounded-xl shadow-xl w-full max-w-lg border border-border-color">
                 <div className="flex justify-between items-center p-6 border-b border-border-color">
-                    <h2 className="text-xl font-bold text-dark-text">Request Permission to
+                    <h2 className="text-xl font-bold text-dark-text">Request Permission to Edit</h2> {/* Corrected and completed line */}
+                    <button onClick={onClose} className="text-light-text hover:text-dark-text"><X size={24} /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
+                    
+                    <div>
+                        <label htmlFor="reason" className="block text-sm font-medium text-gray-700">Reason for Request</label>
+                        <textarea 
+                            id="reason" 
+                            name="reason" 
+                            rows={4} 
+                            value={reason} 
+                            onChange={(e) => setReason(e.target.value)} 
+                            required 
+                            className="mt-1 w-full px-3 py-2 border rounded-md" 
+                            placeholder={`Explain why you need to edit this ${resourceModel} record.`}
+                        ></textarea>
+                    </div>
+
+                    <div className="flex justify-end space-x-4 pt-4">
+                        <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" disabled={mutation.isLoading} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-dark disabled:opacity-50">
+                            {mutation.isLoading ? 'Sending Request...' : 'Send Request'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default RequestEditModal;
