@@ -5,7 +5,8 @@ import Reminder, { IReminder } from '../models/Reminder';
 import Tenant from '../models/Tenant';
 import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
+import { Types } from 'mongoose'; // Import Types for ObjectId
 
 const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
@@ -57,6 +58,7 @@ export const getReminders = asyncHandler(async (req: AuthenticatedRequest, res: 
     throw new Error('User not authorized');
   }
 
+  // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
   const query = (req.user.role === 'Super Admin' || !req.user.organizationId) ? {} : { organizationId: req.user.organizationId };
 
   const reminders = await Reminder.find(query)
@@ -109,7 +111,7 @@ export const deleteReminder = asyncHandler(async (req: AuthenticatedRequest, res
   res.status(200).json({ success: true, message: 'Reminder deleted.' });
 });
 
-export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => { // This one uses Request as it's an internal process, not directly tied to a logged-in user in typical middleware
+export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => { 
   const now = new Date();
   const overdueReminders = await Reminder.find({
     nextRunDate: { $lte: now },
