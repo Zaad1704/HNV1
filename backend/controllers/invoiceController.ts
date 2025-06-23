@@ -1,12 +1,12 @@
-// backend/controllers/invoiceController.ts
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
 import Lease from '../models/Lease';
 import { addMonths, startOfMonth, format } from 'date-fns';
 
-export const generateInvoices = async (req: AuthenticatedRequest, res: Response) => {
+export const generateInvoices = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
@@ -19,7 +19,8 @@ export const generateInvoices = async (req: AuthenticatedRequest, res: Response)
         }).populate('tenantId').populate('propertyId');
 
         if (activeLeases.length === 0) {
-            return res.status(200).json({ success: true, message: 'No active leases found to generate invoices for.' });
+            res.status(200).json({ success: true, message: 'No active leases found to generate invoices for.' });
+            return;
         }
 
         const invoicesToCreate = [];
@@ -31,13 +32,13 @@ export const generateInvoices = async (req: AuthenticatedRequest, res: Response)
             });
 
             if (existingInvoice) {
-                console.log(`Invoice already exists for lease ${lease._id} for ${format(invoiceMonthStart, 'MMMപ്പെടെ')}, skipping.`);
+                console.log(`Invoice already exists for lease ${lease._id} for ${format(invoiceMonthStart, 'MMM yyyy')}, skipping.`);
                 continue;
             }
 
             const countForMonth = await Invoice.countDocuments({
                 organizationId: req.user.organizationId,
-                dueDate: invoiceMonthStart,
+                dueDate: { $gte: startOfMonth(invoiceMonthStart), $lte: endOfMonth(invoiceMonthStart) },
             });
             const invoiceNumber = `INV-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${format(invoiceMonthStart, 'yyyyMM')}-${(countForMonth + 1).toString().padStart(3, '0')}`;
 
@@ -61,7 +62,7 @@ export const generateInvoices = async (req: AuthenticatedRequest, res: Response)
 
         if (invoicesToCreate.length > 0) {
             await Invoice.insertMany(invoicesToCreate);
-            res.status(201).json({ success: true, message: `${invoicesToCreate.length} new invoices generated successfully for ${format(invoiceMonthStart, 'MMMപ്പെടെ')}.` });
+            res.status(201).json({ success: true, message: `${invoicesToCreate.length} new invoices generated successfully for ${format(invoiceMonthStart, 'MMM yyyy')}.` });
         } else {
             res.status(200).json({ success: true, message: 'No new invoices needed for generation this month.' });
         }
