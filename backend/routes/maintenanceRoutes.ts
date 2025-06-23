@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler';
 import {
     createMaintenanceRequest,
     getOrgMaintenanceRequests,
@@ -12,12 +13,12 @@ const router = Router();
 router.use(protect);
 
 router.route('/')
-    .post(createMaintenanceRequest)
-    .get(getOrgMaintenanceRequests);
+    .post(asyncHandler(createMaintenanceRequest))
+    .get(asyncHandler(getOrgMaintenanceRequests));
     
 router.route('/:id')
-    .get(getMaintenanceRequestById)
-    .put(updateMaintenanceRequest)
-    .delete(deleteMaintenanceRequest);
+    .get(asyncHandler(getMaintenanceRequestById))
+    .put(asyncHandler(updateMaintenanceRequest))
+    .delete(asyncHandler(deleteMaintenanceRequest));
 
 export default router;
