@@ -1,12 +1,11 @@
-// backend/controllers/receiptController.ts
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import PDFDocument from 'pdfkit';
 
-
-export const generatePaymentReceipt = async (req:Request, res: Response) => { // Changed to AuthenticatedRequest
+export const generatePaymentReceipt = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
@@ -18,7 +17,8 @@ export const generatePaymentReceipt = async (req:Request, res: Response) => { //
             .populate('recordedBy', 'name');
 
         if (!payment || payment.organizationId._id.toString() !== req.user.organizationId.toString()) {
-            return res.status(404).json({ success: false, message: 'Payment not found.' });
+            res.status(404).json({ success: false, message: 'Payment not found.' });
+            return;
         }
 
         const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -60,7 +60,11 @@ export const generatePaymentReceipt = async (req:Request, res: Response) => { //
         doc.font('Helvetica');
         const itemY = tableTop + 25;
         const property = payment.propertyId as any;
-        doc.text(`Rent Payment for ${property.name}, Unit ${property.address.street}`, 50, itemY);
+        const description = payment.lineItems && payment.lineItems.length > 0
+            ? payment.lineItems.map(item => `${item.description} ($${item.amount.toFixed(2)})`).join(', ')
+            : `Rent Payment for ${property.name}, Unit ${property.address?.street || ''}`;
+        
+        doc.text(description, 50, itemY);
         doc.text(`$${payment.amount.toFixed(2)}`, 500, itemY, { align: 'right' });
 
         const totalY = itemY + 40;
