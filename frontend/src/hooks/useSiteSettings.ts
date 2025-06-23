@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-// FIX: Import the type from the new local file, not from the backend directory.
+// FIX: This import now points to the safe, local types file.
 import { ISiteSettings } from '../types/siteSettings';
 
 export function useSiteSettings() {
