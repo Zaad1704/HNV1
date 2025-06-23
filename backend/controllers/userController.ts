@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization';
-import { AuthenticatedRequest, AuthenticatedUser } from '../middleware/authMiddleware'; // Import AuthenticatedRequest and AuthenticatedUser
-import { Types } from 'mongoose'; // Import Types for ObjectId
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
+import { Types } from 'mongoose'; 
 
 // @desc    Get all users (Super Admin only)
 const getUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
@@ -23,7 +23,7 @@ const getUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
 });
 
 // @desc    Update user (Super Admin only)
-const updateUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Fix TS2552: Corrected typo 'AuthentplicatedRequest'
+const updateUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
     const user = await User.findById(req.params.id);
     if (user) {
         user.name = req.body.name || user.name;
@@ -61,13 +61,11 @@ const getOrgUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response
 
 // @desc    Get agents managed by the current Landlord
 const getManagedAgents = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (!req.user || req.user.role !== 'Landlord') {
         res.status(403);
         throw new Error('User is not a Landlord');
     }
-    // Fix TS2339: Property 'managedAgentIds' does not exist on AuthenticatedUser
-    // This is handled by AuthenticatedUser now extending IUser.
+    // `req.user.managedAgentIds` is now correctly typed from IUser interface
     const agents = await User.find({ '_id': { $in: req.user.managedAgentIds || [] } }); 
     res.status(200).json({ success: true, data: agents });
 });
