@@ -3,7 +3,6 @@ import { Response } from 'express';
 import Invoice from '../models/Invoice';
 import Lease from '../models/Lease';
 import { addMonths, startOfMonth, format } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 export const generateInvoices = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
