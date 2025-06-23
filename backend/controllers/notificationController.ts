@@ -1,3 +1,4 @@
+// backend/controllers/notificationController.ts
 import { Request, Response } from 'express'; // FIX: Import Request
 // FIX: AuthenticatedRequest is no longer needed.
 import Notification from '../models/Notification';
