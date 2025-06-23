@@ -1,104 +1,90 @@
-import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { Suspense, useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import './services/i18n.js';
-import { LangProvider } from './contexts/LanguageContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import axios from 'axios';
 
-// --- Layout & Route Components ---
-import PublicLayout from './components/layout/PublicLayout'; // FIX: Added the missing import for PublicLayout
+// --- Layouts and Route Guards ---
+import PublicLayout from './components/layout/PublicLayout';
 import DashboardLayout from './components/layout/DashboardLayout';
 import AdminLayout from './components/layout/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import DashboardRedirector from './pages/DashboardRedirector';
 
-// --- Page Components (Lazy Loaded) ---
+// --- Page Components (Lazy Loaded for performance) ---
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
-const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const GoogleAuthCallback = React.lazy(() => import('./pages/GoogleAuthCallback'));
-const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvitePage'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
-// ... (add other lazy-loaded pages here if desired)
+const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
+const TenantsPage = React.lazy(() => import('./pages/TenantsPage'));
+const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
+// (Add other lazy-loaded pages as needed)
 
-
-const FullScreenLoader = () => <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text"><p>Loading...</p></div>;
-
-// This component handles the logic after a token is set.
-function AuthSessionManager() {
-    const { user, token, setUser, logout } = useAuthStore();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const verifyUserSession = async () => {
-            if (token && !user) {
-                try {
-                    const response = await apiClient.get('/auth/me');
-                    if (response.data.data) {
-                        setUser(response.data.data);
-                    } else {
-                       throw new Error("No user data in response");
-                    }
-                } catch (error) {
-                    console.error("Session verification failed, logging out.", error);
-                    logout(); 
-                }
-            }
-        };
-        verifyUserSession();
-    }, [token, user, setUser, logout, navigate]);
-
-    return null; // This component does not render anything.
-}
-
+const FullScreenLoader = () => (
+    <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text">
+        <p>Loading Platform...</p>
+    </div>
+);
 
 function App() {
+  const { token, user, setUser, logout } = useAuthStore();
+  const [isSessionLoading, setSessionLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUserSession = async () => {
+      if (token && !user) {
+        try {
+          const response = await apiClient.get('/auth/me');
+          setUser(response.data.data);
+        } catch (error) {
+          // If the token is invalid, log the user out.
+          console.error("Session check failed. Token may be invalid.", error);
+          logout();
+        }
+      }
+      setSessionLoading(false);
+    };
+    checkUserSession();
+  }, [token, user, setUser, logout]);
+
+  if (isSessionLoading) {
+    return <FullScreenLoader />;
+  }
+
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<FullScreenLoader />}>
-        <ThemeProvider>
-          <LangProvider>
-            <Router>
-              <AuthSessionManager />
-              <Routes>
-                {/* Public routes wrapped in PublicLayout */}
-                <Route path="/" element={<PublicLayout />}>
-                  <Route index element={<LandingPage />} />
-                  {/* Add other public-facing static pages here */}
-                </Route>
+    <Suspense fallback={<FullScreenLoader />}>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<PublicLayout />}>
+            <Route index element={<LandingPage />} />
+            {/* Other public pages like /about, /contact can go here */}
+          </Route>
 
-                {/* Standalone Authentication Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-                <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+          {/* Auth Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
 
-                {/* Protected Dashboard Routes */}
-                <Route path="/dashboard" element={<ProtectedRoute />}>
-                  <Route path="*" element={<DashboardLayout />} />
-                </Route>
+          {/* Protected Dashboard */}
+          <Route path="/dashboard" element={<ProtectedRoute />}>
+              <Route path="*" element={<DashboardLayout />} />
+          </Route>
 
-                {/* Protected Admin Routes */}
-                <Route path="/admin" element={<AdminRoute />}>
-                   <Route path="*" element={<AdminLayout />} />
-                </Route>
-                
-                {/* Fallback Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-          </LangProvider>
-        </ThemeProvider>
-      </Suspense>
-    </ErrorBoundary>
+          {/* Protected Admin Area */}
+          <Route path="/admin" element={<AdminRoute />}>
+              <Route path="*" element={<AdminLayout />} />
+          </Route>
+
+          {/* Fallback Not Found Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </Suspense>
   );
 }
 
