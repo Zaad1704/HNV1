@@ -119,7 +119,7 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Authentic
         await subscription.save();
     } else {
         subscription = await Subscription.create({
-            organizationId: new Types.ObjectId(orgId), // Fix: Explicitly cast to ObjectId
+            organizationId: new Types.ObjectId(orgId as string), // Fix: Explicitly cast to ObjectId
             ...subscriptionData
         });
         organization.subscription = subscription._id;
