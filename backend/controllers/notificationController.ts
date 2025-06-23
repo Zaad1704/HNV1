@@ -1,11 +1,11 @@
 // backend/controllers/notificationController.ts
 import { Response } from 'express'; 
 import Notification from '../models/Notification';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 // @desc    Get all notifications for the logged-in user
 // @route   GET /api/notifications
-export const getNotifications = async (req: AuthenticatedRequest, res: Response) => { 
+export const getNotifications = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
@@ -20,7 +20,7 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response)
 
 // @desc    Mark notifications as read
 // @route   POST /api/notifications/mark-as-read
-export const markNotificationsAsRead = async (req: AuthenticatedRequest, res: Response) => { 
+export const markNotificationsAsRead = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
      if (!req.user) return res.status(401).json({ success: false, message: 'Not authorized' });
 
     try {
