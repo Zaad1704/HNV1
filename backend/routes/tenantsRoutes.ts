@@ -7,22 +7,29 @@ import {
   deleteTenant
 } from '../controllers/tenantsController';
 import { protect } from '../middleware/authMiddleware';
+import upload from '../middleware/uploadMiddleware'; // Import upload middleware
 
 const router = Router();
 
-// Apply the 'protect' middleware to all routes in this file.
-// This ensures only authenticated users can perform actions on tenants.
 router.use(protect);
 
-// Route for getting all tenants and creating a new one
+// Define the fields that can accept file uploads
+const tenantUploadFields = [
+    { name: 'imageUrl', maxCount: 1 },
+    { name: 'govtIdImageUrlFront', maxCount: 1 },
+    { name: 'govtIdImageUrlBack', maxCount: 1 }
+    // Note: We'll handle additional adult images dynamically in the controller
+];
+
 router.route('/')
   .get(getTenants)
-  .post(createTenant);
+  // Use upload.fields() to handle multiple, specific file inputs
+  .post(upload.fields(tenantUploadFields), createTenant);
 
-// Route for getting, updating, or deleting a single tenant by their ID
 router.route('/:id')
   .get(getTenantById)
-  .put(updateTenant)
+  // Also apply to the update route for future enhancements
+  .put(upload.fields(tenantUploadFields), updateTenant)
   .delete(deleteTenant);
 
 export default router;
