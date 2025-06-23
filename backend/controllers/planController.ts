@@ -1,4 +1,3 @@
-// backend/controllers/planController.ts
 import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import auditService from '../services/auditService';
@@ -13,14 +12,14 @@ export const getPlans = async (req: Request, res: Response) => {
     }
 };
 
-export const createPlan = async (req: AuthenticatedRequest, res: Response) => { 
+export const createPlan = async (req: Request, res: Response) => { 
     try {
         if (!req.user || !req.user.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            return;
         }
         const newPlan = await Plan.create(req.body);
         
-        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
@@ -33,20 +32,21 @@ export const createPlan = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-export const updatePlan = async (req: AuthenticatedRequest, res: Response) => { 
+export const updatePlan = async (req: Request, res: Response) => { 
     try {
         if (!req.user || !req.user.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            return;
         }
         const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
         });
         if (!plan) {
-            return res.status(404).json({ success: false, message: 'Plan not found' });
+            res.status(404).json({ success: false, message: 'Plan not found' });
+            return;
         }
         
-        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
@@ -59,18 +59,19 @@ export const updatePlan = async (req: AuthenticatedRequest, res: Response) => {
     }
 };
 
-export const deletePlan = async (req: AuthenticatedRequest, res: Response) => { 
+export const deletePlan = async (req: Request, res: Response) => { 
     try {
         if (!req.user || !req.user.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            return;
         }
         const plan = await Plan.findById(req.params.id);
         if (!plan) {
-            return res.status(404).json({ success: false, message: 'Plan not found' });
+            res.status(404).json({ success: false, message: 'Plan not found' });
+            return;
         }
         await plan.deleteOne();
         
-        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
