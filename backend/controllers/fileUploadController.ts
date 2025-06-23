@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { google } from 'googleapis';
 import path from 'path';
 import { Readable } from 'stream';
