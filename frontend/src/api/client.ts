@@ -1,47 +1,39 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
-// Create an axios instance
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
-  withCredentials: true, // If your API uses HTTP-only cookies
+  withCredentials: true,
 });
 
-// Request interceptor to add auth token
-apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+// Request interceptor to add the authentication token to every request.
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// Response interceptor to handle auth errors
+// FIX: The response interceptor is simplified to prevent redirect loops.
+// The main application logic in App.tsx will now handle logging out
+// when the /api/auth/me call fails.
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    // If 401 and not already retried, try to refresh token (if implemented)
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
-      originalRequest._retry = true;
-      // If you have a refresh endpoint, attempt here
-      // const refreshToken = ... (from store/localStorage)
-      // try {
-      //   const resp = await axios.post("/auth/refresh", { refreshToken });
-      //   useAuthStore.getState().setToken(resp.data.token);
-      //   originalRequest.headers["Authorization"] = `Bearer ${resp.data.token}`;
-      //   return apiClient(originalRequest);
-      // } catch (e) {
-      //   useAuthStore.getState().logout();
-      //   window.location.href = "/login";
-      //   return Promise.reject(e);
-      // }
-      useAuthStore.getState().logout();
-      window.location.href = "/login";
+  (error) => {
+    // If the error is a 401, we will just reject the promise.
+    // The component that made the API call can decide how to handle it.
+    // This prevents the entire application from crashing.
+    if (error.response && error.response.status === 401) {
+      console.error("Authentication Error: The request was not authorized.");
+      // We can optionally log the user out here if their token is invalid,
+      // which is a safe operation.
+      // useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   }
