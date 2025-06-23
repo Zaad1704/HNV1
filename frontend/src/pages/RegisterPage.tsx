@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/client"; 
 import { useAuthStore } from "../store/authStore";
-import { useSiteSettings } from '../hooks/useSiteSettings'; // FIX: Adjusted import path to relative
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { Chrome } from 'lucide-react'; 
 
 const RegisterPage: React.FC = () => {
@@ -32,7 +32,7 @@ const RegisterPage: React.FC = () => {
     }
     try {
       const response = await apiClient.post('/auth/register', formData);
-      loginAction(response.data.token);
+      loginAction(response.data.token, response.data.user);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
