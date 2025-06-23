@@ -1,15 +1,16 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 /**
  * @desc    Get all expenses for an organization, with optional filters
  * @route   GET /api/expenses
  * @access  Private
  */
-export const getExpenses = asyncHandler(async (req: Request, res: Response) => {
+export const getExpenses = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized');
@@ -41,7 +42,7 @@ export const getExpenses = asyncHandler(async (req: Request, res: Response) => {
  * @route   POST /api/expenses
  * @access  Private
  */
-export const createExpense = asyncHandler(async (req: Request, res: Response) => {
+export const createExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized or not part of an organization');
@@ -88,7 +89,7 @@ export const createExpense = asyncHandler(async (req: Request, res: Response) =>
  * @route   GET /api/expenses/:id
  * @access  Private
  */
-export const getExpenseById = asyncHandler(async (req: Request, res: Response) => {
+export const getExpenseById = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         res.status(401);
         throw new Error('User not authorized');
@@ -114,7 +115,7 @@ export const getExpenseById = asyncHandler(async (req: Request, res: Response) =
  * @route   PUT /api/expenses/:id
  * @access  Private
  */
-export const updateExpense = asyncHandler(async (req: Request, res: Response) => {
+export const updateExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         res.status(401);
         throw new Error('User not authorized');
@@ -150,7 +151,7 @@ export const updateExpense = asyncHandler(async (req: Request, res: Response) =>
  * @route   DELETE /api/expenses/:id
  * @access  Private
  */
-export const deleteExpense = asyncHandler(async (req: Request, res: Response) => {
+export const deleteExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         res.status(401);
         throw new Error('User not authorized');
