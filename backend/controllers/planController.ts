@@ -1,8 +1,9 @@
 // backend/controllers/planController.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Plan from '../models/Plan';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 export const getPlans = async (req: Request, res: Response) => {
     try {
@@ -13,7 +14,7 @@ export const getPlans = async (req: Request, res: Response) => {
     }
 };
 
-export const createPlan = async (req: Request, res: Response) => {
+export const createPlan = async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user || !req.user.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -32,7 +33,7 @@ export const createPlan = async (req: Request, res: Response) => {
     }
 };
 
-export const updatePlan = async (req: Request, res: Response) => {
+export const updatePlan = async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user || !req.user.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -57,7 +58,7 @@ export const updatePlan = async (req: Request, res: Response) => {
     }
 };
 
-export const deletePlan = async (req: Request, res: Response) => {
+export const deletePlan = async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user || !req.user.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
