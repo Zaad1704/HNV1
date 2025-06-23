@@ -13,17 +13,19 @@ const FullScreenLoader = () => (
 const GoogleAuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const loginAction = useAuthStore((state) => state.login);
+    // THE FIX: Get the 'setToken' action from the store
+    const setToken = useAuthStore((state) => state.setToken);
 
     useEffect(() => {
         const token = searchParams.get('token');
         if (token) {
-            loginAction(token);
+            // THE FIX: Use the 'setToken' action, as we only have the token here.
+            setToken(token);
             navigate('/dashboard', { replace: true });
         } else {
             navigate('/login?error=Authentication failed. Please try again.', { replace: true });
         }
-    }, [searchParams, loginAction, navigate]);
+    }, [searchParams, setToken, navigate]); // Update dependencies
 
     return <FullScreenLoader />;
 };
