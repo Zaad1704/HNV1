@@ -5,7 +5,8 @@ export const handleFeedbackSubmission = async (req: Request, res: Response) => {
     const { name, email, subject, message } = req.body;
 
     if (!name || !email || !message) {
-        return res.status(400).json({ success: false, message: 'Name, email, and message are required fields.' });
+        res.status(400).json({ success: false, message: 'Name, email, and message are required fields.' });
+        return;
     }
 
     const recipientEmail = 'feedback@hnvpropertysolutions.com'; 
@@ -15,8 +16,8 @@ export const handleFeedbackSubmission = async (req: Request, res: Response) => {
         await emailService.sendEmail(
             recipientEmail, 
             emailSubject, 
-            'feedbackReceived', // Assumes you have a 'feedbackReceived.html' template
-            { // This 4th argument was missing
+            'feedbackReceived',
+            {
                 name: name,
                 email: email,
                 subject: subject || 'Not Provided',
