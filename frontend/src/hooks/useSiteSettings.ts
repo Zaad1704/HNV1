@@ -8,7 +8,6 @@ export function useSiteSettings() {
     queryKey: ['siteSettings'],
     queryFn: async () => {
       const { data } = await apiClient.get('/site-settings');
-      // Return a default object if no settings are found yet to prevent errors
       return data.data || {};
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
