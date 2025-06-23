@@ -1,8 +1,8 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import translationService from '../services/translationService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const translateContent = async (req: AuthenticatedRequest, res: Response) => {
+export const translateContent = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     const { text, targetLanguage } = req.body;
 
     if (!text || !targetLanguage) {
