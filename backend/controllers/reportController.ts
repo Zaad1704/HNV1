@@ -1,4 +1,3 @@
-// backend/controllers/reportController.ts
 import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
@@ -96,7 +95,7 @@ export const getTenantMonthlyStatement = async (req: Request, res: Response) => 
 
         for (const monthStart of months) {
             const monthEnd = endOfMonth(monthStart);
-            const formattedMonth = format(monthStart, 'MMMꗢ');
+            const formattedMonth = format(monthStart, 'MMM yyyy');
 
             const invoices = await Invoice.find({
                 tenantId: tenant._id,
@@ -152,5 +151,64 @@ export const getTenantMonthlyStatement = async (req: Request, res: Response) => 
     } catch (error) {
         console.error('Error generating tenant monthly statement:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+/**
+ * @desc    Generate a detailed PDF profile for a single tenant
+ * @route   GET /api/reports/tenant-profile/:tenantId/pdf
+ * @access  Private (Landlord, Agent)
+ */
+export const generateTenantProfilePdf = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    
+    try {
+        const tenant = await Tenant.findById(req.params.tenantId).populate('propertyId', 'name unit');
+        if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(404).json({ success: false, message: 'Tenant not found.' });
+        }
+
+        const doc = new PDFDocument({ size: 'A4', margin: 50 });
+        const filename = `Tenant-Profile-${tenant.name.replace(/\s/g, '-')}.pdf`;
+
+        res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-type', 'application/pdf');
+
+        doc.pipe(res);
+
+        // --- PDF Content ---
+        doc.fontSize(20).font('Helvetica-Bold').text(tenant.name, { align: 'center' });
+        doc.fontSize(12).font('Helvetica').text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'} - Unit: ${tenant.unit || 'N/A'}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // Personal Details
+        doc.fontSize(14).font('Helvetica-Bold').text('Personal Information', { underline: true });
+        doc.moveDown();
+        doc.fontSize(10).font('Helvetica-Bold').text('Email: ', { continued: true }).font('Helvetica').text(tenant.email);
+        doc.font('Helvetica-Bold').text('Phone: ', { continued: true }).font('Helvetica').text(tenant.phone || 'N/A');
+        doc.font('Helvetica-Bold').text("Father's Name: ", { continued: true }).font('Helvetica').text(tenant.fatherName || 'N/A');
+        doc.font('Helvetica-Bold').text("Mother's Name: ", { continued: true }).font('Helvetica').text(tenant.motherName || 'N/A');
+        doc.font('Helvetica-Bold').text('Permanent Address: ', { continued: true }).font('Helvetica').text(tenant.permanentAddress || 'N/A');
+        doc.font('Helvetica-Bold').text('Government ID: ', { continued: true }).font('Helvetica').text(tenant.govtIdNumber || 'N/A');
+        doc.moveDown(2);
+        
+        // Reference Details
+        doc.fontSize(14).font('Helvetica-Bold').text('Reference Information', { underline: true });
+        doc.moveDown();
+        if (tenant.reference && tenant.reference.name) {
+            doc.fontSize(10).font('Helvetica-Bold').text('Name: ', { continued: true }).font('Helvetica').text(tenant.reference.name);
+            doc.font('Helvetica-Bold').text('Phone: ', { continued: true }).font('Helvetica').text(tenant.reference.phone || 'N/A');
+            doc.font('Helvetica-Bold').text('ID Number: ', { continued: true }).font('Helvetica').text(tenant.reference.idNumber || 'N/A');
+        } else {
+            doc.fontSize(10).font('Helvetica').text('No reference information provided.');
+        }
+
+        doc.end();
+
+    } catch (error) {
+        console.error("PDF Generation Error:", error);
+        res.status(500).send('Error generating PDF file.');
     }
 };
