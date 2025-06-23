@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import PDFDocument from 'pdfkit';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+
 
 export const generatePaymentReceipt = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
