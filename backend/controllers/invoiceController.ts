@@ -1,10 +1,11 @@
 // backend/controllers/invoiceController.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Invoice from '../models/Invoice';
 import Lease from '../models/Lease';
 import { addMonths, startOfMonth, format } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const generateInvoices = async (req: Request, res: Response) => {
+export const generateInvoices = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ message: 'Not authorized or not part of an organization' });
     }
@@ -31,7 +32,7 @@ export const generateInvoices = async (req: Request, res: Response) => {
             });
 
             if (existingInvoice) {
-                console.log(`Invoice already exists for lease ${lease._id} for ${format(invoiceMonthStart, 'MMM yyyy')}, skipping.`);
+                console.log(`Invoice already exists for lease ${lease._id} for ${format(invoiceMonthStart, 'MMM YYYY')}, skipping.`);
                 continue;
             }
 
@@ -61,7 +62,7 @@ export const generateInvoices = async (req: Request, res: Response) => {
 
         if (invoicesToCreate.length > 0) {
             await Invoice.insertMany(invoicesToCreate);
-            res.status(201).json({ success: true, message: `${invoicesToCreate.length} new invoices generated successfully for ${format(invoiceMonthStart, 'MMM yyyy')}.` });
+            res.status(201).json({ success: true, message: `${invoicesToCreate.length} new invoices generated successfully for ${format(invoiceMonthStart, 'MMM YYYY')}.` });
         } else {
             res.status(200).json({ success: true, message: 'No new invoices needed for generation this month.' });
         }
