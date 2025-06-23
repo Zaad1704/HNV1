@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
 import Invoice from '../models/Invoice';
@@ -6,6 +6,7 @@ import Payment from '../models/Payment';
 import Expense from '../models/Expense'; // Import Expense model
 import Lease from '../models/Lease';
 import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 // Helper function to convert JSON array to CSV string
 function convertToCsv(data: any[]): string {
@@ -32,10 +33,10 @@ function convertToCsv(data: any[]): string {
 }
 
 // All existing report controller functions remain here...
-export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => { /* ... */ };
-export const getTenantMonthlyStatement = async (req: Request, res: Response) => { /* ... */ };
-export const generateTenantProfilePdf = async (req: Request, res: Response) => { /* ... */ };
-export const exportTenantsAsCsv = async (req: Request, res: Response) => { /* ... */ };
+export const generateMonthlyCollectionSheet = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
+export const getTenantMonthlyStatement = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
+export const generateTenantProfilePdf = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
+export const exportTenantsAsCsv = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
 
 
 /**
@@ -43,7 +44,7 @@ export const exportTenantsAsCsv = async (req: Request, res: Response) => { /* ..
  * @route   GET /api/reports/expenses/export
  * @access  Private
  */
-export const exportExpensesAsCsv = async (req: Request, res: Response) => {
+export const exportExpensesAsCsv = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
