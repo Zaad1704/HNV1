@@ -4,7 +4,7 @@ import Expense from '../models/Expense';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
-import { Types } from 'mongoose'; // Import Types for ObjectId
+import { Types } from 'mongoose'; 
 
 /**
  * @desc    Get all expenses for an organization, with optional filters
@@ -62,9 +62,9 @@ export const createExpense = asyncHandler(async (req: AuthenticatedRequest, res:
     throw new Error('You do not have permission to assign expenses to this property.');
   }
 
-  // Fix TS2367 (role mismatch) and TS2339 (property doesn't exist)
+  // Fix: Role casing for 'Salary' check & Type 'id' for .some() iteration
   if (category === 'Salary' && paidToAgentId) {
-    const isManaged = req.user.managedAgentIds?.some((id: Types.ObjectId) => id.equals(paidToAgentId)); // Fix TS7006 (implicit any) by typing 'id'
+    const isManaged = req.user.managedAgentIds?.some((id: Types.ObjectId) => id.equals(paidToAgentId as string)); 
     if (!isManaged) {
         res.status(403);
         throw new Error('You can only pay salaries to agents you manage.');
@@ -103,7 +103,7 @@ export const getExpenseById = asyncHandler(async (req: AuthenticatedRequest, res
         throw new Error('Expense not found');
     }
 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
+    // Fix: Role casing matches AuthenticatedUser (now from IUser)
     if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
         res.status(403);
         throw new Error('Not authorized to access this expense');
@@ -130,7 +130,7 @@ export const updateExpense = asyncHandler(async (req: AuthenticatedRequest, res:
         throw new Error('Expense not found');
     }
 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
+    // Fix: Role casing matches AuthenticatedUser (now from IUser)
     if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
         res.status(403);
         throw new Error('Not authorized to update this expense');
@@ -167,7 +167,7 @@ export const deleteExpense = asyncHandler(async (req: AuthenticatedRequest, res:
         throw new Error('Expense not found');
     }
 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
+    // Fix: Role casing matches AuthenticatedUser (now from IUser)
     if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
         res.status(403);
         throw new Error('Not authorized to delete this expense');
