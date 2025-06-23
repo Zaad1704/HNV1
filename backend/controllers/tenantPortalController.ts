@@ -1,14 +1,14 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import Payment from '../models/Payment';
 import User from '../models/User';
 import Lease from '../models/Lease';
-import Invoice from '../models/Invoice'; // NEW IMPORT: Invoice model
-import { startOfMonth } from 'date-fns'; // NEW IMPORT: for date comparison
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import Invoice from '../models/Invoice';
+import { startOfMonth } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || req.user.role !== 'Tenant') {
         return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
     }
@@ -37,22 +37,21 @@ export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Res
             .sort({ paymentDate: -1 })
             .limit(10);
             
-        // NEW: Fetch Real Upcoming Dues/Outstanding Invoices
         const today = new Date();
         const currentMonthStart = startOfMonth(today);
 
         const outstandingInvoice = await Invoice.findOne({
             tenantId: tenantInfo._id,
-            status: 'pending', // Only pending invoices are "due"
-            dueDate: { $gte: currentMonthStart }, // Due date is today or in the future
-        }).sort({ dueDate: 1 }); // Get the soonest due invoice
+            status: 'pending',
+            dueDate: { $gte: currentMonthStart },
+        }).sort({ dueDate: 1 });
 
         const upcomingDues = outstandingInvoice ? {
-            invoiceId: outstandingInvoice._id, // Pass invoice ID
-            invoiceNumber: outstandingInvoice.invoiceNumber, // Pass invoice number
+            invoiceId: outstandingInvoice._id,
+            invoiceNumber: outstandingInvoice.invoiceNumber,
             totalAmount: outstandingInvoice.amount,
             lineItems: outstandingInvoice.lineItems,
-            dueDate: outstandingInvoice.dueDate.toISOString().split('T')[0], // YYYY-MM-DD
+            dueDate: outstandingInvoice.dueDate.toISOString().split('T')[0],
         } : undefined;
 
         const dashboardData = {
@@ -72,7 +71,7 @@ export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Res
                 leaseEndDate: tenantInfo.leaseEndDate,
             },
             paymentHistory,
-            upcomingDues, // Now this will be a real invoice or undefined
+            upcomingDues,
         };
 
         res.status(200).json({ success: true, data: dashboardData });
