@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const getTenants = async (req: Request, res: Response) => {
+export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -17,7 +18,7 @@ export const getTenants = async (req: Request, res: Response) => {
   }
 };
 
-export const createTenant = async (req: Request, res: Response) => {
+export const createTenant = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -46,7 +47,7 @@ export const createTenant = async (req: Request, res: Response) => {
   }
 };
 
-export const getTenantById = async (req: Request, res: Response) => {
+export const getTenantById = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -63,7 +64,7 @@ export const getTenantById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateTenant = async (req: Request, res: Response) => {
+export const updateTenant = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -112,7 +113,7 @@ export const updateTenant = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteTenant = async (req: Request, res: Response) => {
+export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
