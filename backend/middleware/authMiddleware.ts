@@ -1,10 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
-import { Document } from 'mongoose';
+import { Document } from 'mongoose'; // Import Document from mongoose
 
+// AuthenticatedRequest now extends the globally augmented Express.Request
 export interface AuthenticatedRequest extends Request {
-  user?: (IUser & Document<any, any, any>) | null;
+  // The 'user' property is already defined in the global Express namespace
+  // so we don't need to redefine it here. If you need it for clarity,
+  // ensure it matches the global definition.
+  // user?: (IUser & Document<any, any, any>) | null; // This line can often be removed.
 }
 
 export const protect = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -16,7 +20,10 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
         throw new Error('JWT_SECRET not defined');
       }
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Correctly fetch and type the user document
       req.user = (await User.findById(decoded.id).select('-password')) as (IUser & Document<any, any, any>) | null;
+
       if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
       }
