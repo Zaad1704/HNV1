@@ -6,7 +6,7 @@ import Tenant from '../models/Tenant';
 import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
-import { Types } from 'mongoose'; // Import Types for ObjectId
+import { Types } from 'mongoose'; 
 
 const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
@@ -58,7 +58,7 @@ export const getReminders = asyncHandler(async (req: AuthenticatedRequest, res: 
     throw new Error('User not authorized');
   }
 
-  // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
+  // Fix: Role casing matches AuthenticatedUser (now from IUser)
   const query = (req.user.role === 'Super Admin' || !req.user.organizationId) ? {} : { organizationId: req.user.organizationId };
 
   const reminders = await Reminder.find(query)
