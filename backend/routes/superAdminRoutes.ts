@@ -1,5 +1,6 @@
 // backend/routes/superAdminRoutes.ts
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler';
 import { 
     getDashboardStats, 
     getAllOrganizations,
@@ -13,7 +14,6 @@ import {
     getAllMaintenanceRequests,
     getPlatformGrowth,
     getPlanDistribution,
-    // NEW IMPORTS for A.1 and A.2
     updateOrganizationSubscription, 
     toggleSelfDeletion 
 } from '../controllers/superAdminController';
@@ -23,27 +23,25 @@ import { authorize } from '../middleware/rbac';
 const router = Router();
 router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
-router.get('/dashboard-stats', getDashboardStats);
+router.get('/dashboard-stats', asyncHandler(getDashboardStats));
 
-router.get('/platform-growth', getPlatformGrowth);
-router.get('/plan-distribution', getPlanDistribution);
+router.get('/platform-growth', asyncHandler(getPlatformGrowth));
+router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 
-router.get('/organizations', getAllOrganizations);
-router.put('/organizations/:id/status', updateSubscriptionStatus);
-router.put('/organizations/:id/grant-lifetime', grantLifetimeAccess);
-router.put('/organizations/:id/revoke-lifetime', revokeLifetimeAccess);
+router.get('/organizations', asyncHandler(getAllOrganizations));
+router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
+router.put('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
+router.put('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
 
-// NEW ROUTE for A.1: Update an organization's subscription plan/status
-router.put('/organizations/:orgId/subscription', updateOrganizationSubscription); 
-// NEW ROUTE for A.2: Toggle self-service deletion
-router.put('/organizations/:orgId/toggle-self-deletion', toggleSelfDeletion); 
+router.put('/organizations/:orgId/subscription', asyncHandler(updateOrganizationSubscription)); 
+router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelfDeletion)); 
 
-router.get('/users', getAllUsers);
-router.put('/users/:userId/manage', updateUserByAdmin);
+router.get('/users', asyncHandler(getAllUsers));
+router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
 
-router.get('/moderators', getModerators);
-router.get('/billing', getGlobalBilling);
+router.get('/moderators', asyncHandler(getModerators));
+router.get('/billing', asyncHandler(getGlobalBilling));
 
-router.get('/all-maintenance-requests', getAllMaintenanceRequests);
+router.get('/all-maintenance-requests', asyncHandler(getAllMaintenanceRequests));
 
 export default router;
