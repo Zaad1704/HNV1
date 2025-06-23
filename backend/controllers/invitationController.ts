@@ -4,7 +4,6 @@ import User from '../models/User';
 import Property from '../models/Property';
 import emailService from '../services/emailService';
 import { addDays } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 // inviteUser, getInvitationDetails, acceptInvitation functions remain the same...
 export const inviteUser = async (req: AuthenticatedRequest, res: Response) => { 
