@@ -19,9 +19,10 @@ export interface IProperty extends Document {
   location?: ILocation;
   numberOfUnits: number;
   organizationId: mongoose.Types.ObjectId;
-  createdBy: mongoose.Types.ObjectId; // This will always be the Landlord
-  managedByAgentId?: mongoose.Types.ObjectId; // NEW: The assigned Agent/Manager
+  createdBy: mongoose.Types.ObjectId;
+  managedByAgentId?: mongoose.Types.ObjectId;
   status: 'Active' | 'Inactive' | 'Under Renovation';
+  imageUrl?: string; // <-- ADD THIS NEW FIELD
   createdAt: Date;
 }
 
@@ -63,7 +64,7 @@ const PropertySchema: Schema<IProperty> = new Schema({
     ref: 'User',
     required: true,
   },
-  managedByAgentId: { // NEW SCHEMA FIELD
+  managedByAgentId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
   },
@@ -72,13 +73,14 @@ const PropertySchema: Schema<IProperty> = new Schema({
     enum: ['Active', 'Inactive', 'Under Renovation'],
     default: 'Active',
   },
+  imageUrl: { type: String }, // <-- ADD THIS NEW FIELD TO THE SCHEMA
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-// ... (keep existing PropertySchema.pre middleware)
+// pre-save middleware remains unchanged...
 PropertySchema.pre<IProperty>('save', async function(next) {
     this.location = {
         type: 'Point',
