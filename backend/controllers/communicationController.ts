@@ -1,12 +1,13 @@
 // backend/controllers/communicationController.ts
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 import User from '../models/User';
 import Property from '../models/Property';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const sendCustomEmail = async (req: Request, res: Response) => {
+export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
     const sender = req.user;
 
@@ -42,7 +43,7 @@ export const sendCustomEmail = async (req: Request, res: Response) => {
     }
 };
 
-export const sendRentReminder = async (req: Request, res: Response) => {
+export const sendRentReminder = async (req: AuthenticatedRequest, res: Response) => {
     const { tenantId } = req.body;
     const sender = req.user;
 
