@@ -1,16 +1,10 @@
-// backend/controllers/reminderController.ts
-// FIX: Added 'Request' to the import from express.
 import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import Reminder, { IReminder } from '../models/Reminder';
 import Tenant from '../models/Tenant';
 import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 import { Types } from 'mongoose'; 
-
-// ... (rest of the file remains the same)
-// The processOverdueReminders function will now work because 'Request' is correctly typed.
 
 const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
@@ -22,7 +16,7 @@ const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency
   }
 };
 
-export const createReminder = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const createReminder = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized or not part of an organization');
@@ -56,7 +50,7 @@ export const createReminder = asyncHandler(async (req: AuthenticatedRequest, res
   res.status(201).json({ success: true, data: reminder });
 });
 
-export const getReminders = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getReminders = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401);
     throw new Error('User not authorized');
@@ -72,7 +66,7 @@ export const getReminders = asyncHandler(async (req: AuthenticatedRequest, res: 
   res.status(200).json({ success: true, data: reminders });
 });
 
-export const updateReminder = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const updateReminder = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized or not part of an organization');
@@ -96,7 +90,7 @@ export const updateReminder = asyncHandler(async (req: AuthenticatedRequest, res
   res.status(200).json({ success: true, data: reminder });
 });
 
-export const deleteReminder = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const deleteReminder = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized or not part of an organization');
