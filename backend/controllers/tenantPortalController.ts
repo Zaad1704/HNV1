@@ -9,7 +9,7 @@ import { startOfMonth } from 'date-fns';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => { 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
+    // Fix: Role casing matches AuthenticatedUser (now from IUser)
     if (!req.user || req.user.role !== 'Tenant') {
         return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
     }
