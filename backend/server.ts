@@ -43,7 +43,7 @@ import communicationRoutes from './routes/communicationRoutes';
 import cashFlowRoutes from './routes/cashFlowRoutes'; 
 import reminderRoutes from './routes/reminderRoutes'; 
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
-
+import editRequestRoutes from './routes/editRequestRoutes'; // <-- 1. IMPORT THE NEW ROUTES
 
 dotenv.config();
 
@@ -94,7 +94,6 @@ app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-
 // Session and Passport Middleware
 if (!process.env.SESSION_SECRET) {
     console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
@@ -113,7 +112,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Use helmet for general security headers, but remove the CSP middleware
 app.use(helmet());
 
 
@@ -147,6 +145,7 @@ app.use('/api/tenant-portal', tenantPortalRoutes);
 app.use('/api/communication', communicationRoutes); 
 app.use('/api/cashflow', cashFlowRoutes); 
 app.use('/api/reminders', reminderRoutes); 
+app.use('/api/edit-requests', editRequestRoutes); // <-- 2. USE THE NEW ROUTES
 
 
 app.get('/', (req: Request, res: Response) => {
