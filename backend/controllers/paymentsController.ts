@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+
 
 export const getPayments = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
