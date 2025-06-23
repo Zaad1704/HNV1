@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
 import notificationService from '../services/notificationService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 /**
  * @desc    Agent creates a request to edit a resource
