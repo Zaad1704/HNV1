@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler'; // Import asyncHandler
+
 import {
   getProperties,
   createProperty,
@@ -11,17 +13,17 @@ import upload from '../middleware/uploadMiddleware'; // Import upload middleware
 
 const router = Router();
 
-router.use(protect);
+router.use(protect); // This applies protect middleware to all routes below
 
 router.route('/')
-  .get(getProperties)
+  .get(asyncHandler(getProperties)) 
   // Use upload.single('image') to handle one file with the field name 'image'
-  .post(upload.single('image'), createProperty);
+  .post(upload.single('image'), asyncHandler(createProperty)); 
 
 router.route('/:id')
-  .get(getPropertyById)
+  .get(asyncHandler(getPropertyById)) 
   // Also apply the middleware to the update route
-  .put(upload.single('image'), updateProperty)
-  .delete(deleteProperty);
+  .put(upload.single('image'), asyncHandler(updateProperty)) 
+  .delete(asyncHandler(deleteProperty)); 
 
 export default router;
