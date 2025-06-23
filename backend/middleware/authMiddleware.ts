@@ -1,13 +1,10 @@
-// backend/middleware/authMiddleware.ts
-
-import { Request, Response, NextFunction } from "express"; // Standard imports
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User"; 
-
-// The custom 'AuthenticatedRequest' interface is no longer needed.
+import { Document } from "mongoose";
 
 export const protect = async (
-  req: Request, // Use the standard Express Request type
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -23,28 +20,35 @@ export const protect = async (
       }
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
 
-      // TypeScript now knows 'user' can be on 'req' due to the .d.ts file
-      req.user = await User.findById(decoded.id).select("-password");
+      // FIX: Safely cast the found user to the expected type for req.user
+      const foundUser = await User.findById(decoded.id).select("-password");
+      req.user = foundUser as (IUser & Document<any, any, any>) | null;
 
       if (!req.user) {
-        res.status(401).json({ success: false, message: "Not authorized, user not found" });
-        return;
+        return res
+          .status(401)
+          .json({ success: false, message: "Not authorized, user not found" });
       }
       if (req.user.status === "suspended" || req.user.status === "pending") {
-        res.status(401).json({ success: false, message: "User account is not active." });
-        return;
+        return res
+          .status(401)
+          .json({ success: false, message: "User account is not active." });
       }
-      next();
+      return next();
     } catch (error) {
-      res.status(401).json({ success: false, message: "Not authorized, token failed" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not authorized, token failed" });
     }
-  } else {
-    res.status(401).json({ success: false, message: "Not authorized, no token" });
   }
+  return res
+    .status(401)
+    .json({ success: false, message: "Not authorized, no token" });
 };
 
+// ... (authorize function remains the same)
 export const authorize = (...roles: IUser["role"][]) => {
-  return (req: Request, res: Response, next: NextFunction) => { // Use the standard Request type
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       res.status(403).json({
         success: false,
