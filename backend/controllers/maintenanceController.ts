@@ -3,7 +3,6 @@
 import { Response, NextFunction } from 'express';
 import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
 import Property from '../models/Property';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import auditService from '../services/auditService';
 import mongoose, { Types } from 'mongoose';
 
