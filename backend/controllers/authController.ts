@@ -1,161 +1,103 @@
-import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
-import jwt from 'jsonwebtoken';
+// backend/controllers/authController.ts
+
+import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
-import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
+import Subscription from '../models/Subscription';
+import emailService from '../services/emailService';
+import auditService from '../services/auditService';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { IUser } from '../models/User';
+import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
 
-// --- Functions like registerUser, loginUser, and getMe remain unchanged ---
+const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
+    const token = user.getSignedJwtToken();
+    res.status(statusCode).json({ success: true, token });
+};
 
-export const registerUser = asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, password, role } = req.body;
-
+export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password || !role) {
+      return res.status(400).json({ success: false, message: 'Please provide name, email, password, and role' });
+  }
+  try {
     const userExists = await User.findOne({ email });
     if (userExists) {
-        res.status(400);
-        throw new Error('User already exists');
+      return res.status(400).json({ success: false, message: 'User with that email already exists' });
     }
-
-    let organization;
-    if (role === 'Landlord') {
-        organization = new Organization({ name: `${name}'s Organization` });
-        await organization.save();
-
-        const defaultPlan = await Plan.findOne({ name: 'Free Trial' });
-        if (!defaultPlan) {
-            res.status(500);
-            throw new Error('Default plan not found. Please create default plans.');
-        }
-
-        const trialExpiresAt = new Date();
-        trialExpiresAt.setDate(trialExpiresAt.getDate() + 14);
-
-        const subscription = new Subscription({
-            organizationId: organization._id,
-            planId: defaultPlan._id,
-            status: 'trialing',
-            trialExpiresAt,
-            currentPeriodEndsAt: trialExpiresAt,
-        });
-        await subscription.save();
-
-        organization.subscription = subscription._id;
-        await organization.save();
+    const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+    if (!trialPlan) {
+        return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
-
-    const user = await User.create({
-        name,
-        email,
-        password,
-        role,
-        organizationId: organization ? organization._id : undefined,
+    const organization = new Organization({ name: `${name}'s Organization`, members: [] });
+    const user = new User({ name, email, password, role, organizationId: organization._id });
+    organization.owner = user._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
+    organization.members.push(user._id as Types.ObjectId); // FIX: Use Types.ObjectId for casting
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 7);
+    const subscription = new Subscription({
+        organizationId: organization._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        planId: trialPlan._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        status: 'trialing',
+        trialExpiresAt: trialEndDate,
     });
-
-    if (user) {
-        const token = user.getSignedJwtToken();
-        res.status(201).json({
-            success: true,
-            token,
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                organizationId: user.organizationId,
-            },
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
+    organization.subscription = subscription._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
+    await organization.save();
+    await user.save();
+    await subscription.save();
+    // FIX: Use Types.ObjectId for casting before .toString() and ensure 4 arguments for auditService
+    auditService.recordAction(
+        user._id as Types.ObjectId,
+        organization._id as Types.ObjectId,
+        'USER_REGISTER',
+        { registeredUserId: (user._id as Types.ObjectId).toString() } // Pass empty object for details if none
+    );
+    try {
+        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
+    } catch (emailError) {
+        console.error("Failed to send welcome email:", emailError);
     }
-});
+    sendTokenResponse(user, 201, res);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
 
-export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email }).select('+password').populate({
-        path: 'organizationId',
-        populate: {
-            path: 'subscription',
-            populate: { path: 'planId', model: 'Plan' }
-        }
-    });
-
-    if (user && user.password && (await user.matchPassword(password))) {
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '30d' });
-        let redirectStatus = 'active';
-        let message = 'Login successful';
-        const userOrg = user.organizationId as any;
-
-        if (user.status && user.status !== 'active') {
-            redirectStatus = 'account_inactive';
-            message = `Your account is ${user.status}.`;
-        } else if (userOrg && user.role !== 'Super Admin' && userOrg.subscription) {
-            const subscription = userOrg.subscription as any;
-            if (subscription.status !== 'active' && !subscription.isLifetime) {
-                redirectStatus = 'subscription_inactive';
-                message = 'Organization subscription is inactive.';
-            }
-        }
-
-        const userObject = user.toObject();
-        delete userObject.password;
-
-        res.json({
-            success: true,
-            token,
-            user: userObject,
-            userStatus: redirectStatus,
-            message
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
-    }
-});
-
-export const getMe = asyncHandler(async (req: Request, res: Response) => {
-    const user = await User.findById(req.user!._id).select('-password').populate({
-        path: 'organizationId',
-        populate: {
-            path: 'subscription',
-            populate: { path: 'planId', model: 'Plan' }
-        }
-    });
-
-    if (user) {
-        res.json({ success: true, user: user.toObject() });
-    } else {
-        res.status(404);
-        throw new Error('User not found');
-    }
-});
-
-/**
- * @desc    Handles the callback from Google OAuth service.
- * @route   GET /api/auth/google/callback
- * @access  Public
- */
-export const googleAuthCallback = (req: Request, res: Response) => {
-    // The user object is attached to the request by the Passport strategy after successful authentication.
-    const user = req.user as any;
-
+    if (!email || !password) return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
-        // This is a fallback; Passport's failureRedirect should typically handle this.
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-
-    // Generate a JWT for the authenticated user.
-    // The `getSignedJwtToken` method is defined on your User model.
-    const token = user.getSignedJwtToken();
-
-    if (!token) {
-        // Handle the unlikely case that token generation fails.
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=token-generation-failed`);
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+    // FIX: Use Types.ObjectId for casting and ensure 4 arguments for auditService
+    auditService.recordAction(
+        user._id as Types.ObjectId,
+        user.organizationId as Types.ObjectId,
+        'USER_LOGIN',
+        {} // Pass empty object for details
+    );
+    sendTokenResponse(user, 200, res);
+};
 
-    // Redirect to the frontend's dedicated callback handler page.
-    // This page will read the token from the URL, store it, and complete the login flow.
-    // See frontend/src/pages/GoogleAuthCallback.tsx for the client-side implementation.
-    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+export const getMe = async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const user = await User.findById(req.user.id).populate({
+        path: 'organizationId',
+        select: 'name status subscription',
+        populate: {
+            path: 'subscription',
+            model: 'Subscription',
+            select: 'planId status trialExpiresAt currentPeriodEndsAt'
+        }
+    });
+    res.status(200).json({ success: true, data: user });
 };
