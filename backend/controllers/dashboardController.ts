@@ -5,7 +5,6 @@ import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import AuditLog from '../models/AuditLog';
-// Ensure all required date-fns functions are imported
 import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMonths, addYears } from 'date-fns';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
@@ -45,11 +44,10 @@ export const getLateTenants = asyncHandler(async (req: AuthenticatedRequest, res
     }
     const { organizationId } = req.user;
     
-    // Find tenants with 'Late' status for this organization
     const lateTenants = await Tenant.find({ organizationId, status: 'Late' })
-        .populate('propertyId', 'name unit') // Populate property name
-        .select('name email unit propertyId') // Select only necessary fields
-        .limit(5); // Limit to a few for the dashboard widget
+        .populate('propertyId', 'name unit') 
+        .select('name email unit propertyId') 
+        .limit(5); 
 
     res.status(200).json({ success: true, data: lateTenants });
 });
@@ -61,16 +59,16 @@ export const getExpiringLeases = asyncHandler(async (req: AuthenticatedRequest, 
     const { organizationId } = req.user;
 
     const today = new Date();
-    const threeMonthsFromNow = addMonths(today, 3); // Leases expiring in the next 3 months
+    const threeMonthsFromNow = addMonths(today, 3); 
 
     const expiringLeases = await Tenant.find({ 
         organizationId, 
         leaseEndDate: { $gte: today, $lte: threeMonthsFromNow },
-        status: 'Active' // Only active leases
+        status: 'Active' 
     })
     .populate('propertyId', 'name unit')
     .select('name email unit leaseEndDate propertyId')
-    .sort({ leaseEndDate: 1 }) // Sort by soonest expiry
+    .sort({ leaseEndDate: 1 }) 
     .limit(5);
 
     res.status(200).json({ success: true, data: expiringLeases });
@@ -82,11 +80,9 @@ export const getFinancialSummary = asyncHandler(async (req: AuthenticatedRequest
     }
     const { organizationId } = req.user;
 
-    const sixMonthsAgo = subMonths(new Date(), 5); // Start from 6 months ago to include current month
-
+    const sixMonthsAgo = subMonths(new Date(), 5); 
     const monthlyData: { name: string; Revenue: number; Expenses: number; }[] = [];
 
-    // Loop through the last 6 months
     for (let i = 0; i < 6; i++) {
         const monthStart = startOfMonth(addMonths(sixMonthsAgo, i));
         const monthEnd = endOfMonth(monthStart);
