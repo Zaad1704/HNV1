@@ -1,9 +1,7 @@
-// backend/controllers/translationController.ts
 import { Request, Response } from 'express';
 import translationService from '../services/translationService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const translateContent = async (req: AuthenticatedRequest, res: Response) => {
+export const translateContent = async (req: Request, res: Response) => {
     const { text, targetLanguage } = req.body;
 
     if (!text || !targetLanguage) {
