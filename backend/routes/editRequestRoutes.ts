@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler';
 import {
     createEditRequest,
     getEditRequests,
@@ -14,13 +15,13 @@ const router = Router();
 router.use(protect);
 
 // Agent creates a request
-router.post('/', authorize(['Agent']), createEditRequest);
+router.post('/', authorize(['Agent']), asyncHandler(createEditRequest));
 
 // Landlord gets a list of their pending requests
-router.get('/', authorize(['Landlord']), getEditRequests);
+router.get('/', authorize(['Landlord']), asyncHandler(getEditRequests));
 
 // Landlord approves or rejects a specific request
-router.put('/:id/approve', authorize(['Landlord']), approveEditRequest);
-router.put('/:id/reject', authorize(['Landlord']), rejectEditRequest);
+router.put('/:id/approve', authorize(['Landlord']), asyncHandler(approveEditRequest));
+router.put('/:id/reject', authorize(['Landlord']), asyncHandler(rejectEditRequest));
 
 export default router;
