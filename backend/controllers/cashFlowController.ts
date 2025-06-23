@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
 import EditRequest from '../models/EditRequest';
@@ -12,15 +12,13 @@ export const createCashFlowRecord = asyncHandler(async (req: Request, res: Respo
     }
 
     const { toUser, amount, type, transactionDate, description, status } = req.body;
-    const documentUrl = req.file ? (req.file as any).imageUrl : undefined; // Get URL from uploaded file
+    const documentUrl = req.file ? (req.file as any).imageUrl : undefined;
 
-    // Basic validation
     if (!amount || !type || !transactionDate) {
         res.status(400);
         throw new Error('Amount, type, and transaction date are required.');
     }
 
-    // Ensure only Agents can create cash flow records directly
     if (req.user.role !== 'Agent') { 
         res.status(403);
         throw new Error('Only agents can create cash flow records.');
@@ -28,8 +26,8 @@ export const createCashFlowRecord = asyncHandler(async (req: Request, res: Respo
 
     const newRecord = await CashFlow.create({
         organizationId: req.user.organizationId,
-        fromUser: req.user._id, // The user creating the record is the 'fromUser' (Agent)
-        toUser: type === 'cash_handover' ? toUser : undefined, // Only set toUser if it's a handover
+        fromUser: req.user._id,
+        toUser: type === 'cash_handover' ? toUser : undefined,
         amount: Number(amount),
         type,
         status,
@@ -42,7 +40,7 @@ export const createCashFlowRecord = asyncHandler(async (req: Request, res: Respo
     res.status(201).json({ success: true, data: newRecord });
 });
 
-export const getCashFlowRecords = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
+export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => { 
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
@@ -57,12 +55,7 @@ export const getCashFlowRecords = asyncHandler(async (req: AuthenticatedRequest,
     res.status(200).json({ success: true, data: records });
 });
 
-/**
- * @desc    Update a cash flow record (with new permission logic)
- * @route   PUT /api/cashflow/:id
- * @access  Private
- */
-export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const updateCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
@@ -74,9 +67,7 @@ export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
         throw new Error('Cash flow record not found');
     }
 
-    // --- NEW PERMISSION LOGIC ---
     if (req.user.role === 'Agent') { 
-        // Agents cannot update directly. They need an approved request.
         const approvedRequest = await EditRequest.findOne({
             resourceId: cashFlowRecord._id,
             requester: req.user._id,
@@ -88,15 +79,12 @@ export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
             throw new Error('Permission denied. An approved edit request is required for this action.');
         }
     } else if (req.user.role !== 'Landlord') { 
-        // Block any other roles that aren't Landlord or Agent
         res.status(403);
         throw new Error('You do not have permission to perform this action.');
     }
-    // If the user is a Landlord, they can proceed without a request.
 
     const updatedRecord = await CashFlow.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-    // After a successful update by an Agent, we can remove the EditRequest
     if (req.user.role === 'Agent') {
         await EditRequest.deleteMany({ resourceId: cashFlowRecord._id });
     }
@@ -104,13 +92,7 @@ export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
     res.status(200).json({ success: true, data: updatedRecord });
 });
 
-
-/**
- * @desc    Delete a cash flow record (with new permission logic)
- * @route   DELETE /api/cashflow/:id
- * @access  Private
- */
-export const deleteCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const deleteCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
@@ -122,7 +104,6 @@ export const deleteCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
         throw new Error('Cash flow record not found');
     }
 
-    // --- NEW PERMISSION LOGIC ---
     if (req.user.role === 'Agent') { 
         const approvedRequest = await EditRequest.findOne({
             resourceId: cashFlowRecord._id,
