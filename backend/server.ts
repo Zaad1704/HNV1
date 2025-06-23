@@ -66,7 +66,7 @@ connectDB();
 // and the Render-provided URL. This is the most robust solution.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com', 
+  'https://hnv-1-frontend.onrender.com', 
   'https://www.hnvpm.com',
   'https://hnvpm.com'
 ];
