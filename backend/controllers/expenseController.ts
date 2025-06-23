@@ -1,83 +1,176 @@
-import { Response } from 'express';
-import { google } from 'googleapis';
-import path from 'path';
-import { Readable } from 'stream';
+import { Request, Response } from 'express';
+import asyncHandler from 'express-async-handler';
+import Expense from '../models/Expense';
+import Property from '../models/Property';
+import { IUser } from '../models/User';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-// --- Google Drive API Setup (no changes here) ---
-let auth;
-try {
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON || '{}');
-    auth = new google.auth.GoogleAuth({
-        credentials: {
-            client_email: credentials.client_email,
-            private_key: credentials.private_key,
-        },
-        scopes: ['https://www.googleapis.com/auth/drive'],
+/**
+ * @desc    Get all expenses for an organization, with optional filters
+ * @route   GET /api/expenses
+ * @access  Private
+ */
+export const getExpenses = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+  if (!req.user || !req.user.organizationId) {
+    res.status(401);
+    throw new Error('User not authorized');
+  }
+  
+  const { propertyId, agentId, startDate, endDate } = req.query;
+  const query: any = { organizationId: req.user.organizationId };
+
+  if (propertyId) {
+    query.propertyId = propertyId;
+  }
+  if (agentId) {
+    query.paidToAgentId = agentId;
+  }
+  if (startDate && endDate) {
+    query.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
+  }
+
+  const expenses = await Expense.find(query)
+    .populate('propertyId', 'name')
+    .populate('paidToAgentId', 'name')
+    .sort({ date: -1 });
+
+  res.status(200).json({ success: true, data: expenses });
+});
+
+/**
+ * @desc    Create a new expense record
+ * @route   POST /api/expenses
+ * @access  Private
+ */
+export const createExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+  if (!req.user || !req.user.organizationId) {
+    res.status(401);
+    throw new Error('User not authorized or not part of an organization');
+  }
+
+  const { description, amount, category, date, propertyId, paidToAgentId } = req.body;
+
+  if (!description || !amount || !category || !date || !propertyId) {
+    res.status(400);
+    throw new Error('Please provide all required fields: description, amount, category, date, propertyId');
+  }
+  
+  const property = await Property.findById(propertyId);
+  if (!property || !property.organizationId.equals(req.user.organizationId)) {
+    res.status(403);
+    throw new Error('You do not have permission to assign expenses to this property.');
+  }
+
+  if (category === 'Salary' && paidToAgentId) {
+    // FIX: Safely access managedAgentIds and compare ObjectIds
+    const isManaged = req.user.managedAgentIds?.some(id => id.equals(paidToAgentId));
+    if (!isManaged) {
+        res.status(403);
+        throw new Error('You can only pay salaries to agents you manage.');
+    }
+  }
+
+  const newExpense = await Expense.create({
+    description,
+    amount: Number(amount),
+    category,
+    date,
+    propertyId,
+    paidToAgentId: paidToAgentId || null,
+    organizationId: req.user.organizationId,
+    // The documentUrl is now handled by the upload middleware and attached to req.file
+    documentUrl: req.file ? (req.file as any).imageUrl : undefined
+  });
+
+  res.status(201).json({ success: true, data: newExpense });
+});
+
+/**
+ * @desc    Get a single expense by its ID
+ * @route   GET /api/expenses/:id
+ * @access  Private
+ */
+export const getExpenseById = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
+    }
+
+    if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
+        res.status(403);
+        throw new Error('Not authorized to access this expense');
+    }
+
+    res.status(200).json({ success: true, data: expense });
+});
+
+/**
+ * @desc    Update an existing expense
+ * @route   PUT /api/expenses/:id
+ * @access  Private
+ */
+export const updateExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
+    }
+
+    const expense = await Expense.findById(req.params.id);
+    
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
+    }
+
+    if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
+        res.status(403);
+        throw new Error('Not authorized to update this expense');
+    }
+    
+    const updates = { ...req.body };
+    if (req.file) {
+        updates.documentUrl = (req.file as any).imageUrl;
+    }
+
+    const updatedExpense = await Expense.findByIdAndUpdate(req.params.id, updates, {
+        new: true,
+        runValidators: true
     });
-} catch (e) {
-    console.error("FATAL ERROR: Failed to parse Google credentials. Please check the environment variable.", e);
-    throw new Error("Google Drive credentials are not correctly configured.");
-}
 
-const drive = google.drive({ version: 'v3', auth });
-const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
+    res.status(200).json({ success: true, data: updatedExpense });
+});
 
-if (!UPLOAD_FOLDER_ID) {
-    console.error("FATAL ERROR: GOOGLE_DRIVE_UPLOAD_FOLDER_ID environment variable is not defined.");
-    throw new Error("Google Drive upload folder ID is not configured.");
-}
-
-export const uploadImage = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
-    if (!req.file || !req.file.buffer) {
-        return res.status(400).json({ success: false, message: 'No file uploaded.' });
+/**
+ * @desc    Delete an expense
+ * @route   DELETE /api/expenses/:id
+ * @access  Private
+ */
+export const deleteExpense = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+    if (!req.user) {
+        res.status(401);
+        throw new Error('User not authorized');
     }
 
-    try {
-        const file = req.file;
-        const bufferStream = new Readable();
-        bufferStream.push(file.buffer);
-        bufferStream.push(null);
-
-        const uniqueFilename = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 15)}${path.extname(file.originalname)}`;
-
-        const response = await drive.files.create({
-            requestBody: {
-                name: uniqueFilename,
-                parents: [UPLOAD_FOLDER_ID],
-                mimeType: file.mimetype,
-            },
-            media: {
-                mimeType: file.mimetype,
-                body: bufferStream,
-            },
-            fields: 'id',
-        });
-
-        const fileId = response.data.id;
-
-        if (!fileId) {
-            return res.status(500).json({ success: false, message: 'Failed to get file ID from Google Drive.' });
-        }
-
-        await drive.permissions.create({
-            fileId: fileId,
-            requestBody: {
-                role: 'reader',
-                type: 'anyone',
-            },
-        });
-
-        const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-
-        res.status(200).json({
-            success: true,
-            message: 'File uploaded successfully to Google Drive.',
-            imageUrl: thumbnailUrl
-        });
-
-    } catch (error: any) {
-        console.error('Error uploading file to Google Drive:', error);
-        res.status(500).json({ success: false, message: 'Failed to upload file to Google Drive.' });
+    const expense = await Expense.findById(req.params.id);
+    
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
     }
-};
+
+    if (req.user.role !== 'Super Admin' && (!req.user.organizationId || !expense.organizationId.equals(req.user.organizationId))) {
+        res.status(403);
+        throw new Error('Not authorized to delete this expense');
+    }
+
+    await expense.deleteOne();
+
+    res.status(200).json({ success: true, data: {} });
+});
