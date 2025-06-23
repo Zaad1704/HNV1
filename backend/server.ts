@@ -4,160 +4,104 @@ import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import path from 'path';
-import passport from 'passport';
-import session from 'express-session';
-import helmet from 'helmet'; 
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
+import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
 
-import './config/passport-setup';
-
-// Route imports
+// --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import auditRoutes from './routes/auditRoutes';
-import setupRoutes from './routes/setupRoutes';
+import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
+import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
+import setupRoutes from './routes/setupRoutes'; // FIX: Corrected import path from './routes/setup' to './routes/setupRoutes'
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
-import billingRoutes from './routes/billingRoutes';
-import siteSettingsRoutes from './routes/siteSettingsRoutes';
-import passwordResetRoutes from './routes/passwordResetRoutes';
-import translationRoutes from './routes/translationRoutes';
-import invitationRoutes from './routes/invitationRoutes';
-import sharingRoutes from './routes/sharingRoutes';
-import expenseRoutes from './routes/expenseRoutes';
-import maintenanceRoutes from './routes/maintenanceRoutes';
-import localizationRoutes from './routes/localizationRoutes';
-import dashboardRoutes from './routes/dashboardRoutes';
-import uploadRoutes from './routes/uploadRoutes';
-import notificationRoutes from './routes/notificationRoutes'; 
-import orgRoutes from './routes/orgRoutes'; 
-import invoiceRoutes from './routes/invoiceRoutes'; 
-import receiptRoutes from './routes/receiptRoutes'; 
-import communicationRoutes from './routes/communicationRoutes'; 
-import cashFlowRoutes from './routes/cashFlowRoutes'; 
-import reminderRoutes from './routes/reminderRoutes'; 
-import tenantPortalRoutes from './routes/tenantPortalRoutes';
-import editRequestRoutes from './routes/editRequestRoutes'; // <-- 1. IMPORT THE NEW ROUTES
+import maintenanceRoutes from './routes/maintenanceRoutes'; // FIX: Import the new maintenanceRoutes
+
 
 dotenv.config();
 
 const app: Express = express();
 
-const connectDB = async (): Promise<void> => {
+const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is not defined');
+        throw new Error('MONGO_URI is not defined in the environment variables.');
     }
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected...');
   } catch (err: unknown) {
     if (err instanceof Error) {
-      console.error(err.message);
+        console.error(err.message);
+    } else {
+        console.error('An unknown error occurred during database connection.');
     }
     process.exit(1);
   }
 };
 connectDB();
 
-// CORS Configuration
 const allowedOrigins: string[] = [
-  process.env.CORS_ORIGIN || '',
   'http://localhost:3000',
-  'https://hnv-saas-frontend.onrender.com' 
-].filter(Boolean);
+  'https://hnv-1-frontend.onrender.com' // FIX: This MUST be your frontend's exact URL
+];
 
 const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); 
-    if (allowedOrigins.includes(origin)) {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error(`Not allowed by CORS: ${origin}`));
+      callback(new Error('Not allowed by CORS'));
     }
-  },
-  credentials: true,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type,Authorization,X-Org-Id',
+  }
 };
-
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
-app.use(cookieParser());
-app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'))); 
-app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Session and Passport Middleware
-if (!process.env.SESSION_SECRET) {
-    console.error("FATAL ERROR: SESSION_SECRET is not defined in .env file.");
-}
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'supersecretkeyforlocaldev', 
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        secure: process.env.NODE_ENV === 'production', 
-        httpOnly: true, 
-        sameSite: 'lax', 
-    }
+app.use(express.json());
+
+// FIX: Configure Helmet's Content Security Policy
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      connectSrc: [
+        "'self'",
+        "https://hnv-1-frontend.onrender.com", // Allow connections from the actual frontend domain
+        "https://hnv.onrender.com", // Allow connections to the actual backend domain
+        "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
+        "https://ipinfo.io" // For localizationController to fetch IP info
+      ],
+    },
+  },
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
 
-app.use(helmet());
-
-
-// API Routes
+// --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/audit', auditRoutes);
-app.use('/api/setup', setupRoutes);
+app.use('/api/setup', setupRoutes); // FIX: Mount the route with the corrected import name
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
-app.use('/api/billing', billingRoutes);
-app.use('/api/site-settings', siteSettingsRoutes);
-app.use('/api/translate', translationRoutes);
-app.use('/api/invitations', invitationRoutes);
-app.use('/api/share', sharingRoutes);
-app.use('/api/password-reset', passwordResetRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/localization', localizationRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/notifications', notificationRoutes); 
-app.use('/api/orgs', orgRoutes); 
-app.use('/api/invoices', invoiceRoutes); 
-app.use('/api/receipts', receiptRoutes); 
-app.use('/api/tenant-portal', tenantPortalRoutes);
-app.use('/api/communication', communicationRoutes); 
-app.use('/api/cashflow', cashFlowRoutes); 
-app.use('/api/reminders', reminderRoutes); 
-app.use('/api/edit-requests', editRequestRoutes); // <-- 2. USE THE NEW ROUTES
+app.use('/api/maintenance', maintenanceRoutes); // FIX: Mount the new maintenanceRoutes
 
 
+// A simple health-check route
 app.get('/', (req: Request, res: Response) => {
-  res.send('HNV SaaS API is running');
+  res.send('HNV SaaS API is running successfully!');
 });
 
-// Global Error Handler
-import { errorHandler } from './middleware/errorHandler';
-app.use(errorHandler);
-
-
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT: string | number = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
 export default app;
