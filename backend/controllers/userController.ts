@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
-import Organization from '../models/Organization'; // Import Organization model
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import Organization from '../models/Organization';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 // @desc    Get all users (Super Admin only)
 const getUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -64,7 +64,8 @@ const getManagedAgents = asyncHandler(async (req: AuthenticatedRequest, res: Res
         res.status(403);
         throw new Error('User is not a Landlord');
     }
-    const agents = await User.find({ '_id': { $in: req.user.managedAgentIds } });
+    // FIX: Access managedAgentIds safely and cast to string for comparison
+    const agents = await User.find({ '_id': { $in: req.user.managedAgentIds || [] } }); // Ensure managedAgentIds is an array
     res.status(200).json({ success: true, data: agents });
 });
 
@@ -118,8 +119,7 @@ const requestAccountDeletion = asyncHandler(async (req: AuthenticatedRequest, re
         throw new Error('Organization not found');
     }
 
-    // Check if self-deletion is allowed by an admin
-    if (organization.allowSelfDeletion === false) { // Explicitly check for false
+    if (organization.allowSelfDeletion === false) {
         res.status(403);
         throw new Error('Self-service account deletion has been disabled by the platform administrator. Please contact support.');
     }
@@ -144,5 +144,5 @@ export {
     getOrgUsers, 
     getManagedAgents,
     updatePassword,
-    requestAccountDeletion // Export the new function
+    requestAccountDeletion
 };
