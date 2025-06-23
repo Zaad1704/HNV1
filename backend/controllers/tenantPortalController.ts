@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import Payment from '../models/Payment';
@@ -6,8 +6,9 @@ import User from '../models/User';
 import Lease from '../models/Lease';
 import Invoice from '../models/Invoice'; // NEW IMPORT: Invoice model
 import { startOfMonth } from 'date-fns'; // NEW IMPORT: for date comparison
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const getTenantDashboardData = async (req: Request, res: Response) => {
+export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || req.user.role !== 'Tenant') {
         return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
     }
