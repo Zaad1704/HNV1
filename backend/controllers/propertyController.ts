@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
 import mongoose from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const createProperty = async (req: Request, res: Response) => {
+export const createProperty = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
   if (!user || !user.organizationId) {
     return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -32,7 +33,7 @@ export const createProperty = async (req: Request, res: Response) => {
   }
 };
 
-export const getProperties = async (req: Request, res: Response) => {
+export const getProperties = async (req: AuthenticatedRequest, res: Response) => {
     // This function remains the same
     const user = req.user;
     if (!user || !user.organizationId) {
@@ -46,7 +47,7 @@ export const getProperties = async (req: Request, res: Response) => {
     }
 };
 
-export const getPropertyById = async (req: Request, res: Response) => {
+export const getPropertyById = async (req: AuthenticatedRequest, res: Response) => {
     // This function remains the same
     const user = req.user;
     if (!user || !user.organizationId) {
@@ -66,7 +67,7 @@ export const getPropertyById = async (req: Request, res: Response) => {
     }
 };
 
-export const updateProperty = async (req: Request, res: Response) => {
+export const updateProperty = async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user;
   if (!user || !user.organizationId) {
     return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -99,7 +100,7 @@ export const updateProperty = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProperty = async (req: Request, res: Response) => {
+export const deleteProperty = async (req: AuthenticatedRequest, res: Response) => {
     // This function remains the same for now, but could be enhanced
     // to also delete the image from cloud storage.
     const user = req.user;
