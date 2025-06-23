@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 /**
  * @desc    Get all expenses for an organization, with optional filters
@@ -61,8 +61,9 @@ export const createExpense = asyncHandler(async (req: AuthenticatedRequest, res:
     throw new Error('You do not have permission to assign expenses to this property.');
   }
 
+  // FIX: Access managedAgentIds safely
   if (category === 'Salary' && paidToAgentId) {
-    const isManaged = req.user.managedAgentIds?.some(id => id.equals(paidToAgentId));
+    const isManaged = req.user.managedAgentIds?.some(id => id.toString() === paidToAgentId); // Access and compare as strings
     if (!isManaged) {
         res.status(403);
         throw new Error('You can only pay salaries to agents you manage.');
@@ -77,7 +78,6 @@ export const createExpense = asyncHandler(async (req: AuthenticatedRequest, res:
     propertyId,
     paidToAgentId: paidToAgentId || null,
     organizationId: req.user.organizationId,
-    // The documentUrl is now handled by the upload middleware and attached to req.file
     documentUrl: req.file ? (req.file as any).imageUrl : undefined
   });
 
