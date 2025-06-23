@@ -1,3 +1,5 @@
+// frontend/src/App.tsx
+
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
@@ -11,6 +13,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Pages
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const GoogleAuthCallback = React.lazy(() => import('./pages/GoogleAuthCallback')); // Import the callback page
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 const FullScreenLoader = () => (
@@ -37,7 +40,9 @@ function App() {
       setSessionLoading(false);
     };
     checkUserSession();
-  }, [token]);
+    // FIX: Change dependency array to [] to run only on initial mount.
+    // This eliminates the race condition after login.
+  }, []);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
@@ -51,6 +56,9 @@ function App() {
         </Route>
         
         <Route path="/login" element={<LoginPage />} />
+        
+        {/* FIX: Add the missing route for the Google Auth callback */}
+        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
 
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route path="*" element={<DashboardLayout />} />
