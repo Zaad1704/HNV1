@@ -1,13 +1,13 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import AuditLog from '../models/AuditLog';
-import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMonths, addYears } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMonths as addMonthsDateFns, addYears } from 'date-fns';
 
-export const getOverviewStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getOverviewStats = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) { 
         throw new Error('User not authorized');
     }
@@ -37,7 +37,7 @@ export const getOverviewStats = asyncHandler(async (req: AuthenticatedRequest, r
     });
 });
 
-export const getLateTenants = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getLateTenants = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
@@ -51,14 +51,14 @@ export const getLateTenants = asyncHandler(async (req: AuthenticatedRequest, res
     res.status(200).json({ success: true, data: lateTenants });
 });
 
-export const getExpiringLeases = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getExpiringLeases = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
     const { organizationId } = req.user;
 
     const today = new Date();
-    const threeMonthsFromNow = addMonths(today, 3); 
+    const threeMonthsFromNow = addMonthsDateFns(today, 3); 
 
     const expiringLeases = await Tenant.find({ 
         organizationId, 
@@ -73,7 +73,7 @@ export const getExpiringLeases = asyncHandler(async (req: AuthenticatedRequest, 
     res.status(200).json({ success: true, data: expiringLeases });
 });
 
-export const getFinancialSummary = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getFinancialSummary = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
@@ -83,7 +83,7 @@ export const getFinancialSummary = asyncHandler(async (req: AuthenticatedRequest
     const monthlyData: { name: string; Revenue: number; Expenses: number; }[] = [];
 
     for (let i = 0; i < 6; i++) {
-        const monthStart = startOfMonth(addMonths(sixMonthsAgo, i));
+        const monthStart = startOfMonth(addMonthsDateFns(sixMonthsAgo, i));
         const monthEnd = endOfMonth(monthStart);
         const monthName = format(monthStart, 'MMM');
 
@@ -114,7 +114,7 @@ export const getFinancialSummary = asyncHandler(async (req: AuthenticatedRequest
     res.status(200).json({ success: true, data: monthlyData });
 });
 
-export const getOccupancySummary = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getOccupancySummary = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
@@ -124,7 +124,7 @@ export const getOccupancySummary = asyncHandler(async (req: AuthenticatedRequest
     const monthlyData: { name: string; 'New Tenants': number; }[] = [];
 
     for (let i = 0; i < 6; i++) {
-        const monthStart = startOfMonth(addMonths(sixMonthsAgo, i));
+        const monthStart = startOfMonth(addMonthsDateFns(sixMonthsAgo, i));
         const monthEnd = endOfMonth(monthStart);
         const monthName = format(monthStart, 'MMM');
 
@@ -143,7 +143,7 @@ export const getOccupancySummary = asyncHandler(async (req: AuthenticatedRequest
 });
 
 
-export const getRentStatus = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getRentStatus = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
@@ -160,7 +160,7 @@ export const getRentStatus = asyncHandler(async (req: AuthenticatedRequest, res:
     res.status(200).json({ success: true, data });
 });
 
-export const getRecentActivity = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+export const getRecentActivity = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
     }
