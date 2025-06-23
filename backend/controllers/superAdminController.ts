@@ -1,14 +1,14 @@
 // backend/controllers/superAdminController.ts
 
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Plan from '../models/Plan';
-import { addMonths, addYears, addWeeks, addDays } from 'date-fns'; // Import date-fns utilities
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 export const getDashboardStats = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
@@ -64,10 +64,9 @@ export const revokeLifetimeAccess = asyncHandler(async (req: AuthenticatedReques
     res.status(200).json({ success: true, message: 'Lifetime access revoked.', data: subscription });
 });
 
-// NEW FUNCTION for A.1: Update an organization's subscription plan and status
 export const updateOrganizationSubscription = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const { orgId } = req.params; // Org ID from URL
-    const { planId, status } = req.body; // New plan ID and desired status
+    const { orgId } = req.params;
+    const { planId, status } = req.body;
 
     const organization = await Organization.findById(orgId);
     if (!organization) {
@@ -84,7 +83,6 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Authentic
     let subscription = await Subscription.findOne({ organizationId: orgId });
     let currentPeriodEndsAt: Date | undefined;
 
-    // Calculate currentPeriodEndsAt based on plan duration if setting to active/trialing
     if (status === 'active' || status === 'trialing') {
         const now = new Date();
         switch (plan.duration) {
@@ -101,34 +99,28 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Authentic
                 currentPeriodEndsAt = addYears(now, 1);
                 break;
             default:
-                currentPeriodEndsAt = undefined; // Or handle as an error if duration is critical
+                currentPeriodEndsAt = undefined;
         }
     } else {
-        currentPeriodEndsAt = undefined; // Clear if setting to inactive/canceled
+        currentPeriodEndsAt = undefined;
     }
 
     const subscriptionData: any = {
         planId: plan._id,
         status: status,
-        isLifetime: false, // Assume not lifetime unless explicitly set by grantLifetimeAccess
+        isLifetime: false,
         currentPeriodEndsAt: currentPeriodEndsAt,
-        // trialExpiresAt might need to be set if status is 'trialing' but not current context
-        // For simplicity, we assume 'trialing' means trialExpiresAt is also set, which might be handled elsewhere or explicitly added here.
-        // For now, if status is 'trialing', we set trialExpiresAt to currentPeriodEndsAt.
         trialExpiresAt: status === 'trialing' ? currentPeriodEndsAt : undefined,
     };
 
     if (subscription) {
-        // Update existing subscription
         Object.assign(subscription, subscriptionData);
         await subscription.save();
     } else {
-        // Create new subscription if none exists
         subscription = await Subscription.create({
             organizationId: orgId,
             ...subscriptionData
         });
-        // Link the new subscription to the organization
         organization.subscription = subscription._id;
         await organization.save();
     }
@@ -136,10 +128,9 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Authentic
     res.status(200).json({ success: true, message: 'Organization subscription updated.', data: subscription });
 });
 
-// NEW FUNCTION for A.2: Toggle an organization's self-service data deletion setting
 export const toggleSelfDeletion = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { orgId } = req.params;
-    const { enable } = req.body; // 'enable' is a boolean
+    const { enable } = req.body;
 
     const organization = await Organization.findByIdAndUpdate(
         orgId,
