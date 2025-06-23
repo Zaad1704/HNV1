@@ -1,20 +1,21 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
 import EditRequest from '../models/EditRequest'; // Import the new model
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 // The createCashFlowRecord and getCashFlowRecords functions remain the same
-export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { /* ... */ });
-export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => { /* ... */ });
+export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { /* ... */ });
+export const getCashFlowRecords = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { /* ... */ });
 
 /**
  * @desc    Update a cash flow record (with new permission logic)
  * @route   PUT /api/cashflow/:id
  * @access  Private
  */
-export const updateCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
+export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
@@ -62,7 +63,7 @@ export const updateCashFlowRecord = asyncHandler(async (req: Request, res: Respo
  * @route   DELETE /api/cashflow/:id
  * @access  Private
  */
-export const deleteCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
+export const deleteCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
