@@ -1,22 +1,21 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const createProperty = async (req: AuthenticatedRequest, res: Response) => {
+export const createProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   const user = req.user;
   if (!user || !user.organizationId) {
     return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
   }
 
   try {
-    // Get the image URL from the request file if it was uploaded
     const imageUrl = req.file ? (req.file as any).imageUrl : undefined;
 
     const property = await Property.create({
       ...req.body,
-      imageUrl: imageUrl, // Save the image URL
+      imageUrl: imageUrl,
       organizationId: user.organizationId,
       createdBy: user._id
     });
@@ -33,8 +32,7 @@ export const createProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const getProperties = async (req: AuthenticatedRequest, res: Response) => {
-    // This function remains the same
+export const getProperties = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     const user = req.user;
     if (!user || !user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -47,8 +45,7 @@ export const getProperties = async (req: AuthenticatedRequest, res: Response) =>
     }
 };
 
-export const getPropertyById = async (req: AuthenticatedRequest, res: Response) => {
-    // This function remains the same
+export const getPropertyById = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     const user = req.user;
     if (!user || !user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -67,7 +64,7 @@ export const getPropertyById = async (req: AuthenticatedRequest, res: Response) 
     }
 };
 
-export const updateProperty = async (req: AuthenticatedRequest, res: Response) => {
+export const updateProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   const user = req.user;
   if (!user || !user.organizationId) {
     return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -84,7 +81,6 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
     }
 
     const updates = { ...req.body };
-    // If a new file is uploaded, add its URL to the updates
     if (req.file) {
         updates.imageUrl = (req.file as any).imageUrl;
     }
@@ -100,9 +96,7 @@ export const updateProperty = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
-export const deleteProperty = async (req: AuthenticatedRequest, res: Response) => {
-    // This function remains the same for now, but could be enhanced
-    // to also delete the image from cloud storage.
+export const deleteProperty = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     const user = req.user;
     if (!user || !user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
