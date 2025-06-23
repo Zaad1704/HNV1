@@ -7,10 +7,10 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // FIX: Changed '=>' to 'from'
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 import { IUser } from '../models/User';
-import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
-import passport from 'passport'; // FIX: Import passport for googleAuthCallback
+import mongoose, { Types } from 'mongoose'; 
+import passport from 'passport'; 
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
@@ -33,26 +33,27 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
     const organization = new Organization({ name: `${name}'s Organization`, members: [] });
     const user = new User({ name, email, password, role, organizationId: organization._id });
-    organization.owner = user._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
-    organization.members.push(user._id as Types.ObjectId); // FIX: Use Types.ObjectId for casting
+    organization.owner = user._id as Types.ObjectId; 
+    organization.members.push(user._id as Types.ObjectId); 
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
-        organizationId: organization._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
-        planId: trialPlan._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        organizationId: organization._id as Types.ObjectId, 
+        planId: trialPlan._id as Types.ObjectId, 
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
-    organization.subscription = subscription._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
+    organization.subscription = subscription._id as Types.ObjectId; 
     await organization.save();
     await user.save();
     await subscription.save();
-    // FIX: Use Types.ObjectId for casting before .toString() and ensure 4 arguments for auditService
+    
+    // Fix TS2554: Ensure 4 arguments for auditService.recordAction
     auditService.recordAction(
         user._id as Types.ObjectId,
         organization._id as Types.ObjectId,
         'USER_REGISTER',
-        { registeredUserId: (user._id as Types.ObjectId).toString() } // Pass empty object for details if none
+        { registeredUserId: (user._id as Types.ObjectId).toString() } 
     );
     try {
         await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
@@ -77,12 +78,12 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    // FIX: Use Types.ObjectId for casting and ensure 4 arguments for auditService
+    // Fix TS2554: Ensure 4 arguments for auditService.recordAction
     auditService.recordAction(
         user._id as Types.ObjectId,
         user.organizationId as Types.ObjectId,
         'USER_LOGIN',
-        {} // Pass empty object for details
+        {} // Pass an empty object for details if no specific details are needed
     );
     sendTokenResponse(user, 200, res);
 };
@@ -91,7 +92,8 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }
-    const user = await User.findById(req.user.id).populate({
+    // Use req.user._id directly as it is already typed and available
+    const user = await User.findById(req.user._id).populate({
         path: 'organizationId',
         select: 'name status subscription',
         populate: {
@@ -103,7 +105,6 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
     res.status(200).json({ success: true, data: user });
 };
 
-// FIX: Placeholder for Google OAuth callback as requested by routes/authRoutes.ts
 export const googleAuthCallback = (req: Request, res: Response) => {
   // This function will be called after Google authenticates the user.
   // The actual user data would be available in req.user from Passport.
