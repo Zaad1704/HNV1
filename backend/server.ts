@@ -64,8 +64,8 @@ connectDB();
 // Your Render frontend URL is likely 'https://hnv-1-frontend.onrender.com' based on previous files.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com'
-  'https://www.hnvpm.com'
+  'https://hnv-1-frontend.onrender.com',
+  'https://www.hnvpm.com',
   'https://hnvpm.com'
 ];
 
