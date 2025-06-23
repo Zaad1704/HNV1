@@ -1,172 +1,82 @@
+// frontend/src/App.tsx
+
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
-import './services/i18n.js';
 import axios from 'axios';
 
-// --- Layout & Route Components ---
-import PublicLayout from './components/layout/PublicLayout';
-import DashboardLayout from './components/layout/DashboardLayout';
-import AdminLayout from './components/layout/AdminLayout';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute';
-
-// --- Page Components ---
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import PaymentSuccessPage from './pages/PaymentSuccessPage';
-import PaymentCancelPage from './pages/PaymentCancelPage';
-import PaymentSummaryPage from './pages/PaymentSummaryPage';
-import GoogleAuthCallback from './pages/GoogleAuthCallback';
-import AcceptInvitePage from './pages/AcceptInvitePage';
-import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import FeaturesPage from './pages/FeaturesPage';
-import ResubscribePage from './pages/ResubscribePage';
-
-// Dashboard Pages
-import OverviewPage from './pages/OverviewPage';
-import PropertiesPage from './pages/PropertiesPage';
-import PropertyDetailsPage from './pages/PropertyDetailsPage';
-import TenantsPage from './pages/TenantsPage';
-import TenantProfilePage from './pages/TenantProfilePage';
-import ExpensesPage from './pages/ExpensesPage';
-import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
-import UsersPage from './pages/UsersPage';
-import BillingPage from './pages/BillingPage';
-import SettingsPage from './pages/SettingsPage';
-import AuditLogPage from './pages/AuditLogPage';
-import OrganizationPage from './pages/OrganizationPage';
-import TenantDashboardPage from './pages/TenantDashboardPage';
-import CashFlowPage from './pages/CashFlowPage'; 
-import TenantStatementPage from './pages/TenantStatementPage'; 
-import RemindersPage from './pages/RemindersPage'; 
-import ApprovalRequestsPage from './pages/ApprovalRequestsPage'; // <-- 1. Import the new page
-
-// Admin Pages
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AdminPlansPage from './pages/AdminPlansPage';
-import AdminBillingPage from './pages/AdminBillingPage';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
-import AdminMaintenancePage from './pages/AdminMaintenancePage';
-import AdminDataManagementPage from './pages/AdminDataManagementPage';
-import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
-
-import NotFound from './pages/NotFound';
-import { LangProvider } from './contexts/LanguageContext';
+// --- Import Layouts, Routes, and Pages ---
+// ... (all your existing imports)
 
 const FullScreenLoader = () => <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text"><p>Loading Platform...</p></div>;
 
-function App() {
-  const { token, user, setUser, logout } = useAuthStore();
-  const [isSessionLoading, setSessionLoading] = useState(true);
+// A new component to handle the logic after authentication
+function AuthHandler() {
+    const { user, token, setUser, logout } = useAuthStore();
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      if (token && !user) {
-        try {
-          const response = await apiClient.get('/auth/me');
-          setUser(response.data.user);
-        } catch (error) {
-          if (axios.isAxiosError(error) && error.response) {
-            console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
-          } else {
-            console.error("Non-Axios error during session check. Logging out.", error);
-            logout();
-          }
+    useEffect(() => {
+        // This effect runs whenever the token changes.
+        const checkUserSession = async () => {
+            if (token && !user) {
+                try {
+                    const response = await apiClient.get('/auth/me');
+                    setUser(response.data.data); // Correctly access the user object
+                } catch (error) {
+                    console.error("Session check failed, logging out.", error);
+                    logout();
+                    navigate('/login', { replace: true });
+                }
+            }
+        };
+
+        checkUserSession();
+    }, [token, user, setUser, logout, navigate]);
+
+    // This effect runs when the user object is successfully set
+    useEffect(() => {
+        if (user) {
+            // Once we have a user, navigate to the dashboard
+            navigate('/dashboard', { replace: true });
         }
-      }
-      setSessionLoading(false);
-    };
-    checkUserSession();
-  }, [token, user, setUser, logout]);
+    }, [user, navigate]);
 
-  if (isSessionLoading) {
-    return <FullScreenLoader />;
-  }
+    return null; // This component doesn't render anything itself
+}
 
+function App() {
+  // We no longer need the complex useEffect here, it's moved to AuthHandler
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Router>
-        <LangProvider> 
-          <Routes>
-            {/* Public Routes */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy" element={<PrivacyPolicyPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/features" element={<FeaturesPage />} />
-              <Route path="/contact" element={<ContactPage />} />
+        {/* AuthHandler will manage session state globally */}
+        <AuthHandler />
+        <Routes>
+          {/* Public Routes */}
+          <Route element={<PublicLayout />}>
+            {/* ... all your public routes ... */}
+          </Route>
 
-              <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
-              <Route path="/payment-success" element={<PaymentSuccessPage />} />
-              <Route path="/payment-cancel" element={<PaymentCancelPage />} />
-            </Route>
+          {/* Authentication Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          {/* ... other auth routes ... */}
 
-            {/* Authentication Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-            <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-            <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
-            <Route path="/resubscribe" element={<ResubscribePage />} />
-
-            {/* Protected Routes - Dashboard */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardLayout />}>
-                <Route index element={<OverviewPage />} /> 
-                <Route path="overview" element={<OverviewPage />} />
-                <Route path="properties" element={<PropertiesPage />} />
-                <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
-                <Route path="tenants" element={<TenantsPage />} />
-                <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
-                <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
-                <Route path="expenses" element={<ExpensesPage />} />
-                <Route path="maintenance" element={<MaintenanceRequestsPage />} />
-                <Route path="cashflow" element={<CashFlowPage />} /> 
-                <Route path="reminders" element={<RemindersPage />} />
-                <Route path="approvals" element={<ApprovalRequestsPage />} /> {/* <-- 2. Add the new route */}
-                <Route path="users" element={<UsersPage />} />
-                <Route path="billing" element={<BillingPage />} />
-                <Route path="audit-log" element={<AuditLogPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="organization" element={<OrganizationPage />} />
-                <Route path="tenant" element={<TenantDashboardPage />} />
-              </Route>
-            </Route>
-
-            {/* Admin Protected Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboardPage />} />
-                  <Route path="dashboard" element={<AdminDashboardPage />} />
-                  <Route path="organizations" element={<AdminOrganizationsPage />} />
-                  <Route path="users" element={<AdminUsersPage />} />
-                  <Route path="moderators" element={<AdminModeratorsPage />} />
-                  <Route path="plans" element={<AdminPlansPage />} />
-                  <Route path="site-editor" element={<SiteEditorPage />} />
-                  <Route path="billing" element={<AdminBillingPage />} />
-                  <Route path="maintenance" element={<AdminMaintenancePage />} />
-                  <Route path="data-management" element={<AdminDataManagementPage />} />
-              </Route>
-            </Route>
-
-            {/* Fallback for any unmatched routes */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </LangProvider>
+          {/* Protected Routes - Dashboard */}
+          <Route path="/dashboard/*" element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }>
+             {/* All nested dashboard routes go here now */}
+             <Route path="overview" element={<OverviewPage />} />
+             <Route path="properties" element={<PropertiesPage />} />
+             {/* ... and so on for all dashboard pages */}
+          </Route>
+          
+          {/* ... Admin Routes and NotFound Route ... */}
+        </Routes>
       </Router>
     </Suspense>
   );
