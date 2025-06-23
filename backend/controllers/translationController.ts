@@ -1,12 +1,14 @@
+// backend/controllers/translationController.ts
 import { Request, Response } from 'express';
 import translationService from '../services/translationService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const translateContent = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const translateContent = async (req: AuthenticatedRequest, res: Response) => {
     const { text, targetLanguage } = req.body;
 
     if (!text || !targetLanguage) {
-        return res.status(400).json({ success: false, message: 'Text and targetLanguage are required.' });
+        res.status(400).json({ success: false, message: 'Text and targetLanguage are required.' });
+        return;
     }
 
     try {
