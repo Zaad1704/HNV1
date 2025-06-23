@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import asyncHandler from 'express-async-handler'; 
 import {
     registerUser,
     loginUser,
@@ -12,9 +13,9 @@ import { registerSchema } from "../validators/userValidator";
 
 const router = Router();
 
-router.post('/register', validate(registerSchema), registerUser);
-router.post('/login', loginUser);
-router.get('/me', protect, getMe);
+router.post('/register', validate(registerSchema), asyncHandler(registerUser));
+router.post('/login', asyncHandler(loginUser));
+router.get('/me', protect, asyncHandler(getMe));
 
 // Google OAuth
 router.get(
@@ -28,7 +29,7 @@ router.get(
         failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
         session: false
     }),
-    googleAuthCallback
+    asyncHandler(googleAuthCallback) 
 );
 
 export default router;
