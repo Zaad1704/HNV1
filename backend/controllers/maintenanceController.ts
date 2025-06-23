@@ -1,11 +1,11 @@
 // backend/controllers/maintenanceController.ts
 
 import { Response, NextFunction } from 'express';
-import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest'; // Import the new model
-import Property from '../models/Property'; // To validate propertyId
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // For req.user // Re-import AuthenticatedRequest
-import auditService from '../services/auditService'; // For audit logging
-import mongoose, { Types } from 'mongoose'; // FIX: Import Types for ObjectId casting
+import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
+import Property from '../models/Property';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import auditService from '../services/auditService';
+import mongoose, { Types } from 'mongoose';
 
 // @desc    Create a new maintenance request
 // @route   POST /api/maintenance
@@ -37,7 +37,7 @@ export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: R
       description,
       status: status || 'Open', // Default to 'Open' if not provided
       priority: priority || 'Medium', // Default to 'Medium'
-      reportedBy: req.user._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+      requestedBy: req.user._id as Types.ObjectId, // FIX: Use requestedBy to match model interface
       category,
       notes,
       assignedTo: assignedTo ? (assignedTo as Types.ObjectId) : undefined, // Cast if provided
@@ -69,7 +69,7 @@ export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: 
 
     const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId })
       .populate('propertyId', 'name address') // Populate property details
-      .populate('reportedBy', 'name email') // Populate reporter details
+      .populate('requestedBy', 'name email') // Populate reporter details
       .populate('assignedTo', 'name email') // Populate assignee details
       .populate('tenantId', 'name email') // Populate tenant details
       .sort({ createdAt: -1 }); // Latest requests first
@@ -93,7 +93,7 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
 
     const request = await MaintenanceRequest.findById(req.params.id)
       .populate('propertyId', 'name address')
-      .populate('reportedBy', 'name email')
+      .populate('requestedBy', 'name email') // Correctly populate 'requestedBy'
       .populate('assignedTo', 'name email')
       .populate('tenantId', 'name email');
 
@@ -106,8 +106,8 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
       return res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
     }
 
-    // FIX: Safely access reportedBy's _id for comparison
-    if (req.user.role === 'Tenant' && (request.reportedBy as any)?._id?.toString() !== req.user._id.toString()) {
+    // Correctly access 'requestedBy'
+    if (req.user.role === 'Tenant' && (request.requestedBy as any)?._id?.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
     }
 
