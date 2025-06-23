@@ -1,5 +1,3 @@
-// frontend/src/App.tsx
-
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
@@ -17,12 +15,51 @@ import AdminRoute from './components/AdminRoute';
 // --- Page Components ---
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-// ... other page imports
-import TenantStatementPage from './pages/TenantStatementPage'; 
-import TenantProfilePage from './pages/TenantProfilePage'; // <-- Import the new page
-import RemindersPage from './pages/RemindersPage'; 
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentCancelPage from './pages/PaymentCancelPage';
+import PaymentSummaryPage from './pages/PaymentSummaryPage';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import AcceptInvitePage from './pages/AcceptInvitePage';
+import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import FeaturesPage from './pages/FeaturesPage';
+import ResubscribePage from './pages/ResubscribePage';
 
-// ... other page imports
+// Dashboard Pages
+import OverviewPage from './pages/OverviewPage';
+import PropertiesPage from './pages/PropertiesPage';
+import PropertyDetailsPage from './pages/PropertyDetailsPage';
+import TenantsPage from './pages/TenantsPage';
+import TenantProfilePage from './pages/TenantProfilePage';
+import ExpensesPage from './pages/ExpensesPage';
+import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
+import UsersPage from './pages/UsersPage';
+import BillingPage from './pages/BillingPage';
+import SettingsPage from './pages/SettingsPage';
+import AuditLogPage from './pages/AuditLogPage';
+import OrganizationPage from './pages/OrganizationPage';
+import TenantDashboardPage from './pages/TenantDashboardPage';
+import CashFlowPage from './pages/CashFlowPage'; 
+import TenantStatementPage from './pages/TenantStatementPage'; 
+import RemindersPage from './pages/RemindersPage'; 
+import ApprovalRequestsPage from './pages/ApprovalRequestsPage'; // <-- 1. Import the new page
+
+// Admin Pages
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminPlansPage from './pages/AdminPlansPage';
+import AdminBillingPage from './pages/AdminBillingPage';
+import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
+import AdminMaintenancePage from './pages/AdminMaintenancePage';
+import AdminDataManagementPage from './pages/AdminDataManagementPage';
+import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
 
 import NotFound from './pages/NotFound';
 import { LangProvider } from './contexts/LanguageContext';
@@ -62,7 +99,29 @@ function App() {
       <Router>
         <LangProvider> 
           <Routes>
-            {/* ... other routes (Public, Auth) */}
+            {/* Public Routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+
+              <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
+              <Route path="/payment-success" element={<PaymentSuccessPage />} />
+              <Route path="/payment-cancel" element={<PaymentCancelPage />} />
+            </Route>
+
+            {/* Authentication Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+            <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
+            <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+            <Route path="/resubscribe" element={<ResubscribePage />} />
 
             {/* Protected Routes - Dashboard */}
             <Route element={<ProtectedRoute />}>
@@ -72,13 +131,13 @@ function App() {
                 <Route path="properties" element={<PropertiesPage />} />
                 <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
                 <Route path="tenants" element={<TenantsPage />} />
-                {/* ADD THE NEW ROUTE FOR THE TENANT PROFILE PAGE */}
                 <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
                 <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
                 <Route path="expenses" element={<ExpensesPage />} />
                 <Route path="maintenance" element={<MaintenanceRequestsPage />} />
                 <Route path="cashflow" element={<CashFlowPage />} /> 
                 <Route path="reminders" element={<RemindersPage />} />
+                <Route path="approvals" element={<ApprovalRequestsPage />} /> {/* <-- 2. Add the new route */}
                 <Route path="users" element={<UsersPage />} />
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="audit-log" element={<AuditLogPage />} />
@@ -88,7 +147,23 @@ function App() {
               </Route>
             </Route>
 
-            {/* ... other routes (Admin, Fallback) */}
+            {/* Admin Protected Routes */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="dashboard" element={<AdminDashboardPage />} />
+                  <Route path="organizations" element={<AdminOrganizationsPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
+                  <Route path="moderators" element={<AdminModeratorsPage />} />
+                  <Route path="plans" element={<AdminPlansPage />} />
+                  <Route path="site-editor" element={<SiteEditorPage />} />
+                  <Route path="billing" element={<AdminBillingPage />} />
+                  <Route path="maintenance" element={<AdminMaintenancePage />} />
+                  <Route path="data-management" element={<AdminDataManagementPage />} />
+              </Route>
+            </Route>
+
+            {/* Fallback for any unmatched routes */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </LangProvider>
