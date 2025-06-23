@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User, { IUser } from '../models/User';
+import User, { IUser } from '../models/User'; // Import IUser
 
-// Re-export AuthenticatedRequest for explicit use in controllers
+// FIX: Ensure AuthenticatedRequest is exported and user property is correctly typed with IUser
 export interface AuthenticatedRequest extends Request {
   user?: IUser;
 }
@@ -16,13 +16,11 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
         throw new Error('JWT_SECRET not defined');
       }
       const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
-      // Ensure the user found matches the IUser interface if needed,
-      // and cast to ensure req.user has expected properties.
-      req.user = (await User.findById(decoded.id).select('-password')) as IUser; // Explicitly cast to IUser
-      
+      req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {
         return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
       }
+      // FIX: Check user status, as indicated by previous errors
       if (req.user.status === 'suspended' || req.user.status === 'pending') {
         return res.status(401).json({ success: false, message: 'User account is not active.' });
       }
@@ -38,6 +36,7 @@ export const protect = async (req: AuthenticatedRequest, res: Response, next: Ne
 
 export const authorize = (...roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // FIX: Ensure req.user and req.user.role are correctly accessed
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ success: false, message: `User role ${req.user?.role} is not authorized` });
     }
