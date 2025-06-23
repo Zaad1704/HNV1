@@ -1,16 +1,13 @@
-import { Request, Response, NextFunction } from "express";
+// backend/middleware/authMiddleware.ts
+
+import { Request, Response, NextFunction } from "express"; // Standard imports
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User"; 
-import { Document } from "mongoose";
 
-// FIX: Define and export the AuthenticatedRequest interface
-export interface AuthenticatedRequest extends Request {
-  user?: (IUser & Document<any, any, any>) | null;
-}
+// The custom 'AuthenticatedRequest' interface is no longer needed.
 
-// Middleware to protect routes (JWT authentication)
 export const protect = async (
-  req: AuthenticatedRequest, // Use the new interface here
+  req: Request, // Use the standard Express Request type
   res: Response,
   next: NextFunction
 ) => {
@@ -26,33 +23,28 @@ export const protect = async (
       }
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
 
+      // TypeScript now knows 'user' can be on 'req' due to the .d.ts file
       req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Not authorized, user not found" });
+        res.status(401).json({ success: false, message: "Not authorized, user not found" });
+        return;
       }
       if (req.user.status === "suspended" || req.user.status === "pending") {
-        return res
-          .status(401)
-          .json({ success: false, message: "User account is not active." });
+        res.status(401).json({ success: false, message: "User account is not active." });
+        return;
       }
-      return next();
+      next();
     } catch (error) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Not authorized, token failed" });
+      res.status(401).json({ success: false, message: "Not authorized, token failed" });
     }
+  } else {
+    res.status(401).json({ success: false, message: "Not authorized, no token" });
   }
-  return res
-    .status(401)
-    .json({ success: false, message: "Not authorized, no token" });
 };
 
-// Middleware to authorize based on user role
 export const authorize = (...roles: IUser["role"][]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => { // Use the new interface here
+  return (req: Request, res: Response, next: NextFunction) => { // Use the standard Request type
     if (!req.user || !roles.includes(req.user.role)) {
       res.status(403).json({
         success: false,
