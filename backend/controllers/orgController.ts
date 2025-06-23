@@ -4,7 +4,7 @@ import Organization, { IOrganization } from '../models/Organization';
 import User from '../models/User';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+
 
 export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
