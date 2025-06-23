@@ -1,10 +1,11 @@
+// backend/controllers/reminderController.ts
 import { Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import Reminder, { IReminder } from '../models/Reminder';
 import Tenant from '../models/Tenant';
 import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
@@ -108,7 +109,7 @@ export const deleteReminder = asyncHandler(async (req: AuthenticatedRequest, res
   res.status(200).json({ success: true, message: 'Reminder deleted.' });
 });
 
-export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => {
+export const processOverdueReminders = asyncHandler(async (req: Request, res: Response) => { // This one uses Request as it's an internal process, not directly tied to a logged-in user in typical middleware
   const now = new Date();
   const overdueReminders = await Reminder.find({
     nextRunDate: { $lte: now },
