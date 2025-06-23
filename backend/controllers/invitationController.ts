@@ -1,18 +1,19 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import AgentInvitation from '../models/AgentInvitation';
 import User from '../models/User';
 import Property from '../models/Property';
 import emailService from '../services/emailService';
 import { addDays } from 'date-fns';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 // inviteUser, getInvitationDetails, acceptInvitation functions remain the same...
-export const inviteUser = async (req: Request, res: Response) => { /* ... */ };
+export const inviteUser = async (req: AuthenticatedRequest, res: Response) => { /* ... */ };
 export const getInvitationDetails = async (req: Request, res: Response) => { /* ... */ };
 export const acceptInvitation = async (req: Request, res: Response) => { /* ... */ };
 
 
 // --- NEW FUNCTION: Get all pending invitations for an organization ---
-export const getPendingInvitations = async (req: Request, res: Response) => {
+export const getPendingInvitations = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user?.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
@@ -25,7 +26,7 @@ export const getPendingInvitations = async (req: Request, res: Response) => {
 };
 
 // --- NEW FUNCTION: Revoke a pending invitation ---
-export const revokeInvitation = async (req: Request, res: Response) => {
+export const revokeInvitation = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user?.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
@@ -41,7 +42,7 @@ export const revokeInvitation = async (req: Request, res: Response) => {
 };
 
 // --- NEW FUNCTION: Resend a pending invitation ---
-export const resendInvitation = async (req: Request, res: Response) => {
+export const resendInvitation = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user?.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
