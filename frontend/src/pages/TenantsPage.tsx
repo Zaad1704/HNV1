@@ -1,3 +1,5 @@
+// frontend/src/pages/TenantsPage.tsx
+
 import React, { useState, useMemo } from 'react';
 import apiClient from '../api/client';
 import AddTenantModal from '../components/common/AddTenantModal';
@@ -20,7 +22,11 @@ export interface ITenant {
     discountExpiresAt?: string;
 }
 
-const fetchTenants = async () => { /* ... (no change) ... */ };
+// FIX: Implement the fetchTenants function to actually fetch data.
+const fetchTenants = async () => {
+    const { data } = await apiClient.get('/tenants');
+    return data.data; // The backend returns data in a 'data' property
+};
 
 // --- Edit Tenant Modal Component (with Status field) ---
 interface EditTenantModalProps {
@@ -31,6 +37,7 @@ interface EditTenantModalProps {
 }
 
 const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tenant, onTenantUpdated }) => {
+    // ... (rest of the modal component remains the same)
     const [formData, setFormData] = useState({
         name: tenant.name || '',
         email: tenant.email || '',
@@ -91,6 +98,7 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
         </div>
     );
 };
+
 
 // --- Main TenantsPage Component ---
 const TenantsPage = () => {
