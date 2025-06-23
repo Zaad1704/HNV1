@@ -1,20 +1,20 @@
-// backend/controllers/sharingController.ts
 import { Request, Response } from 'express';
 import ShareableLink from '../models/ShareableLink';
 import Expense from '../models/Expense';
 import path from 'path';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const createShareLink = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const createShareLink = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
-        const expense = await Expense.findById(req.params.expenseId); // req.params is now correctly typed
+        const expense = await Expense.findById(req.params.expenseId);
         
         if (!expense || !expense.documentUrl || expense.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(404).json({ success: false, message: 'Document not found or access denied.' });
+            res.status(404).json({ success: false, message: 'Document not found or access denied.' });
+            return;
         }
 
         const newLink = await ShareableLink.create({
@@ -40,9 +40,12 @@ export const viewSharedDocument = async (req: Request, res: Response) => {
         });
 
         if (!link) {
-            return res.status(404).send('<h1>Link is invalid or has expired</h1>');
+            res.status(404).send('<h1>Link is invalid or has expired</h1>');
+            return;
         }
 
+        // This assumes the documentUrl is a relative path to a file in /public/uploads
+        // In a real scenario with Google Drive, you would redirect to the Drive URL
         const filePath = path.join(__dirname, '..', 'public', link.documentUrl);
         
         res.sendFile(filePath, (err) => {
