@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import { useWindowSize } from '../hooks/useWindowSize';
-import { Home, MapPin, Search, Edit, Trash2 } from 'lucide-react'; // Added Edit and Trash2 icons
+import { Home, MapPin, Search, Edit, Trash2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const fetchProperties = async () => {
@@ -23,11 +23,9 @@ const PropertiesPage = () => {
         queryFn: fetchProperties,
     });
 
-    // --- NEW: Mutation for deleting a property ---
     const deleteMutation = useMutation({
         mutationFn: (propertyId: string) => apiClient.delete(`/properties/${propertyId}`),
         onSuccess: () => {
-            // Refetch the properties list to show the change
             queryClient.invalidateQueries({ queryKey: ['properties'] });
             alert('Property deleted successfully!');
         },
@@ -37,27 +35,29 @@ const PropertiesPage = () => {
     });
 
     const handleDeleteClick = (propertyId: string) => {
-        if (window.confirm("Are you sure you want to permanently delete this property and all its associated data?")) {
+        if (window.confirm("Are you sure you want to permanently delete this property?")) {
             deleteMutation.mutate(propertyId);
         }
     };
-
 
     const handlePropertyAdded = () => {
         queryClient.invalidateQueries({ queryKey: ['properties'] });
     };
     
     const filteredProperties = useMemo(() => {
-        // ... (no change to filtering logic)
         if (!searchTerm) return properties;
         return properties.filter(prop =>
             prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            prop.address.formattedAddress.toLowerCase().includes(searchTerm.toLowerCase())
+            (prop.address?.formattedAddress || '').toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [searchTerm, properties]);
 
     const getStatusClass = (status: string) => {
-        // ... (no change to status class logic)
+        switch (status) {
+            case 'Active': return 'bg-green-100 text-green-800';
+            case 'Under Renovation': return 'bg-amber-100 text-amber-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
     };
 
     const DesktopView = () => (
@@ -82,8 +82,7 @@ const PropertiesPage = () => {
                                 <td className="p-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span></td>
                                 <td className="p-4 text-right flex items-center justify-end gap-2">
                                     <button onClick={() => navigate(`/dashboard/properties/${prop._id}`)} className="font-medium text-brand-primary hover:underline p-2 rounded-md hover:bg-gray-100" title="View Details">Manage</button>
-                                    {/* Edit and Delete buttons can be added here for quick access */}
-                                    <button onClick={() => {/* Open Edit Modal */}} className="p-2 text-gray-500 hover:bg-gray-100 rounded-md" title="Edit Property"><Edit size={16} /></button>
+                                    <button onClick={() => { /* Logic to open Edit Modal here */ }} className="p-2 text-gray-500 hover:bg-gray-100 rounded-md" title="Edit Property"><Edit size={16} /></button>
                                     <button onClick={() => handleDeleteClick(prop._id)} disabled={deleteMutation.isLoading} className="p-2 text-red-600 hover:bg-red-100 rounded-md" title="Delete Property"><Trash2 size={16} /></button>
                                 </td>
                             </tr>
@@ -94,9 +93,23 @@ const PropertiesPage = () => {
         </div>
     );
 
-    // Mobile view can also be updated with Edit/Delete buttons if desired...
+    // --- FIX: Added the missing implementation for the MobileView component ---
     const MobileView = () => (
-        // ...
+        <div className="grid grid-cols-1 gap-4">
+            {filteredProperties.map((prop: any) => (
+                <div key={prop._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm" onClick={() => navigate(`/dashboard/properties/${prop._id}`)}>
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-dark-text text-lg">{prop.name}</h3>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span>
+                    </div>
+                    <p className="text-light-text text-sm flex items-center gap-2 mb-1"><MapPin size={14}/> {prop.address.formattedAddress}</p>
+                    <p className="text-light-text text-sm flex items-center gap-2 mb-1"><Home size={14}/> {prop.numberOfUnits} Units</p>
+                    <div className="flex justify-end mt-4">
+                        <span className="font-medium text-sm text-brand-primary">View Details &rarr;</span>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 
     if (isLoading) return <div className="text-center p-8">Loading properties...</div>;
