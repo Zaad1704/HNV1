@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
-// ... other imports
+import Invoice from '../models/Invoice';
+import Payment from '../models/Payment';
+import Expense from '../models/Expense'; // Import Expense model
+import Lease from '../models/Lease';
+import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
 
-// --- Helper function to convert JSON array to CSV string ---
+// Helper function to convert JSON array to CSV string
 function convertToCsv(data: any[]): string {
     if (data.length === 0) {
         return '';
@@ -19,7 +23,6 @@ function convertToCsv(data: any[]): string {
             } else if (typeof value === 'object') {
                 value = JSON.stringify(value);
             }
-            // Escape commas and quotes
             const stringValue = String(value).replace(/"/g, '""');
             return `"${stringValue}"`;
         });
@@ -28,51 +31,52 @@ function convertToCsv(data: any[]): string {
     return csvRows.join('\n');
 }
 
-
-// generateMonthlyCollectionSheet, getTenantMonthlyStatement, generateTenantProfilePdf functions remain the same...
+// All existing report controller functions remain here...
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => { /* ... */ };
 export const getTenantMonthlyStatement = async (req: Request, res: Response) => { /* ... */ };
 export const generateTenantProfilePdf = async (req: Request, res: Response) => { /* ... */ };
+export const exportTenantsAsCsv = async (req: Request, res: Response) => { /* ... */ };
 
 
-// --- NEW FUNCTION for Bulk Tenant Export ---
-export const exportTenantsAsCsv = async (req: Request, res: Response) => {
+/**
+ * @desc    Generate a CSV export of filtered expenses
+ * @route   GET /api/reports/expenses/export
+ * @access  Private
+ */
+export const exportExpensesAsCsv = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
     try {
-        const { propertyId } = req.query;
-        const query: { organizationId: any; propertyId?: any } = {
-            organizationId: req.user.organizationId
-        };
+        const { propertyId, agentId, startDate, endDate } = req.query;
+        const query: any = { organizationId: req.user.organizationId };
 
-        // If a propertyId is provided in the query, add it to the filter
-        if (propertyId) {
-            query.propertyId = propertyId;
+        if (propertyId) query.propertyId = propertyId;
+        if (agentId) query.paidToAgentId = agentId;
+        if (startDate && endDate) {
+            query.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
         }
 
-        const tenants = await Tenant.find(query)
+        const expenses = await Expense.find(query)
             .populate('propertyId', 'name')
-            .select('name email phone status unit rentAmount leaseEndDate propertyId.name -_id') // Select specific fields to export
-            .lean(); // Use .lean() for faster query performance on large datasets
+            .populate('paidToAgentId', 'name')
+            .sort({ date: -1 })
+            .lean();
 
-        // Flatten the populated property name
-        const flattenedTenants = tenants.map(t => ({
-            name: t.name,
-            email: t.email,
-            phone: t.phone,
-            status: t.status,
-            unit: t.unit,
-            rentAmount: t.rentAmount,
-            leaseEndDate: t.leaseEndDate ? new Date(t.leaseEndDate).toISOString().split('T')[0] : '',
-            property: (t.propertyId as any)?.name
+        const flattenedExpenses = expenses.map(e => ({
+            date: new Date(e.date).toISOString().split('T')[0],
+            description: e.description,
+            category: e.category,
+            amount: e.amount,
+            property: (e.propertyId as any)?.name,
+            paidToAgent: (e.paidToAgentId as any)?.name || '',
         }));
-
-        const csvData = convertToCsv(flattenedTenants);
+        
+        const csvData = convertToCsv(flattenedExpenses);
 
         res.header('Content-Type', 'text/csv');
-        res.attachment('tenants-export.csv');
+        res.attachment('expenses-export.csv');
         res.status(200).send(csvData);
 
     } catch (error) {
