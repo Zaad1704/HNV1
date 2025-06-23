@@ -17,49 +17,12 @@ import AdminRoute from './components/AdminRoute';
 // --- Page Components ---
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import PaymentSuccessPage from './pages/PaymentSuccessPage';
-import PaymentCancelPage from './pages/PaymentCancelPage';
-import PaymentSummaryPage from './pages/PaymentSummaryPage';
-import GoogleAuthCallback from './pages/GoogleAuthCallback';
-import AcceptInvitePage from './pages/AcceptInvitePage';
-import AcceptAgentInvitePage from './pages/AcceptAgentInvitePage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import FeaturesPage from './pages/FeaturesPage';
-import ResubscribePage from './pages/ResubscribePage';
-
-// Dashboard Pages
-import OverviewPage from './pages/OverviewPage';
-import PropertiesPage from './pages/PropertiesPage';
-import PropertyDetailsPage from './pages/PropertyDetailsPage';
-import TenantsPage from './pages/TenantsPage';
-import ExpensesPage from './pages/ExpensesPage';
-import MaintenanceRequestsPage from './pages/MaintenanceRequestsPage';
-import UsersPage from './pages/UsersPage';
-import BillingPage from './pages/BillingPage';
-import SettingsPage from './pages/SettingsPage';
-import AuditLogPage from './pages/AuditLogPage';
-import OrganizationPage from './pages/OrganizationPage';
-import TenantDashboardPage from './pages/TenantDashboardPage';
-import CashFlowPage from './pages/CashFlowPage'; 
+// ... other page imports
 import TenantStatementPage from './pages/TenantStatementPage'; 
+import TenantProfilePage from './pages/TenantProfilePage'; // <-- Import the new page
 import RemindersPage from './pages/RemindersPage'; 
 
-// Admin Pages
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import AdminOrganizationsPage from './pages/AdminOrganizationsPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AdminPlansPage from './pages/AdminPlansPage';
-import AdminBillingPage from './pages/AdminBillingPage';
-import SiteEditorPage from './pages/SuperAdmin/SiteEditorPage';
-import AdminMaintenancePage from './pages/AdminMaintenancePage';
-import AdminDataManagementPage from './pages/AdminDataManagementPage';
-import AdminModeratorsPage from './pages/SuperAdmin/AdminModeratorsPage';
+// ... other page imports
 
 import NotFound from './pages/NotFound';
 import { LangProvider } from './contexts/LanguageContext';
@@ -72,13 +35,11 @@ function App() {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      // If a token exists but the user object is not in the store, try to fetch user details
       if (token && !user) {
         try {
           const response = await apiClient.get('/auth/me');
           setUser(response.data.user);
         } catch (error) {
-          // If token is invalid or expired, the axios interceptor will handle logout
           if (axios.isAxiosError(error) && error.response) {
             console.error(`Session check failed with status ${error.response.status}. Interceptor handled logout.`);
           } else {
@@ -87,12 +48,11 @@ function App() {
           }
         }
       }
-      setSessionLoading(false); // Mark session loading as complete
+      setSessionLoading(false);
     };
     checkUserSession();
-  }, [token, user, setUser, logout]); // Re-run if token or user changes
+  }, [token, user, setUser, logout]);
 
-  // Display a full-screen loader while the session is being checked
   if (isSessionLoading) {
     return <FullScreenLoader />;
   }
@@ -102,32 +62,9 @@ function App() {
       <Router>
         <LangProvider> 
           <Routes>
-            {/* Public Routes */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy" element={<PrivacyPolicyPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/features" element={<FeaturesPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-
-              <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
-              <Route path="/payment-success" element={<PaymentSuccessPage />} />
-              <Route path="/payment-cancel" element={<PaymentCancelPage />} />
-            </Route>
-
-            {/* Authentication Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-            <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
-            <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
-            <Route path="/resubscribe" element={<ResubscribePage />} />
+            {/* ... other routes (Public, Auth) */}
 
             {/* Protected Routes - Dashboard */}
-            {/* These routes require the user to be authenticated */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} /> 
@@ -135,6 +72,8 @@ function App() {
                 <Route path="properties" element={<PropertiesPage />} />
                 <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
                 <Route path="tenants" element={<TenantsPage />} />
+                {/* ADD THE NEW ROUTE FOR THE TENANT PROFILE PAGE */}
+                <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
                 <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
                 <Route path="expenses" element={<ExpensesPage />} />
                 <Route path="maintenance" element={<MaintenanceRequestsPage />} />
@@ -149,24 +88,7 @@ function App() {
               </Route>
             </Route>
 
-            {/* Admin Protected Routes */}
-            {/* These routes require Super Admin or Super Moderator role */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboardPage />} />
-                  <Route path="dashboard" element={<AdminDashboardPage />} />
-                  <Route path="organizations" element={<AdminOrganizationsPage />} />
-                  <Route path="users" element={<AdminUsersPage />} />
-                  <Route path="moderators" element={<AdminModeratorsPage />} />
-                  <Route path="plans" element={<AdminPlansPage />} />
-                  <Route path="site-editor" element={<SiteEditorPage />} />
-                  <Route path="billing" element={<AdminBillingPage />} />
-                  <Route path="maintenance" element={<AdminMaintenancePage />} />
-                  <Route path="data-management" element={<AdminDataManagementPage />} />
-              </Route>
-            </Route>
-
-            {/* Fallback for any unmatched routes */}
+            {/* ... other routes (Admin, Fallback) */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </LangProvider>
