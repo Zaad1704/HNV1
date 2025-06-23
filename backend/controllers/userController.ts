@@ -1,18 +1,15 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
+import Organization from '../models/Organization'; // Import Organization model
 
 // @desc    Get all users (Super Admin only)
-// @route   GET /api/users
-// @access  Private/Admin
 const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const users = await User.find({});
   res.json(users);
 });
 
 // @desc    Get user by ID (Super Admin only)
-// @route   GET /api/users/:id
-// @access  Private/Admin
 const getUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id).select('-password');
   if (user) {
@@ -24,8 +21,6 @@ const getUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Update user (Super Admin only)
-// @route   PUT /api/users/:id
-// @access  Private/Admin
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findById(req.params.id);
     if (user) {
@@ -41,8 +36,6 @@ const updateUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Delete user (Super Admin only)
-// @route   DELETE /api/users/:id
-// @access  Private/Admin
 const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findById(req.params.id);
     if (user) {
@@ -55,8 +48,6 @@ const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Get all users within the same organization
-// @route   GET /api/users/organization
-// @access  Private (Landlord, Agent)
 const getOrgUsers = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
         res.status(401);
@@ -67,8 +58,6 @@ const getOrgUsers = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Get agents managed by the current Landlord
-// @route   GET /api/users/my-agents
-// @access  Private (Landlord)
 const getManagedAgents = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user || req.user.role !== 'Landlord') {
         res.status(403);
@@ -79,8 +68,6 @@ const getManagedAgents = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Update user password
-// @route   PUT /api/users/update-password
-// @access  Private
 const updatePassword = asyncHandler(async (req: Request, res: Response) => {
     const { currentPassword, newPassword } = req.body;
 
@@ -113,8 +100,41 @@ const updatePassword = asyncHandler(async (req: Request, res: Response) => {
     });
 });
 
+/**
+ * @desc    Allows an authenticated user to request deletion of their account and organization.
+ * @route   POST /api/users/request-deletion
+ * @access  Private
+ */
+const requestAccountDeletion = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user || !req.user.organizationId) {
+        res.status(401);
+        throw new Error('Not authorized or not part of an organization');
+    }
 
-// --- FIX: Add 'updatePassword' to the export list ---
+    const organization = await Organization.findById(req.user.organizationId);
+    if (!organization) {
+        res.status(404);
+        throw new Error('Organization not found');
+    }
+
+    // Check if self-deletion is allowed by an admin
+    if (organization.allowSelfDeletion === false) { // Explicitly check for false
+        res.status(403);
+        throw new Error('Self-service account deletion has been disabled by the platform administrator. Please contact support.');
+    }
+
+    organization.status = 'pending_deletion';
+    if (!organization.dataManagement) {
+        organization.dataManagement = {};
+    }
+    organization.dataManagement.accountDeletionRequestedAt = new Date();
+    
+    await organization.save();
+
+    res.status(200).json({ success: true, message: 'Account deletion request received. Your account will be permanently deleted after the grace period.' });
+});
+
+
 export { 
     getUsers, 
     getUser, 
@@ -122,5 +142,6 @@ export {
     deleteUser, 
     getOrgUsers, 
     getManagedAgents,
-    updatePassword 
+    updatePassword,
+    requestAccountDeletion // Export the new function
 };
