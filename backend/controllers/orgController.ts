@@ -1,12 +1,12 @@
 // backend/controllers/orgController.ts
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Organization, { IOrganization } from '../models/Organization';
 import User from '../models/User';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Response) => {
+export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
@@ -33,7 +33,7 @@ export const getOrganizationDetails = async (req: AuthenticatedRequest, res: Res
     }
 };
 
-export const listOrganizations = async (req: AuthenticatedRequest, res: Response) => {
+export const listOrganizations = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     try {
         const organizations = await Organization.find({})
             .populate('owner', 'name email')
@@ -62,7 +62,7 @@ export const listOrganizations = async (req: AuthenticatedRequest, res: Response
     }
 };
 
-export const setOrgStatus = async (req: AuthenticatedRequest, res: Response) => {
+export const setOrgStatus = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     const { orgId, status } = req.body;
     if (!orgId || !status) {
         return res.status(400).json({ success: false, message: 'Organization ID and status are required.' });
