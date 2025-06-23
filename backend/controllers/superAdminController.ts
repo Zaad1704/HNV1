@@ -1,6 +1,6 @@
 // backend/controllers/superAdminController.ts
 
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization';
@@ -8,15 +8,16 @@ import Subscription from '../models/Subscription';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Plan from '../models/Plan';
 import { addMonths, addYears, addWeeks, addDays } from 'date-fns'; // Import date-fns utilities
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getDashboardStats = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
     const totalOrgs = await Organization.countDocuments();
     const activeSubscriptions = await Subscription.countDocuments({ status: 'active' });
     res.status(200).json({ success: true, data: { totalUsers, totalOrgs, activeSubscriptions } });
 });
 
-export const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getAllOrganizations = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const organizations = await Organization.find({})
         .populate('owner', 'name email')
         .populate({
@@ -26,12 +27,12 @@ export const getAllOrganizations = asyncHandler(async (req: Request, res: Respon
     res.status(200).json({ success: true, data: organizations });
 });
 
-export const getAllUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getAllUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const users = await User.find({}).populate('organizationId', 'name');
     res.status(200).json({ success: true, data: users });
 });
 
-export const updateSubscriptionStatus = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const updateSubscriptionStatus = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { status } = req.body;
     const subscription = await Subscription.findOneAndUpdate(
         { organizationId: req.params.id },
@@ -41,7 +42,7 @@ export const updateSubscriptionStatus = asyncHandler(async (req: Request, res: R
     res.status(200).json({ success: true, data: subscription });
 });
 
-export const grantLifetimeAccess = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const grantLifetimeAccess = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const subscription = await Subscription.findOneAndUpdate(
         { organizationId: req.params.id },
         { isLifetime: true, status: 'active' },
@@ -50,7 +51,7 @@ export const grantLifetimeAccess = asyncHandler(async (req: Request, res: Respon
     res.status(200).json({ success: true, data: subscription });
 });
 
-export const revokeLifetimeAccess = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const revokeLifetimeAccess = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const subscription = await Subscription.findOneAndUpdate(
         { organizationId: req.params.id },
         { isLifetime: false, status: 'inactive' },
@@ -64,7 +65,7 @@ export const revokeLifetimeAccess = asyncHandler(async (req: Request, res: Respo
 });
 
 // NEW FUNCTION for A.1: Update an organization's subscription plan and status
-export const updateOrganizationSubscription = asyncHandler(async (req: Request, res: Response) => {
+export const updateOrganizationSubscription = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { orgId } = req.params; // Org ID from URL
     const { planId, status } = req.body; // New plan ID and desired status
 
@@ -136,7 +137,7 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Request, 
 });
 
 // NEW FUNCTION for A.2: Toggle an organization's self-service data deletion setting
-export const toggleSelfDeletion = asyncHandler(async (req: Request, res: Response) => {
+export const toggleSelfDeletion = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { orgId } = req.params;
     const { enable } = req.body; // 'enable' is a boolean
 
@@ -159,7 +160,7 @@ export const toggleSelfDeletion = asyncHandler(async (req: Request, res: Respons
 });
 
 
-export const updateUserByAdmin = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const updateUserByAdmin = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { userId } = req.params;
     const { role, status } = req.body;
 
@@ -176,19 +177,19 @@ export const updateUserByAdmin = asyncHandler(async (req: Request, res: Response
     res.status(200).json({ success: true, message: 'User updated successfully.', data: user });
 });
 
-export const getModerators = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getModerators = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const moderators = await User.find({ role: 'Super Moderator' });
     res.status(200).json({ success: true, data: moderators });
 });
 
-export const getGlobalBilling = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getGlobalBilling = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const subscriptions = await Subscription.find({})
         .populate({ path: 'organizationId', select: 'name' })
         .populate({ path: 'planId', select: 'name' });
     res.status(200).json({ success: true, data: subscriptions });
 });
 
-export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getAllMaintenanceRequests = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const requests = await MaintenanceRequest.find({})
         .populate('propertyId', 'name')
         .populate({
@@ -199,7 +200,7 @@ export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: 
     res.status(200).json({ success: true, data: requests });
 });
 
-export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformGrowth = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const mockData = [
         { name: 'Jan', 'New Users': 400, 'New Organizations': 240 },
         { name: 'Feb', 'New Users': 300, 'New Organizations': 139 },
@@ -212,7 +213,7 @@ export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response
     res.status(200).json({ success: true, data: mockData });
 });
 
-export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getPlanDistribution = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const plans = await Plan.find({ isPublic: true }).select('name');
     const mockData = plans.map((plan, index) => ({
         name: plan.name,
