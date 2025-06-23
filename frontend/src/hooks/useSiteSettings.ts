@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { ISiteSettings } from '../../../backend/models/SiteSettings'; // Assuming you can share types
-
-// If you can't share types from backend, redefine the interface here
-// export interface ISiteSettings { ... }
+// FIX: Import the type from the new local file, not from the backend directory.
+import { ISiteSettings } from '../types/siteSettings';
 
 export function useSiteSettings() {
   return useQuery<ISiteSettings, Error>({
