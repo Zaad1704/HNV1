@@ -8,7 +8,8 @@ import Subscription from '../models/Subscription';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Plan from '../models/Plan';
 import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
+import { Types } from 'mongoose';
 
 export const getDashboardStats = asyncHandler(async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
@@ -118,7 +119,7 @@ export const updateOrganizationSubscription = asyncHandler(async (req: Authentic
         await subscription.save();
     } else {
         subscription = await Subscription.create({
-            organizationId: orgId,
+            organizationId: new Types.ObjectId(orgId), // Fix: Explicitly cast to ObjectId
             ...subscriptionData
         });
         organization.subscription = subscription._id;
