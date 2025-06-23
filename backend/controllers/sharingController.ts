@@ -1,17 +1,17 @@
 // backend/controllers/sharingController.ts
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import ShareableLink from '../models/ShareableLink';
 import Expense from '../models/Expense';
 import path from 'path';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const createShareLink = async (req: AuthenticatedRequest, res: Response) => {
+export const createShareLink = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
 
     try {
-        const expense = await Expense.findById(req.params.expenseId);
+        const expense = await Expense.findById(req.params.expenseId); // req.params is now correctly typed
         
         if (!expense || !expense.documentUrl || expense.organizationId.toString() !== req.user.organizationId.toString()) {
             return res.status(404).json({ success: false, message: 'Document not found or access denied.' });
