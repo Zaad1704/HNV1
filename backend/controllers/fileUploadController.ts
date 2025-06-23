@@ -1,9 +1,7 @@
-// backend/controllers/fileUploadController.ts
 import { Request, Response } from 'express';
 import { google } from 'googleapis';
 import path from 'path';
 import { Readable } from 'stream';
-
 
 // --- Google Drive API Setup (no changes here) ---
 let auth;
@@ -29,7 +27,8 @@ if (!UPLOAD_FOLDER_ID) {
     throw new Error("Google Drive upload folder ID is not configured.");
 }
 
-export const uploadImage = async (req: AuthenticatedRequest, res: Response) => {
+// FIX: Changed from 'AuthenticatedRequest' to the standard 'Request'
+export const uploadImage = async (req: Request, res: Response) => {
     if (!req.file || !req.file.buffer) {
         res.status(400).json({ success: false, message: 'No file uploaded.' });
         return;
