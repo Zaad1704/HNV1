@@ -5,7 +5,7 @@ import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 import User from '../models/User';
 import Property from '../models/Property';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
@@ -64,6 +64,7 @@ export const sendRentReminder = async (req: AuthenticatedRequest, res: Response)
             throw new Error('Tenant not found in your organization.');
         }
 
+        // Fix TS2367: Ensure role casing matches the AuthenticatedUser definition
         const senderName = sender.name || (sender.role === 'Landlord' ? 'Your Landlord' : 'Your Agent');
         const senderEmail = sender.email;
 
