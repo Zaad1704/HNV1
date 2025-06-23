@@ -1,10 +1,10 @@
 // backend/server.ts
 
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express'; // Import RequestHandler
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet'; // FIX: Import helmet - ESSENTIAL for CSP
+import helmet from 'helmet';
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
@@ -13,13 +13,30 @@ import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
 import paymentsRoutes from './routes/paymentsRoutes';
 import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes'; // FIX: Import the new subscriptionsRoutes
-import auditRoutes from './routes/auditRoutes'; // FIX: Import the new auditRoutes
-import setupRoutes from './routes/setupRoutes'; // FIX: Corrected import path from './routes/setup' to './routes/setupRoutes'
+import subscriptionsRoutes from './routes/subscriptionsRoutes'; 
+import auditRoutes from './routes/auditRoutes'; 
+import setupRoutes from './routes/setupRoutes'; 
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
-import maintenanceRoutes from './routes/maintenanceRoutes'; // FIX: Import the new maintenanceRoutes
-
+import maintenanceRoutes from './routes/maintenanceRoutes';
+import cashFlowRoutes from './routes/cashFlowRoutes';
+import communicationRoutes from './routes/communicationRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
+import editRequestRoutes from './routes/editRequestRoutes';
+import fileUploadRoutes from './routes/fileUploadRoutes';
+import invoiceRoutes from './routes/invoiceRoutes';
+import invitationRoutes from './routes/invitationRoutes';
+import localizationRoutes from './routes/localizationRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import orgRoutes from './routes/orgRoutes';
+import passwordResetRoutes from './routes/passwordResetRoutes';
+import receiptRoutes from './routes/receiptRoutes';
+import reminderRoutes from './routes/reminderRoutes';
+import reportRoutes from './routes/reportRoutes';
+import siteSettingsRoutes from './routes/siteSettingsRoutes';
+import sharingRoutes from './routes/sharingRoutes';
+import tenantPortalRoutes from './routes/tenantPortalRoutes';
+import uploadRoutes from './routes/uploadRoutes'; // Ensure this is imported if not already used
 
 dotenv.config();
 
@@ -90,16 +107,33 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/audit', auditRoutes);
-app.use('/api/setup', setupRoutes); // FIX: Mount the route with the corrected import name
+app.use('/api/setup', setupRoutes); 
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/plans', planRoutes);
-app.use('/api/maintenance', maintenanceRoutes); // FIX: Mount the new maintenanceRoutes
-
+app.use('/api/maintenance', maintenanceRoutes); 
+app.use('/api/cashflow', cashFlowRoutes); 
+app.use('/api/communication', communicationRoutes); 
+app.use('/api/dashboard', dashboardRoutes); 
+app.use('/api/edit-requests', editRequestRoutes); 
+app.use('/api/file-upload', fileUploadRoutes); 
+app.use('/api/invoices', invoiceRoutes); 
+app.use('/api/invitations', invitationRoutes); 
+app.use('/api/localization', localizationRoutes); 
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/orgs', orgRoutes); 
+app.use('/api/password-reset', passwordResetRoutes); 
+app.use('/api/receipts', receiptRoutes); 
+app.use('/api/reminders', reminderRoutes); 
+app.use('/api/reports', reportRoutes); 
+app.use('/api/site-settings', siteSettingsRoutes); 
+app.use('/api/sharing', sharingRoutes); 
+app.use('/api/tenant-portal', tenantPortalRoutes); 
+app.use('/api/upload', uploadRoutes); 
 
 // A simple health-check route
-app.get('/', (req: Request, res: Response) => {
+app.get('/', ((req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
-});
+}) as RequestHandler); // Cast to RequestHandler
 
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
