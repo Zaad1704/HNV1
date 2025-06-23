@@ -1,20 +1,32 @@
-// backend/controllers/expenseController.ts
-
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
 
+/**
+ * @desc    Get all expenses for an organization, with optional filters
+ * @route   GET /api/expenses
+ * @access  Private
+ */
 export const getExpenses = asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user) {
+  if (!req.user || !req.user.organizationId) {
     res.status(401);
     throw new Error('User not authorized');
   }
   
-  const query = (req.user.role === 'Super Admin' || !req.user.organizationId)
-    ? {} 
-    : { organizationId: req.user.organizationId };
+  const { propertyId, agentId, startDate, endDate } = req.query;
+  const query: any = { organizationId: req.user.organizationId };
+
+  if (propertyId) {
+    query.propertyId = propertyId;
+  }
+  if (agentId) {
+    query.paidToAgentId = agentId;
+  }
+  if (startDate && endDate) {
+    query.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
+  }
 
   const expenses = await Expense.find(query)
     .populate('propertyId', 'name')
@@ -24,6 +36,11 @@ export const getExpenses = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, data: expenses });
 });
 
+/**
+ * @desc    Create a new expense record
+ * @route   POST /api/expenses
+ * @access  Private
+ */
 export const createExpense = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user || !req.user.organizationId) {
     res.status(401);
@@ -59,12 +76,18 @@ export const createExpense = asyncHandler(async (req: Request, res: Response) =>
     propertyId,
     paidToAgentId: paidToAgentId || null,
     organizationId: req.user.organizationId,
-    documentUrl: req.file ? `/${req.file.path}` : undefined
+    // The documentUrl is now handled by the upload middleware and attached to req.file
+    documentUrl: req.file ? (req.file as any).imageUrl : undefined
   });
 
   res.status(201).json({ success: true, data: newExpense });
 });
 
+/**
+ * @desc    Get a single expense by its ID
+ * @route   GET /api/expenses/:id
+ * @access  Private
+ */
 export const getExpenseById = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
         res.status(401);
@@ -86,6 +109,11 @@ export const getExpenseById = asyncHandler(async (req: Request, res: Response) =
     res.status(200).json({ success: true, data: expense });
 });
 
+/**
+ * @desc    Update an existing expense
+ * @route   PUT /api/expenses/:id
+ * @access  Private
+ */
 export const updateExpense = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
         res.status(401);
@@ -103,8 +131,13 @@ export const updateExpense = asyncHandler(async (req: Request, res: Response) =>
         res.status(403);
         throw new Error('Not authorized to update this expense');
     }
+    
+    const updates = { ...req.body };
+    if (req.file) {
+        updates.documentUrl = (req.file as any).imageUrl;
+    }
 
-    const updatedExpense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+    const updatedExpense = await Expense.findByIdAndUpdate(req.params.id, updates, {
         new: true,
         runValidators: true
     });
@@ -112,6 +145,11 @@ export const updateExpense = asyncHandler(async (req: Request, res: Response) =>
     res.status(200).json({ success: true, data: updatedExpense });
 });
 
+/**
+ * @desc    Delete an expense
+ * @route   DELETE /api/expenses/:id
+ * @access  Private
+ */
 export const deleteExpense = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user) {
         res.status(401);
