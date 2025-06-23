@@ -5,7 +5,7 @@ import EditRequest from '../models/EditRequest';
 import auditService from '../services/auditService';
 import mongoose, { Types } from 'mongoose';
 
-export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
+export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { 
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('User not authorized');
