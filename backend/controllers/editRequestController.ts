@@ -1,15 +1,16 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
 import notificationService from '../services/notificationService';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 /**
  * @desc    Agent creates a request to edit a resource
  * @route   POST /api/edit-requests
  * @access  Private (Agent)
  */
-export const createEditRequest = asyncHandler(async (req: Request, res: Response) => {
+export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { resourceId, resourceModel, reason, approverId } = req.body;
     const requester = req.user!;
 
@@ -50,7 +51,7 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
  * @route   GET /api/edit-requests
  * @access  Private (Landlord)
  */
-export const getEditRequests = asyncHandler(async (req: Request, res: Response) => {
+export const getEditRequests = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const approverId = req.user!._id;
     const requests = await EditRequest.find({ approver: approverId, status: 'pending' })
         .populate('requester', 'name email')
@@ -67,7 +68,7 @@ export const getEditRequests = asyncHandler(async (req: Request, res: Response) 
  * @route   PUT /api/edit-requests/:id/approve
  * @access  Private (Landlord)
  */
-export const approveEditRequest = asyncHandler(async (req: Request, res: Response) => {
+export const approveEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const request = await EditRequest.findById(req.params.id);
 
     if (!request || request.approver.toString() !== req.user!._id.toString()) {
@@ -90,7 +91,7 @@ export const approveEditRequest = asyncHandler(async (req: Request, res: Respons
  * @route   PUT /api/edit-requests/:id/reject
  * @access  Private (Landlord)
  */
-export const rejectEditRequest = asyncHandler(async (req: Request, res: Response) => {
+export const rejectEditRequest = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const request = await EditRequest.findById(req.params.id);
     
     if (!request || request.approver.toString() !== req.user!._id.toString()) {
