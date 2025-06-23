@@ -4,7 +4,7 @@ import Payment from '../models/Payment';
 import PDFDocument from 'pdfkit';
 
 
-export const generatePaymentReceipt = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const generatePaymentReceipt = async (req:Request, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
