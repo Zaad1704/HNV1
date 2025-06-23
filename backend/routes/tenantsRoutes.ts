@@ -1,4 +1,5 @@
 import { Router, Response, NextFunction } from "express";
+import asyncHandler from 'express-async-handler';
 import {
   getTenants,
   createTenant,
@@ -13,23 +14,21 @@ const router = Router();
 
 router.use(protect);
 
-// Define the fields that can accept file uploads
 const tenantUploadFields = [
   { name: "imageUrl", maxCount: 1 },
   { name: "govtIdImageUrlFront", maxCount: 1 },
   { name: "govtIdImageUrlBack", maxCount: 1 },
-  // Additional adult images can be handled dynamically in the controller if needed
 ];
 
 router
   .route("/")
-  .get(getTenants)
-  .post(upload.fields(tenantUploadFields), createTenant);
+  .get(asyncHandler(getTenants))
+  .post(upload.fields(tenantUploadFields), asyncHandler(createTenant));
 
 router
   .route("/:id")
-  .get(getTenantById)
-  .put(upload.fields(tenantUploadFields), updateTenant)
-  .delete(deleteTenant);
+  .get(asyncHandler(getTenantById))
+  .put(upload.fields(tenantUploadFields), asyncHandler(updateTenant))
+  .delete(asyncHandler(deleteTenant));
 
 export default router;
