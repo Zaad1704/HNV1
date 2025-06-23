@@ -4,34 +4,55 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User';
 
-// ---- START: Add this block for debugging ----
 const callbackURL = `${process.env.BACKEND_URL}/api/auth/google/callback`;
-
-console.log("--- GOOGLE OAUTH DEBUGGER ---");
-console.log("Generated Callback URL for Google:", callbackURL);
-console.log("Value of process.env.BACKEND_URL:", process.env.BACKEND_URL);
-console.log("-----------------------------");
-// ---- END: Add this block for debugging ----
-
 
 passport.use(new GoogleStrategy(
     {
         clientID: process.env.GOOGLE_CLIENT_ID!,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        callbackURL: callbackURL, // Use the variable here
+        callbackURL: callbackURL,
     },
     async (accessToken, refreshToken, profile, done) => {
+        const userEmail = profile.emails?.[0].value;
+
+        if (!userEmail) {
+            // Cannot proceed without an email from the Google profile.
+            return done(new Error("Could not retrieve email from Google profile."), undefined);
+        }
+
         try {
+            // Find a user by their existing Google ID
             let user = await User.findOne({ googleId: profile.id });
-            if (!user) {
-                user = await User.create({
-                    googleId: profile.id,
-                    name: profile.displayName,
-                    email: profile.emails?.[0].value,
-                });
+
+            if (user) {
+                // If the user is found by their Google ID, proceed with login.
+                return done(null, user);
             }
-            return done(null, user);
+
+            // If no user with that Google ID, check if their email address is already registered.
+            user = await User.findOne({ email: userEmail });
+
+            if (user) {
+                // The user exists, but this is their first time using Google Sign-In.
+                // Link their Google ID to their existing account.
+                user.googleId = profile.id;
+                user.name = user.name || profile.displayName; // Update name if it was empty
+                await user.save();
+                return done(null, user);
+            }
+
+            // If no user exists with that Google ID or email, create a new user.
+            const newUser = await User.create({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: userEmail,
+                // 'role' and other fields will use the defaults from your User schema
+            });
+            
+            return done(null, newUser);
+
         } catch (err) {
+            console.error("Error in Google Passport Strategy:", err);
             return done(err, undefined);
         }
     }
