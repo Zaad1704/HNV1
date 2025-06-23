@@ -32,15 +32,15 @@ export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     // Create the maintenance request
     const newRequest = await MaintenanceRequest.create({
       organizationId: req.user.organizationId as Types.ObjectId,
-      propertyId: propertyId as Types.ObjectId,
-      tenantId: tenantId ? (tenantId as Types.ObjectId) : undefined, // Cast if provided
+      propertyId: new Types.ObjectId(propertyId), // Fix: Cast to ObjectId
+      tenantId: tenantId ? new Types.ObjectId(tenantId) : undefined, // Fix: Cast if provided
       description,
       status: status || 'Open', // Default to 'Open' if not provided
       priority: priority || 'Medium', // Default to 'Medium'
-      requestedBy: req.user._id as Types.ObjectId, // FIX: Use requestedBy to match model interface
+      requestedBy: req.user._id as Types.ObjectId, 
       category,
       notes,
-      assignedTo: assignedTo ? (assignedTo as Types.ObjectId) : undefined, // Cast if provided
+      assignedTo: assignedTo ? new Types.ObjectId(assignedTo) : undefined, // Fix: Cast if provided
     });
 
     auditService.recordAction(
@@ -68,11 +68,11 @@ export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: 
     }
 
     const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId })
-      .populate('propertyId', 'name address') // Populate property details
-      .populate('requestedBy', 'name email') // Populate reporter details
-      .populate('assignedTo', 'name email') // Populate assignee details
-      .populate('tenantId', 'name email') // Populate tenant details
-      .sort({ createdAt: -1 }); // Latest requests first
+      .populate('propertyId', 'name address') 
+      .populate('requestedBy', 'name email') 
+      .populate('assignedTo', 'name email') 
+      .populate('tenantId', 'name email') 
+      .sort({ createdAt: -1 }); 
 
     res.status(200).json({ success: true, count: requests.length, data: requests });
 
@@ -93,7 +93,7 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
 
     const request = await MaintenanceRequest.findById(req.params.id)
       .populate('propertyId', 'name address')
-      .populate('requestedBy', 'name email') // Correctly populate 'requestedBy'
+      .populate('requestedBy', 'name email') 
       .populate('assignedTo', 'name email')
       .populate('tenantId', 'name email');
 
@@ -106,7 +106,7 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
       return res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
     }
 
-    // Correctly access 'requestedBy'
+    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (req.user.role === 'Tenant' && (request.requestedBy as any)?._id?.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
     }
@@ -141,6 +141,7 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     }
 
     // Tenant role cannot update status or assignedTo directly, only description/notes
+    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (req.user.role === 'Tenant') {
         const allowedUpdates = ['description', 'notes'];
         const updates = Object.keys(req.body);
@@ -153,8 +154,8 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
 
 
     request = await MaintenanceRequest.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Return the updated document
-      runValidators: true, // Run Mongoose validators on update
+      new: true, 
+      runValidators: true, 
     });
 
     if (request) {
@@ -196,6 +197,7 @@ export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: R
     }
 
     // Only Landlords, Agents, Super Admins can delete requests
+    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (!['Landlord', 'Agent', 'Super Admin'].includes(req.user.role)) {
         return res.status(403).json({ success: false, message: 'Your role is not authorized to delete maintenance requests.' });
     }
