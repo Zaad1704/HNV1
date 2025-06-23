@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
-import EditRequest from '../models/EditRequest'; // Import the new model
+import EditRequest from '../models/EditRequest';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } => '../middleware/authMiddleware'; // FIX: Changed '=>' to 'from'
 
 // The createCashFlowRecord and getCashFlowRecords functions remain the same
 export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { /* ... */ });
