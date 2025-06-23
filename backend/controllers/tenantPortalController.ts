@@ -1,3 +1,4 @@
+// backend/controllers/tenantPortalController.ts
 import { Request, Response } from 'express';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
@@ -9,9 +10,10 @@ import { startOfMonth } from 'date-fns';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => { 
-    // Fix: Role casing matches AuthenticatedUser (now from IUser)
     if (!req.user || req.user.role !== 'Tenant') {
-        return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
+        // FIX: Removed 'return' keyword
+        res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
+        return;
     }
 
     try {
@@ -29,7 +31,8 @@ export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Res
         });
 
         if (!tenantInfo) {
-            return res.status(404).json({ success: false, message: 'Tenant profile not found.' });
+            res.status(404).json({ success: false, message: 'Tenant profile not found.' });
+            return;
         }
 
         const activeLease = await Lease.findOne({ tenantId: tenantInfo._id, status: 'active' });
