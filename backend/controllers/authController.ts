@@ -6,7 +6,8 @@ import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
-// Email/Password Registration
+// --- Functions like registerUser, loginUser, and getMe remain unchanged ---
+
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
     const { name, email, password, role } = req.body;
 
@@ -70,7 +71,6 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
     }
 });
 
-// Email/Password Login
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select('+password').populate({
@@ -114,7 +114,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     }
 });
 
-// Get Current User
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
     const user = await User.findById(req.user!._id).select('-password').populate({
         path: 'organizationId',
@@ -132,13 +131,31 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
     }
 });
 
-// Google OAuth Callback: REDIRECT with token
+/**
+ * @desc    Handles the callback from Google OAuth service.
+ * @route   GET /api/auth/google/callback
+ * @access  Public
+ */
 export const googleAuthCallback = (req: Request, res: Response) => {
-    // The Passport Google strategy must attach the JWT token to req.user.token
-    const token = req.user && (req.user as any).token;
-    if (!token) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=no-token`);
+    // The user object is attached to the request by the Passport strategy after successful authentication.
+    const user = req.user as any;
+
+    if (!user) {
+        // This is a fallback; Passport's failureRedirect should typically handle this.
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
     }
-    // Redirect to dashboard with the token as a query param
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}`);
+
+    // Generate a JWT for the authenticated user.
+    // The `getSignedJwtToken` method is defined on your User model.
+    const token = user.getSignedJwtToken();
+
+    if (!token) {
+        // Handle the unlikely case that token generation fails.
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=token-generation-failed`);
+    }
+
+    // Redirect to the frontend's dedicated callback handler page.
+    // This page will read the token from the URL, store it, and complete the login flow.
+    // See frontend/src/pages/GoogleAuthCallback.tsx for the client-side implementation.
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
 };
