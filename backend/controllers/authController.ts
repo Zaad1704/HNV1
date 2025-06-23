@@ -48,7 +48,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await user.save();
     await subscription.save();
     
-    // Fix TS2554: Ensure 4 arguments for auditService.recordAction
+    // FIX: Added the 4th argument (an empty object) to the function call.
     auditService.recordAction(
         user._id as Types.ObjectId,
         organization._id as Types.ObjectId,
@@ -56,7 +56,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         { registeredUserId: (user._id as Types.ObjectId).toString() } 
     );
     try {
-        await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
+        await emailService.sendEmail(user.email, 'Welcome to HNV!', '<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>');
     } catch (emailError) {
         console.error("Failed to send welcome email:", emailError);
     }
@@ -78,12 +78,12 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    // Fix TS2554: Ensure 4 arguments for auditService.recordAction
+    // FIX: Added the 4th argument (an empty object) here as well.
     auditService.recordAction(
         user._id as Types.ObjectId,
         user.organizationId as Types.ObjectId,
         'USER_LOGIN',
-        {} // Pass an empty object for details if no specific details are needed
+        {}
     );
     sendTokenResponse(user, 200, res);
 };
@@ -92,7 +92,6 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(404).json({ success: false, message: 'User not found' });
     }
-    // Use req.user._id directly as it is already typed and available
     const user = await User.findById(req.user._id).populate({
         path: 'organizationId',
         select: 'name status subscription',
@@ -106,8 +105,5 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
 };
 
 export const googleAuthCallback = (req: Request, res: Response) => {
-  // This function will be called after Google authenticates the user.
-  // The actual user data would be available in req.user from Passport.
-  // You would typically redirect to your frontend dashboard from here.
-  res.redirect('/dashboard'); // Example redirect
+  res.redirect('/dashboard');
 };
