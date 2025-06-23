@@ -3,7 +3,7 @@
 import { Response, NextFunction } from 'express';
 import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest'; // Import the new model
 import Property from '../models/Property'; // To validate propertyId
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // For req.user
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // For req.user // Re-import AuthenticatedRequest
 import auditService from '../services/auditService'; // For audit logging
 import mongoose, { Types } from 'mongoose'; // FIX: Import Types for ObjectId casting
 
@@ -106,8 +106,8 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
       return res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
     }
 
-    // Further authorization: Tenants might only see their own requests
-    if (req.user.role === 'Tenant' && request.reportedBy.toString() !== req.user._id.toString()) {
+    // FIX: Safely access reportedBy's _id for comparison
+    if (req.user.role === 'Tenant' && (request.reportedBy as any)?._id?.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
     }
 
