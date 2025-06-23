@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const getPlans = async (req: Request, res: Response) => { 
     try {
