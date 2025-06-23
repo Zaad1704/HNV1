@@ -6,7 +6,6 @@ import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import AuditLog from '../models/AuditLog';
 import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMonths, addYears } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 export const getOverviewStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) { 
