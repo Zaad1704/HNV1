@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const getPlans = async (req: Request, res: Response) => { 
     try {
@@ -21,7 +21,7 @@ export const createPlan = async (req: AuthenticatedRequest, res: Response) => {
         }
         const newPlan = await Plan.create(req.body);
         
-        // Fix TS2345: Cast to ObjectId before toString()
+        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
@@ -47,7 +47,7 @@ export const updatePlan = async (req: AuthenticatedRequest, res: Response) => {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
         
-        // Fix TS2345: Cast to ObjectId before toString()
+        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
@@ -71,7 +71,7 @@ export const deletePlan = async (req: AuthenticatedRequest, res: Response) => {
         }
         await plan.deleteOne();
         
-        // Fix TS2345: Cast to ObjectId before toString()
+        // Fix: Cast to ObjectId before toString()
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
