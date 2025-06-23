@@ -2,9 +2,7 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
-import User from '../models/User';
 import notificationService from '../services/notificationService';
-import mongoose from 'mongoose';
 
 /**
  * @desc    Agent creates a request to edit a resource
@@ -20,7 +18,7 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
         throw new Error('Resource details, reason, and approver are required.');
     }
     
-    // Ensure an agent can't request to edit something they don't have access to
+    // Optional: Check if the resource exists and belongs to the org
     if(resourceModel === 'CashFlow') {
         const resource = await CashFlow.findById(resourceId);
         if(!resource || resource.organizationId.toString() !== requester.organizationId?.toString()){
@@ -40,7 +38,8 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
     });
     
     // Create a notification for the approver (Landlord)
-    const message = `${requester.name} has requested permission to edit a ${resourceModel} record. Reason: ${reason}`;
+    const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
+    // The link should point to the page where landlords can approve requests
     await notificationService.createNotification(approverId, requester.organizationId!, message, '/dashboard/approvals');
 
     res.status(201).json({ success: true, data: newRequest });
@@ -55,7 +54,10 @@ export const getEditRequests = asyncHandler(async (req: Request, res: Response) 
     const approverId = req.user!._id;
     const requests = await EditRequest.find({ approver: approverId, status: 'pending' })
         .populate('requester', 'name email')
-        .populate('resourceId'); // Populate to show details of the item
+        .populate({
+            path: 'resourceId',
+            model: 'CashFlow' // Specify the model to populate from
+        }); 
         
     res.status(200).json({ success: true, data: requests });
 });
@@ -77,7 +79,7 @@ export const approveEditRequest = asyncHandler(async (req: Request, res: Respons
     await request.save();
 
     // Notify the original requester that their request was approved
-    const message = `Your request to edit ${request.resourceModel} record has been approved.`;
+    const message = `Your request to edit a ${request.resourceModel} record has been approved.`;
     await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
 
     res.status(200).json({ success: true, data: request });
@@ -96,11 +98,13 @@ export const rejectEditRequest = asyncHandler(async (req: Request, res: Response
         throw new Error('Request not found or you are not authorized to reject it.');
     }
 
-    request.status = 'rejected';
-    await request.save();
+    // You can either delete the request or mark it as rejected.
+    // Deleting it keeps the pending list clean.
+    await request.deleteOne();
     
     // Notify the original requester
-    const message = `Your request to edit ${request.resourceModel} record has been rejected.`;
+    const message = `Your request to edit a ${request.resourceModel} record has been rejected.`;
     await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
 
-    res.status(200).json({ success: true
+    res.status(200).json({ success: true, message: 'Request rejected successfully.' });
+});
