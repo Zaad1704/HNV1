@@ -5,8 +5,19 @@ import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import AuditLog from '../models/AuditLog';
-import { startOfMonth, endOfMonth, subMonths, format, addDays } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import {
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  format,
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears
+} from 'date-fns'; // Added missing imports
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
+
+// ... rest of the file ...
 
 export const getOverviewStats = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) { 
