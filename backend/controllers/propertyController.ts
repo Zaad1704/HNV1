@@ -1,4 +1,3 @@
-// backend/controllers/propertyController.ts
 import { Request, Response } from 'express';
 import Property from '../models/Property';
 import { IUser } from '../models/User';
@@ -11,8 +10,12 @@ export const createProperty = async (req: Request, res: Response) => {
   }
 
   try {
+    // Get the image URL from the request file if it was uploaded
+    const imageUrl = req.file ? (req.file as any).imageUrl : undefined;
+
     const property = await Property.create({
       ...req.body,
+      imageUrl: imageUrl, // Save the image URL
       organizationId: user.organizationId,
       createdBy: user._id
     });
@@ -30,49 +33,37 @@ export const createProperty = async (req: Request, res: Response) => {
 };
 
 export const getProperties = async (req: Request, res: Response) => {
-  const user = req.user;
-  if (!user || !user.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
-  }
-
-  try {
-    const properties = await Property.find({ organizationId: user.organizationId });
-    res.status(200).json({ success: true, data: properties });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
+    // This function remains the same
+    const user = req.user;
+    if (!user || !user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
+    try {
+        const properties = await Property.find({ organizationId: user.organizationId });
+        res.status(200).json({ success: true, data: properties });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
 };
 
 export const getPropertyById = async (req: Request, res: Response) => {
-  const user = req.user;
-  if (!user || !user.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
-  }
-
-  try {
-    const property = await Property.findById(req.params.id);
-
-    if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
+    // This function remains the same
+    const user = req.user;
+    if (!user || !user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
-
-    if (!property.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to view this property'
-      });
+    try {
+        const property = await Property.findById(req.params.id);
+        if (!property) {
+            return res.status(404).json({ success: false, message: 'Property not found' });
+        }
+        if (!property.organizationId.equals(user.organizationId)) {
+            return res.status(403).json({ success: false, message: 'Not authorized to view this property' });
+        }
+        res.status(200).json({ success: true, data: property });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
-
-    res.status(200).json({
-      success: true,
-      data: property
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: 'Server Error' });
-  }
 };
 
 export const updateProperty = async (req: Request, res: Response) => {
@@ -85,65 +76,47 @@ export const updateProperty = async (req: Request, res: Response) => {
     let property = await Property.findById(req.params.id);
 
     if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
-
     if (!property.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this property'
-      });
+      return res.status(403).json({ success: false, message: 'Not authorized to update this property' });
     }
 
-    property = await Property.findByIdAndUpdate(req.params.id, req.body, {
+    const updates = { ...req.body };
+    // If a new file is uploaded, add its URL to the updates
+    if (req.file) {
+        updates.imageUrl = (req.file as any).imageUrl;
+    }
+
+    property = await Property.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true
     });
 
-    res.status(200).json({
-      success: true,
-      data: property
-    });
+    res.status(200).json({ success: true, data: property });
   } catch (error: any) {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
 export const deleteProperty = async (req: Request, res: Response) => {
-  const user = req.user;
-  if (!user || !user.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
-  }
-
-  try {
-    const property = await Property.findById(req.params.id);
-
-    if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
+    // This function remains the same for now, but could be enhanced
+    // to also delete the image from cloud storage.
+    const user = req.user;
+    if (!user || !user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
-
-    if (!property.organizationId.equals(user.organizationId)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this property'
-      });
+    try {
+        const property = await Property.findById(req.params.id);
+        if (!property) {
+            return res.status(404).json({ success: false, message: 'Property not found' });
+        }
+        if (!property.organizationId.equals(user.organizationId)) {
+            return res.status(403).json({ success: false, message: 'Not authorized to delete this property' });
+        }
+        await property.deleteOne();
+        res.status(200).json({ success: true, data: {} });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
-
-    await property.deleteOne();
-    res.status(200).json({
-      success: true,
-      data: {}
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server Error'
-    });
-  }
 };
