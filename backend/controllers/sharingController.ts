@@ -1,10 +1,11 @@
 // backend/controllers/sharingController.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import ShareableLink from '../models/ShareableLink';
 import Expense from '../models/Expense';
 import path from 'path';
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-export const createShareLink = async (req: Request, res: Response) => {
+export const createShareLink = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
