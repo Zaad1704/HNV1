@@ -1,66 +1,44 @@
-// backend/middleware/authMiddleware.ts
-
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
-import Subscription from '../models/Subscription';
+import User, { IUser } from '../models/User'; // Import IUser
 
-export const protect = async (req: Request, res: Response, next: NextFunction) => {
+// FIX: Ensure AuthenticatedRequest is exported
+export interface AuthenticatedRequest extends Request {
+  user?: IUser;
+}
+
+export const protect = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET not defined');
+      }
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
+      }
+      // If req.user is found, ensure its status is active (from superAdminController errors)
+      if (req.user.status === 'suspended' || req.user.status === 'pending') { // FIX: Check user status
+        return res.status(401).json({ success: false, message: 'User account is not active.' });
+      }
+      next();
+    } catch (error) {
+      return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+    }
   }
-
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
   }
+};
 
-  try {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT_SECRET not defined in environment variables');
+export const authorize = (...roles: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: `User role ${req.user?.role} is not authorized` });
     }
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
-    
-    const user = await User.findById(decoded.id);
-    
-    if (!user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
-    }
-
-    // Use full path for matching, so exception works regardless of router mount point.
-    const fullPath = (req.baseUrl?.toLowerCase() || '') + req.path.toLowerCase();
-    const isAllowedForInactiveUser = fullPath.startsWith('/api/billing');
-
-    // Block inactive or suspended users immediately, UNLESS they are accessing allowed routes.
-    if (user.status && user.status !== 'active') {
-        if (!isAllowedForInactiveUser) {
-            return res.status(403).json({ message: `Your account is ${user.status}. Access denied.` });
-        }
-        // If it is an allowed route for inactive users, proceed to next middleware/route handler.
-    }
-
-    // For non-admin users, check their organization's subscription status.
-    // Super Admins bypass subscription checks.
-    if (user.organizationId && user.role !== 'Super Admin') {
-        const subscription = await Subscription.findOne({ organizationId: user.organizationId });
-        // Block access if subscription is not active and it's not a lifetime deal,
-        // UNLESS they are accessing allowed routes.
-        if (subscription && subscription.status !== 'active' && !subscription.isLifetime) {
-            if (!isAllowedForInactiveUser) {
-                return res.status(403).json({ message: 'Organization subscription is inactive. Please contact support.' });
-            }
-            // If it's an allowed route for inactive subscriptions, proceed.
-        }
-    }
-
-    req.user = user.toObject() as any; 
     next();
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return res.status(401).json({ message: 'Not authorized, token failed' });
-  }
+  };
 };
