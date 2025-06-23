@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs'; // Changed to import * as to ensure bcrypt types are found
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
@@ -24,8 +24,7 @@ export interface IUser extends Document {
 
   permissions: string[]; 
   
-  // NEW FIELD: Added managedAgentIds
-  managedAgentIds?: Types.ObjectId[]; 
+  managedAgentIds?: mongoose.Types.ObjectId[]; // NEW FIELD: Added managedAgentIds
 
   getPasswordResetToken(): string;
 }
@@ -54,8 +53,7 @@ const UserSchema: Schema<IUser> = new Schema({
     type: [String],
     default: []
   },
-  // NEW SCHEMA FIELD: for managedAgentIds
-  managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }] 
+  managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }] // NEW SCHEMA FIELD: for managedAgentIds
 });
 
 UserSchema.pre<IUser>('save', async function(next) {
