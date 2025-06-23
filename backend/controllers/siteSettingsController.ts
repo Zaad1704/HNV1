@@ -1,24 +1,17 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import SiteSettings from '../models/SiteSettings';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
-// @desc    Get the current site settings
-// @route   GET /api/site-settings
-// @access  Public
 export const getSiteSettings = async (req: Request, res: Response) => {
     try {
         let settings = await SiteSettings.findOne();
 
-        // If no settings document exists in the database...
         if (!settings) {
-            // ...create a new one with the default values from your schema and save it.
             console.log('No site settings found, creating default document.');
             settings = new SiteSettings({});
             await settings.save();
         }
         
-        // Always return a complete settings object.
         res.status(200).json({ success: true, data: settings });
 
     } catch (error) {
@@ -27,12 +20,10 @@ export const getSiteSettings = async (req: Request, res: Response) => {
     }
 };
 
-// @desc    Create or Update the site settings
-// @route   PUT /api/site-settings
-// @access  Private (Super Admin)
-export const updateSiteSettings = async (req: AuthenticatedRequest, res: Response) => { 
+export const updateSiteSettings = async (req: Request, res: Response) => { 
     if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
 
     try {
