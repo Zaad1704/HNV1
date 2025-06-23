@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { google } from 'googleapis';
 import path from 'path';
 import { Readable } from 'stream';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
 // --- Google Drive API Setup (no changes here) ---
 let auth;
@@ -27,7 +28,7 @@ if (!UPLOAD_FOLDER_ID) {
     throw new Error("Google Drive upload folder ID is not configured.");
 }
 
-export const uploadImage = async (req: Request, res: Response) => {
+export const uploadImage = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
     if (!req.file || !req.file.buffer) {
         return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
@@ -67,14 +68,12 @@ export const uploadImage = async (req: Request, res: Response) => {
             },
         });
 
-        // --- NEW, MORE RELIABLE URL FORMAT ---
-        // This format uses Google's thumbnail generator. &sz=w1000 requests an image with a width of 1000px.
         const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
 
         res.status(200).json({
             success: true,
             message: 'File uploaded successfully to Google Drive.',
-            imageUrl: thumbnailUrl // Send this new thumbnail URL
+            imageUrl: thumbnailUrl
         });
 
     } catch (error: any) {
