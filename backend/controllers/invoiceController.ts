@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
 import Lease from '../models/Lease';
-import { addMonths, startOfMonth, format } from 'date-fns';
+// FIX: Added 'endOfMonth' to the import from 'date-fns'
+import { addMonths, startOfMonth, endOfMonth, format } from 'date-fns';
 
 export const generateInvoices = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
@@ -38,6 +39,7 @@ export const generateInvoices = async (req: Request, res: Response) => {
 
             const countForMonth = await Invoice.countDocuments({
                 organizationId: req.user.organizationId,
+                // FIX: Use endOfMonth to correctly query for the entire month
                 dueDate: { $gte: startOfMonth(invoiceMonthStart), $lte: endOfMonth(invoiceMonthStart) },
             });
             const invoiceNumber = `INV-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${format(invoiceMonthStart, 'yyyyMM')}-${(countForMonth + 1).toString().padStart(3, '0')}`;
