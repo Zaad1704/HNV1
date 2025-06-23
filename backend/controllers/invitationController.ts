@@ -5,30 +5,31 @@ import Property from '../models/Property';
 import emailService from '../services/emailService';
 import { addDays } from 'date-fns';
 
-// inviteUser, getInvitationDetails, acceptInvitation functions remain the same...
-export const inviteUser = async (req: AuthenticatedRequest, res: Response) => { 
+export const inviteUser = async (req: Request, res: Response) => { 
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     const { email: recipientEmail, role } = req.body;
     const inviter = req.user;
 
     if (!recipientEmail || !role) {
-        return res.status(400).json({ success: false, message: 'Recipient email and role are required.' });
+        res.status(400).json({ success: false, message: 'Recipient email and role are required.' });
+        return;
     }
     if (role !== 'Agent') {
-        return res.status(400).json({ success: false, message: 'Only "Agent" role can be invited this way.' });
+        res.status(400).json({ success: false, message: 'Only "Agent" role can be invited this way.' });
+        return;
     }
 
     try {
-        // Check if user already exists
         const existingUser = await User.findOne({ email: recipientEmail });
         if (existingUser && existingUser.organizationId?.toString() === inviter.organizationId.toString()) {
-            return res.status(400).json({ success: false, message: 'User with this email is already a member of your organization.' });
+            res.status(400).json({ success: false, message: 'User with this email is already a member of your organization.' });
+            return;
         }
 
-        // Check if a pending invitation already exists for this email and organization
         const existingInvitation = await AgentInvitation.findOne({
             recipientEmail,
             organizationId: inviter.organizationId,
@@ -36,7 +37,8 @@ export const inviteUser = async (req: AuthenticatedRequest, res: Response) => {
         });
 
         if (existingInvitation) {
-            return res.status(400).json({ success: false, message: 'An invitation has already been sent to this email for your organization.' });
+            res.status(400).json({ success: false, message: 'An invitation has already been sent to this email for your organization.' });
+            return;
         }
 
         const newInvitation = await AgentInvitation.create({
@@ -45,16 +47,14 @@ export const inviteUser = async (req: AuthenticatedRequest, res: Response) => {
             recipientEmail,
             role: role,
             status: 'pending',
-            // token and expiresAt are generated in pre-save hook
         });
 
-        // Send invitation email
         const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${newInvitation.token}`;
         await emailService.sendEmail(
             newInvitation.recipientEmail, 
             `Invitation to join ${inviter.name}'s Team on HNV`, 
-            'agentInvitation', // Use an email template
-            { inviterName: inviter.name, acceptURL } // Data for the template
+            'agentInvitation',
+            { inviterName: inviter.name, acceptURL }
         );
 
         res.status(200).json({ success: true, message: 'Invitation sent successfully.', data: newInvitation });
@@ -71,7 +71,8 @@ export const getInvitationDetails = async (req: Request, res: Response) => {
         const invitation = await AgentInvitation.findOne({ token });
 
         if (!invitation || invitation.status !== 'pending' || invitation.expiresAt < new Date()) {
-            return res.status(400).json({ success: false, message: 'Invalid or expired invitation token.' });
+            res.status(400).json({ success: false, message: 'Invalid or expired invitation token.' });
+            return;
         }
 
         const existingUser = await User.findOne({ email: invitation.recipientEmail });
@@ -92,32 +93,33 @@ export const getInvitationDetails = async (req: Request, res: Response) => {
 
 export const acceptInvitation = async (req: Request, res: Response) => { 
     const { token } = req.params;
-    const { password } = req.body; // Password is only needed for new users
+    const { password } = req.body;
     
     try {
         const invitation = await AgentInvitation.findOne({ token });
 
         if (!invitation || invitation.status !== 'pending' || invitation.expiresAt < new Date()) {
-            return res.status(400).json({ success: false, message: 'Invalid or expired invitation token.' });
+            res.status(400).json({ success: false, message: 'Invalid or expired invitation token.' });
+            return;
         }
 
         let user = await User.findOne({ email: invitation.recipientEmail });
 
         if (user) {
-            // Existing user accepting invitation
             if (user.organizationId && user.organizationId.toString() !== invitation.organizationId.toString()) {
-                return res.status(400).json({ success: false, message: 'This email is already associated with another organization.' });
+                res.status(400).json({ success: false, message: 'This email is already associated with another organization.' });
+                return;
             }
             user.organizationId = invitation.organizationId;
             user.role = invitation.role;
             await user.save();
         } else {
-            // New user creating account
             if (!password) {
-                return res.status(400).json({ success: false, message: 'Password is required to create a new account.' });
+                res.status(400).json({ success: false, message: 'Password is required to create a new account.' });
+                return;
             }
             user = await User.create({
-                name: invitation.recipientEmail.split('@')[0], // Default name from email
+                name: invitation.recipientEmail.split('@')[0],
                 email: invitation.recipientEmail,
                 password,
                 role: invitation.role,
@@ -137,9 +139,10 @@ export const acceptInvitation = async (req: Request, res: Response) => {
 };
 
 
-export const getPendingInvitations = async (req: AuthenticatedRequest, res: Response) => {
+export const getPendingInvitations = async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     const invitations = await AgentInvitation.find({ 
         organizationId: req.user.organizationId,
@@ -149,40 +152,43 @@ export const getPendingInvitations = async (req: AuthenticatedRequest, res: Resp
     res.status(200).json({ success: true, data: invitations });
 };
 
-export const revokeInvitation = async (req: AuthenticatedRequest, res: Response) => {
+export const revokeInvitation = async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
     const { id } = req.params;
     const invitation = await AgentInvitation.findOne({ _id: id, organizationId: req.user.organizationId });
 
     if (!invitation) {
-        return res.status(404).json({ success: false, message: 'Invitation not found.' });
+        res.status(404).json({ success: false, message: 'Invitation not found.' });
+        return;
     }
     
     await invitation.deleteOne();
     res.status(200).json({ success: true, message: 'Invitation revoked successfully.' });
 };
 
-export const resendInvitation = async (req: AuthenticatedRequest, res: Response) => {
+export const resendInvitation = async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
     const { id } = req.params;
     const invitation = await AgentInvitation.findOne({ _id: id, organizationId: req.user.organizationId }).populate('inviterId', 'name');
 
     if (!invitation) {
-        return res.status(404).json({ success: false, message: 'Invitation not found.' });
+        res.status(404).json({ success: false, message: 'Invitation not found.' });
+        return;
     }
     if (invitation.status !== 'pending') {
-        return res.status(400).json({ success: false, message: 'This invitation cannot be resent.' });
+        res.status(400).json({ success: false, message: 'This invitation cannot be resent.' });
+        return;
     }
 
-    // Extend the expiration date by another 7 days
     invitation.expiresAt = addDays(new Date(), 7);
     await invitation.save();
 
-    // Resend the email
     const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${invitation.token}`;
     await emailService.sendEmail(
         invitation.recipientEmail, 
