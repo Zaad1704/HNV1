@@ -13,11 +13,16 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Pages
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
-const GoogleAuthCallback = React.lazy(() => import('./pages/GoogleAuthCallback')); // Import the callback page
+const GoogleAuthCallback = React.lazy(() => import('./pages/GoogleAuthCallback'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
+// FIX: Import the DashboardRedirector
+const DashboardRedirector = React.lazy(() => import('./pages/DashboardRedirector'));
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage')); // Or OverviewPage
+const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
+
 
 const FullScreenLoader = () => (
-    <div className="h-screen w-full flex items-center justify-center">
+    <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white">
         <p>Loading...</p>
     </div>
 );
@@ -40,9 +45,7 @@ function App() {
       setSessionLoading(false);
     };
     checkUserSession();
-    // FIX: Change dependency array to [] to run only on initial mount.
-    // This eliminates the race condition after login.
-  }, []);
+  }, []); // The dependency array remains empty to prevent race conditions
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
@@ -51,17 +54,25 @@ function App() {
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Routes>
-        <Route path="/*" element={<PublicLayout />}>
+        <Route path="/" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="auth/google/callback" element={<GoogleAuthCallback />} />
         </Route>
         
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* FIX: Add the missing route for the Google Auth callback */}
-        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-
+        {/* FIX: Reworked Dashboard Routing */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
-          <Route path="*" element={<DashboardLayout />} />
+          <Route element={<DashboardLayout />}>
+            {/* The index route now uses the redirector to send users to the correct page */}
+            <Route index element={<DashboardRedirector />} />
+            
+            {/* Define the actual dashboard pages here */}
+            <Route path="overview" element={<DashboardPage />} />
+            <Route path="tenant" element={<TenantDashboardPage />} />
+            
+            {/* You would continue to define all other dashboard routes here */}
+            {/* e.g., <Route path="properties" element={<PropertiesPage />} /> */}
+          </Route>
         </Route>
         
         <Route path="*" element={<NotFound />} />
