@@ -3,22 +3,18 @@ import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 
-// Layouts and Route Guards
+// Layouts and Guards
 import PublicLayout from './components/layout/PublicLayout';
-import DashboardLayout from './components/layout/DashboardLayout';
-import AdminLayout from './components/layout/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute';
+import DashboardLayout from './components/layout/DashboardLayout';
 
-// Page Components
+// Pages
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
-// ... (all your other lazy-loaded page imports) ...
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
-
 const FullScreenLoader = () => (
-    <div className="h-screen w-full flex items-center justify-center bg-brand-bg text-dark-text">
+    <div className="h-screen w-full flex items-center justify-center">
         <p>Loading...</p>
     </div>
 );
@@ -50,11 +46,16 @@ function App() {
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Routes>
-        <Route path="/" element={<PublicLayout />}>
+        <Route path="/*" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
         </Route>
+        
         <Route path="/login" element={<LoginPage />} />
-        {/* ... Other routes */}
+
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route path="*" element={<DashboardLayout />} />
+        </Route>
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
