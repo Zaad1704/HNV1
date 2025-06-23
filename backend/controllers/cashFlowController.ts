@@ -4,7 +4,6 @@ import CashFlow from '../models/CashFlow';
 import EditRequest from '../models/EditRequest';
 import auditService from '../services/auditService';
 import mongoose, { Types } from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
     if (!req.user || !req.user.organizationId) {
