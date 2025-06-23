@@ -1,40 +1,18 @@
-// backend/server.ts
-
 import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import helmet from 'helmet';
+import passport from 'passport'; // FIX: Import passport
+
+// --- Import Passport Setup ---
+// This line executes the file and registers the Google strategy with Passport.
+import './config/passport-setup'; 
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
-import propertiesRoutes from './routes/propertiesRoutes';
-import tenantsRoutes from './routes/tenantsRoutes';
-import paymentsRoutes from './routes/paymentsRoutes';
-import userRoutes from './routes/userRoutes';
-import subscriptionsRoutes from './routes/subscriptionsRoutes'; 
-import auditRoutes from './routes/auditRoutes'; 
-import setupRoutes from './routes/setupRoutes'; 
-import feedbackRoutes from './routes/feedbackRoutes';
-import planRoutes from './routes/planRoutes';
-import maintenanceRoutes from './routes/maintenanceRoutes';
-import cashFlowRoutes from './routes/cashFlowRoutes';
-import communicationRoutes from './routes/communicationRoutes';
-import dashboardRoutes from './routes/dashboardRoutes';
-import editRequestRoutes from './routes/editRequestRoutes';
-import fileUploadRoutes from './routes/fileUploadRoutes';
-import invoiceRoutes from './routes/invoiceRoutes';
-import invitationRoutes from './routes/invitationRoutes';
-import localizationRoutes from './routes/localizationRoutes';
-import notificationRoutes from './routes/notificationRoutes';
-import orgRoutes from './routes/orgRoutes';
-import passwordResetRoutes from './routes/passwordResetRoutes';
-import receiptRoutes from './routes/receiptRoutes';
-import reminderRoutes from './routes/reminderRoutes';
-import reportRoutes from './routes/reportRoutes';
-import siteSettingsRoutes from './routes/siteSettingsRoutes';
-import sharingRoutes from './routes/sharingRoutes';
+// ... (all other route imports) ...
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 
@@ -60,30 +38,29 @@ const connectDB = async () => {
 };
 connectDB();
 
-// FIX: Add your live frontend URL to this array.
-// Your Render frontend URL is likely 'https://hnv-1-frontend.onrender.com' based on previous files.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com',
-  'https://www.hnvpm.com',
-  'https://hnvpm.com'
+  'https://hnv-1-frontend.onrender.com'
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl) or from the allowed list.
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true // This allows cookies and authorization headers to be sent.
+  credentials: true
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(helmet());
+
+// FIX: Initialize Passport middleware
+app.use(passport.initialize());
+
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
