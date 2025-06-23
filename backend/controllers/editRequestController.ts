@@ -4,7 +4,7 @@ import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
 import notificationService from '../services/notificationService';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
-import { Types } from 'mongoose'; // Import Types for ObjectId
+import { Types } from 'mongoose'; 
 
 /**
  * @desc    Agent creates a request to edit a resource
@@ -30,19 +30,18 @@ export const createEditRequest = asyncHandler(async (req: AuthenticatedRequest, 
     }
 
     const newRequest = await EditRequest.create({
-        resourceId: new Types.ObjectId(resourceId), // Fix: Cast string to ObjectId
+        resourceId: new Types.ObjectId(resourceId as string), // Fix: Cast string to ObjectId
         resourceModel,
         reason,
         requester: requester._id,
-        approver: new Types.ObjectId(approverId), // Fix: Cast string to ObjectId
+        approver: new Types.ObjectId(approverId as string), // Fix: Cast string to ObjectId
         organizationId: requester.organizationId,
         status: 'pending',
     });
     
     // Create a notification for the approver (Landlord)
     const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
-    // The link should point to the page where landlords can approve requests
-    await notificationService.createNotification(new Types.ObjectId(approverId), requester.organizationId!, message, '/dashboard/approvals'); // Fix: Cast string to ObjectId
+    await notificationService.createNotification(new Types.ObjectId(approverId as string), requester.organizationId!, message, '/dashboard/approvals'); // Fix: Cast string to ObjectId
 
     res.status(201).json({ success: true, data: newRequest });
 });
