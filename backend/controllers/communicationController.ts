@@ -64,7 +64,7 @@ export const sendRentReminder = async (req: AuthenticatedRequest, res: Response)
             throw new Error('Tenant not found in your organization.');
         }
 
-        // Fix TS2367: Ensure role casing matches the AuthenticatedUser definition
+        // Fix: Role casing matches AuthenticatedUser (now from IUser)
         const senderName = sender.name || (sender.role === 'Landlord' ? 'Your Landlord' : 'Your Agent');
         const senderEmail = sender.email;
 
