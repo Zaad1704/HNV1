@@ -1,5 +1,6 @@
 // backend/controllers/reminderController.ts
-import { Response, NextFunction } from 'express';
+// FIX: Added 'Request' to the import from express.
+import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import Reminder, { IReminder } from '../models/Reminder';
 import Tenant from '../models/Tenant';
@@ -7,6 +8,9 @@ import emailService from '../services/emailService';
 import { addDays, addWeeks, addMonths, addYears } from 'date-fns';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 import { Types } from 'mongoose'; 
+
+// ... (rest of the file remains the same)
+// The processOverdueReminders function will now work because 'Request' is correctly typed.
 
 const calculateNextRunDate = (currentDate: Date, frequency: IReminder['frequency']): Date => {
   switch (frequency) {
@@ -58,7 +62,6 @@ export const getReminders = asyncHandler(async (req: AuthenticatedRequest, res: 
     throw new Error('User not authorized');
   }
 
-  // Fix: Role casing matches AuthenticatedUser (now from IUser)
   const query = (req.user.role === 'Super Admin' || !req.user.organizationId) ? {} : { organizationId: req.user.organizationId };
 
   const reminders = await Reminder.find(query)
