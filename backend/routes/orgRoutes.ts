@@ -1,3 +1,4 @@
+// backend/routes/orgRoutes.ts
 import { Router } from 'express';
 import {
     getOrganizationDetails,
