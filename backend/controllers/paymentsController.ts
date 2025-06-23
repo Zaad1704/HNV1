@@ -1,13 +1,12 @@
-// backend/controllers/paymentsController.ts
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
 import mongoose from 'mongoose';
 
-
-export const getPayments = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getPayments = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+      res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+      return;
     }
     const payments = await Payment.find({ organizationId: req.user.organizationId })
       .populate('tenantId', 'name')
@@ -17,21 +16,24 @@ export const getPayments = async (req: AuthenticatedRequest, res: Response) => {
     res.status(200).json({ success: true, count: payments.length, data: payments });
 };
 
-export const createPayment = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const createPayment = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     const { tenantId, amount, paymentDate, status, lineItems, paidForMonth } = req.body;
 
     if (!tenantId || !amount || !paymentDate) {
-        return res.status(400).json({ success: false, message: 'Tenant, amount, and payment date are required.' });
+        res.status(400).json({ success: false, message: 'Tenant, amount, and payment date are required.' });
+        return;
     }
 
     try {
         const tenant = await Tenant.findById(tenantId);
         if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(404).json({ success: false, message: 'Tenant not found in your organization.' });
+            res.status(404).json({ success: false, message: 'Tenant not found in your organization.' });
+            return;
         }
 
         const newPayment = await Payment.create({
