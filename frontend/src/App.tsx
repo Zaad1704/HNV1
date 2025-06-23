@@ -1,29 +1,30 @@
-// frontend/src/App.tsx
-
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 
-// Layouts and Guards
+// --- Layouts and Guards ---
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
-// Pages
+// --- Lazy-loaded Page Components ---
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const GoogleAuthCallback = React.lazy(() => import('./pages/GoogleAuthCallback'));
-const NotFound = React.lazy(() => import('./pages/NotFound'));
-// FIX: Import the DashboardRedirector
+const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvitePage'));
+const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const DashboardRedirector = React.lazy(() => import('./pages/DashboardRedirector'));
-const DashboardPage = React.lazy(() => import('./pages/DashboardPage')); // Or OverviewPage
-const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
-
+const NotFound = React.lazy(() => import('./pages/NotFound'));
+const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 
 const FullScreenLoader = () => (
     <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white">
-        <p>Loading...</p>
+        <p>Loading Application...</p>
     </div>
 );
 
@@ -45,7 +46,7 @@ function App() {
       setSessionLoading(false);
     };
     checkUserSession();
-  }, []); // The dependency array remains empty to prevent race conditions
+  }, []);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
@@ -54,27 +55,31 @@ function App() {
   return (
     <Suspense fallback={<FullScreenLoader />}>
       <Routes>
+        {/* Public Routes with Header/Footer */}
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="auth/google/callback" element={<GoogleAuthCallback />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
         </Route>
+
+        {/* Auth routes without the main Header/Footer */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
         
-        {/* FIX: Reworked Dashboard Routing */}
+        {/* Protected Dashboard Routes */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            {/* The index route now uses the redirector to send users to the correct page */}
             <Route index element={<DashboardRedirector />} />
-            
-            {/* Define the actual dashboard pages here */}
-            <Route path="overview" element={<DashboardPage />} />
-            <Route path="tenant" element={<TenantDashboardPage />} />
-            
-            {/* You would continue to define all other dashboard routes here */}
-            {/* e.g., <Route path="properties" element={<PropertiesPage />} /> */}
+            <Route path="overview" element={<OverviewPage />} />
+            {/* Add all other dashboard routes here */}
           </Route>
         </Route>
         
+        {/* Catch-all Not Found Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
