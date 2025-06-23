@@ -1,6 +1,6 @@
 // backend/server.ts
 
-import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express'; // Import RequestHandler
+import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
@@ -36,7 +36,7 @@ import reportRoutes from './routes/reportRoutes';
 import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import sharingRoutes from './routes/sharingRoutes';
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
-import uploadRoutes from './routes/uploadRoutes'; // Ensure this is imported if not already used
+import uploadRoutes from './routes/uploadRoutes';
 
 dotenv.config();
 
@@ -60,43 +60,30 @@ const connectDB = async () => {
 };
 connectDB();
 
+// FIX: Add your live frontend URL to this array.
+// Your Render frontend URL is likely 'https://hnv-1-frontend.onrender.com' based on previous files.
 const allowedOrigins: string[] = [
   'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com' // FIX: This MUST be your frontend's exact URL
+  'https://hnv-1-frontend.onrender.com'
+  'https://www.hnvpm.com'
+  'https://hnvpm.com'
 ];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl) or from the allowed list.
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
-};
-app.use(cors(corsOptions));
-
-app.use(express.json());
-
-// FIX: Configure Helmet's Content Security Policy
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: [
-        "'self'",
-        "https://hnv-1-frontend.onrender.com", // Allow connections from the actual frontend domain
-        "https://hnv.onrender.com", // Allow connections to the actual backend domain
-        "https://hnv.onrender.com/api", // Allow API calls to the backend endpoint
-        "https://ipinfo.io" // For localizationController to fetch IP info
-      ],
-    },
   },
-}));
+  credentials: true // This allows cookies and authorization headers to be sent.
+};
 
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(helmet());
 
 // --- Mount API Routes ---
 app.use('/api/auth', authRoutes);
@@ -133,7 +120,7 @@ app.use('/api/upload', uploadRoutes);
 // A simple health-check route
 app.get('/', ((req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
-}) as RequestHandler); // Cast to RequestHandler
+}) as RequestHandler);
 
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
