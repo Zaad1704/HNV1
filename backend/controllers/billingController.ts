@@ -6,8 +6,9 @@ import Tenant from '../models/Tenant';
 import Subscription from '../models/Subscription';
 import Payment from '../models/Payment'; // NEW IMPORT
 import Invoice from '../models/Invoice'; // NEW IMPORT
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const getSubscriptionDetails = async (req: Request, res: Response) => {
+export const getSubscriptionDetails = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         return res.status(401).json({ success: false, message: 'User not authenticated.' });
     }
@@ -24,7 +25,7 @@ export const getSubscriptionDetails = async (req: Request, res: Response) => {
     }
 };
 
-export const createCheckoutSession = async (req: Request, res: Response) => {
+export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response) => {
     const { planId } = req.body;
     const user = req.user;
     if (!user) {
@@ -66,7 +67,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 // --- MODIFIED FUNCTION ---
 // @desc    Create a checkout session for a one-time rent payment (linked to an invoice)
 // @route   POST /api/billing/create-rent-payment
-export const createRentPaymentSession = async (req: Request, res: Response) => {
+export const createRentPaymentSession = async (req: AuthenticatedRequest, res: Response) => {
     const user = req.user;
     if (!user) return res.status(401).json({ success: false, message: 'User not authenticated.' });
 
