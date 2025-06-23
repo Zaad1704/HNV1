@@ -1,12 +1,12 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenants = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -18,7 +18,7 @@ export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const createTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const createTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -47,7 +47,7 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const getTenantById = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenantById = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -64,32 +64,28 @@ export const getTenantById = async (req: AuthenticatedRequest, res: Response) =>
   }
 };
 
-export const updateTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const updateTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     }
-    // Fetch the original tenant document to compare changes
-    const originalTenant = await Tenant.findById(req.params.id).lean(); // .lean() for a plain object
+    const originalTenant = await Tenant.findById(req.params.id).lean();
     if (!originalTenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
     
     if (originalTenant.organizationId.toString() !== req.user.organizationId.toString()) {
       return res.status(403).json({ success: false, message: 'User not authorized to update this tenant' });
     }
 
-    // Apply the updates to get the new version
     const updatedTenant = await Tenant.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     
     if (updatedTenant) {
-        // --- ENHANCED AUDIT LOGIC START ---
         const changes = {};
-        // Iterate over the keys in the request body to see what was submitted for update
         for (const key in req.body) {
-            // Check if the value has actually changed
-            if (originalTenant[key] !== updatedTenant[key]) {
-                changes[key] = {
-                    from: originalTenant[key] || 'undefined',
-                    to: updatedTenant[key]
+            // FIX: Ensure comparison is safe, accessing properties with string index signature
+            if ((originalTenant as any)[key] !== (updatedTenant as any)[key]) {
+                (changes as any)[key] = {
+                    from: (originalTenant as any)[key] || 'undefined',
+                    to: (updatedTenant as any)[key]
                 };
             }
         }
@@ -101,11 +97,9 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
             { 
                 tenantId: updatedTenant._id.toString(), 
                 tenantName: updatedTenant.name,
-                // Only include the 'changes' field if something actually changed
                 ...(Object.keys(changes).length > 0 && { changes })
             }
         );
-        // --- ENHANCED AUDIT LOGIC END ---
     }
     res.status(200).json({ success: true, data: updatedTenant });
   } catch (error: any) {
@@ -113,7 +107,7 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
-export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
   try {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -125,7 +119,6 @@ export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => 
     }
     await tenant.deleteOne();
     
-    // This action already provides good detail
     auditService.recordAction(
         req.user._id,
         req.user.organizationId,
