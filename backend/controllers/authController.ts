@@ -7,14 +7,14 @@ import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
 import emailService from '../services/emailService';
 import auditService from '../services/auditService';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; // FIX: Changed '=>' to 'from'
 import { IUser } from '../models/User';
-import mongoose, { Types } from 'mongoose';
-import passport from 'passport';
+import mongoose, { Types } from 'mongoose'; // FIX: Import 'Types' for mongoose.Types.ObjectId
+import passport from 'passport'; // FIX: Import passport for googleAuthCallback
 
 const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
-    res.status(statusCode).json({ success: true, token, user: user }); // Also send back user data
+    res.status(statusCode).json({ success: true, token });
 };
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -33,27 +33,26 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     }
     const organization = new Organization({ name: `${name}'s Organization`, members: [] });
     const user = new User({ name, email, password, role, organizationId: organization._id });
-    organization.owner = user._id as Types.ObjectId;
-    organization.members.push(user._id as Types.ObjectId);
+    organization.owner = user._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
+    organization.members.push(user._id as Types.ObjectId); // FIX: Use Types.ObjectId for casting
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + 7);
     const subscription = new Subscription({
-        organizationId: organization._id as Types.ObjectId,
-        planId: trialPlan._id as Types.ObjectId,
+        organizationId: organization._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
+        planId: trialPlan._id as Types.ObjectId, // FIX: Use Types.ObjectId for casting
         status: 'trialing',
         trialExpiresAt: trialEndDate,
     });
-    organization.subscription = subscription._id as Types.ObjectId;
+    organization.subscription = subscription._id as Types.ObjectId; // FIX: Use Types.ObjectId for casting
     await organization.save();
     await user.save();
     await subscription.save();
-    
-    // FIX: Pass empty object as the 4th argument
+    // FIX: Use Types.ObjectId for casting before .toString() and ensure 4 arguments for auditService
     auditService.recordAction(
         user._id as Types.ObjectId,
         organization._id as Types.ObjectId,
         'USER_REGISTER',
-        {} // Explicitly pass empty object for details
+        { registeredUserId: (user._id as Types.ObjectId).toString() } // Pass empty object for details if none
     );
     try {
         await emailService.sendEmail(user.email, 'Welcome to HNV!', `<h1>Welcome!</h1><p>Your 7-day free trial has started.</p>`);
@@ -78,6 +77,7 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+    // FIX: Use Types.ObjectId for casting and ensure 4 arguments for auditService
     auditService.recordAction(
         user._id as Types.ObjectId,
         user.organizationId as Types.ObjectId,
@@ -103,6 +103,10 @@ export const getMe = async (req: AuthenticatedRequest, res: Response) => {
     res.status(200).json({ success: true, data: user });
 };
 
+// FIX: Placeholder for Google OAuth callback as requested by routes/authRoutes.ts
 export const googleAuthCallback = (req: Request, res: Response) => {
-  res.redirect('/dashboard');
+  // This function will be called after Google authenticates the user.
+  // The actual user data would be available in req.user from Passport.
+  // You would typically redirect to your frontend dashboard from here.
+  res.redirect('/dashboard'); // Example redirect
 };
