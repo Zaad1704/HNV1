@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
 import EditRequest from '../models/EditRequest';
 import auditService from '../services/auditService';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
 export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedRequest, res: Response) => { 
@@ -22,7 +22,7 @@ export const createCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
     }
 
     // Ensure only Agents can create cash flow records directly
-    if (req.user.role !== 'Agent') { // Fix TS2367: Use correct casing for role
+    if (req.user.role !== 'Agent') { 
         res.status(403);
         throw new Error('Only agents can create cash flow records.');
     }
@@ -76,7 +76,7 @@ export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
     }
 
     // --- NEW PERMISSION LOGIC ---
-    if (req.user.role === 'Agent') { // Fix TS2367
+    if (req.user.role === 'Agent') { 
         // Agents cannot update directly. They need an approved request.
         const approvedRequest = await EditRequest.findOne({
             resourceId: cashFlowRecord._id,
@@ -88,7 +88,7 @@ export const updateCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
             res.status(403);
             throw new Error('Permission denied. An approved edit request is required for this action.');
         }
-    } else if (req.user.role !== 'Landlord') { // Fix TS2367
+    } else if (req.user.role !== 'Landlord') { 
         // Block any other roles that aren't Landlord or Agent
         res.status(403);
         throw new Error('You do not have permission to perform this action.');
@@ -124,7 +124,7 @@ export const deleteCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
     }
 
     // --- NEW PERMISSION LOGIC ---
-    if (req.user.role === 'Agent') { // Fix TS2367
+    if (req.user.role === 'Agent') { 
         const approvedRequest = await EditRequest.findOne({
             resourceId: cashFlowRecord._id,
             requester: req.user._id,
@@ -134,7 +134,7 @@ export const deleteCashFlowRecord = asyncHandler(async (req: AuthenticatedReques
             res.status(403);
             throw new Error('Permission denied. An approved delete request is required.');
         }
-    } else if (req.user.role !== 'Landlord') { // Fix TS2367
+    } else if (req.user.role !== 'Landlord') { 
         res.status(403);
         throw new Error('You do not have permission to perform this action.');
     }
