@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { google } from 'googleapis';
 import path from 'path';
 import { Readable } from 'stream';
-import { AuthenticatedRequest } from '../middleware/authMiddleware';
+
 
 // --- Google Drive API Setup (no changes here) ---
 let auth;
