@@ -1,6 +1,7 @@
 import create from "zustand";
 import { persist } from "zustand/middleware";
 
+// Define your user type
 type User = {
   _id: string;
   name: string;
@@ -14,7 +15,6 @@ type AuthState = {
   isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
-  login: (token: string, user: User) => void; // We can simplify this but will leave for now
   logout: () => void;
 };
 
@@ -25,26 +25,17 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      
-      // FIX: Both login and setToken will ONLY set the token. 
-      // The user object will be fetched separately by App.tsx to avoid race conditions.
-      setToken: (token) => set({ token, user: null, isAuthenticated: !!token }),
-      
-      login: (token, user) =>
-        set({
-          token,
-          user, // For standard login, we can set the user immediately
-          isAuthenticated: true,
-        }),
+      setToken: (token) => set({ token }),
       logout: () => {
-        // Clear everything on logout
-        localStorage.removeItem("auth-storage");
+        // On logout, clear everything from state and storage
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),
     {
-      name: "auth-storage",
-      partialize: (state) => ({ token: state.token }), // Only persist the token
+      name: "auth-storage", // The key in localStorage
+      // FIX: Only persist the 'token'. The user object will be fetched on load.
+      // This prevents issues with stale user data causing crashes.
+      partialize: (state) => ({ token: state.token }),
     }
   )
 );
