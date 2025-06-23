@@ -1,45 +1,40 @@
-// backend/controllers/maintenanceController.ts
-
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose, { Types } from 'mongoose';
 
-// @desc    Create a new maintenance request
-// @route   POST /api/maintenance
-// @access  Private (Landlord, Agent, Tenant - depending on allowed roles to create requests)
-export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const createMaintenanceRequest = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
     }
 
     const { propertyId, description, status, priority, tenantId, category, notes, assignedTo } = req.body;
 
-    // Basic validation
     if (!propertyId || !description) {
-      return res.status(400).json({ success: false, message: 'Property ID and description are required.' });
+      res.status(400).json({ success: false, message: 'Property ID and description are required.' });
+      return;
     }
 
-    // Verify property belongs to the user's organization
     const property = await Property.findById(propertyId);
     if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to create requests for this property.' });
+      res.status(403).json({ success: false, message: 'Not authorized to create requests for this property.' });
+      return;
     }
 
-    // Create the maintenance request
     const newRequest = await MaintenanceRequest.create({
       organizationId: req.user.organizationId as Types.ObjectId,
-      propertyId: new Types.ObjectId(propertyId), // Fix: Cast to ObjectId
-      tenantId: tenantId ? new Types.ObjectId(tenantId) : undefined, // Fix: Cast if provided
+      propertyId: new Types.ObjectId(propertyId),
+      tenantId: tenantId ? new Types.ObjectId(tenantId) : undefined,
       description,
-      status: status || 'Open', // Default to 'Open' if not provided
-      priority: priority || 'Medium', // Default to 'Medium'
+      status: status || 'Open',
+      priority: priority || 'Medium',
       requestedBy: req.user._id as Types.ObjectId, 
       category,
       notes,
-      assignedTo: assignedTo ? new Types.ObjectId(assignedTo) : undefined, // Fix: Cast if provided
+      assignedTo: assignedTo ? new Types.ObjectId(assignedTo) : undefined,
     });
 
     auditService.recordAction(
@@ -57,13 +52,11 @@ export const createMaintenanceRequest = async (req: AuthenticatedRequest, res: R
   }
 };
 
-// @desc    Get all maintenance requests for the user's organization
-// @route   GET /api/maintenance
-// @access  Private (Landlord, Agent, Super Admin)
-export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: Response) => {
+export const getOrgMaintenanceRequests = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
     }
 
     const requests = await MaintenanceRequest.find({ organizationId: req.user.organizationId })
@@ -81,13 +74,11 @@ export const getOrgMaintenanceRequests = async (req: AuthenticatedRequest, res: 
   }
 };
 
-// @desc    Get a single maintenance request by ID
-// @route   GET /api/maintenance/:id
-// @access  Private (Landlord, Agent, Super Admin, or Tenant if it's their request)
-export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: Response) => {
+export const getMaintenanceRequestById = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
     }
 
     const request = await MaintenanceRequest.findById(req.params.id)
@@ -97,17 +88,18 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
       .populate('tenantId', 'name email');
 
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      return;
     }
 
-    // Ensure user is authorized to view this request (belongs to their organization)
     if (request.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
+      res.status(403).json({ success: false, message: 'Not authorized to access this request.' });
+      return;
     }
 
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (req.user.role === 'Tenant' && (request.requestedBy as any)?._id?.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
+        res.status(403).json({ success: false, message: 'Tenants can only view their own reported requests.' });
+        return;
     }
 
     res.status(200).json({ success: true, data: request });
@@ -118,36 +110,33 @@ export const getMaintenanceRequestById = async (req: AuthenticatedRequest, res: 
   }
 };
 
-
-// @desc    Update a maintenance request
-// @route   PUT /api/maintenance/:id
-// @access  Private (Landlord, Agent, Super Admin)
-export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const updateMaintenanceRequest = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
     }
 
     let request = await MaintenanceRequest.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      return;
     }
 
-    // Ensure user is authorized to update this request (belongs to their organization)
     if (request.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to update this request.' });
+      res.status(403).json({ success: false, message: 'Not authorized to update this request.' });
+      return;
     }
 
-    // Tenant role cannot update status or assignedTo directly, only description/notes
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (req.user.role === 'Tenant') {
         const allowedUpdates = ['description', 'notes'];
         const updates = Object.keys(req.body);
         const isValidOperation = updates.every(update => allowedUpdates.includes(update));
 
         if (!isValidOperation) {
-            return res.status(403).json({ success: false, message: 'Tenants can only update description and notes.' });
+            res.status(403).json({ success: false, message: 'Tenants can only update description and notes.' });
+            return;
         }
     }
 
@@ -175,30 +164,28 @@ export const updateMaintenanceRequest = async (req: AuthenticatedRequest, res: R
   }
 };
 
-// @desc    Delete a maintenance request
-// @route   DELETE /api/maintenance/:id
-// @access  Private (Landlord, Agent, Super Admin - not Tenants)
-export const deleteMaintenanceRequest = async (req: AuthenticatedRequest, res: Response) => {
+export const deleteMaintenanceRequest = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      res.status(401).json({ success: false, message: 'Not authorized' });
+      return;
     }
 
     const request = await MaintenanceRequest.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      res.status(404).json({ success: false, message: 'Maintenance request not found' });
+      return;
     }
 
-    // Ensure user is authorized to delete this request (belongs to their organization)
     if (request.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete this request.' });
+      res.status(403).json({ success: false, message: 'Not authorized to delete this request.' });
+      return;
     }
 
-    // Only Landlords, Agents, Super Admins can delete requests
-    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (!['Landlord', 'Agent', 'Super Admin'].includes(req.user.role)) {
-        return res.status(403).json({ success: false, message: 'Your role is not authorized to delete maintenance requests.' });
+        res.status(403).json({ success: false, message: 'Your role is not authorized to delete maintenance requests.' });
+        return;
     }
 
     await request.deleteOne();
