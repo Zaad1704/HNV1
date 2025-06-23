@@ -4,10 +4,10 @@ import { IUser } from '../../models/User';
 
 declare module 'express' {
   interface Request {
-    // Define user as an IUser type combined with a Mongoose Document,
-    // and allow it to be null/undefined.
+    // Defines that req.user will be an IUser document or null/undefined
     user?: (IUser & Document<any, any, any>) | null;
-    organizationId?: Types.ObjectId;
+    // Keep organizationId as it's a custom property added by middleware
+    organizationId?: Types.ObjectId; 
   }
 }
 
