@@ -1,15 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User"; 
-import { Document, Types } from "mongoose";
-
-// AuthenticatedRequest is no longer an interface that extends Request directly to avoid TS2430.
-// Instead, it's a type alias for Request, leveraging the global augmentation in express.d.ts.
-export type AuthenticatedRequest = Request;
+import { Document } from "mongoose";
 
 // Middleware to protect routes (JWT authentication)
 export const protect = async (
-  req: AuthenticatedRequest, // Now refers to the globally augmented Request
+  req: Request, // Express.Request is now globally augmented
   res: Response,
   next: NextFunction
 ) => {
@@ -25,8 +21,6 @@ export const protect = async (
       }
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
 
-      // Fetch the user, exclude password field.
-      // The result is directly assigned to req.user, which is typed by express.d.ts
       req.user = (await User.findById(decoded.id).select("-password")) as (IUser & Document<any, any, any>) | null;
 
       if (!req.user) {
@@ -46,17 +40,14 @@ export const protect = async (
         .json({ success: false, message: "Not authorized, token failed" });
     }
   }
-  if (!token) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Not authorized, no token" });
-  }
+  return res
+    .status(401)
+    .json({ success: false, message: "Not authorized, no token" });
 };
 
 // Middleware to authorize based on user role
-export const authorize = (...roles: IUser["role"][]) => { // Directly use IUser['role'] for roles array
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => { // Use AuthenticatedRequest type
-    // req.user is correctly typed here due to global augmentation
+export const authorize = (...roles: IUser["role"][]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
