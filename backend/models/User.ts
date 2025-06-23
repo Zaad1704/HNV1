@@ -1,86 +1,88 @@
-// backend/models/User.ts
+import mongoose, { Schema, Document, model, Types } from 'mongoose'; // FIX: Import Types
+import bcrypt from 'bcrypt';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import crypto from 'crypto'; // FIX: Import crypto for password reset token generation
 
-import mongoose, { Document, Schema, Model } from "mongoose";
-import jwt, { SignOptions } from "jsonwebtoken";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-
-// Define the allowed roles as a specific type
-type UserRole = "Super Admin" | "Super Moderator" | "Landlord" | "Agent" | "Tenant";
-
-// Extend this interface as needed for your app
 export interface IUser extends Document {
+  name: string;
   email: string;
-  password?: string; // Password can be optional for Google OAuth users
-  role: UserRole;
-  name?: string;
-  status: 'active' | 'inactive' | 'suspended';
-  permissions: string[]; // THE FIX: This is now a required property
-  organizationId?: mongoose.Types.ObjectId;
-  googleId?: string; // For Google OAuth
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  managedAgentIds?: mongoose.Types.ObjectId[];
-  associatedLandlordIds?: mongoose.Types.ObjectId[];
-  // Methods
+  password?: string;
+  role: 'Super Admin' | 'Landlord' | 'Agent' | 'Tenant';
+  organizationId: mongoose.Types.ObjectId;
+  createdAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
+
+  // FIX: New fields for password reset
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+
+  // FIX: New fields for user profile (from userController errors, assuming optional)
+  address?: string;
+  governmentIdUrl?: string;
+
+  // FIX: New method for password reset token generation
   getPasswordResetToken(): string;
 }
 
-const userSchema = new Schema<IUser>(
-  {
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, minlength: 6, select: false },
-    role: {
-        type: String,
-        required: true,
-        enum: ["Super Admin", "Super Moderator", "Landlord", "Agent", "Tenant"],
-        default: "Tenant"
-    },
-    name: { type: String },
-    googleId: { type: String },
-    status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
-    // THE FIX: Provide a default value for the permissions array
-    permissions: { type: [String], default: [] },
-    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization' },
-    passwordResetToken: { type: String },
-    passwordResetExpires: { type: Date },
-    managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    associatedLandlordIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  },
-  { timestamps: true }
-);
+const UserSchema: Schema<IUser> = new Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true, select: false },
+  role: { type: String, enum: ['Super Admin', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  createdAt: { type: Date, default: Date.now },
+  
+  // FIX: Add schema fields for password reset
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 
-// Hash password before save
-userSchema.pre<IUser>("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
+  // FIX: Add schema fields for user profile (assuming optional)
+  address: String,
+  governmentIdUrl: String,
+});
+
+UserSchema.pre<IUser>('save', async function(next) {
+  if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// Compare entered password with hashed password
-userSchema.methods.matchPassword = async function (enteredPassword: string) {
+UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
   if (!this.password) return false;
-  return bcrypt.compare(enteredPassword, this.password);
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT
-userSchema.methods.getSignedJwtToken = function () {
-  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not defined");
-  const expiresIn = process.env.JWT_EXPIRE ? parseInt(process.env.JWT_EXPIRE, 10) : 60 * 60 * 24 * 30;
-  const jwtOptions: SignOptions = { expiresIn };
-  return jwt.sign({ id: this._id, role: this.role, orgId: this.organizationId }, process.env.JWT_SECRET, jwtOptions);
+UserSchema.methods.getSignedJwtToken = function(): string {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT Secret is not defined in environment variables.');
+  }
+
+  const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
+  const secret: Secret = process.env.JWT_SECRET;
+  const options: SignOptions = {
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any,
+  };
+
+  return jwt.sign(payload, secret, options);
 };
 
-// Generate and hash password reset token
-userSchema.methods.getPasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(20).toString("hex");
-  this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+// FIX: Method to generate and hash password reset token
+UserSchema.methods.getPasswordResetToken = function(): string {
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to passwordResetToken field
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
   return resetToken;
 };
 
-const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
-export default User;
+
+export default model<IUser>('User', UserSchema);
