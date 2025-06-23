@@ -1,28 +1,28 @@
-// backend/controllers/communicationController.ts
-
 import { Request, Response } from 'express';
 import emailService from '../services/emailService';
 import Tenant from '../models/Tenant';
 import User from '../models/User';
 import Property from '../models/Property';
 
-
-export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) => {
+export const sendCustomEmail = async (req: Request, res: Response) => {
     const { recipientEmail, subject, message } = req.body;
     const sender = req.user;
 
     if (!recipientEmail || !subject || !message) {
-        return res.status(400).json({ success: false, message: 'Recipient, subject, and message are required.' });
+        res.status(400).json({ success: false, message: 'Recipient, subject, and message are required.' });
+        return;
     }
 
     if (!sender || !sender.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
         const tenant = await Tenant.findOne({ email: recipientEmail, organizationId: sender.organizationId });
         if (!tenant) {
-            return res.status(403).json({ success: false, message: "You do not have permission to contact this recipient." });
+            res.status(403).json({ success: false, message: "You do not have permission to contact this recipient." });
+            return;
         }
 
         await emailService.sendEmail(
@@ -43,7 +43,7 @@ export const sendCustomEmail = async (req: AuthenticatedRequest, res: Response) 
     }
 };
 
-export const sendRentReminder = async (req: AuthenticatedRequest, res: Response) => {
+export const sendRentReminder = async (req: Request, res: Response) => {
     const { tenantId } = req.body;
     const sender = req.user;
 
@@ -64,12 +64,9 @@ export const sendRentReminder = async (req: AuthenticatedRequest, res: Response)
             throw new Error('Tenant not found in your organization.');
         }
 
-        // Fix: Role casing matches AuthenticatedUser (now from IUser)
         const senderName = sender.name || (sender.role === 'Landlord' ? 'Your Landlord' : 'Your Agent');
         const senderEmail = sender.email;
-
         const propertyName = (tenant.propertyId as any)?.name || 'your property';
-
         const subject = `Rent Payment Reminder for Unit ${tenant.unit} - ${propertyName}`;
         const messageBody = `
             <p>Dear ${tenant.name},</p>
