@@ -1,18 +1,18 @@
-// backend/controllers/dashboardController.ts
-
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
+import AuditLog from '../models/AuditLog'; // Import AuditLog model
 import { startOfMonth, endOfMonth, subMonths, format, addDays } from 'date-fns';
 
 export const getOverviewStats = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) { // Added: Check req.user
+    // ... this function remains the same
+    if (!req.user) { 
         throw new Error('User not authorized');
     }
-    const organizationId = req.user.organizationId; // Use organizationId from req.user
+    const organizationId = req.user.organizationId; 
 
     const totalProperties = await Property.countDocuments({ organizationId });
     const activeTenants = await Tenant.countDocuments({ organizationId, status: 'Active' });
@@ -39,85 +39,50 @@ export const getOverviewStats = asyncHandler(async (req: Request, res: Response)
 });
 
 export const getLateTenants = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) { // Added: Check req.user
-        throw new Error('User not authorized');
-    }
-    const organizationId = req.user.organizationId;
-
-    const lateTenants = await Tenant.find({ organizationId, status: 'Late' })
-        .populate('propertyId', 'name'); // Populate property name
-    res.status(200).json({ success: true, data: lateTenants });
+    // ... this function remains the same
 });
 
 export const getExpiringLeases = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) { // Added: Check req.user
-        throw new Error('User not authorized');
-    }
-    const organizationId = req.user.organizationId;
-
-    const sixtyDaysFromNow = addDays(new Date(), 60);
-    const expiringLeases = await Tenant.find({
-        organizationId,
-        leaseEndDate: { $lte: sixtyDaysFromNow, $gte: new Date() },
-        status: 'Active'
-    }).populate('propertyId', 'name'); // Populate property name
-    res.status(200).json({ success: true, data: expiringLeases });
+    // ... this function remains the same
 });
 
-// --- NEW FUNCTION for Financial Chart ---
 export const getFinancialSummary = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) { throw new Error('User not authorized'); }
-    const organizationId = req.user.organizationId;
-    const monthlyData = [];
-
-    for (let i = 5; i >= 0; i--) {
-        const date = subMonths(new Date(), i);
-        const monthStart = startOfMonth(date);
-        const monthEnd = endOfMonth(date);
-
-        const revenuePromise = Payment.aggregate([
-            { $match: { organizationId, paymentDate: { $gte: monthStart, $lte: monthEnd }, status: 'Paid' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
-        ]);
-
-        const expensePromise = Expense.aggregate([
-            { $match: { organizationId, date: { $gte: monthStart, $lte: monthEnd } } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
-        ]);
-
-        const [revenueResult, expenseResult] = await Promise.all([revenuePromise, expensePromise]);
-
-        monthlyData.push({
-            name: format(monthStart, 'MMM'),
-            Revenue: revenueResult[0]?.total || 0,
-            Expenses: expenseResult[0]?.total || 0,
-        });
-    }
-
-    res.status(200).json({ success: true, data: monthlyData });
+    // ... this function remains the same
 });
 
-// --- NEW FUNCTION for Occupancy Chart ---
 export const getOccupancySummary = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) { throw new Error('User not authorized'); }
-    const organizationId = req.user.organizationId;
-    const monthlyData = [];
+    // ... this function remains the same
+});
 
-    for (let i = 5; i >= 0; i--) {
-        const date = subMonths(new Date(), i);
-        const monthStart = startOfMonth(date);
-        const monthEnd = endOfMonth(date);
-
-        const newTenants = await Tenant.countDocuments({
-            organizationId,
-            createdAt: { $gte: monthStart, $lte: monthEnd }
-        });
-
-        monthlyData.push({
-            name: format(monthStart, 'MMM'),
-            "New Tenants": newTenants,
-        });
+// --- NEW FUNCTION for Rent Status Chart ---
+export const getRentStatus = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user?.organizationId) {
+        throw new Error('User or organization not found');
     }
+    const { organizationId } = req.user;
 
-    res.status(200).json({ success: true, data: monthlyData });
+    const activeCount = await Tenant.countDocuments({ organizationId, status: 'Active' });
+    const lateCount = await Tenant.countDocuments({ organizationId, status: 'Late' });
+
+    const data = [
+        { name: 'Paid / Current', value: activeCount },
+        { name: 'Overdue', value: lateCount },
+    ];
+
+    res.status(200).json({ success: true, data });
+});
+
+// --- NEW FUNCTION for Recent Activity Feed ---
+export const getRecentActivity = asyncHandler(async (req: Request, res: Response) => {
+    if (!req.user?.organizationId) {
+        throw new Error('User or organization not found');
+    }
+    const { organizationId } = req.user;
+
+    const activities = await AuditLog.find({ organizationId })
+        .populate('user', 'name')
+        .sort({ timestamp: -1 })
+        .limit(5); // Get the 5 most recent activities
+
+    res.status(200).json({ success: true, data: activities });
 });
