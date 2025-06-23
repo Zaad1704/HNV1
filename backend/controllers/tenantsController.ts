@@ -36,9 +36,9 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
         req.user.organizationId,
         'TENANT_CREATE',
         {
-            tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), // Fix: Cast to ObjectId
+            tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), 
             tenantName: tenant.name,
-            propertyId: (property._id as mongoose.Types.ObjectId).toString() // Fix: Cast to ObjectId
+            propertyId: (property._id as mongoose.Types.ObjectId).toString() 
         }
     );
     res.status(201).json({ success: true, data: tenant });
@@ -95,7 +95,7 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
             req.user.organizationId,
             'TENANT_UPDATE',
             { 
-                tenantId: (updatedTenant._id as mongoose.Types.ObjectId).toString(), // Fix: Cast to ObjectId
+                tenantId: (updatedTenant._id as mongoose.Types.ObjectId).toString(), 
                 tenantName: updatedTenant.name,
                 ...(Object.keys(changes).length > 0 && { changes })
             }
@@ -123,7 +123,7 @@ export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => 
         req.user._id,
         req.user.organizationId,
         'TENANT_DELETE',
-        { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), tenantName: tenant.name } // Fix: Cast to ObjectId
+        { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), tenantName: tenant.name } 
     );
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
