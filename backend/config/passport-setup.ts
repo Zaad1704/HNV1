@@ -21,11 +21,11 @@ passport.use(new GoogleStrategy(
         }
 
         try {
-            // Find a user by their existing Google ID
+            // First, try to find a user by their existing Google ID
             let user = await User.findOne({ googleId: profile.id });
 
             if (user) {
-                // If the user is found by their Google ID, proceed with login.
+                // If the user is found, login is successful.
                 return done(null, user);
             }
 
@@ -41,7 +41,7 @@ passport.use(new GoogleStrategy(
                 return done(null, user);
             }
 
-            // If no user exists with that Google ID or email, create a new user.
+            // If no user exists with that Google ID or email, create a brand new user.
             const newUser = await User.create({
                 googleId: profile.id,
                 name: profile.displayName,
