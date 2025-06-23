@@ -25,6 +25,9 @@ export interface IUser extends Document {
   googleId?: string;
   status: string; // Add status property (from superAdminController and authMiddleware errors)
 
+  // FIX: Add permissions property required by AuthenticatedRequest/Passport.js types
+  permissions: string[]; // Assuming it's an array of strings, or could be `any` if complex
+
   // FIX: New method for password reset token generation (from passwordResetController errors)
   getPasswordResetToken(): string;
 }
@@ -51,6 +54,11 @@ const UserSchema: Schema<IUser> = new Schema({
     type: String,
     enum: ['active', 'suspended', 'pending'], // Example statuses, adjust as needed
     default: 'active'
+  },
+  // FIX: Add permissions field to schema
+  permissions: {
+    type: [String], // Array of strings
+    default: [] // Default to empty array
   }
 });
 
