@@ -1,16 +1,17 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import Organization from '../models/Organization'; // Import Organization model
+import { AuthenticatedRequest } from '../middleware/authMiddleware';
 
 // @desc    Get all users (Super Admin only)
-const getUsers = asyncHandler(async (req: Request, res: Response) => {
+const getUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const users = await User.find({});
   res.json(users);
 });
 
 // @desc    Get user by ID (Super Admin only)
-const getUser = asyncHandler(async (req: Request, res: Response) => {
+const getUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const user = await User.findById(req.params.id).select('-password');
   if (user) {
     res.json(user);
@@ -21,7 +22,7 @@ const getUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Update user (Super Admin only)
-const updateUser = asyncHandler(async (req: Request, res: Response) => {
+const updateUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await User.findById(req.params.id);
     if (user) {
         user.name = req.body.name || user.name;
@@ -36,7 +37,7 @@ const updateUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Delete user (Super Admin only)
-const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+const deleteUser = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const user = await User.findById(req.params.id);
     if (user) {
         await user.deleteOne();
@@ -48,7 +49,7 @@ const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Get all users within the same organization
-const getOrgUsers = asyncHandler(async (req: Request, res: Response) => {
+const getOrgUsers = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
         res.status(401);
         throw new Error('Not authorized');
@@ -58,7 +59,7 @@ const getOrgUsers = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Get agents managed by the current Landlord
-const getManagedAgents = asyncHandler(async (req: Request, res: Response) => {
+const getManagedAgents = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || req.user.role !== 'Landlord') {
         res.status(403);
         throw new Error('User is not a Landlord');
@@ -68,7 +69,7 @@ const getManagedAgents = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // @desc    Update user password
-const updatePassword = asyncHandler(async (req: Request, res: Response) => {
+const updatePassword = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!req.user) {
@@ -105,7 +106,7 @@ const updatePassword = asyncHandler(async (req: Request, res: Response) => {
  * @route   POST /api/users/request-deletion
  * @access  Private
  */
-const requestAccountDeletion = asyncHandler(async (req: Request, res: Response) => {
+const requestAccountDeletion = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
         throw new Error('Not authorized or not part of an organization');
