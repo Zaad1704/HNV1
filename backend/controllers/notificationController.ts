@@ -1,7 +1,7 @@
 // backend/controllers/notificationController.ts
 import { Response } from 'express'; 
 import Notification from '../models/Notification';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+
 
 // @desc    Get all notifications for the logged-in user
 // @route   GET /api/notifications
