@@ -21,7 +21,7 @@ if (rootElement) {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            {/* FIX: LangProvider and ThemeProvider are restored here */}
+            {/* FIX: All necessary providers are wrapped around the App */}
             <ThemeProvider>
               <LangProvider>
                 <App />
@@ -32,6 +32,4 @@ if (rootElement) {
       </ErrorBoundary>
     </React.StrictMode>
   );
-} else {
-  console.error("Fatal Error: The root element with id='root' was not found in the DOM.");
 }
