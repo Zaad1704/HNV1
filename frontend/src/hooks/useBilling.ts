@@ -1,56 +1,35 @@
-// frontend/src/hooks/useBilling.ts
-import { useState } from "react";
 import apiClient from "../api/client";
-import { useQuery } from '@tanstack/react-query'; // Import useQuery
+import { useQuery } from '@tanstack/react-query';
 
+/**
+ * This custom hook is the single source of truth for fetching the current user's subscription details.
+ * It uses React Query to efficiently cache and manage the data.
+ */
 export function useBilling() {
-  const [plans, setPlans] = useState<any[]>([]); // This might become redundant if using useQuery
-  const [billingHistory, setBillingHistory] = useState<any[]>([]); // This might become redundant if using useQuery
 
-  // Refactor fetchPlans to use React Query, assuming /api/plans is the source
-  const { data: fetchedPlans, isLoading: isLoadingPlans, isError: isErrorPlans } = useQuery({
-    queryKey: ['billingPlans'],
+  // Fetches the user's current subscription details from the /api/billing endpoint.
+  // The backend controller for this route populates the 'planId' field, so we get all the plan details.
+  //
+  const { 
+    data: billingInfo, 
+    isLoading: isLoadingBillingInfo, 
+    isError: isErrorBillingInfo 
+  } = useQuery({
+    queryKey: ['userBillingInfo'], // A unique key for React Query to cache this specific data.
     queryFn: async () => {
-      const res = await apiClient.get("/plans"); // Fetch from the public /api/plans endpoint
-      return res.data.data; // Assuming data structure { success: true, data: [...] }
+      const res = await apiClient.get("/billing");
+      // The backend nests the actual subscription object in a 'data' property.
+      // This ensures we return the core subscription object that the components need.
+      return res.data.data; 
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5, // Cache the data for 5 minutes to avoid unnecessary re-fetching.
   });
 
-  // Since backend/routes/billingRoutes.ts only has GET / and POST methods,
-  // there's no direct /billing/history. You'd fetch subscription details from /billing.
-  const { data: fetchedBillingInfo, isLoading: isLoadingBillingInfo, isError: isErrorBillingInfo } = useQuery({
-    queryKey: ['userBillingInfo'],
-    queryFn: async () => {
-      const res = await apiClient.get("/billing"); // Fetch from /api/billing
-      return res.data.data; // Assuming data structure { success: true, data: [...] }
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
-  // You can keep these for compatibility or remove them if you only rely on React Query data
-  const fetchPlansLegacy = async () => {
-    const res = await apiClient.get("/plans"); // Original call
-    setPlans(res.data.data);
-  };
-
-  const fetchBillingHistoryLegacy = async () => {
-    // This endpoint does not exist. You need to decide what 'history' means.
-    // If it's the current subscription, use fetchedBillingInfo.
-    // If it's a list of past payments, that's already covered by PaymentsPage /api/payments.
-    // For now, keeping it as is will result in a 404 unless a new backend route is added.
-    const res = await apiClient.get("/billing/history");
-    setBillingHistory(res.data);
-  };
-
-
+  // Return the data and its loading/error state in a clean, direct object.
+  // Any component using this hook can now directly access `billingInfo`, `isLoadingBillingInfo`, etc.
   return {
-    plans: fetchedPlans || [], // Use data from useQuery
-    billingHistory: fetchedBillingInfo ? [fetchedBillingInfo] : [], // Wrap single object in array for 'history'
-    isLoadingPlans,
-    isErrorPlans,
+    billingInfo,
     isLoadingBillingInfo,
     isErrorBillingInfo,
-    // Provide a way to trigger refetch if needed, e.g., queryClient.invalidateQueries(['userBillingInfo'])
   };
 }
