@@ -1,3 +1,4 @@
+// backend/controllers/tenantsController.ts
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Tenant from '../models/Tenant';
@@ -9,7 +10,8 @@ import { AuthenticatedRequest } from '../middleware/authMiddleware';
 export const getTenants = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return; 
     }
     const tenants = await Tenant.find({ organizationId: req.user.organizationId }).populate('propertyId', 'name');
     res.status(200).json({ success: true, count: tenants.length, data: tenants });
@@ -21,12 +23,14 @@ export const getTenants = async (req: AuthenticatedRequest, res: Response) => {
 export const createTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     const { propertyId } = req.body;
     const property = await Property.findById(propertyId);
     if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-        return res.status(400).json({ success: false, message: 'Invalid property selected.' });
+        res.status(400).json({ success: false, message: 'Invalid property selected.' });
+        return;
     }
     const tenantData = { ...req.body, organizationId: req.user.organizationId };
     const tenant = await Tenant.create(tenantData);
@@ -50,12 +54,17 @@ export const createTenant = async (req: AuthenticatedRequest, res: Response) => 
 export const getTenantById = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     const tenant = await Tenant.findById(req.params.id);
-    if (!tenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
+    if (!tenant) {
+        res.status(404).json({ success: false, message: 'Tenant not found' });
+        return;
+    }
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'User not authorized to access this tenant' });
+      res.status(403).json({ success: false, message: 'User not authorized to access this tenant' });
+      return;
     }
     res.status(200).json({ success: true, data: tenant });
   }
@@ -67,13 +76,18 @@ export const getTenantById = async (req: AuthenticatedRequest, res: Response) =>
 export const updateTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     const originalTenant = await Tenant.findById(req.params.id).lean();
-    if (!originalTenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
+    if (!originalTenant) {
+        res.status(404).json({ success: false, message: 'Tenant not found' });
+        return;
+    }
     
     if (originalTenant.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'User not authorized to update this tenant' });
+      res.status(403).json({ success: false, message: 'User not authorized to update this tenant' });
+      return;
     }
 
     const updatedTenant = await Tenant.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -81,7 +95,6 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
     if (updatedTenant) {
         const changes = {};
         for (const key in req.body) {
-            // FIX: Ensure comparison is safe, accessing properties with string index signature
             if ((originalTenant as any)[key] !== (updatedTenant as any)[key]) {
                 (changes as any)[key] = {
                     from: (originalTenant as any)[key] || 'undefined',
@@ -110,12 +123,17 @@ export const updateTenant = async (req: AuthenticatedRequest, res: Response) => 
 export const deleteTenant = async (req: AuthenticatedRequest, res: Response) => { 
   try {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
     const tenant = await Tenant.findById(req.params.id);
-    if (!tenant) return res.status(404).json({ success: false, message: 'Tenant not found' });
+    if (!tenant) {
+        res.status(404).json({ success: false, message: 'Tenant not found' });
+        return;
+    }
     if (tenant.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'User not authorized to delete this tenant' });
+      res.status(403).json({ success: false, message: 'User not authorized to delete this tenant' });
+      return;
     }
     await tenant.deleteOne();
     
