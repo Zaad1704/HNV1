@@ -6,9 +6,10 @@ import User from '../models/User';
 import Lease from '../models/Lease';
 import Invoice from '../models/Invoice';
 import { startOfMonth } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
+import { AuthenticatedRequest } from '../middleware/authMiddleware'; 
 
-export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => { // Changed to AuthenticatedRequest
+export const getTenantDashboardData = async (req: AuthenticatedRequest, res: Response) => { 
+    // Fix TS2367: Ensure role casing matches AuthenticatedUser definition
     if (!req.user || req.user.role !== 'Tenant') {
         return res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
     }
