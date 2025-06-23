@@ -7,11 +7,25 @@ import emailService from '../services/emailService';
 import auditService from '../services/auditService';
 import { IUser } from '../models/User';
 import mongoose, { Types } from 'mongoose'; 
-import passport from 'passport'; 
 
-const sendTokenResponse = (user: IUser, statusCode: number, res: Response) => {
+// FIX: This function will now send all the data the frontend expects.
+const sendTokenResponse = async (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
-    res.status(statusCode).json({ success: true, token });
+
+    // Get the user's subscription status to send to the frontend
+    const subscription = await Subscription.findOne({ organizationId: user.organizationId });
+
+    res.status(statusCode).json({
+        success: true,
+        token,
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        },
+        userStatus: subscription?.status || 'inactive' // Send subscription status
+    });
 };
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -59,7 +73,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     } catch (emailError) {
         console.error("Failed to send welcome email:", emailError);
     }
-    sendTokenResponse(user, 201, res);
+    await sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -88,7 +102,7 @@ export const loginUser = async (req: Request, res: Response) => {
         'USER_LOGIN',
         {}
     );
-    sendTokenResponse(user, 200, res);
+    await sendTokenResponse(user, 200, res);
 };
 
 export const getMe = async (req: Request, res: Response) => {
@@ -108,6 +122,11 @@ export const getMe = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, data: user });
 };
 
+// FIX: This function now correctly generates a token and redirects to the frontend.
 export const googleAuthCallback = (req: Request, res: Response) => {
-  res.redirect('/dashboard');
+    if (!req.user) {
+        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+    }
+    const token = (req.user as IUser).getSignedJwtToken();
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
 };
