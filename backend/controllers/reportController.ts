@@ -6,9 +6,7 @@ import Payment from '../models/Payment';
 import Expense from '../models/Expense';
 import Lease from '../models/Lease';
 import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
-import { AuthenticatedRequest } from '../middleware/authMiddleware'; // Re-import AuthenticatedRequest
 
-// Helper function to convert JSON array to CSV string
 function convertToCsv(data: any[]): string {
     if (data.length === 0) {
         return '';
@@ -32,9 +30,10 @@ function convertToCsv(data: any[]): string {
     return csvRows.join('\n');
 }
 
-export const generateMonthlyCollectionSheet = async (req: AuthenticatedRequest, res: Response) => {
+export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
@@ -72,9 +71,10 @@ export const generateMonthlyCollectionSheet = async (req: AuthenticatedRequest, 
     }
 };
 
-export const getTenantMonthlyStatement = async (req: AuthenticatedRequest, res: Response) => {
+export const getTenantMonthlyStatement = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     const { tenantId } = req.params;
@@ -83,7 +83,8 @@ export const getTenantMonthlyStatement = async (req: AuthenticatedRequest, res: 
     try {
         const tenant = await Tenant.findById(tenantId);
         if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(404).json({ success: false, message: 'Tenant not found in your organization.' });
+            res.status(404).json({ success: false, message: 'Tenant not found in your organization.' });
+            return;
         }
 
         const startDate = startMonth ? new Date(startMonth as string) : subMonths(new Date(), 11);
@@ -98,22 +99,18 @@ export const getTenantMonthlyStatement = async (req: AuthenticatedRequest, res: 
             const monthStart = startOfMonth(month);
             const monthEnd = endOfMonth(month);
 
-            // Fetch invoices for the current month
             const invoices = await Invoice.find({
                 tenantId: tenant._id,
                 dueDate: { $gte: monthStart, $lte: monthEnd }
             }).lean();
 
-            // Calculate expected due (sum of all invoice amounts for the month)
             const expectedDue = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
 
-            // Fetch payments made within the current month, associated with this tenant
             const payments = await Payment.find({
                 tenantId: tenant._id,
                 paymentDate: { $gte: monthStart, $lte: monthEnd }
             }).lean();
 
-            // Calculate amount paid for the current month
             const amountPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
             const monthlyBalance = amountPaid - expectedDue;
@@ -148,9 +145,10 @@ export const getTenantMonthlyStatement = async (req: AuthenticatedRequest, res: 
     }
 };
 
-export const generateTenantProfilePdf = async (req: AuthenticatedRequest, res: Response) => {
+export const generateTenantProfilePdf = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        return;
     }
 
     try {
@@ -160,7 +158,8 @@ export const generateTenantProfilePdf = async (req: AuthenticatedRequest, res: R
             .lean();
 
         if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(404).json({ success: false, message: 'Tenant not found.' });
+            res.status(404).json({ success: false, message: 'Tenant not found.' });
+            return;
         }
 
         const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -209,9 +208,10 @@ export const generateTenantProfilePdf = async (req: AuthenticatedRequest, res: R
     }
 };
 
-export const exportTenantsAsCsv = async (req: AuthenticatedRequest, res: Response) => {
+export const exportTenantsAsCsv = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
 
     try {
@@ -258,9 +258,10 @@ export const exportTenantsAsCsv = async (req: AuthenticatedRequest, res: Respons
     }
 };
 
-export const exportExpensesAsCsv = async (req: AuthenticatedRequest, res: Response) => {
+export const exportExpensesAsCsv = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
 
     try {
