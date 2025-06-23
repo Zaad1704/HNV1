@@ -10,7 +10,8 @@ const router = require('express').Router();
 router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
 router.get('/', asyncHandler(async (req: Request, res: Response) => { 
-    const authenticatedUser = req.user as import('../middleware/authMiddleware').AuthenticatedRequest['user'];
+    // FIX: The incorrect type cast has been removed from this line.
+    const authenticatedUser = req.user;
 
     const { userId, action, startDate, endDate } = req.query;
 
