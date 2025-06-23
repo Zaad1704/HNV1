@@ -1,6 +1,7 @@
 // backend/routes/uploadRoutes.ts
 
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler';
 import { uploadImage } from '../controllers/fileUploadController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -15,7 +16,7 @@ router.post(
     protect, 
     authorize(['Super Admin', 'Super Moderator']), 
     upload.single('image'), 
-    uploadImage
+    asyncHandler(uploadImage) 
 );
 
 export default router;
