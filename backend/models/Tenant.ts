@@ -1,19 +1,25 @@
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
-// FIX: Import the interfaces for the models you will populate
 import { IProperty } from './Property';
 import { IOrganization } from './Organization';
 
-// Sub-document interfaces remain the same
+// Expanded sub-document interface for other adults
 interface IAdditionalAdult {
     name: string;
     phone?: string;
-    idCardUrl?: string;
+    fatherName?: string;
+    motherName?: string;
+    permanentAddress?: string;
+    govtIdNumber?: string;
+    govtIdImageUrl?: string;
+    imageUrl?: string;
 }
 
+// Expanded sub-document interface for references
 interface IReference {
     name: string;
     phone?: string;
     email?: string;
+    idNumber?: string; // New field
 }
 
 export interface ITenant extends Document {
@@ -28,22 +34,25 @@ export interface ITenant extends Document {
     status: 'Active' | 'Inactive' | 'Late';
     leaseEndDate?: Date;
     rentAmount?: number;
-    imageUrl?: string;
-    idCardUrl?: string;
-    reference?: IReference;
-    gender?: 'Male' | 'Female' | 'Other';
+    
+    // --- NEW FIELDS FOR PRIMARY TENANT ---
+    imageUrl?: string; // Tenant's own photo
+    govtIdNumber?: string;
+    govtIdImageUrlFront?: string;
+    govtIdImageUrlBack?: string;
     fatherName?: string;
     motherName?: string;
-    spouseName?: string;
-    numberOfOccupants?: number;
+    permanentAddress?: string;
+    
+    reference?: IReference;
     additionalAdults?: IAdditionalAdult[];
+    
+    // ... existing fields
     createdAt: Date;
-    // NEW FIELDS for D.2: Rent Discount
-    discountAmount?: number; // Amount of temporary discount
-    discountExpiresAt?: Date; // Date when the discount expires
+    discountAmount?: number;
+    discountExpiresAt?: Date;
 }
 
-// The Schema definition does NOT change. It still defines the underlying storage type.
 const TenantSchema: Schema<ITenant> = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -54,24 +63,32 @@ const TenantSchema: Schema<ITenant> = new Schema({
     status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
     leaseEndDate: { type: Date },
     rentAmount: { type: Number, default: 0 },
+    
+    // --- ADDING NEW FIELDS TO THE SCHEMA ---
     imageUrl: { type: String },
-    idCardUrl: { type: String },
+    govtIdNumber: { type: String },
+    govtIdImageUrlFront: { type: String },
+    govtIdImageUrlBack: { type: String },
+    fatherName: { type: String },
+    motherName: { type: String },
+    permanentAddress: { type: String },
+
     reference: {
         name: { type: String },
         phone: { type: String },
         email: { type: String },
+        idNumber: { type: String },
     },
-    gender: { type: String, enum: ['Male', 'Female', 'Other'] },
-    fatherName: { type: String },
-    motherName: { type: String },
-    spouseName: { type: String },
-    numberOfOccupants: { type: Number },
     additionalAdults: [{
         name: { type: String },
         phone: { type: String },
-        idCardUrl: { type: String },
+        fatherName: { type: String },
+        motherName: { type: String },
+        permanentAddress: { type: String },
+        govtIdNumber: { type: String },
+        govtIdImageUrl: { type: String },
+        imageUrl: { type: String },
     }],
-    // NEW SCHEMA FIELDS for D.2
     discountAmount: { type: Number, default: 0 },
     discountExpiresAt: { type: Date },
 }, { timestamps: true });
