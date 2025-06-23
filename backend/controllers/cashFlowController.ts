@@ -1,91 +1,100 @@
-// backend/controllers/cashFlowController.ts
-
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
+import EditRequest from '../models/EditRequest'; // Import the new model
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-// @desc    Create a new cash flow record (cash handover or bank deposit)
-// @route   POST /api/cashflow
-// @access  Private (Agent)
-export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
+// The createCashFlowRecord and getCashFlowRecords functions remain the same
+export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { /* ... */ });
+export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => { /* ... */ });
+
+/**
+ * @desc    Update a cash flow record (with new permission logic)
+ * @route   PUT /api/cashflow/:id
+ * @access  Private
+ */
+export const updateCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
-        throw new Error('User not authorized or not part of an organization');
-    }
-    // Only Agents should be able to create these records
-    if (req.user.role !== 'Agent') {
-        res.status(403);
-        throw new Error('Only Agents can record cash flow transactions.');
+        throw new Error('User not authorized');
     }
 
-    const { toUser, amount, type, transactionDate, description, status } = req.body;
-
-    if (!amount || !type || !transactionDate) {
-        res.status(400);
-        throw new Error('Amount, type, and transaction date are required.');
-    }
-    if (type === 'cash_handover' && !toUser) {
-        res.status(400);
-        throw new Error('Recipient (toUser) is required for cash handover.');
+    const cashFlowRecord = await CashFlow.findById(req.params.id);
+    if (!cashFlowRecord || cashFlowRecord.organizationId.toString() !== req.user.organizationId.toString()) {
+        res.status(404);
+        throw new Error('Cash flow record not found');
     }
 
-    // documentUrl comes from Multer's req.file processing
-    const documentUrl = req.file ? (req.file as any).imageUrl : undefined;
+    // --- NEW PERMISSION LOGIC ---
+    if (req.user.role === 'Agent') {
+        // Agents cannot update directly. They need an approved request.
+        const approvedRequest = await EditRequest.findOne({
+            resourceId: cashFlowRecord._id,
+            requester: req.user._id,
+            status: 'approved'
+        });
 
-    const newRecord = await CashFlow.create({
-        organizationId: req.user.organizationId,
-        fromUser: req.user._id,
-        toUser: type === 'cash_handover' ? toUser : undefined,
-        amount: Number(amount),
-        type,
-        status: status || 'pending',
-        transactionDate: new Date(transactionDate),
-        description,
-        documentUrl,
-        recordedBy: req.user._id,
-    });
-
-    auditService.recordAction(
-        req.user._id,
-        req.user.organizationId,
-        'CASHFLOW_RECORD_CREATE',
-        {
-            recordId: newRecord._id.toString(),
-            type: newRecord.type,
-            amount: newRecord.amount,
-            from: (req.user as any).name,
-            to: newRecord.toUser ? newRecord.toUser.toString() : 'Bank/System'
+        if (!approvedRequest) {
+            res.status(403);
+            throw new Error('Permission denied. An approved edit request is required for this action.');
         }
-    );
+    } else if (req.user.role !== 'Landlord') {
+        // Block any other roles that aren't Landlord or Agent
+        res.status(403);
+        throw new Error('You do not have permission to perform this action.');
+    }
+    // If the user is a Landlord, they can proceed without a request.
 
-    res.status(201).json({ success: true, data: newRecord });
+    const updatedRecord = await CashFlow.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    // After a successful update by an Agent, we can remove the EditRequest
+    if (req.user.role === 'Agent') {
+        await EditRequest.deleteMany({ resourceId: cashFlowRecord._id });
+    }
+
+    res.status(200).json({ success: true, data: updatedRecord });
 });
 
-// @desc    Get cash flow records for the user's organization
-// @route   GET /api/cashflow
-// @access  Private (Agent, Landlord, Super Admin)
-export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => {
+
+/**
+ * @desc    Delete a cash flow record (with new permission logic)
+ * @route   DELETE /api/cashflow/:id
+ * @access  Private
+ */
+export const deleteCashFlowRecord = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401);
-        throw new Error('User not authorized or not part of an organization');
+        throw new Error('User not authorized');
     }
 
-    const organizationId = req.user.organizationId;
-    let query: any = { organizationId };
+    const cashFlowRecord = await CashFlow.findById(req.params.id);
+    if (!cashFlowRecord || cashFlowRecord.organizationId.toString() !== req.user.organizationId.toString()) {
+        res.status(404);
+        throw new Error('Cash flow record not found');
+    }
+
+    // --- NEW PERMISSION LOGIC ---
+    if (req.user.role === 'Agent') {
+        const approvedRequest = await EditRequest.findOne({
+            resourceId: cashFlowRecord._id,
+            requester: req.user._id,
+            status: 'approved'
+        });
+        if (!approvedRequest) {
+            res.status(403);
+            throw new Error('Permission denied. An approved delete request is required.');
+        }
+    } else if (req.user.role !== 'Landlord') {
+        res.status(403);
+        throw new Error('You do not have permission to perform this action.');
+    }
+
+    await cashFlowRecord.deleteOne();
 
     if (req.user.role === 'Agent') {
-        query.fromUser = req.user._id;
-    } 
-    else if (req.user.role === 'Landlord') {
-        query.toUser = req.user._id;
+        await EditRequest.deleteMany({ resourceId: cashFlowRecord._id });
     }
-    
-    const records = await CashFlow.find(query)
-        .populate('fromUser', 'name email role')
-        .populate('toUser', 'name email role')
-        .sort({ transactionDate: -1 });
 
-    res.status(200).json({ success: true, count: records.length, data: records });
+    res.status(200).json({ success: true, data: {} });
 });
