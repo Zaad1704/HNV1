@@ -13,7 +13,7 @@ export interface IUser extends Document {
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
 
-  // FIX: New fields for password reset
+  // FIX: New fields for password reset (from passwordResetController errors)
   passwordResetToken?: string;
   passwordResetExpires?: Date;
 
@@ -21,7 +21,11 @@ export interface IUser extends Document {
   address?: string;
   governmentIdUrl?: string;
 
-  // FIX: New method for password reset token generation
+  // FIX: New fields for Google OAuth integration (from passport-setup errors)
+  googleId?: string;
+  status: string; // Add status property (from superAdminController and authMiddleware errors)
+
+  // FIX: New method for password reset token generation (from passwordResetController errors)
   getPasswordResetToken(): string;
 }
 
@@ -40,9 +44,18 @@ const UserSchema: Schema<IUser> = new Schema({
   // FIX: Add schema fields for user profile (assuming optional)
   address: String,
   governmentIdUrl: String,
+
+  // FIX: Add schema fields for Google OAuth integration
+  googleId: String,
+  status: {
+    type: String,
+    enum: ['active', 'suspended', 'pending'], // Example statuses, adjust as needed
+    default: 'active'
+  }
 });
 
 UserSchema.pre<IUser>('save', async function(next) {
+  // FIX: Check if password exists before hashing
   if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -50,7 +63,7 @@ UserSchema.pre<IUser>('save', async function(next) {
 });
 
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
-  if (!this.password) return false;
+  if (!this.password) return false; // FIX: Ensure password exists
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
@@ -62,13 +75,13 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
   const options: SignOptions = {
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any,
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any, // FIX: Use 'as any' for expiresIn
   };
 
   return jwt.sign(payload, secret, options);
 };
 
-// FIX: Method to generate and hash password reset token
+// FIX: Method to generate and hash password reset token (from passwordResetController errors)
 UserSchema.methods.getPasswordResetToken = function(): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
 
