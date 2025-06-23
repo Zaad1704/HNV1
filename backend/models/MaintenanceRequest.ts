@@ -1,9 +1,10 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
+import { IUser } from './User'; // Import IUser
 
 export interface IMaintenanceRequest extends Document {
     propertyId: mongoose.Schema.Types.ObjectId;
     organizationId: mongoose.Schema.Types.ObjectId;
-    requestedBy: mongoose.Schema.Types.ObjectId;
+    requestedBy: mongoose.Schema.Types.ObjectId | IUser; // Updated type to include IUser
     description: string;
     priority: 'Low' | 'Medium' | 'High';
     status: 'Open' | 'In Progress' | 'Completed';
