@@ -154,7 +154,12 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
     imageUrl: { type: String, default: 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?q=80&w=1992&auto=format&fit=crop' },
     teamTitle: { type: String, default: 'Meet Our Leadership' },
     teamSubtitle: { type: String, default: 'The driving force behind our commitment to excellence.' },
-    executives: [{ name: String, title: String, imageUrl: String, bio: String }]
+    // FIX: Added default values for the executives array
+    executives: { type: [{ name: String, title: String, imageUrl: String, bio: String }], default: [
+        { name: 'M.A Halim', title: 'Founder & Visionary', imageUrl: 'https://placehold.co/150x150/7C3AED/FFFFFF?text=CEO' },
+        { name: 'Nurunnahar Halim', title: 'Co-Founder & CTO', imageUrl: 'https://placehold.co/150x150/EC4899/FFFFFF?text=CTO' },
+        { name: 'Jane Doe', title: 'Chief Operating Officer', imageUrl: 'https://placehold.co/150x150/10B981/FFFFFF?text=COO' }
+    ]}
   },
   leadershipSection: {
       title: { type: String, default: 'Meet Our Leadership' },
