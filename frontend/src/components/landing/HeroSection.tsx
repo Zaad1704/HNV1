@@ -11,7 +11,6 @@ const HeroSection = () => {
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     color: 'transparent',
-    // --- SOLUTION: Stronger text shadow for enhanced visibility ---
     textShadow: '2px 4px 8px rgba(0, 0, 0, 0.6)',
   };
 
@@ -24,7 +23,8 @@ const HeroSection = () => {
           filter: 'blur(8px)',
         }}
       ></div>
-      <div className="absolute inset-0 bg-brand-dark opacity-70"></div>
+      {/* FIX: Increased opacity from 70 to 80 for better contrast */}
+      <div className="absolute inset-0 bg-brand-dark opacity-80"></div>
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
           className="text-6xl sm:text-7xl lg:text-8xl font-white uppercase tracking-wider"
