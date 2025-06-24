@@ -22,6 +22,7 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle global errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -29,16 +30,20 @@ apiClient.interceptors.response.use(
       const { status, data } = error.response;
       const currentPath = window.location.pathname;
 
+      // Handle 403 Forbidden for inactive subscriptions
       if (status === 403 && data?.message === "Your organization's subscription is not active. Please renew to continue accessing features.") {
         if (!currentPath.startsWith('/resubscribe')) {
             window.location.href = '/resubscribe?status=inactive';
         }
         return Promise.reject(error);
       }
+      // Handle 401 Unauthorized (e.g., expired token)
       else if (status === 401) {
         useAuthStore.getState().logout();
         
-        // FIX: Prevent redirecting to login from public-but-auth-aware pages
+        // --- THIS IS THE FIX ---
+        // We define a list of public paths where a user should NOT be redirected away from.
+        // This prevents the redirect loop when an inactive user tries to view the pricing page.
         const isPublicAuthPage = currentPath.startsWith('/login') || 
                                  currentPath.startsWith('/register') || 
                                  currentPath.startsWith('/pricing') ||
@@ -48,12 +53,14 @@ apiClient.interceptors.response.use(
                                  currentPath.startsWith('/accept-agent-invite') ||
                                  currentPath === '/';
 
+        // Only redirect to login if the user is not already on one of these public pages.
         if (!isPublicAuthPage) {
           window.location.href = '/login?error=session_expired';
         }
         return Promise.reject(error);
       }
       
+      // For any other error, just pass it along
       return Promise.reject(error);
     }
     
