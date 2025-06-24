@@ -43,27 +43,27 @@ const MaintenanceWidget: React.FC = () => {
 
   const getStatusClass = (status: IMaintenanceRequest['status']) => {
     switch (status) {
-      case 'Open': return 'bg-blue-500/20 text-blue-300';
-      case 'In Progress': return 'bg-yellow-500/20 text-yellow-300';
-      case 'Completed': return 'bg-green-500/20 text-green-300';
+      case 'Open': return 'bg-brand-primary/20 text-brand-primary'; // Adjusted colors
+      case 'In Progress': return 'bg-brand-accent-dark/20 text-brand-accent-dark'; // Adjusted colors
+      case 'Completed': return 'bg-brand-accent-dark/20 text-brand-accent-dark'; // Adjusted colors
       case 'Urgent': return 'bg-red-500/20 text-red-300'; // Special styling for urgent
-      default: return 'bg-gray-500/20 text-gray-300';
+      default: return 'bg-brand-subtle/20 text-brand-subtle'; // Adjusted colors
     }
   };
 
   const getPriorityClass = (priority: IMaintenanceRequest['priority']) => {
     switch (priority) {
       case 'Urgent': return 'text-red-400 font-bold';
-      case 'High': return 'text-orange-400';
-      case 'Medium': return 'text-yellow-400';
-      case 'Low': return 'text-green-400';
-      default: return 'text-gray-400';
+      case 'High': return 'text-brand-primary'; // Adjusted colors
+      case 'Medium': return 'text-brand-secondary'; // Adjusted colors
+      case 'Low': return 'text-brand-accent-dark'; // Adjusted colors
+      default: return 'text-light-text'; // Adjusted colors
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 text-white">
+      <div className="bg-light-card p-8 rounded-2xl shadow-lg border border-border-color text-dark-text"> {/* Adjusted bg and text */}
         <h2 className="text-xl font-bold mb-4">Recent Maintenance Requests</h2>
         <div className="text-center py-4">Loading requests...</div>
       </div>
@@ -80,18 +80,18 @@ const MaintenanceWidget: React.FC = () => {
   }
 
   return (
-    <div className="bg-slate-800/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-700 text-white">
+    <div className="bg-light-card p-8 rounded-2xl shadow-lg border border-border-color text-dark-text"> {/* Adjusted bg and text */}
       <h2 className="text-xl font-bold mb-4">Recent Maintenance Requests</h2>
       {requests.length === 0 ? (
-        <p className="text-slate-400 text-center py-4">No open or in-progress maintenance requests found.</p>
+        <p className="text-light-text text-center py-4">No open or in-progress maintenance requests found.</p> {/* Adjusted text */}
       ) : (
         <ul className="space-y-4">
           {requests.slice(0, 5).map((req) => ( // Display top 5 recent requests
-            <li key={req._id} className="border border-slate-700 p-4 rounded-lg bg-slate-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <li key={req._id} className="border border-border-color p-4 rounded-lg bg-brand-secondary flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"> {/* Adjusted bg and border */}
               <div className="flex-grow">
-                <p className="text-lg font-semibold text-white truncate max-w-[calc(100%-80px)]">{req.description}</p>
-                <p className="text-sm text-slate-400">
-                  Property: <span className="font-medium text-slate-300">{req.propertyId?.name || 'N/A'}</span>
+                <p className="text-lg font-semibold text-dark-text truncate max-w-[calc(100%-80px)]">{req.description}</p>
+                <p className="text-light-text text-sm"> {/* Adjusted text */}
+                  Property: <span className="font-medium text-dark-text">{req.propertyId?.name || 'N/A'}</span> {/* Adjusted text */}
                 </p>
               </div>
               <div className="flex-shrink-0 flex items-center gap-3">
@@ -107,7 +107,7 @@ const MaintenanceWidget: React.FC = () => {
         </ul>
       )}
       <div className="mt-6 text-right">
-        <a href="/maintenance" className="text-cyan-400 hover:text-cyan-300 text-sm font-medium">
+        <a href="/maintenance" className="text-brand-primary hover:text-brand-accent-dark text-sm font-medium"> {/* Adjusted colors */}
           View All Maintenance Requests &rarr;
         </a>
       </div>
