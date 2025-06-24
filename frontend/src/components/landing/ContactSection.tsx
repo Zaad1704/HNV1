@@ -1,3 +1,4 @@
+// frontend/src/components/landing/ContactSection.tsx
 import React, { useState } from 'react';
 import apiClient from '../../api/client';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
@@ -35,20 +36,20 @@ const ContactSection = () => {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Form fields with updated styling */}
                         <div>
-                            <label className="block text-sm font-medium text-light-text">Full Name</label>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
+                            <label htmlFor="name" className="block text-sm font-medium text-light-text">Full Name</label> {/* Added htmlFor */}
+                            <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text">Email Address</label>
-                            <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
+                            <label htmlFor="email" className="block text-sm font-medium text-light-text">Email Address</label> {/* Added htmlFor */}
+                            <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text">Subject</label>
-                            <input type="text" name="subject" value={formData.subject} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
+                            <label htmlFor="subject" className="block text-sm font-medium text-light-text">Subject</label> {/* Added htmlFor */}
+                            <input type="text" name="subject" id="subject" value={formData.subject} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"/>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-light-text">Message</label>
-                            <textarea name="message" value={formData.message} onChange={handleChange} required rows={5} className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"></textarea>
+                            <label htmlFor="message" className="block text-sm font-medium text-light-text">Message</label> {/* Added htmlFor */}
+                            <textarea name="message" id="message" value={formData.message} onChange={handleChange} required rows={5} className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg"></textarea>
                         </div>
                         <button type="submit" disabled={status.submitting} className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 disabled:opacity-50">
                             {status.submitting ? 'Sending...' : 'Send Message'}
