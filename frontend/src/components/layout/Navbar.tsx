@@ -1,4 +1,3 @@
-// frontend/src/components/layout/Navbar.tsx
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
@@ -54,7 +53,6 @@ const Navbar = () => {
   return (
     <header className="bg-brand-dark/30 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-border-color/20">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-        {/* Logo and Company Name */}
         <Link to="/" className="flex items-center space-x-3">
           <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" width="40" height="40" />
           <span className="text-xl font-bold text-dark-text sm:inline">
@@ -62,14 +60,11 @@ const Navbar = () => {
           </span>
         </Link>
         
-        {/* --- SOLUTION: Group all actions to the right --- */}
         <div className="hidden lg:flex items-center gap-2">
             <nav className="flex items-center gap-1">
                 <NavLinksContent />
             </nav>
-
             <div className="w-px h-6 bg-border-color/50 mx-2"></div>
-            
             <button 
                 onClick={() => setLang(getNextToggleLanguage().code)}
                 className="flex items-center gap-1 p-2 text-light-text rounded-md text-sm hover:bg-brand-secondary"
@@ -84,7 +79,6 @@ const Navbar = () => {
             >
                 {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
-            
             <Link to="/login" className="font-semibold text-light-text hover:text-dark-text px-4 py-2 rounded-md">
                 {t('header.login')}
             </Link>
@@ -93,9 +87,11 @@ const Navbar = () => {
             </Link>
         </div>
 
-        {/* Mobile Header Controls remain the same */}
+        {/* FIX: Replaced "Login" text with a "Sign Up" button for mobile view */}
         <div className="lg:hidden flex items-center space-x-3">
-            {/* ... mobile buttons ... */}
+             <Link to="/register" className="font-semibold text-sm text-dark-text bg-brand-accent-light hover:bg-opacity-90 py-2 px-4 rounded-lg transition-all">
+                {t('header.sign_up')}
+            </Link>
         </div>
       </div>
     </header>
