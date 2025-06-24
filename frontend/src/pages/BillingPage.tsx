@@ -65,15 +65,28 @@ const BillingPage: React.FC = () => {
   };
 
   if (isLoading) return <div className="text-center p-8">Loading Billing Information...</div>;
-  if (isError) return <div className="text-center text-red-500 p-8">Could not find an active subscription for your account. Please contact support.</div>;
+  if (isError) return <div className="text-center text-red-500 p-8">Error loading subscription. Please try again later.</div>;
 
-  // FIX: Added a check to handle cases where billingInfo exists but the planId is missing or not populated.
-  if (!billingInfo || !billingInfo.planId) {
+  // Case 1: No subscription data found at all
+  if (!billingInfo) {
     return (
         <div className="text-center text-amber-600 bg-amber-50 p-8 rounded-xl">
-            <h2 className="text-2xl font-bold">Plan Information Missing</h2>
-            <p className="mt-2">Your account has a subscription, but the associated plan details could not be found.</p>
-            <p className="mt-1">The plan may have been deleted. Please contact support or select a new plan.</p>
+            <h2 className="text-2xl font-bold">No Active Subscription Found</h2>
+            <p className="mt-2">It looks like your account does not have an active subscription.</p>
+            <p className="mt-1">Please contact support or subscribe to a plan to unlock all features.</p>
+            {/* Optional: Add a button to navigate to pricing page */}
+            {/* <Link to="/pricing" className="mt-4 inline-block bg-brand-primary text-white py-2 px-4 rounded-lg">View Plans</Link> */}
+        </div>
+    );
+  }
+
+  // Case 2: Subscription found, but plan details are missing (e.g., plan was deleted)
+  if (!billingInfo.planId) {
+    return (
+        <div className="text-center text-red-600 bg-red-50 p-8 rounded-xl">
+            <h2 className="text-2xl font-bold">Plan Details Missing</h2>
+            <p className="mt-2">Your subscription is active, but the associated plan details could not be found. This might be due to a deleted plan.</p>
+            <p className="mt-1">Please contact support for assistance.</p>
         </div>
     );
   }
