@@ -19,7 +19,7 @@ const HeroSection = () => {
   return (
     <section className="relative bg-cover bg-center py-32 md:py-48 lg:py-64"
       style={{
-        backgroundImage: `url('${settings?.heroSection?.imageUrl || "https://placehold.co/1920x1080/2E3944/FFFFFF?Text=Hero+Image"}')`,
+        backgroundImage: `url('${settings?.heroSection?.backgroundImageUrl || "https://placehold.co/1920x1080/2E3944/FFFFFF?Text=Hero+Image"}')`,
       }}
     >
       {/* Dark overlay to match new theme, minimizing blueish tint */}
@@ -35,22 +35,12 @@ const HeroSection = () => {
           {settings?.heroSection?.subtitle || t('hero.subtitle')}
         </p>
         <div className="space-x-4">
-          {settings?.heroSection?.primaryButtonText && settings?.heroSection?.primaryButtonLink && (
             <Link
-              to={settings.heroSection.primaryButtonLink}
+              to="/register"
               className="inline-block bg-brand-accent-dark text-dark-text py-3 px-8 rounded-full font-semibold hover:bg-brand-accent-light transition-colors"
             >
-              {settings.heroSection.primaryButtonText}
+              {t('landing.hero_cta')}
             </Link>
-          )}
-          {settings?.heroSection?.secondaryButtonText && settings?.heroSection?.secondaryButtonLink && (
-            <Link
-              to={settings.heroSection.secondaryButtonLink}
-              className="inline-block bg-transparent border border-brand-accent-dark text-brand-accent-dark py-3 px-8 rounded-full font-semibold hover:bg-brand-accent-dark hover:text-dark-text transition-colors"
-            >
-              {settings.heroSection.secondaryButtonText}
-            </Link>
-          )}
         </div>
       </div>
     </section>
