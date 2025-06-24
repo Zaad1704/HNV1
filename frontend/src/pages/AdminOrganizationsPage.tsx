@@ -19,37 +19,18 @@ interface IOrganization {
     allowSelfDeletion?: boolean;
 }
 
-interface IPlan {
-    _id: string;
-    name: string;
-    price: number;
-    duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
-}
-
-// --- React Query Fetchers ---
+// --- React Query Fetcher ---
 const fetchOrganizations = async (): Promise<IOrganization[]> => {
     const { data } = await apiClient.get('/super-admin/organizations');
     return data.data;
 };
 
-const fetchPlans = async (): Promise<IPlan[]> => {
-    const { data } = await apiClient.get('/plans');
-    return data.data;
-};
 
-// --- Subscription Update Modal Component (implementation omitted for brevity) ---
-const SubscriptionFormModal: React.FC<any> = ({ isOpen }) => {
-    if (!isOpen) return null;
-    // ... Full modal implementation
-    return <div>Subscription Modal</div>;
-};
-
-// --- Main AdminOrganizationsPage Component ---
 const AdminOrganizationsPage = () => {
     const queryClient = useQueryClient();
     const { data: organizations = [], isLoading, isError } = useQuery<IOrganization[], Error>({ queryKey:['allOrganizations'], queryFn: fetchOrganizations });
-    
-    // --- All mutations and handlers here ---
+
+    // --- All mutations and handlers ---
     const deleteOrganizationMutation = useMutation({
         mutationFn: (orgId: string) => apiClient.delete(`/super-admin/organizations/${orgId}`),
         onSuccess: () => {
@@ -60,20 +41,16 @@ const AdminOrganizationsPage = () => {
     });
 
     const handleDeleteOrganization = (orgId: string, orgName: string) => {
-        if (window.confirm(`DANGER: Are you absolutely sure you want to delete "${orgName}"? This will delete the organization and all associated users. This action cannot be undone.`)) {
+        if (window.confirm(`DANGER: Are you sure you want to delete "${orgName}"? This will delete the organization and all associated data. This action cannot be undone.`)) {
             deleteOrganizationMutation.mutate(orgId);
         }
     };
     
-    // Other handlers like handleUpdateSubscriptionClick, handleToggleSelfDeletion, etc.
-
     if (isLoading) return <div className="text-center p-8 text-dark-text">Loading organizations...</div>;
     if (isError) return <div className="text-center text-red-500 p-8">Failed to fetch organizations.</div>;
 
     return (
         <div className="text-dark-text">
-            {/* The modal component would be here */}
-            
             <h1 className="text-3xl font-bold mb-8">Manage All Organizations</h1>
             <div className="bg-light-card rounded-xl border border-border-color overflow-hidden shadow-sm">
                 <table className="w-full text-left">
@@ -94,7 +71,6 @@ const AdminOrganizationsPage = () => {
                                     <p className="text-sm text-light-text">{org.owner?.email}</p>
                                 </td>
                                 
-                                {/* --- SOLUTION: Corrected closing tag for this TD --- */}
                                 <td className="p-4">
                                     {org.subscription?.isLifetime 
                                         ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300"><ShieldCheck size={14}/> Lifetime</span>
@@ -108,7 +84,6 @@ const AdminOrganizationsPage = () => {
                                     </span>
                                 </td>
                                 <td className="p-4 text-center">
-                                    {/* ... self-deletion button ... */}
                                     <button title="Toggle Self-Deletion">
                                         {org.allowSelfDeletion ? <CheckCircle size={16} className="text-green-400"/> : <XCircle size={16} className="text-red-400"/>}
                                     </button>
