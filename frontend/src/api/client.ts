@@ -46,12 +46,13 @@ apiClient.interceptors.response.use(
         
         // Only perform a hard redirect if not already on a login/registration/public path
         // This prevents redirecting public visitors or creating redirect loops.
-        if (!currentPath.startsWith('/login') && 
-            !currentPath.startsWith('/register') && 
-            !currentPath.startsWith('/forgot-password') && 
-            !currentPath.startsWith('/reset-password') && 
-            !currentPath.startsWith('/accept-agent-invite') &&
-            !currentPath === '/') // Also don't redirect if on the root landing page
+        // FIX: Corrected the condition below to ensure proper comparison of currentPath
+        if (currentPath !== '/login' && 
+            currentPath !== '/register' && 
+            currentPath !== '/forgot-password' && 
+            currentPath !== '/reset-password' && 
+            currentPath !== '/accept-agent-invite' &&
+            currentPath !== '/') // Ensure not redirecting from the root landing page itself
         {
           window.location.href = '/login?error=session_expired'; // Force a full page reload to login
         }
