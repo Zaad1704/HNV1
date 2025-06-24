@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +11,7 @@ const SettingsPage = () => {
     const queryClient = useQueryClient();
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     
-    // FIX: State for branding form
+    // State for branding form
     const [brandingData, setBrandingData] = useState({
         companyName: user?.organizationId?.branding?.companyName || '',
     });
@@ -20,8 +20,10 @@ const SettingsPage = () => {
 
     const [message, setMessage] = useState({ type: '', text: '' });
 
-    // ... (handlePasswordInputChange and passwordMutation remain the same)
-
+    const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    };
+    
     const handleBrandingInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setBrandingData({ ...brandingData, [e.target.name]: e.target.value });
     };
@@ -34,6 +36,18 @@ const SettingsPage = () => {
         }
     };
 
+    const passwordMutation = useMutation({
+        mutationFn: (passData: any) => apiClient.put('/users/update-password', passData),
+        onSuccess: (data) => {
+            setMessage({ type: 'success', text: 'Password updated successfully!' });
+            setToken(data.data.token);
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        },
+        onError: (err: any) => {
+            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+        }
+    });
+    
     const brandingMutation = useMutation({
         mutationFn: (formData: FormData) => apiClient.put('/orgs/me/branding', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
@@ -50,6 +64,16 @@ const SettingsPage = () => {
         }
     });
 
+    const handleUpdatePassword = (e: React.FormEvent) => {
+        e.preventDefault();
+        setMessage({ type: '', text: '' });
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setMessage({ type: 'error', text: 'New passwords do not match.' });
+            return;
+        }
+        passwordMutation.mutate({ currentPassword: passwordData.currentPassword, newPassword: passwordData.newPassword });
+    };
+
     const handleUpdateBranding = (e: React.FormEvent) => {
         e.preventDefault();
         setMessage({ type: '', text: '' });
@@ -60,7 +84,6 @@ const SettingsPage = () => {
         }
         brandingMutation.mutate(formData);
     };
-
 
     const deleteAccountMutation = useMutation({
         mutationFn: () => apiClient.post('/users/request-deletion'),
@@ -100,7 +123,7 @@ const SettingsPage = () => {
                         <p><strong className="text-light-text">Role:</strong> {user?.role}</p>
                     </div>
                     
-                    {/* FIX: New Branding Settings Card */}
+                    {/* Branding Settings Card */}
                     {user?.role === 'Landlord' && (
                         <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-sm">
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Building /> Organization Branding</h2>
