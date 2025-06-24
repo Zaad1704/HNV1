@@ -48,7 +48,7 @@ const Navbar = () => {
           key={link.key}
           href={link.href}
           onClick={(e) => handleScroll(e, link.href)}
-          className="font-medium transition-colors rounded-md px-3 py-2 text-gray-300 hover:text-white"
+          className="font-medium transition-colors rounded-md px-3 py-2 text-dark-text hover:text-brand-primary"
         >
           {t(link.key)}
         </a>
@@ -61,8 +61,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
         {/* Logo and Company Name */}
         <Link to="/" className="flex items-center space-x-3">
-          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
-          <span className="text-xl font-bold text-white sm:inline">
+          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" width="40" height="40" />
+          <span className="text-xl font-bold text-dark-text sm:inline"> {/* text-dark-text now maps to light color */}
             {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
         </Link>
@@ -72,14 +72,14 @@ const Navbar = () => {
           <NavLinksContent />
           <button 
             onClick={() => setLang(getNextToggleLanguage().code)}
-            className="ml-4 flex items-center gap-1 p-2 bg-transparent border border-gray-600 text-white rounded-md text-sm hover:bg-gray-700"
+            className="ml-4 flex items-center gap-1 p-2 bg-transparent border border-border-color text-dark-text rounded-md text-sm hover:bg-brand-secondary" // Adjusted for new dark theme contrast
             title={`Switch to ${getNextToggleLanguage().name}`}
           >
             <Globe size={16} /> {lang.toUpperCase()}
           </button>
           <button
             onClick={toggleTheme}
-            className="ml-2 p-2 bg-transparent border border-gray-600 text-white rounded-md text-sm hover:bg-gray-700"
+            className="ml-2 p-2 bg-transparent border border-border-color text-dark-text rounded-md text-sm hover:bg-brand-secondary" // Adjusted for new dark theme contrast
             title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
           >
             {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
@@ -88,10 +88,10 @@ const Navbar = () => {
         
         {/* Desktop Action Buttons */}
         <div className="hidden lg:flex items-center space-x-4">
-          <Link to="/login" className="font-semibold text-white hover:text-gray-300">
+          <Link to="/login" className="font-semibold text-dark-text hover:text-brand-primary"> {/* text-dark-text now maps to light color */}
             {t('header.login')}
           </Link>
-          <Link to="/register" className="flex items-center gap-2 font-bold text-brand-dark bg-white hover:bg-gray-200 py-2 px-5 rounded-lg">
+          <Link to="/register" className="flex items-center gap-2 font-bold text-brand-dark bg-dark-text hover:bg-brand-secondary py-2 px-5 rounded-lg"> {/* text-brand-dark bg-white --> text-brand-dark bg-dark-text (text-dark-text now maps to a light color) */}
             {t('header.get_started')} <ArrowRight size={16} />
           </Link>
         </div>
@@ -100,19 +100,19 @@ const Navbar = () => {
         <div className="lg:hidden flex items-center space-x-3">
             <button 
               onClick={() => setLang(getNextToggleLanguage().code)}
-              className="p-1 bg-transparent border border-gray-600 text-white rounded-md text-xs focus:outline-none flex items-center gap-1"
+              className="p-1 bg-transparent border border-border-color text-dark-text rounded-md text-xs focus:outline-none flex items-center gap-1" // Adjusted for new dark theme contrast
               title={`Switch to ${getNextToggleLanguage().name}`}
             >
               <Globe size={14} /> {lang.toUpperCase()}
             </button>
             <button
               onClick={toggleTheme}
-              className="p-1 bg-transparent border border-gray-600 text-white rounded-md text-xs hover:bg-gray-700 focus:outline-none"
+              className="p-1 bg-transparent border border-border-color text-dark-text rounded-md text-xs hover:bg-brand-secondary focus:outline-none" // Adjusted for new dark theme contrast
               title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             >
               {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
             </button>
-            <Link to="/register" className="font-bold text-white bg-brand-primary hover:bg-brand-dark py-2 px-4 rounded-lg text-sm shadow-md transition-colors flex items-center gap-1">
+            <Link to="/register" className="font-bold text-dark-text bg-brand-primary hover:bg-brand-dark py-2 px-4 rounded-lg text-sm shadow-md transition-colors flex items-center gap-1"> {/* text-dark-text now maps to light color */}
                 <span>{t('header.sign_up')}</span>
             </Link>
         </div>
