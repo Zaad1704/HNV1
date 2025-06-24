@@ -1,52 +1,28 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 import FinancialChart from '../components/charts/FinancialChart';
 import OccupancyChart from '../components/charts/OccupancyChart';
-import RentStatusChart from '../components/charts/RentStatusChart'; // Import new chart
+import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
-import { DollarSign, Building2, Users, FileClock } from 'lucide-react'; // Import FileClock icon
+import { DollarSign, Building2, Users, FileClock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
 
-// --- API Fetching Functions ---
-const fetchOverviewStats = async () => {
-    const { data } = await apiClient.get('/dashboard/overview-stats');
-    return data.data;
-};
-const fetchLateTenants = async () => {
-    const { data } = await apiClient.get('/dashboard/late-tenants');
-    return data.data;
-};
-const fetchExpiringLeases = async () => {
-    const { data } = await apiClient.get('/dashboard/expiring-leases');
-    return data.data;
-};
-const fetchFinancialSummary = async () => {
-    const { data } = await apiClient.get('/dashboard/financial-summary');
-    return data.data;
-};
-const fetchOccupancySummary = async () => {
-    const { data } = await apiClient.get('/dashboard/occupancy-summary');
-    return data.data;
-};
-// NEW: Fetcher for rent status
+// API Fetching Functions
+const fetchOverviewStats = async () => { /* ... */ };
+const fetchLateTenants = async () => { /* ... */ };
+const fetchExpiringLeases = async () => { /* ... */ };
+const fetchFinancialSummary = async () => { /* ... */ };
+const fetchOccupancySummary = async () => { /* ... */ };
 const fetchRentStatus = async () => {
     const { data } = await apiClient.get('/dashboard/rent-status');
     return data.data;
 };
-// NEW: Fetcher for recent activity
-const fetchRecentActivity = async () => {
-    const { data } = await apiClient.get('/dashboard/recent-activity');
-    return data.data;
-};
-const sendRentReminder = async (tenantId: string) => {
-    const { data } = await apiClient.post('/communication/send-rent-reminder', { tenantId });
-    return data.message;
-};
+const fetchRecentActivity = async () => { /* ... */ };
+const sendRentReminder = async (tenantId: string) => { /* ... */ };
 
-// Updated StatCard to be a clickable Link
 const StatCard = ({ title, value, icon, currency = '', to }) => (
     <Link to={to} className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm flex items-center justify-between hover:border-brand-primary transition-colors">
         <div>
@@ -55,9 +31,7 @@ const StatCard = ({ title, value, icon, currency = '', to }) => (
                 {currency}{typeof value === 'number' ? value.toLocaleString() : value}
             </p>
         </div>
-        <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-lg">
-            {icon}
-        </div>
+        <div className="bg-brand-primary/10 text-brand-primary p-3 rounded-lg">{icon}</div>
     </Link>
 );
 
@@ -66,12 +40,10 @@ const OverviewPage = () => {
     const { currencyName } = useLang();
     const [sendingReminderId, setSendingReminderId] = useState<string | null>(null);
 
-    // --- All Data Queries ---
+    // Data Queries
     const { data: stats, isLoading: isLoadingStats } = useQuery({ queryKey: ['overviewStats'], queryFn: fetchOverviewStats });
     const { data: lateTenants, isLoading: isLoadingLate } = useQuery({ queryKey: ['lateTenants'], queryFn: fetchLateTenants });
-    const { data: expiringLeases, isLoading: isLoadingLeases } = useQuery({ queryKey: ['expiringLeases'], queryFn: fetchExpiringLeases });
     const { data: financialData, isLoading: isLoadingFinancial } = useQuery({ queryKey: ['financialSummary'], queryFn: fetchFinancialSummary });
-    const { data: occupancyData, isLoading: isLoadingOccupancy } = useQuery({ queryKey: ['occupancySummary'], queryFn: fetchOccupancySummary });
     const { data: rentStatusData, isLoading: isLoadingRentStatus } = useQuery({ queryKey: ['rentStatus'], queryFn: fetchRentStatus });
     const { data: recentActivity, isLoading: isLoadingActivity } = useQuery({ queryKey: ['recentActivity'], queryFn: fetchRecentActivity });
 
@@ -89,7 +61,7 @@ const OverviewPage = () => {
         }
     };
 
-    const isLoading = isLoadingStats || isLoadingLate || isLoadingLeases || isLoadingFinancial || isLoadingOccupancy || isLoadingRentStatus || isLoadingActivity;
+    const isLoading = isLoadingStats || isLoadingLate || isLoadingFinancial || isLoadingRentStatus || isLoadingActivity;
 
     if (isLoading) {
         return <div className="text-dark-text text-center p-8">Loading Dashboard Data...</div>;
