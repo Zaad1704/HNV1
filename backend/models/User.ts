@@ -26,17 +26,13 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  
-  // --- SOLUTION: Make password conditionally required ---
   password: {
     type: String,
-    // This function makes the password required only if there is no googleId
     required: function(this: IUser): boolean {
       return !this.googleId;
     },
     select: false
   },
-  
   role: { type: String, enum: ['Super Admin', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
   createdAt: { type: Date, default: Date.now },
@@ -50,7 +46,6 @@ const UserSchema: Schema<IUser> = new Schema({
   governmentIdUrl: String,
 });
 
-// Pre-save hook for hashing password
 UserSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password') || !this.password) {
     return next();
@@ -60,20 +55,26 @@ UserSchema.pre<IUser>('save', async function(next) {
   next();
 });
 
-// --- Instance Methods ---
-
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
   if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// --- SOLUTION IS HERE ---
 UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
+
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
-  const options: SignOptions = { expiresIn: process.env.JWT_EXPIRES_IN || '1d' };
+  
+  // Corrected the options object. The `expiresIn` property directly accepts a string.
+  // The `as any` assertion has been removed to ensure type safety.
+  const options: SignOptions = {
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+  };
+
   return jwt.sign(payload, secret, options);
 };
 
