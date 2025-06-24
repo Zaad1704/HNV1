@@ -1,12 +1,10 @@
-// frontend/src/pages/BillingPage.tsx
 import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { CheckCircle, CreditCard } from 'lucide-react';
 
 const fetchBillingInfo = async () => {
-  // Changed to explicitly include a trailing slash
-  const { data } = await apiClient.get("/billing/");
+  const { data } = await apiClient.get("/billing");
   return data.data;
 };
 
@@ -17,7 +15,7 @@ const createCheckoutSession = async (planId: string): Promise<string> => {
 
 const BillingPage: React.FC = () => {
   const { data: billingInfo, isLoading, isError } = useQuery({
-      queryKey: ['billingInfo'], 
+      queryKey: ['billingInfo'],
       queryFn: fetchBillingInfo
   });
 
@@ -51,7 +49,7 @@ const BillingPage: React.FC = () => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   };
-  
+
   const getStatusChip = (status?: string) => {
       if (!status) return null;
       const baseClasses = 'px-3 py-1 text-sm font-semibold rounded-full capitalize';
@@ -96,23 +94,23 @@ const BillingPage: React.FC = () => {
   return (
     <div className="text-dark-text dark:text-dark-text-dark">
       <h1 className="text-3xl font-bold mb-8">Billing & Subscription</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-light-card p-8 rounded-xl shadow-sm border border-border-color dark:bg-dark-card dark:border-border-color-dark">
           <h2 className="text-2xl font-bold text-dark-text mb-1 dark:text-dark-text-dark">Your Current Plan</h2>
           <p className="text-light-text mb-6 dark:text-light-text-dark">Manage your subscription and view plan details.</p>
-          
+
           <div className="bg-brand-bg p-6 rounded-lg border border-border-color dark:bg-dark-bg dark:border-border-color-dark">
             <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="text-3xl font-extrabold text-brand-dark dark:text-brand-primary">{billingInfo.planId.name}</h3>
-                    <p className="text-lg font-mono mt-1 text-light-text dark:text-light-text-dark">
-                        ${(billingInfo.planId.price / 100).toFixed(2)} / {billingInfo.planId.duration}
-                    </p>
-                </div>
-                {getStatusChip(billingInfo.status)}
+              <div>
+                <h3 className="text-3xl font-extrabold text-brand-dark dark:text-brand-primary">{billingInfo.planId.name}</h3>
+                <p className="text-lg font-mono mt-1 text-light-text dark:text-light-text-dark">
+                  ${(billingInfo.planId.price / 100).toFixed(2)} / {billingInfo.planId.duration}
+                </p>
+              </div>
+              {getStatusChip(billingInfo.status)}
             </div>
-            
+
             <div className="border-t border-border-color my-6 dark:border-border-color-dark"></div>
 
             <h4 className="font-semibold text-dark-text mb-3 dark:text-dark-text-dark">Plan Features:</h4>
@@ -128,26 +126,26 @@ const BillingPage: React.FC = () => {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-            <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
-                <p className="text-sm text-light-text dark:text-light-text-dark">Your subscription is currently {billingInfo.status}.</p>
-                <p className="font-semibold text-dark-text mt-1 dark:text-dark-text-dark">
-                    {billingInfo.status === 'trialing' ? 'Your trial expires on:' : 'Your plan renews on:'}
-                </p>
-                <p className="text-2xl font-bold font-mono text-brand-primary">
-                    {formatDate(billingInfo.status === 'trialing' ? billingInfo.trialExpiresAt : billingInfo.currentPeriodEndsAt)}
-                </p>
-            </div>
-             <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
-                <button 
-                  onClick={handleManageSubscription}
-                  disabled={manageSubscriptionMutation.isLoading}
-                  className="w-full flex items-center justify-center gap-3 px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-dark transition-colors shadow-md disabled:opacity-50"
-                >
-                  <CreditCard />
-                  {manageSubscriptionMutation.isLoading ? 'Redirecting...' : 'Manage Subscription'}
-                </button>
-                 <p className="text-xs text-light-text mt-3 text-center dark:text-light-text-dark">You will be redirected to our payment partner to manage your subscription.</p>
-            </div>
+          <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
+            <p className="text-sm text-light-text dark:text-light-text-dark">Your subscription is currently {billingInfo.status}.</p>
+            <p className="font-semibold text-dark-text mt-1 dark:text-dark-text-dark">
+              {billingInfo.status === 'trialing' ? 'Your trial expires on:' : 'Your plan renews on:'}
+            </p>
+            <p className="text-2xl font-bold font-mono text-brand-primary">
+              {formatDate(billingInfo.status === 'trialing' ? billingInfo.trialExpiresAt : billingInfo.currentPeriodEndsAt)}
+            </p>
+          </div>
+          <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
+            <button
+              onClick={handleManageSubscription}
+              disabled={manageSubscriptionMutation.isLoading}
+              className="w-full flex items-center justify-center gap-3 px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-dark transition-colors shadow-md disabled:opacity-50"
+            >
+              <CreditCard />
+              {manageSubscriptionMutation.isLoading ? 'Redirecting...' : 'Manage Subscription'}
+            </button>
+            <p className="text-xs text-light-text mt-3 text-center dark:text-light-text-dark">You will be redirected to our payment partner to manage your subscription.</p>
+          </div>
         </div>
 
       </div>
