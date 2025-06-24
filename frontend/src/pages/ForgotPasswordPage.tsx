@@ -1,3 +1,4 @@
+// frontend/src/pages/ForgotPasswordPage.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
@@ -34,7 +35,7 @@ return (
 <div className="w-full max-w-md bg-light-card shadow-xl rounded-2xl p-8 sm:p-12 border border-border-color">
 <div className="text-center mb-8">
 <Link to="/" className="inline-flex items-center gap-3">
-<img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" />
+<img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
 </Link>
 </div>
 <h1 className="text-3xl font-bold mb-4 text-center">Forgot Your Password?</h1>
