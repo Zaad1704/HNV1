@@ -45,8 +45,9 @@ passport.use(new GoogleStrategy(
 
             const defaultPlan = await Plan.findOne({ name: 'Free Trial' });
             if (!defaultPlan) {
-                // If this fails, the user can't be created correctly.
-                return done(new Error('Default "Free Trial" plan not found in the database.'));
+                const errorMessage = 'Default "Free Trial" plan not found in the database. Please run /api/setup/create-default-plans.';
+                console.error("Error in Google Passport Strategy:", errorMessage); // Log specific error
+                return done(new Error(errorMessage), undefined);
             }
 
             const trialExpiresAt = new Date();
@@ -75,11 +76,11 @@ passport.use(new GoogleStrategy(
             // Assign the new user as the owner of the organization
             organization.owner = newUser._id;
             await organization.save();
-            
+
             return done(null, newUser);
 
         } catch (err) {
-            console.error("Error in Google Passport Strategy:", err);
+            console.error("Error in Google Passport Strategy:", err); // Original error logging
             return done(err, undefined);
         }
     }
