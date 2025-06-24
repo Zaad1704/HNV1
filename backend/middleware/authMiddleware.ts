@@ -1,3 +1,4 @@
+// backend/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
@@ -47,9 +48,8 @@ export const protect = async (
             return next();
           }
           // For other roles, deny access if subscription is not active or trialing
-          // ADDED REDIRECT: Redirect to /resubscribe
-          return res.redirect('/resubscribe');
-          //return res.status(403).json({ success: false, message: "Your organization's subscription is not active. Please renew to continue accessing features." });
+          // REVERTED: Changed back to 403 status with message for frontend interceptor
+          return res.status(403).json({ success: false, message: "Your organization's subscription is not active. Please renew to continue accessing features." });
         }
       } else {
         // If user has no organizationId, they cannot access protected routes
