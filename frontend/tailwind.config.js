@@ -12,27 +12,27 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // Revised Color Palette for improved visibility, drawing from screenshot's contrast style
-        // Darker brand colors to ensure white text/logos are visible on them
-        'brand-dark': '#273D6B',     // Deep blue for structural elements (e.g., Navbar, Footer backgrounds)
-        'brand-primary': '#3D52A0',  // Solid blue for main interactive elements (e.g., buttons, active states)
-        'brand-secondary': '#6E88E4', // Lighter, more vibrant blue for secondary elements
-        'brand-accent-light': '#F0F4F8', // Very subtle light blue-gray for backgrounds and highlights
-        'brand-accent-dark': '#4CAF50',  // Vibrant green for high-emphasis actions
+        // New Color Palette based on provided image
+        'brand-dark': '#212A31',     // Main dark background color
+        'brand-primary': '#124E66',  // Primary accent/interactive color (Teal)
+        'brand-secondary': '#2E3944', // Secondary dark background/element color
+        'brand-subtle': '#748D92',   // Muted blue-gray for subtle elements/borders
+        'brand-accent-light': '#D3D9D4', // Lightest color from palette for subtle highlights
+        'brand-accent-dark': '#208AAB',  // A brighter variant of brand-primary for strong accents
 
-        // Light Theme Semantics (bright overall, strong text contrast)
-        'light-bg': '#FFFFFF',       // Pure white for main content backgrounds (brightest)
-        'light-card': '#F9FCFF',     // Very subtle off-white/light blue tint for cards
-        'dark-text': '#1A202C',      // Strong dark gray/blue for text on light backgrounds (CRITICAL for contrast)
-        'light-text': '#FFFFFF',     // Explicitly White text for visibility on brand-dark/primary backgrounds
-        'border-color': '#D1D5DB',   // Clear, neutral border color
+        // Semantic colors for Light (now Dark) Theme
+        'light-bg': '#212A31',       // Global page background (dark)
+        'light-card': '#2E3944',     // Card background (secondary dark)
+        'dark-text': '#F0F0F0',      // Main text color (light gray/near white) on dark backgrounds
+        'light-text': '#D3D9D4',     // Secondary text color (muted light gray/green) on dark backgrounds
+        'border-color': '#4A5C6F',   // A middle-ground gray-blue for borders
 
-        // Dark Theme Semantics (adjusted for consistency)
-        'dark-bg': '#1a202c',
-        'dark-card': '#2d3748',
-        'dark-text-dark': '#f7fafc',
-        'light-text-dark': '#e2e8f0',
-        'border-color-dark': '#4a5568',
+        // Dark Theme Semantics (if applicable, though new scheme is generally dark)
+        'dark-bg': '#212A31', // Duplicated for clarity, as the scheme is mostly dark
+        'dark-card': '#2E3944', // Duplicated for clarity
+        'dark-text-dark': '#F0F0F0', // Light text for dark mode (new scheme's default)
+        'light-text-dark': '#D3D9D4', // Muted light text for dark mode
+        'border-color-dark': '#4A5C6F', // Border for dark mode
       }
     },
   },
