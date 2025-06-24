@@ -37,14 +37,14 @@ const sendRentReminder = async (tenantId: string) => {
 };
 
 const StatCard = ({ title, value, icon, currency = '', to }: { title: string, value: number | string, icon: React.ReactNode, currency?: string, to: string }) => (
-    <Link to={to} className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm flex items-start justify-between hover:shadow-md hover:-translate-y-1 transition-all">
+    <Link to={to} className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm flex items-start justify-between hover:shadow-md hover:-translate-y-1 transition-all"> {/* bg-light-card is dark */}
         <div>
-            <p className="text-sm font-medium text-light-text">{title}</p>
-            <p className="text-3xl font-bold text-dark-text mt-2">
+            <p className="text-sm font-medium text-light-text">{title}</p> {/* text-light-text is light */}
+            <p className="text-3xl font-bold text-dark-text mt-2"> {/* text-dark-text is light */}
                 {currency}{typeof value === 'number' ? value.toLocaleString() : value}
             </p>
         </div>
-        <div className="bg-gray-100 p-3 rounded-lg border border-border-color">
+        <div className="bg-brand-secondary p-3 rounded-lg border border-border-color"> {/* bg-gray-100 --> bg-brand-secondary */}
             {icon}
         </div>
     </Link>
@@ -100,18 +100,18 @@ const OverviewPage = () => {
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title={t('dashboard.monthly_revenue')} value={stats?.monthlyRevenue || 0} icon={<DollarSign />} currency={currencyName} to="/dashboard/cashflow" />
-                <StatCard title={t('dashboard.total_properties')} value={stats?.totalProperties || 0} icon={<Building2 />} to="/dashboard/properties" />
-                <StatCard title={t('dashboard.active_tenants')} value={stats?.activeTenants || 0} icon={<Users />} to="/dashboard/tenants" />
-                <StatCard title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck />} to="/dashboard/tenants" />
+                <StatCard title={t('dashboard.monthly_revenue')} value={stats?.monthlyRevenue || 0} icon={<DollarSign className="text-brand-primary w-7 h-7" />} currency={currencyName} to="/dashboard/cashflow" />
+                <StatCard title={t('dashboard.total_properties')} value={stats?.totalProperties || 0} icon={<Building2 className="text-brand-primary w-7 h-7" />} to="/dashboard/properties" />
+                <StatCard title={t('dashboard.active_tenants')} value={stats?.activeTenants || 0} icon={<Users className="text-brand-primary w-7 h-7" />} to="/dashboard/tenants" />
+                <StatCard title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck className="text-brand-primary w-7 h-7" />} to="/dashboard/tenants" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-light-card p-6 rounded-xl border border-border-color shadow-sm">
+                <div className="lg:col-span-2 bg-light-card p-6 rounded-xl border border-border-color shadow-sm"> {/* bg-light-card is dark */}
                     <h2 className="text-xl font-bold text-dark-text mb-4">{t('dashboard.financials_chart_title')}</h2>
                     <FinancialChart data={financialData || []} />
                 </div>
-                <div className="lg:col-span-1 bg-light-card p-6 rounded-xl border border-border-color shadow-sm">
+                <div className="lg:col-span-1 bg-light-card p-6 rounded-xl border border-border-color shadow-sm"> {/* bg-light-card is dark */}
                     <h2 className="text-xl font-bold text-dark-text mb-4">{t('dashboard.rent_status_chart_title')}</h2>
                     <RentStatusChart data={rentStatusData || []} />
                 </div>
