@@ -1,3 +1,4 @@
+// frontend/src/pages/OverviewPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -8,6 +9,7 @@ import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import { DollarSign, Building2, Users, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
+import { IExpiringLease } from '../hooks/useExpiringLeases'; // Import the interface
 
 const fetchOverviewStats = async () => {
     const { data } = await apiClient.get('/dashboard/overview-stats');
@@ -15,6 +17,10 @@ const fetchOverviewStats = async () => {
 };
 const fetchLateTenants = async () => {
     const { data } = await apiClient.get('/dashboard/late-tenants');
+    return data.data;
+};
+const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => { // Explicitly define return type
+    const { data } = await apiClient.get('/dashboard/expiring-leases');
     return data.data;
 };
 const fetchFinancialSummary = async () => {
@@ -52,6 +58,7 @@ const OverviewPage = () => {
 
     const { data: stats, isLoading: isLoadingStats } = useQuery({ queryKey: ['overviewStats'], queryFn: fetchOverviewStats });
     const { data: lateTenants } = useQuery({ queryKey: ['lateTenants'], queryFn: fetchLateTenants });
+    const { data: expiringLeases } = useQuery({ queryKey: ['expiringLeases'], queryFn: fetchExpiringLeases }); // Fetch expiring leases data
     const { data: financialData } = useQuery({ queryKey: ['financialSummary'], queryFn: fetchFinancialSummary });
     const { data: rentStatusData } = useQuery({ queryKey: ['rentStatus'], queryFn: fetchRentStatus });
 
@@ -81,6 +88,13 @@ const OverviewPage = () => {
         id: t._id,
         primaryText: `${t.name} (${t.propertyId?.name || 'N/A'})`,
         secondaryText: `Unit: ${t.unit}`,
+    })) || [];
+
+    // Map expiring leases data to ActionItemWidget format
+    const expiringLeaseItems = expiringLeases?.map((l: any) => ({
+        id: l._id,
+        primaryText: `${l.name} (${l.propertyId?.name || 'N/A'})`,
+        secondaryText: `Expires: ${new Date(l.leaseEndDate).toLocaleDateString()}`,
     })) || [];
 
     return (
@@ -116,10 +130,11 @@ const OverviewPage = () => {
                 />
                 <ActionItemWidget
                     title={t('dashboard.upcoming_lease_expirations')}
-                    items={[]}
-                    actionText={""}
-                    emptyText={"No leases expiring soon."}
+                    items={expiringLeaseItems} // Pass actual expiring leases data
+                    actionText={t('dashboard.renew_lease')} // Added action text for lease renewal
+                    emptyText={t('dashboard.no_expiring_leases')}
                     linkTo="/dashboard/tenants?filter=expiring"
+                    onActionClick={(itemId) => alert(`Renew Lease for ${itemId}`)} // Example action
                 />
             </div>
         </div>
