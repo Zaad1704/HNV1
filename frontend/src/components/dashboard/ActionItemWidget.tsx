@@ -51,7 +51,7 @@ const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
                     ))}
                 </ul>
             ) : (
-                <p className="text-light-text text-center py-8">{emptyText}</p> {/* text-light-text is now light */}
+                <p className="text-light-text text-center py-8">{emptyText}</p> /* Corrected: Removed inline comment */
             )}
         </div>
     );
