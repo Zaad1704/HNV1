@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
 import Invoice from '../models/Invoice';
@@ -26,7 +26,7 @@ function convertToCsv(data: any[]): string {
             const stringValue = String(value).replace(/"/g, '""');
             return `"${stringValue}"`;
         });
-        csvRows.push(values.join('\n'));
+        csvRows.push(values.join(',')); // Corrected from \n to ,
     }
     return csvRows.join('\n');
 }
@@ -59,12 +59,13 @@ function generatePdfTable(doc: PDFKit.PDFDocument, tableTop: number, headers: st
 }
 
 
-export const exportTenants = async (req: Request, res: Response) => {
+export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
 
-    const { propertyId, format: fileFormat = 'csv' } = req.query; // Default to CSV
+    const { propertyId, format: fileFormat = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
 
     if (propertyId && propertyId !== 'all') {
@@ -115,9 +116,10 @@ export const exportTenants = async (req: Request, res: Response) => {
     }
 };
 
-export const exportExpenses = async (req: Request, res: Response) => {
+export const exportExpenses = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
     }
      const { propertyId, agentId, startDate, endDate, format: fileFormat = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
@@ -161,7 +163,15 @@ export const exportExpenses = async (req: Request, res: Response) => {
     }
 };
 
-// Other report functions like generateMonthlyCollectionSheet, etc. remain here
-export const generateMonthlyCollectionSheet = async (req: Request, res: Response) => { /* ... */ };
-export const getTenantMonthlyStatement = async (req: Request, res: Response) => { /* ... */ };
-export const generateTenantProfilePdf = async (req: Request, res: Response) => { /* ... */ };
+export const generateMonthlyCollectionSheet = async (req: Request, res: Response, next: NextFunction) => {
+    // Implementation needed
+    res.status(501).json({ success: false, message: 'Not implemented' });
+};
+export const getTenantMonthlyStatement = async (req: Request, res: Response, next: NextFunction) => {
+    // Implementation needed
+     res.status(501).json({ success: false, message: 'Not implemented' });
+};
+export const generateTenantProfilePdf = async (req: Request, res: Response, next: NextFunction) => {
+    // Implementation needed
+     res.status(501).json({ success: false, message: 'Not implemented' });
+};
