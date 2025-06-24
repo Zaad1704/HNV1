@@ -20,21 +20,37 @@ apiClient.interceptors.request.use(
   }
 );
 
-// FIX: The response interceptor is simplified to prevent redirect loops.
-// The main application logic in App.tsx will now handle logging out
-// when the /api/auth/me call fails.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If the error is a 401, we will just reject the promise.
-    // The component that made the API call can decide how to handle it.
-    // This prevents the entire application from crashing.
-    if (error.response && error.response.status === 401) {
-      console.error("Authentication Error: The request was not authorized.");
-      // We can optionally log the user out here if their token is invalid,
-      // which is a safe operation.
-      // useAuthStore.getState().logout();
+    // Check if the error is an HTTP response error
+    if (error.response) {
+      const { status, data } = error.response;
+
+      // Handle 403 Forbidden specifically for inactive subscription
+      if (status === 403 && data && data.message === "Your organization's subscription is not active. Please renew to continue accessing features.") {
+        console.warn("Subscription inactive, redirecting to resubscribe page.");
+        // Perform a full page redirect to the resubscribe page.
+        // We pass the status as a query param so the page knows the context.
+        window.location.href = '/resubscribe?status=inactive';
+        // Reject the promise to stop further processing for the original request
+        return Promise.reject(error); 
+      }
+      // Handle generic 401 Unauthorized errors (e.g., invalid token, user not found)
+      else if (status === 401) {
+        console.error("Authentication Error: The request was not authorized. Logging out.");
+        useAuthStore.getState().logout(); // Logout user
+        // Redirect to login page to prevent being stuck on a blank dashboard.
+        // Check current path to avoid redirect loops if already on login/public page.
+        if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register') && !window.location.pathname.startsWith('/accept-agent-invite')) {
+          window.location.href = '/login?error=unauthorized';
+        }
+        return Promise.reject(error);
+      }
+      // For any other HTTP error, just reject the promise
+      return Promise.reject(error);
     }
+    // If no response (e.g., network error before server response), just reject
     return Promise.reject(error);
   }
 );
