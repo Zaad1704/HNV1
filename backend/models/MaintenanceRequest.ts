@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
-import { IUser } from './User'; // Import IUser
+import { IUser } from './User';
 
 export interface IMaintenanceRequest extends Document {
     propertyId: mongoose.Schema.Types.ObjectId;
     organizationId: mongoose.Schema.Types.ObjectId;
-    requestedBy: mongoose.Schema.Types.ObjectId | IUser; // Updated type to include IUser
+    requestedBy: mongoose.Schema.Types.ObjectId | IUser;
     description: string;
     priority: 'Low' | 'Medium' | 'High';
     status: 'Open' | 'In Progress' | 'Completed';
+    createdAt: Date; // FIX: Added createdAt property
+    updatedAt: Date; // FIX: Added updatedAt property
 }
 
 const MaintenanceRequestSchema: Schema<IMaintenanceRequest> = new Schema({
