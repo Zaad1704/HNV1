@@ -12,19 +12,19 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // Updated Color Palette for a lighter, balanced blue scheme
-        'brand-dark': '#3666A3',     // A richer, but not overly dark blue
-        'brand-primary': '#5B9AD9',  // A vibrant, clear lighter blue
-        'brand-secondary': '#8AC2E6', // Even lighter, softer blue for subtle accents
-        'brand-accent-light': '#F0F8FF', // Very light, almost white-blue for subtle backgrounds, enhances 'whiteness'
-        'brand-accent-dark': '#4CAF50',  // A distinct green for strong calls to action/emphasis, creating balance
-        
-        // Light Theme Semantics (more whitish)
-        'light-bg': '#FFFFFF',       // Pure white for main backgrounds (more whitish)
-        'light-card': '#F5F8FA',     // Very subtle off-white with a slight blue tint for card distinction
-        'dark-text': '#1A202C',      // Darker gray/blue for high contrast on lighter backgrounds
-        'light-text': '#60728C',     // Medium gray for secondary text, ensuring good readability
-        'border-color': '#CED9E6',   // A subtle light blue-gray for borders
+        // Updated Color Palette for extremely light, uniform brightness
+        'brand-dark': '#E1EBF5',     // Very light blue for "darker" backgrounds like headers/footers
+        'brand-primary': '#EFF4F9',  // Even lighter, near-white blue for primary actions/buttons
+        'brand-secondary': '#F4F8FC', // Almost pure white, for subtle accents
+        'brand-accent-light': '#F7FAFD', // A near-white with a very subtle blue hint for differentiation
+        'brand-accent-dark': '#4CAF50',  // Vibrant green for high-contrast calls to action
+
+        // Light Theme Semantics (consistent brightness, pure white highlight)
+        'light-bg': '#FFFFFF',       // Pure white for main backgrounds (the brightest)
+        'light-card': '#FAFBFC',     // Very subtle off-white for cards, almost pure white
+        'dark-text': '#334155',      // Strong dark blue-gray for main text (CRITICAL for contrast)
+        'light-text': '#64748B',     // Medium gray for secondary text, visible on very light backgrounds
+        'border-color': '#E2E8F0',   // Very light, subtle gray-blue border
 
         // Dark Theme Semantics (adjusted for consistency)
         'dark-bg': '#1a202c',
