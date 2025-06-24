@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { useTranslation } from 'react-i18next'; // Import the translation hook
-import { 
-    Home, Building, Users, MoreHorizontal, DollarSign, 
-    CreditCard, Wrench, FileText, Settings, LogOut, Repeat 
+import { useTranslation } from 'react-i18next';
+import {
+    Home, Building, Users, MoreHorizontal, DollarSign,
+    CreditCard, Wrench, FileText, Settings, LogOut, Repeat, CheckSquare
 } from 'lucide-react';
 import MoreMenuModal from '../common/MoreMenuModal';
 import RoleGuard from '../RoleGuard';
@@ -13,7 +13,7 @@ const BottomNavBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
-    const { t } = useTranslation(); // Initialize the translation hook
+    const { t } = useTranslation();
     const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
 
     const handleLogout = () => {
@@ -27,11 +27,12 @@ const BottomNavBar = () => {
         return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text'}`;
     };
 
-    // Use the t() function for all labels
+    // ADDED "Approvals" to this list to match the desktop sidebar
     const moreNavItems = [
         { href: '/dashboard/expenses', icon: CreditCard, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
         { href: '/dashboard/maintenance', icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
         { href: '/dashboard/reminders', icon: Repeat, label: t('dashboard.reminders'), roles: ['Landlord', 'Agent'] },
+        { href: '/dashboard/approvals', icon: CheckSquare, label: 'Approvals', roles: ['Landlord', 'Agent'] },
         { href: '/dashboard/users', icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
         { href: '/dashboard/billing', icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
         { href: '/dashboard/audit-log', icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
