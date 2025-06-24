@@ -1,10 +1,12 @@
+// frontend/src/pages/BillingPage.tsx
 import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { CheckCircle, CreditCard } from 'lucide-react';
 
 const fetchBillingInfo = async () => {
-  const { data } = await apiClient.get("/billing");
+  // Changed to explicitly include a trailing slash
+  const { data } = await apiClient.get("/billing/");
   return data.data;
 };
 
