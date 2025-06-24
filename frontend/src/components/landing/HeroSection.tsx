@@ -1,3 +1,4 @@
+// frontend/src/components/landing/HeroSection.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
@@ -12,7 +13,8 @@ export default function HeroSection() {
       id="hero"
       className="text-white py-20 md:py-32"
       style={{
-        backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('${
+        // Adjusted linear gradient to new dark theme colors
+        backgroundImage: `linear-gradient(to right, rgba(33, 42, 49, 0.7), rgba(18, 78, 102, 0.6)), url('${
           settings?.heroSection?.backgroundImageUrl || "https://placehold.co/1600x900"
         }')`,
         backgroundSize: "cover",
@@ -28,7 +30,7 @@ export default function HeroSection() {
         </p>
         <Link
           to="/register"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105"
+          className="bg-brand-primary hover:bg-brand-accent-dark text-dark-text font-semibold py-3 px-8 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105" // Updated button colors
         >
           {t("hero.cta")}
         </Link>
