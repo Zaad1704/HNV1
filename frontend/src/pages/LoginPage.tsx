@@ -1,3 +1,4 @@
+// frontend/src/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -52,7 +53,7 @@ const LoginPage: React.FC = () => {
                 <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center">
                     <div className="mb-8">
                         <Link to="/" className="inline-flex items-center gap-3">
-                            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" />
+                            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
                             <span className="text-xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
                         </Link>
                     </div>
