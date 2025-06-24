@@ -63,7 +63,7 @@ const connectDB = async () => {
 };
 connectDB();
 
-// FIX: Dynamically configure CORS allowed origins from environment variable
+// Dynamically configure CORS allowed origins from environment variable
 const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
 const allowedOrigins: string[] = allowedOriginsEnv ? allowedOriginsEnv.split(',') : [];
 
@@ -121,6 +121,18 @@ app.use('/api/upload', uploadRoutes);
 app.get('/', ((req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 }) as RequestHandler);
+
+// Custom 404 handler (MUST be placed AFTER all other routes)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found for ${req.method} ${req.originalUrl}`,
+    code: 'ROUTE_NOT_FOUND'
+  });
+});
+
+// Global error handler (assuming you have one, e.g., in errorHandler.ts)
+// app.use(errorHandler); // Uncomment if you have a global error handler
 
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
