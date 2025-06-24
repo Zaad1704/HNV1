@@ -3,57 +3,44 @@ import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Building, Save, User as UserIcon, Palette, Globe, Sun, Moon, Lock, AlertTriangle } from 'lucide-react';
-import { useLang } from '../contexts/LanguageContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { Lock, AlertTriangle, User as UserIcon } from 'lucide-react';
 
 const SettingsPage = () => {
     const { user, setToken, logout } = useAuthStore();
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const [branding, setBranding] = useState({ companyName: '', companyLogoUrl: '', companyAddress: '' });
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
     const [message, setMessage] = useState({ type: '', text: '' });
-    const { lang, setLang, getNextToggleLanguage, currentLanguageName } = useLang();
-    const { theme, toggleTheme } = useTheme();
 
-    useEffect(() => {
-        if (user?.organizationId?.branding) {
-            setBranding(user.organizationId.branding);
-        }
-    }, [user]);
-    
-    // Branding and Password change logic remains the same...
-    const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
-    const passwordMutation = useMutation({ /* ... */ });
-    const handleUpdatePassword = (e: React.FormEvent) => { /* ... */ };
-    const handleBrandingChange = (e: React.ChangeEvent<HTMLInputElement>) => setBranding({ ...branding, [e.target.name]: e.target.value });
-    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
-    const handleUpdateBranding = (e: React.FormEvent) => { /* ... */ };
-    const uploadLogoMutation = useMutation({
-        mutationFn: (file: File) => {
-            const formData = new FormData();
-            formData.append('image', file);
-            // This endpoint might need to be created if not already present
-            return apiClient.post('/upload/image', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-        },
-        onSuccess: (response) => {
-            setBranding(prev => ({ ...prev, companyLogoUrl: response.data.imageUrl }));
-            setMessage({ type: 'success', text: 'Logo uploaded successfully!' });
+    const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    };
+
+    const passwordMutation = useMutation({
+        mutationFn: (passData: any) => apiClient.put('/users/update-password', passData),
+        onSuccess: (data) => {
+            setMessage({ type: 'success', text: 'Password updated successfully!' });
+            setToken(data.data.token);
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         },
         onError: (err: any) => {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Logo upload failed.' });
+            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
         }
     });
 
-    // --- Account Deletion Logic ---
+    const handleUpdatePassword = (e: React.FormEvent) => {
+        e.preventDefault();
+        setMessage({ type: '', text: '' });
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setMessage({ type: 'error', text: 'New passwords do not match.' });
+            return;
+        }
+        passwordMutation.mutate({ currentPassword: passwordData.currentPassword, newPassword: passwordData.newPassword });
+    };
+    
     const deleteAccountMutation = useMutation({
         mutationFn: () => apiClient.post('/users/request-deletion'),
         onSuccess: () => {
             setMessage({ type: 'success', text: 'Deletion request successful. You will be logged out now.' });
-            // After a short delay, log the user out and redirect to login page.
             setTimeout(() => {
                 logout();
                 navigate('/login', { replace: true });
@@ -65,12 +52,10 @@ const SettingsPage = () => {
     });
 
     const handleDeleteAccount = () => {
-        // Use a confirmation dialog to prevent accidental deletion
         if (window.confirm('Are you absolutely sure you want to delete your account? This action is irreversible and will permanently erase all your data after a grace period.')) {
             deleteAccountMutation.mutate();
         }
     };
-
 
     return (
         <div className="text-dark-text">
@@ -93,7 +78,25 @@ const SettingsPage = () => {
                     {/* Change Password */}
                     <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-sm">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Lock /> Change Password</h2>
-                        {/* ... password form ... */}
+                        <form onSubmit={handleUpdatePassword} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-light-text mb-1">Current Password</label>
+                                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color"/>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-light-text mb-1">New Password</label>
+                                <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color"/>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-light-text mb-1">Confirm New Password</label>
+                                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color"/>
+                            </div>
+                            <div className="text-right pt-2">
+                                <button type="submit" disabled={passwordMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50">
+                                    {passwordMutation.isLoading ? 'Saving...' : 'Update Password'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
                     {/* Danger Zone - Account Deletion */}
