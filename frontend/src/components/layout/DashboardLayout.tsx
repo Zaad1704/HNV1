@@ -1,3 +1,4 @@
+// frontend/src/components/layout/DashboardLayout.tsx
 import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -25,7 +26,8 @@ const DashboardLayout = () => {
     const getLinkClass = (path: string) => {
         const base = 'flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors';
         const isActive = location.pathname.startsWith(path);
-        return isActive ? `${base} bg-brand-primary/20 text-white` : `${base} text-indigo-200 hover:bg-brand-primary/10 hover:text-white`;
+        // Adjusted colors for dashboard sidebar links
+        return isActive ? `${base} bg-brand-primary text-dark-text` : `${base} text-light-text hover:bg-brand-secondary hover:text-dark-text`;
     };
 
     // Main navigation links for the sidebar
@@ -48,12 +50,12 @@ const DashboardLayout = () => {
     const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
 
     return (
-        <div className="flex h-screen bg-brand-bg text-dark-text">
+        <div className="flex h-screen bg-light-bg text-dark-text"> {/* bg-brand-bg --> bg-light-bg */}
             {/* Desktop Sidebar */}
-            <aside className="w-64 flex-shrink-0 bg-brand-dark flex-col hidden md:flex">
-                <div className="h-20 flex items-center justify-between px-4 border-b border-white/10">
-                    <Link to="/dashboard" className="text-xl font-bold text-white flex items-center space-x-3 overflow-hidden">
-                       <img src={user?.organizationId?.branding?.companyLogoUrl || "/logo-min.png"} alt="Brand Logo" className="h-8 w-8 rounded-md flex-shrink-0 object-contain bg-white p-1" />
+            <aside className="w-64 flex-shrink-0 bg-brand-dark flex-col hidden md:flex"> {/* bg-brand-dark is new dark color */}
+                <div className="h-20 flex items-center justify-between px-4 border-b border-border-color"> {/* border-white/10 --> border-border-color */}
+                    <Link to="/dashboard" className="text-xl font-bold text-dark-text flex items-center space-x-3 overflow-hidden"> {/* text-white --> text-dark-text */}
+                       <img src={user?.organizationId?.branding?.companyLogoUrl || "/logo-min.png"} alt="Brand Logo" className="h-8 w-8 rounded-md flex-shrink-0 object-contain bg-light-card p-1" /> {/* bg-white --> bg-light-card */}
                        <span className="truncate">{user?.organizationId?.branding?.companyName || 'HNV Dashboard'}</span>
                     </Link>
                 </div>
@@ -66,15 +68,15 @@ const DashboardLayout = () => {
                          </RoleGuard>
                     ))}
                     <RoleGuard allowed={adminLink.roles}>
-                        <hr className="my-4 border-white/10" />
+                        <hr className="my-4 border-border-color" /> {/* border-white/10 --> border-border-color */}
                         <Link to={adminLink.href} className={getLinkClass(adminLink.href)}>
                             <adminLink.icon size={20} /><span>{adminLink.label}</span>
                         </Link>
                     </RoleGuard>
                 </nav>
-                <div className="p-4 border-t border-white/10">
+                <div className="p-4 border-t border-border-color"> {/* border-white/10 --> border-border-color */}
                     <Link to="/dashboard/settings" className={getLinkClass('/dashboard/settings')}><Settings size={20} /><span>{t('dashboard.settings')}</span></Link>
-                    <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-indigo-200 hover:bg-red-800/20 hover:text-white">
+                    <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-light-text hover:bg-brand-secondary hover:text-dark-text"> {/* text-indigo-200 --> text-light-text, hover adjusted */}
                         <LogOut size={20} /><span>{t('dashboard.logout')}</span>
                     </button>
                 </div>
@@ -85,11 +87,11 @@ const DashboardLayout = () => {
                 {/* --- HEADER --- */}
                 <header className="h-20 bg-light-card/80 backdrop-blur-md border-b border-border-color flex-shrink-0 flex items-center justify-end px-4 sm:px-8 gap-4">
                     {/* Language and Theme Toggles */}
-                    <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full hover:bg-gray-100" title={`Switch to ${getNextToggleLanguage().name}`}>
-                        <Globe size={20} className="text-light-text" />
+                    <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full hover:bg-brand-accent-light"> {/* hover:bg-gray-100 --> hover:bg-brand-accent-light */}
+                        <Globe size={20} className="text-light-text" /> {/* text-light-text now light */}
                     </button>
-                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100" title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
-                        {theme === 'light' ? <Moon size={20} className="text-light-text" /> : <Sun size={20} className="text-light-text" />}
+                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-brand-accent-light"> {/* hover:bg-gray-100 --> hover:bg-brand-accent-light */}
+                        {theme === 'light' ? <Moon size={20} className="text-light-text" /> : <Sun size={20} className="text-light-text" />} {/* text-light-text now light */}
                     </button>
                     
                     {/* Notifications */}
@@ -97,7 +99,7 @@ const DashboardLayout = () => {
 
                     {/* User Profile Dropdown Placeholder */}
                     <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">
+                         <div className="w-10 h-10 rounded-full bg-brand-primary text-dark-text flex items-center justify-center font-bold"> {/* text-white --> text-dark-text */}
                             {user?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="hidden sm:block text-right">
