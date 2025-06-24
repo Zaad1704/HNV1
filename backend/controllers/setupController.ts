@@ -4,7 +4,28 @@ import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 
 // createSuperAdmin function remains the same...
-export const createSuperAdmin = async (req: Request, res: Response) => { /* ... */ };
+export const createSuperAdmin = async (req: Request, res: Response) => {
+    const { email, password, name } = req.body;
+    if (!email || !password || !name) {
+        return res.status(400).json({ success: false, message: 'Email, password, and name are required' });
+    }
+    try {
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ success: false, message: 'Super admin already exists' });
+        }
+        const user = await User.create({
+            name,
+            email,
+            password,
+            role: 'Super Admin',
+        });
+        res.status(201).json({ success: true, data: user });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
 
 /**
  * @desc    Create the default subscription plans. This is a one-time setup.
@@ -26,7 +47,7 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
         // FIX: We define the plans with all the required fields from our new Plan model.
         // We ensure the plans meant for the public pricing page have isPublic: true.
         const defaultPlans = [
-            { 
+            {
                 name: 'Free Trial',
                 price: 0,
                 duration: 'monthly',
@@ -34,7 +55,7 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
                 features: ['1 Property', '5 Tenants', '1 User'],
                 limits: { maxProperties: 1, maxTenants: 5, maxAgents: 1 }
             },
-            { 
+            {
                 name: 'Landlord Plan',
                 price: 1000, // $10.00 in cents
                 duration: 'monthly',
@@ -42,7 +63,7 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
                 features: ['Up to 10 Properties', 'Full Tenant Screening', 'Expense Tracking', 'Email Support'],
                 limits: { maxProperties: 10, maxTenants: 25, maxAgents: 2 }
             },
-            { 
+            {
                 name: 'Agent Plan',
                 price: 2500, // $25.00 in cents
                 duration: 'monthly',
