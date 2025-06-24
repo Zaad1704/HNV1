@@ -98,13 +98,22 @@ const PropertyDetailsPage = () => {
                       </div>
                   )}
                   {/* Property Info Card */}
-                  <div className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm space-y-4">
-                      {/* ... property info content remains the same */}
-                  </div>
+                    <div className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm space-y-4">
+                        <p className="flex items-center gap-2"><MapPin size={16} /> {property?.address?.formattedAddress}</p>
+                        <p className="flex items-center gap-2"><Home size={16} /> {property?.numberOfUnits} units</p>
+                    </div>
                 </div>
 
                 <div className="lg:col-span-2 bg-light-card p-6 rounded-xl border border-border-color shadow-sm">
-                    {/* ... tenants list remains the same ... */}
+                    <h2 className="text-2xl font-bold mb-4">Tenants</h2>
+                    <ul>
+                        {propertyTenants.map(tenant => (
+                            <li key={tenant._id} className="flex justify-between items-center py-2 border-b border-border-color">
+                                <span>{tenant.name}</span>
+                                <Link to={`/dashboard/tenants/${tenant._id}/profile`} className="text-brand-primary">View</Link>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </div>
         </div>
