@@ -12,19 +12,20 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // Updated Color Palette for extremely light, uniform brightness
-        'brand-dark': '#E1EBF5',     // Very light blue for "darker" backgrounds like headers/footers
-        'brand-primary': '#EFF4F9',  // Even lighter, near-white blue for primary actions/buttons
-        'brand-secondary': '#F4F8FC', // Almost pure white, for subtle accents
-        'brand-accent-light': '#F7FAFD', // A near-white with a very subtle blue hint for differentiation
-        'brand-accent-dark': '#4CAF50',  // Vibrant green for high-contrast calls to action
+        // Revised Color Palette for improved visibility, drawing from screenshot's contrast style
+        // Darker brand colors to ensure white text/logos are visible on them
+        'brand-dark': '#273D6B',     // Deep blue for structural elements (e.g., Navbar, Footer backgrounds)
+        'brand-primary': '#3D52A0',  // Solid blue for main interactive elements (e.g., buttons, active states)
+        'brand-secondary': '#6E88E4', // Lighter, more vibrant blue for secondary elements
+        'brand-accent-light': '#F0F4F8', // Very subtle light blue-gray for backgrounds and highlights
+        'brand-accent-dark': '#4CAF50',  // Vibrant green for high-emphasis actions
 
-        // Light Theme Semantics (consistent brightness, pure white highlight)
-        'light-bg': '#FFFFFF',       // Pure white for main backgrounds (the brightest)
-        'light-card': '#FAFBFC',     // Very subtle off-white for cards, almost pure white
-        'dark-text': '#334155',      // Strong dark blue-gray for main text (CRITICAL for contrast)
-        'light-text': '#64748B',     // Medium gray for secondary text, visible on very light backgrounds
-        'border-color': '#E2E8F0',   // Very light, subtle gray-blue border
+        // Light Theme Semantics (bright overall, strong text contrast)
+        'light-bg': '#FFFFFF',       // Pure white for main content backgrounds (brightest)
+        'light-card': '#F9FCFF',     // Very subtle off-white/light blue tint for cards
+        'dark-text': '#1A202C',      // Strong dark gray/blue for text on light backgrounds (CRITICAL for contrast)
+        'light-text': '#FFFFFF',     // Explicitly White text for visibility on brand-dark/primary backgrounds
+        'border-color': '#D1D5DB',   // Clear, neutral border color
 
         // Dark Theme Semantics (adjusted for consistency)
         'dark-bg': '#1a202c',
