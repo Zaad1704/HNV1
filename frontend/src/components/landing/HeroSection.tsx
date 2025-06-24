@@ -11,8 +11,8 @@ const HeroSection = () => {
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     color: 'transparent',
-    // --- SOLUTION: Stronger text shadow for visibility ---
-    textShadow: '2px 4px 8px rgba(0, 0, 0, 0.5)',
+    // --- SOLUTION: Stronger text shadow for enhanced visibility ---
+    textShadow: '2px 4px 8px rgba(0, 0, 0, 0.6)',
   };
 
   return (
@@ -27,7 +27,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-brand-dark opacity-70"></div>
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
-          className="text-6xl sm:text-6xl lg:text-6xl font-white uppercase tracking-wider"
+          className="text-6xl sm:text-7xl lg:text-8xl font-white uppercase tracking-wider"
           style={metallicTextStyle}
         >
           {settings?.heroSection?.title || t('hero.title')}
