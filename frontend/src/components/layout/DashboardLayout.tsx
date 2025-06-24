@@ -36,7 +36,8 @@ const DashboardLayout = () => {
         { href: "/dashboard/tenant", icon: Users, label: 'My Portal', roles: ['Tenant'] },
         { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
-        { href: "/dashboard/expenses", icon: CreditCard, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] }, // FIX: Add Payments link
+        { href: "/dashboard/expenses", icon: DollarSign, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/reminders", icon: Repeat, label: t('dashboard.reminders'), roles: ['Landlord', 'Agent'] },
