@@ -1,5 +1,3 @@
-// frontend/src/App.tsx
-
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
@@ -47,93 +45,100 @@ const AdminPlansPage = React.lazy(() => import('./pages/AdminPlansPage'));
 const SiteEditorPage = React.lazy(() => import('./pages/SuperAdmin/SiteEditorPage'));
 const AdminBillingPage = React.lazy(() => import('./pages/AdminBillingPage'));
 const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfilePage'));
-const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage')); // Ensure this is imported
+const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
+// --- SOLUTION: Import new pages ---
+const PricingPage = React.lazy(() => import('./pages/PricingPage'));
+const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
+
 
 const FullScreenLoader = () => (
-<div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white"><p>Loading Application...</p></div>
+<div className="h-screen w-full flex items-center justify-center bg-brand-dark text-dark-text"><p>Loading Application...</p></div>
 );
 
 function App() {
-const { token, user, setUser, logout } = useAuthStore();
-const [isSessionLoading, setSessionLoading] = useState(true);
+  const { token, user, setUser, logout } = useAuthStore();
+  const [isSessionLoading, setSessionLoading] = useState(true);
 
-useEffect(() => {
-const checkUserSession = async () => {
-if (token && !user) {
-try {
-const response = await apiClient.get('/auth/me');
-setUser(response.data.data);
-} catch (error) {
-console.error("Session check failed, logging out.", error);
-logout();
-}
-}
-setSessionLoading(false);
-};
-checkUserSession();
-}, [token, user, setUser, logout]);
+  useEffect(() => {
+    const checkUserSession = async () => {
+      if (token && !user) {
+        try {
+          const response = await apiClient.get('/auth/me');
+          setUser(response.data.data);
+        } catch (error) {
+          console.error("Session check failed, logging out.", error);
+          logout();
+        }
+      }
+      setSessionLoading(false);
+    };
+    checkUserSession();
+  }, [token, user, setUser, logout]);
 
-if (isSessionLoading) {
-return <FullScreenLoader />;
-}
+  if (isSessionLoading) {
+    return <FullScreenLoader />;
+  }
 
-return (
-<Suspense fallback={<FullScreenLoader />}>
-<Routes>
-<Route path="/" element={<PublicLayout />}>
-<Route index element={<LandingPage />} />
-<Route path="terms" element={<TermsPage />} />
-<Route path="privacy" element={<PrivacyPolicyPage />} />
-</Route>
-<Route path="/login" element={<LoginPage />} />
-<Route path="/register" element={<RegisterPage />} />
-<Route path="/forgot-password" element={<ForgotPasswordPage />} />
-<Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-<Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
-<Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-**<Route path="/resubscribe" element={<ResubscribePage />} />** {/* ADD THIS LINE */}
+  return (
+    <Suspense fallback={<FullScreenLoader />}>
+      <Routes>
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+        </Route>
+        
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+        <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+        <Route path="/resubscribe" element={<ResubscribePage />} />
 
-<Route path="/dashboard" element={<ProtectedRoute />}>
-  <Route element={<DashboardLayout />}>
-    <Route index element={<DashboardRedirector />} />
-    <Route path="overview" element={<OverviewPage />} />
-    <Route path="tenant" element={<TenantDashboardPage />} />
-    <Route path="properties" element={<PropertiesPage />} />
-    <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
-    <Route path="tenants" element={<TenantsPage />} />
-    <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
-    <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
-    <Route path="expenses" element={<ExpensesPage />} />
-    <Route path="maintenance" element={<MaintenanceRequestsPage />} />
-    <Route path="cashflow" element={<CashFlowPage />} />
-    <Route path="reminders" element={<RemindersPage />} />
-    <Route path="users" element={<UsersPage />} />
-    <Route path="billing" element={<BillingPage />} />
-    <Route path="audit-log" element={<AuditLogPage />} />
-    <Route path="settings" element={<SettingsPage />} />
-    <Route path="approvals" element={<ApprovalRequestsPage />} />
-  </Route>
-</Route>
+        {/* --- SOLUTION: Add new routes for pricing and payment summary --- */}
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
+        
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route index element={<DashboardRedirector />} />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="tenant" element={<TenantDashboardPage />} />
+            <Route path="properties" element={<PropertiesPage />} />
+            <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
+            <Route path="tenants" element={<TenantsPage />} />
+            <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
+            <Route path="tenants/:tenantId/statement" element={<TenantStatementPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="maintenance" element={<MaintenanceRequestsPage />} />
+            <Route path="cashflow" element={<CashFlowPage />} />
+            <Route path="reminders" element={<RemindersPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="billing" element={<BillingPage />} />
+            <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="approvals" element={<ApprovalRequestsPage />} />
+          </Route>
+        </Route>
 
-<Route path="/admin" element={<AdminRoute />}>
-    <Route element={<AdminLayout />}>
-        <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="organizations" element={<AdminOrganizationsPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="plans" element={<AdminPlansPage />} />
-        <Route path="site-editor" element={<SiteEditorPage />} />
-        <Route path="billing" element={<AdminBillingPage />} />
-        <Route path="profile" element={<AdminProfilePage />} />
-    </Route>
-</Route>
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="organizations" element={<AdminOrganizationsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="site-editor" element={<SiteEditorPage />} />
+            <Route path="billing" element={<AdminBillingPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
+          </Route>
+        </Route>
 
-<Route path="*" element={<NotFound />} />
-</Routes>
-</Suspense>
-
-
-);
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  );
 }
 
 export default App;
