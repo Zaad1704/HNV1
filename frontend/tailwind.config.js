@@ -1,3 +1,4 @@
+// frontend/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class', // <--- Correctly set to 'class'
@@ -11,26 +12,26 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // New Shopify-Inspired Palette
-        'brand-dark': '#3D52A0',
-        'brand-primary': '#7091E6',
-        'brand-secondary': '#8697C4',
-        'brand-subtle': '#ADBBDA',
-        'brand-bg': '#F7F8FA',      // Use a very light, clean background
+        // Updated Color Palette for more mixed and whitish feel
+        'brand-dark': '#2E4070',     // A richer, slightly darker blue
+        'brand-primary': '#4A70D0',  // A more vibrant, true blue
+        'brand-secondary': '#7A91DB', // Lighter shade of primary, good for accents
+        'brand-accent-light': '#E0F7FA', // A very light, subtle aqua/teal for mixing
+        'brand-accent-dark': '#20C997',  // A vibrant green/teal for standout elements
+        
+        // Light Theme Semantics (more whitish)
+        'light-bg': '#FFFFFF',       // Pure white for main backgrounds
+        'light-card': '#F9FAFB',     // Very subtle off-white for card backgrounds
+        'dark-text': '#111827',      // Near-black for high contrast
+        'light-text': '#525F7F',     // Darker gray for secondary text for better contrast
+        'border-color': '#D1D5DB',   // Lighter border color for better contrast
 
-        // Light Theme Semantics
-        'light-bg': '#F7F8FA',
-        'light-card': '#FFFFFF',
-        'dark-text': '#111827',     // Near-black for high contrast
-        'light-text': '#6b7280',   // Gray for secondary text
-        'border-color': '#e5e7eb',
-
-        // Dark Theme Semantics (Optional, for dashboard)
-        'dark-bg': '#0f172a',
-        'dark-card': '#1e293b',
-        'dark-text-dark': '#f8fafc', // For elements that are dark in light mode, become light in dark mode
-        'light-text-dark': '#cbd5e1', // For elements that are light in light mode, become light gray in dark mode
-        'border-color-dark': '#334155',
+        // Dark Theme Semantics (adjusted for consistency)
+        'dark-bg': '#1a202c',
+        'dark-card': '#2d3748',
+        'dark-text-dark': '#f7fafc',
+        'light-text-dark': '#e2e8f0',
+        'border-color-dark': '#4a5568',
       }
     },
   },
