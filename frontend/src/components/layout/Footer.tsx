@@ -1,3 +1,4 @@
+// frontend/src/components/layout/Footer.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
@@ -34,7 +35,7 @@ const Footer = () => {
                     <div className="sm:col-span-2 md:col-span-1">
                         <Link to="/" className="flex items-center space-x-3 mb-4">
                             {/* FIX: Removed filter classes that made the logo invisible */}
-                            <img src={settings.logos?.footerLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-8" />
+                            <img src={settings.logos?.footerLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-8" width="32" height="32" /> {/* Added width and height */}
                             <span className="text-xl font-bold text-white">{settings.logos?.companyName}</span>
                         </Link>
                         <p className="text-slate-400 text-sm max-w-xs">{settings.footer.description}</p>
