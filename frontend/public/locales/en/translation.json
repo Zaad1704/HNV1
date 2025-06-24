@@ -75,6 +75,43 @@
     "renew_lease": "Renew Lease",
     "no_overdue_rent": "No tenants with overdue rent.",
     "no_expiring_leases": "No leases expiring soon.",
-    "loading_data": "Loading Dashboard Data..."
+    "loading_data": "Loading Dashboard Data...",
+    "financial_chart": {
+      "revenue": "Revenue",
+      "expenses": "Expenses"
+    }
+  },
+  "about": {
+    "title": "About HNV Solutions",
+    "subtitle": "We are dedicated to simplifying property management through innovative technology.",
+    "mission_title": "Our Mission",
+    "mission_statement": "To provide user-friendly tools that empower property managers to achieve operational excellence, enhance tenant satisfaction, and maximize profitability.",
+    "vision_title": "Our Vision",
+    "vision_statement": "To be the leading global platform for property management, recognized for our commitment to customer success and continuous innovation."
+  },
+  "pricing": {
+    "title": "Choose The Plan That's Right For You",
+    "subtitle": "Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.",
+    "free": "Free",
+    "choose_plan": "Choose Plan",
+    "disclaimer": "Subscription and billing are managed securely through our payment partner."
+  },
+  "services": {
+    "tenant_management_title": "Tenant Management",
+    "tenant_management_desc": "Efficiently track tenant information, lease agreements, and communication logs.",
+    "property_tracking_title": "Property Tracking",
+    "property_tracking_desc": "Manage property details, maintenance schedules, and unit availability.",
+    "rent_collection_title": "Rent Collection",
+    "rent_collection_desc": "Automate rent reminders, process online payments, and track financial records.",
+    "title": "Our Services",
+    "subtitle": "Comprehensive solutions tailored for your property management needs."
+  },
+  "leadership": {
+    "title": "Meet Our Leadership",
+    "subtitle": "The driving force behind our commitment to excellence and innovation.",
+    "founder_visionary": "Founder & Visionary",
+    "founder_1_quote": "Our vision is to empower property managers with tools that make a real difference.",
+    "founder_2_quote": "Innovation and user experience are at the heart of everything we build.",
+    "coo_quote": "We ensure operational excellence to deliver seamless service to our customers."
   }
 }
