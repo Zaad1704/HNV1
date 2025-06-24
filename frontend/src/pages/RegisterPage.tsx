@@ -97,7 +97,7 @@ return (
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="h-4 w-4 mt-1 text-brand-primary border-border-color rounded focus:ring-brand-primary" {/* border-gray-300 --> border-border-color */}
+                className="h-4 w-4 mt-1 text-brand-primary border-border-color rounded focus:ring-brand-primary" /* Corrected: Removed inline comment from here */
             />
             <div className="text-sm">
                 <label htmlFor="terms" className="font-medium text-light-text">
@@ -120,17 +120,17 @@ return (
         <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
         <div className="flex-grow border-t border-border-color"></div>
     </div>
-    <button onClick={handleGoogleSignup} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-card hover:bg-brand-accent-light transition-colors"> {/* bg-white --> bg-light-card, hover to brand-accent-light */}
+    <button onClick={handleGoogleSignup} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-card hover:bg-brand-accent-light transition-colors">
         <Chrome size={20} /> Sign Up with Google
     </button>
 </div>
 
-<div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #212A31, #2E3944)'}}> {/* Updated gradient to new dark blues */}
+<div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #212A31, #2E3944)'}}>
     <h2 className="text-dark-text text-3xl font-bold mb-4">A smarter way to manage properties.</h2>
     <p className="text-light-text mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
     <div className="mt-4 border-t border-border-color pt-6">
-        <p className="text-light-text text-sm">Already have an account?</p> {/* Changed text-dark-text to text-light-text */}
-        <Link to="/login" className="font-bold text-brand-primary hover:underline">Sign In Here</Link> {/* Changed text-brand-dark to text-brand-primary */}
+        <p className="text-light-text text-sm">Already have an account?</p>
+        <Link to="/login" className="font-bold text-brand-primary hover:underline">Sign In Here</Link>
     </div>
 </div>
 </div>
