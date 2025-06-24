@@ -1,59 +1,86 @@
 Privacy Policy for HNV Property Management Solutions
-Last Updated: June 11, 2025
 
-HNV Property Management Solutions ("HNV," "we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service.
+Last Updated: June 24, 2025
+
+HNV Property Management Solutions ("HNV," "we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website, services, and software platform (collectively, the "Service").
 
 1. Information We Collect
 
-We may collect information about you in a variety of ways. The information we may collect on the Service includes:
+We may collect information about you in a variety of ways:
 
-1.1. Personal Data: Personally identifiable information, such as your name, email address, and telephone number, that you voluntarily give to us when you register for the Service or when you choose to participate in various activities related to the Service.
+Personal Data: Personally identifiable information, such as your name, email address, telephone number, and professional role, that you voluntarily provide when you register for the Service.
 
-1.2. Financial Data: Data related to your payment method (e.g., valid credit card number, card brand, expiration date) that you provide when you subscribe to a paid plan. We store very little, if any, financial information. Instead, all financial information is stored by our payment processor, 2Checkout, and you are encouraged to review their privacy policy.
+Financial Data: Data related to your payment method (e.g., valid credit card number, card brand, expiration date) that you provide when subscribing to a paid plan. All financial information is stored and processed by our secure third-party payment processor.
 
-1.3. Derivative Data: Information our servers automatically collect when you access the Service, such as your IP address, your browser type, your operating system, your access times, and the pages you have viewed directly before and after accessing the Service.
+User-Generated Content: Information you upload to the platform, such as property details, tenant information, lease agreements, financial records, and maintenance requests.
+
+Derivative Data: Information our servers automatically collect, such as your IP address, browser type, operating system, and access times.
 
 2. Use of Your Information
 
-Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Service to:
+We use the information collected to:
 
 Create and manage your account.
 
-Process your payments and subscriptions.
+Provide, operate, and maintain our Service.
 
-Email you regarding your account or order.
+Process your payments and manage your subscriptions.
 
-Enable user-to-user communications (where applicable).
+Communicate with you, including responding to your comments, questions, and support requests.
 
-Monitor and analyze usage and trends to improve your experience with the Service.
+Send you technical notices, updates, security alerts, and administrative messages.
 
-Notify you of updates to the Service.
+Monitor and analyze usage and trends to improve your experience and the Service's functionality.
 
-Perform other business activities as needed.
+Comply with legal obligations.
 
 3. Disclosure of Your Information
 
-We do not share your information with third parties except in the following situations:
+We do not sell your personal information. We may share your information in the following limited circumstances:
 
-By Law or to Protect Rights: If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others, we may share your information as permitted or required by any applicable law.
+With Your Consent: We may share your information with your consent or at your direction.
 
-Third-Party Service Providers: We may share your information with third parties that perform services for us or on our behalf, including payment processing (2Checkout), data analysis, email delivery, and hosting services.
+Third-Party Service Providers: We may share your information with third parties that perform services for us, including payment processing, data analysis, email delivery, and hosting services. These service providers are contractually bound to protect your information.
 
-Business Transfers: We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
+Legal Compliance: We may disclose information if required to do so by law or in the good faith belief that such action is necessary to comply with a legal obligation, protect and defend our rights or property, or prevent fraud.
 
-4. Security of Your Information
+Business Transfers: We may share or transfer your information in connection with any merger, sale of company assets, financing, or acquisition of all or a portion of our business.
 
-We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
+4. Data Security
 
-5. Your Rights Regarding Your Information
+We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the information you provide, no security measures are perfect or impenetrable.
 
-5.1. Account Information: You may at any time review or change the information in your account or terminate your account by logging into your account settings and updating your account information.
+5. Data Retention
 
-5.2. Data Export & Deletion: As described in our Terms and Conditions, you may request an export of your data or request the permanent deletion of your account.
+We will retain your personal information for as long as is necessary to fulfill the purposes outlined in this Privacy Policy unless a longer retention period is required or permitted by law.
 
-5.3. GDPR & International Rights: If you are a resident of the European Economic Area (EEA) or other regions with similar laws, you have certain data protection rights. We aim to take reasonable steps to allow you to correct, amend, delete, or limit the use of your Personal Data.
+6. Your Data Protection Rights
 
-6. Contact Us
+Depending on your location, you may have the following rights regarding your personal information:
 
-If you have questions or comments about this Privacy Policy, please contact us at: privacy@hnvpropertymanagementsolutions.com.
+The right to access, update, or delete the information we have on you.
+
+The right of rectification.
+
+The right to object to our processing of your information.
+
+The right of restriction.
+
+The right to data portability.
+
+The right to withdraw consent.
+
+You can exercise these rights through your account settings or by contacting us directly.
+
+7. International Data Transfers
+
+Your information may be transferred to — and maintained on — computers located outside of your state, province, or country where the data protection laws may differ.
+
+8. Changes to This Privacy Policy
+
+We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
+
+9. Contact Us
+
+If you have any questions about this Privacy Policy, please contact us at: privacy@hnvpm.com.
 
