@@ -1,26 +1,26 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import { 
-    generateMonthlyCollectionSheet, 
-    getTenantMonthlyStatement, 
-    generateTenantProfilePdf,
+    exportProperties,
     exportTenants,
-    exportExpenses 
+    generateMonthlyCollectionSheet,
+    exportMaintenance
 } from '../controllers/reportController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
 const router = Router();
+router.use(protect, authorize(['Landlord', 'Agent']));
 
-// This route now handles both CSV and PDF export for tenants
-router.get('/tenants/export', protect, authorize(['Landlord', 'Agent']), asyncHandler(exportTenants));
+// Property and Tenant Exports
+router.get('/properties/export', asyncHandler(exportProperties));
+router.get('/tenants/export', asyncHandler(exportTenants));
 
-// This route now handles both CSV and PDF export for expenses
-router.get('/expenses/export', protect, authorize(['Landlord', 'Agent']), asyncHandler(exportExpenses));
+// Rent Collection Sheet
+router.get('/monthly-collection-sheet', asyncHandler(generateMonthlyCollectionSheet));
 
-// Other report routes remain unchanged
-router.get('/monthly-collection-sheet', protect, authorize(['Landlord', 'Agent']), asyncHandler(generateMonthlyCollectionSheet));
-router.get('/tenant-statement/:tenantId', protect, authorize(['Landlord', 'Agent']), asyncHandler(getTenantMonthlyStatement));
-router.get('/tenant-profile/:tenantId/pdf', protect, authorize(['Landlord', 'Agent']), asyncHandler(generateTenantProfilePdf));
+// Filterable Exports
+router.get('/maintenance/export', asyncHandler(exportMaintenance));
+// Note: You would add a similar route for cashflow here
 
 export default router;
