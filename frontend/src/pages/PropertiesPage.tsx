@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
+import EditPropertyModal from '../components/common/EditPropertyModal';
 import { useWindowSize } from '../hooks/useWindowSize';
 import { Home, MapPin, Search, Edit, Trash2, Download } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -14,7 +15,9 @@ const fetchProperties = async () => {
 const PropertiesPage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedProperty, setSelectedProperty] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { width } = useWindowSize();
 
@@ -51,6 +54,11 @@ const PropertiesPage = () => {
             console.error("Failed to export properties:", error);
             alert("Could not export properties.");
         }
+    };
+
+    const handleEditClick = (property: any) => {
+        setSelectedProperty(property);
+        setIsEditModalOpen(true);
     };
 
     const handleDeleteClick = (propertyId: string) => {
@@ -101,7 +109,7 @@ const PropertiesPage = () => {
                                 <td className="p-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span></td>
                                 <td className="p-4 text-right flex items-center justify-end gap-2">
                                     <button onClick={() => navigate(`/dashboard/properties/${prop._id}`)} className="font-medium text-brand-primary hover:underline p-2 rounded-md hover:bg-gray-100" title="View Details">Manage</button>
-                                    <button onClick={() => { /* Logic to open Edit Modal here */ }} className="p-2 text-gray-500 hover:bg-gray-100 rounded-md" title="Edit Property"><Edit size={16} /></button>
+                                    <button onClick={() => handleEditClick(prop)} className="p-2 text-gray-500 hover:bg-gray-100 rounded-md" title="Edit Property"><Edit size={16} /></button>
                                     <button onClick={() => handleDeleteClick(prop._id)} disabled={deleteMutation.isLoading} className="p-2 text-red-600 hover:bg-red-100 rounded-md" title="Delete Property"><Trash2 size={16} /></button>
                                 </td>
                             </tr>
@@ -135,13 +143,14 @@ const PropertiesPage = () => {
 
     return (
         <div>
-            <AddPropertyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onPropertyAdded={handlePropertyAdded} />
+            <AddPropertyModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onPropertyAdded={handlePropertyAdded} />
+            <EditPropertyModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} property={selectedProperty} onPropertyUpdated={handlePropertyAdded} />
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-3xl font-bold text-dark-text">Manage Properties</h1>
                 <div className="flex items-center gap-2">
                     <button onClick={() => handleExport('csv')} className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"><Download size={18} /> CSV</button>
                     <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"><Download size={18} /> PDF</button>
-                    <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
+                    <button onClick={() => setIsAddModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
                         <span>+ Add Property</span>
                     </button>
                 </div>
