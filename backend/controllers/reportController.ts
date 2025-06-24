@@ -4,7 +4,7 @@ import Tenant from '../models/Tenant';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import Invoice from '../models/Invoice';
-import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest'; // <-- FIX: Imported MaintenanceRequest
+import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
 import axios from 'axios';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -37,10 +37,7 @@ async function embedImage(doc: PDFKit.PDFDocument, url: string, x: number, y: nu
 
 // --- Export Properties ---
 export const exportProperties = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-    }
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
     const { propertyId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (propertyId) query._id = propertyId;
@@ -83,10 +80,7 @@ export const exportProperties = async (req: Request, res: Response, next: NextFu
 
 // --- Export Tenants ---
 export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-    }
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
     const { tenantId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (tenantId) query._id = tenantId;
@@ -128,10 +122,7 @@ export const exportTenants = async (req: Request, res: Response, next: NextFunct
 
 // --- Generate Monthly Rent Collection Sheet ---
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-    }
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
     const { month } = req.query;
     const targetMonth = month ? new Date(month as string) : new Date();
     
@@ -169,7 +160,7 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
             tenant.phone || '',
             `$${(tenant.rentAmount || 0).toFixed(2)}`,
             overdueInvoice ? `$${overdueInvoice.amount.toFixed(2)} (${format(overdueInvoice.dueDate, 'MMM')})` : '$0.00',
-            '[   ]' // Checkbox
+            '[   ]'
         ];
         
         const y = doc.y;
@@ -180,26 +171,22 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
     doc.end();
 };
 
-// --- Export Maintenance & Cash Flow (Example for Maintenance) ---
+// --- Export Maintenance ---
 export const exportMaintenance = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) {
-        res.status(401).json({ message: 'Not authorized' });
-        return;
-    }
+     if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
     const { propertyId, agentId, tenantId, month, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
 
     if (propertyId) query.propertyId = propertyId;
     if (agentId) query.assignedTo = agentId;
     if (tenantId) query.requestedBy = tenantId;
-    if (month) {
-        const targetMonth = new Date(month as string);
+    if (month && typeof month === 'string') { // FIX: Ensure month is a string before using
+        const targetMonth = new Date(month);
         query.createdAt = { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) };
     }
 
     const requests = await MaintenanceRequest.find(query).populate('propertyId', 'name').populate('requestedBy', 'name').lean();
     
-    // FIX: Explicitly type the parameter 'r' to avoid implicit 'any'
     const csvData = convertToCsv(requests.map((r: IMaintenanceRequest) => ({
         date: format(new Date(r.createdAt), 'yyyy-MM-dd'),
         property: (r.propertyId as any)?.name,
