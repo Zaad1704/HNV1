@@ -100,10 +100,10 @@ const OverviewPage = () => {
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title={t('dashboard.monthly_revenue')} value={stats?.monthlyRevenue || 0} icon={<DollarSign className="text-brand-primary w-7 h-7" />} currency={currencyName} to="/dashboard/cashflow" />
-                <StatCard title={t('dashboard.total_properties')} value={stats?.totalProperties || 0} icon={<Building2 className="text-brand-primary w-7 h-7" />} to="/dashboard/properties" />
-                <StatCard title={t('dashboard.active_tenants')} value={stats?.activeTenants || 0} icon={<Users className="text-brand-primary w-7 h-7" />} to="/dashboard/tenants" />
-                <StatCard title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck className="text-brand-primary w-7 h-7" />} to="/dashboard/tenants" />
+                <StatCard title={t('dashboard.monthly_revenue')} value={stats?.monthlyRevenue || 0} icon={<DollarSign className="text-brand-primary w-7 h-7" />} accentColor="bg-brand-primary/50" currency={currencyName} to="/dashboard/cashflow" />
+                <StatCard title={t('dashboard.total_properties')} value={stats?.totalProperties || 0} icon={<Building2 className="text-brand-primary w-7 h-7" />} accentColor="bg-brand-primary/50" to="/dashboard/properties" />
+                <StatCard title={t('dashboard.active_tenants')} value={stats?.activeTenants || 0} icon={<Users className="text-brand-primary w-7 h-7" />} accentColor="bg-brand-primary/50" to="/dashboard/tenants" />
+                <StatCard title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck className="text-brand-primary w-7 h-7" />} accentColor="bg-brand-primary/50" to="/dashboard/tenants" />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
