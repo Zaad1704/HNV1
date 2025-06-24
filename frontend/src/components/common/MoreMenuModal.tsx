@@ -1,3 +1,4 @@
+// frontend/src/components/common/MoreMenuModal.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
@@ -21,10 +22,10 @@ const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-light-bg z-50 flex flex-col md:hidden">
+        <div className="fixed inset-0 bg-light-bg z-50 flex flex-col md:hidden"> {/* bg-light-bg is now dark */}
             <div className="flex justify-between items-center p-4 border-b border-border-color">
-                <h2 className="text-xl font-bold text-dark-text">More Options</h2>
-                <button onClick={onClose} className="text-light-text hover:text-dark-text">
+                <h2 className="text-xl font-bold text-dark-text">More Options</h2> {/* text-dark-text is now light */}
+                <button onClick={onClose} className="text-light-text hover:text-dark-text"> {/* text-light-text now light */}
                     <X size={24} />
                 </button>
             </div>
@@ -35,7 +36,7 @@ const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems
                             <Link
                                 to={item.href}
                                 onClick={onClose}
-                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 transition-colors"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-brand-secondary transition-colors" // text-dark-text now light, hover to dark-ish
                             >
                                 <item.icon size={20} />
                                 <span className="font-semibold">{item.label}</span>
@@ -43,7 +44,7 @@ const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems
                         ) : (
                             <button
                                 onClick={() => { item.action?.(); onClose(); }}
-                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 w-full text-left"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-brand-secondary w-full text-left" // text-dark-text now light, hover to dark-ish
                             >
                                 <item.icon size={20} />
                                 <span className="font-semibold">{item.label}</span>
