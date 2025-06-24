@@ -46,8 +46,22 @@ const PaymentsPage = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => { /* ... */ };
-  const formatDate = (dateString: string) => { /* ... */ };
+    const getStatusBadge = (status: string) => {
+        const statusClasses: { [key: string]: string } = {
+            Paid: 'bg-green-100 text-green-800',
+            Pending: 'bg-yellow-100 text-yellow-800',
+            Failed: 'bg-red-100 text-red-800',
+        };
+        return statusClasses[status] || 'bg-gray-100 text-gray-800';
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
 
   if (isLoading) return <div className="text-white text-center p-8">Loading...</div>;
   if (isError) return <div className="text-red-400 text-center p-8">Error loading payments.</div>;
