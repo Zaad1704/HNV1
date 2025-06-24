@@ -23,20 +23,20 @@ const Navbar = () => {
     { key: 'header.contact', href: '#contact' },
   ];
 
-  // This handler correctly scrolls or navigates as needed
+  // --- SOLUTION: Corrected scroll/navigation handler ---
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
     e.preventDefault();
     const targetId = href.substring(1); // Remove the '#' from the href
 
-    // If we are already on the landing page, just scroll smoothly
-    if (location.pathname === '/') {
+    // If we are not on the landing page, navigate there first with the hash
+    if (location.pathname !== '/') {
+        navigate(`/${href}`);
+    } else {
+        // If we are already on the landing page, just scroll smoothly
         const targetElement = document.getElementById(targetId);
         if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth' });
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    } else {
-        // If we are on a different page, navigate to the landing page with the hash
-        navigate(`/${href}`);
     }
   };
 
