@@ -65,7 +65,8 @@ const PublicBottomNavBar = () => {
                 {/* Centered Login Button */}
                 <div className="relative flex justify-center">
                     <Link to="/login" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg">
-                        <LogIn size={24} />
+                        {/* UPDATED: Changed icon to text for clarity */}
+                        <span className="text-sm font-bold">Login</span>
                     </Link>
                 </div>
                 
