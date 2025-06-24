@@ -1,3 +1,4 @@
+// frontend/src/pages/SuperAdmin/SiteEditorPage.tsx
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -120,7 +121,7 @@ const SiteEditorPage = () => {
             <div>
                 <label className="block text-sm font-medium text-light-text mb-1">{label}</label>
                 <input type="text" value={currentImageUrl} onChange={e => handleChange(section, field, e.target.value, index, subField)} placeholder="Enter image URL or upload below" className="w-full px-3 py-2 bg-brand-bg border border-border-color rounded-lg mb-2" />
-                {currentImageUrl && <img src={currentImageUrl} alt="Preview" className="h-20 w-auto object-contain mb-2 border border-border-color rounded"/>}
+                {currentImageUrl && <img src={currentImageUrl} alt="Preview" className="h-20 w-auto object-contain mb-2 border border-border-color rounded" width="auto" height="80"/>} {/* Added width and height */}
                 <input type="file" onChange={e => handleFileUploadChange(e, section, field, index, subField)} className="w-full text-sm text-light-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-gray-100 file:text-light-text hover:file:bg-gray-200" />
             </div>
         );
