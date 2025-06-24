@@ -4,6 +4,7 @@ import Tenant from '../models/Tenant';
 import Expense from '../models/Expense';
 import Property from '../models/Property';
 import Invoice from '../models/Invoice';
+import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest'; // <-- FIX: Imported MaintenanceRequest
 import axios from 'axios';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -14,7 +15,7 @@ function convertToCsv(data: any[]): string {
     const csvRows = [headers.join(',')];
     for (const row of data) {
         const values = headers.map(header => {
-            const escaped = ('' + row[header]).replace(/"/g, '""');
+            const escaped = ('' + (row[header] || '')).replace(/"/g, '""');
             return `"${escaped}"`;
         });
         csvRows.push(values.join(','));
@@ -36,7 +37,10 @@ async function embedImage(doc: PDFKit.PDFDocument, url: string, x: number, y: nu
 
 // --- Export Properties ---
 export const exportProperties = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { propertyId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (propertyId) query._id = propertyId;
@@ -79,7 +83,10 @@ export const exportProperties = async (req: Request, res: Response, next: NextFu
 
 // --- Export Tenants ---
 export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { tenantId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (tenantId) query._id = tenantId;
@@ -87,7 +94,6 @@ export const exportTenants = async (req: Request, res: Response, next: NextFunct
     const tenants = await Tenant.find(query).populate('propertyId', 'name').lean();
 
     if (format === 'pdf') {
-        // PDF generation logic with images
         const doc = new PDFDocument({ margin: 50 });
         res.setHeader('Content-disposition', `attachment; filename="tenants.pdf"`);
         res.setHeader('Content-type', 'application/pdf');
@@ -122,8 +128,11 @@ export const exportTenants = async (req: Request, res: Response, next: NextFunct
 
 // --- Generate Monthly Rent Collection Sheet ---
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
-    const { month } = req.query; // Expects format YYYY-MM
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
+    const { month } = req.query;
     const targetMonth = month ? new Date(month as string) : new Date();
     
     const tenants = await Tenant.find({ organizationId: req.user.organizationId, status: { $in: ['Active', 'Late'] } }).populate('propertyId', 'name').sort({ 'propertyId.name': 1, 'unit': 1 });
@@ -158,12 +167,12 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
             `${(tenant.propertyId as any)?.name || ''} - ${tenant.unit}`,
             tenant.name,
             tenant.phone || '',
-            `$${tenant.rentAmount?.toFixed(2) || '0.00'}`,
+            `$${(tenant.rentAmount || 0).toFixed(2)}`,
             overdueInvoice ? `$${overdueInvoice.amount.toFixed(2)} (${format(overdueInvoice.dueDate, 'MMM')})` : '$0.00',
             '[   ]' // Checkbox
         ];
         
-        let y = doc.y;
+        const y = doc.y;
         row.forEach((text, i) => doc.text(text, x + (i > 0 ? columnWidths.slice(0, i).reduce((a, b) => a + b) : 0), y, { width: columnWidths[i] }));
         doc.moveDown(1);
     });
@@ -173,20 +182,25 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
 
 // --- Export Maintenance & Cash Flow (Example for Maintenance) ---
 export const exportMaintenance = async (req: Request, res: Response, next: NextFunction) => {
-     if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { propertyId, agentId, tenantId, month, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
 
     if (propertyId) query.propertyId = propertyId;
     if (agentId) query.assignedTo = agentId;
-    if (tenantId) query.requestedBy = tenantId; // Assuming tenant is the requester
+    if (tenantId) query.requestedBy = tenantId;
     if (month) {
         const targetMonth = new Date(month as string);
         query.createdAt = { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) };
     }
 
     const requests = await MaintenanceRequest.find(query).populate('propertyId', 'name').populate('requestedBy', 'name').lean();
-    const csvData = convertToCsv(requests.map(r => ({
+    
+    // FIX: Explicitly type the parameter 'r' to avoid implicit 'any'
+    const csvData = convertToCsv(requests.map((r: IMaintenanceRequest) => ({
         date: format(new Date(r.createdAt), 'yyyy-MM-dd'),
         property: (r.propertyId as any)?.name,
         requester: (r.requestedBy as any)?.name,
