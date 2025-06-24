@@ -39,41 +39,41 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-brand-bg flex flex-col p-4 items-center justify-center">
+        <div className="min-h-screen bg-light-bg flex flex-col p-4 items-center justify-center"> {/* Changed bg-brand-bg to bg-light-bg */}
             <div className="w-full max-w-4xl bg-light-card grid md:grid-cols-2 shadow-xl rounded-2xl overflow-hidden border border-border-color">
-                <div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #3D52A0, #7091E6)'}}>
-                    <h2 className="text-3xl font-bold text-white mb-4">A smarter way to manage properties.</h2>
-                    <p className="text-indigo-200 mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
-                    <div className="mt-4 border-t border-white/20 pt-6">
-                        <p className="text-sm text-indigo-100">Don't have an account?</p>
-                        <Link to="/register" className="font-bold text-white hover:underline">Sign Up Here</Link>
+                <div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #212A31, #2E3944)'}}> {/* Updated gradient to new dark blues */}
+                    <h2 className="text-dark-text text-3xl font-bold mb-4">A smarter way to manage properties.</h2>
+                    <p className="text-light-text mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
+                    <div className="mt-4 border-t border-border-color pt-6">
+                        <p className="text-light-text text-sm">Don't have an account?</p> {/* Changed text-dark-text to text-light-text */}
+                        <Link to="/register" className="font-bold text-brand-primary hover:underline">Sign Up Here</Link> {/* Changed text-brand-dark to text-brand-primary */}
                     </div>
                 </div>
                 
-                <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center">
+                <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center bg-light-card"> {/* Added bg-light-card to explicitly set background */}
                     <div className="mb-8">
                         <Link to="/" className="inline-flex items-center gap-3">
-                            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
-                            <span className="text-xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
+                            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" />
+                            <span className="text-xl font-bold text-dark-text">{settings?.logos?.companyName || 'HNV Solutions'}</span> {/* text-dark-text now maps to light color */}
                         </Link>
                     </div>
-                    <h1 className="text-3xl font-bold mb-2">Welcome Back!</h1>
+                    <h1 className="text-3xl font-bold mb-2 text-dark-text">Welcome Back!</h1> {/* Added text-dark-text */}
                     <p className="text-light-text mb-8">Log in to your account to continue.</p>
                     <form onSubmit={handleLogin} className="space-y-6">
                         {error && <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-center text-sm"><span>{error}</span></div>}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-light-text">Email Address</label>
-                            <input type="email" name="email" id="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-brand-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none" />
+                            <input type="email" name="email" id="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text" /> {/* Added text-dark-text and bg-light-card */}
                         </div>
                         <div>
                             <div className="flex justify-between items-baseline">
                                 <label htmlFor="password"className="block text-sm font-medium text-light-text">Password</label>
                                 <Link to="/forgot-password" className="text-sm text-brand-primary hover:underline">Forgot Password?</Link>
                             </div>
-                            <input type="password" name="password" id="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-brand-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none" />
+                            <input type="password" name="password" id="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text" /> {/* Added text-dark-text and bg-light-card */}
                         </div>
                         <div>
-                            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-sm font-bold text-white bg-brand-primary hover:bg-brand-dark transition-colors disabled:opacity-50">
+                            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-dark-text bg-brand-primary hover:bg-brand-secondary transition-colors disabled:opacity-50"> {/* text-dark-text now light, hover to brand-secondary */}
                                 {loading ? 'Signing In...' : 'Sign In'}
                             </button>
                         </div>
@@ -83,7 +83,7 @@ const LoginPage: React.FC = () => {
                         <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
                         <div className="flex-grow border-t border-border-color"></div>
                     </div>
-                    <button onClick={handleGoogleLogin} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-white hover:bg-gray-100 transition-colors">
+                    <button onClick={handleGoogleLogin} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-card hover:bg-brand-accent-light transition-colors"> {/* bg-light-card now dark, hover to brand-accent-light */}
                         <Chrome size={20} /> Sign In with Google
                     </button>
                     <div className="mt-8 text-center text-xs text-light-text">
