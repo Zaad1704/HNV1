@@ -13,8 +13,10 @@ export const getSubscriptionDetails = async (req: Request, res: Response) => {
     try {
         const subscription = await Subscription.findOne({ organizationId: req.user.organizationId })
             .populate('planId');
+        // FIX: If no subscription is found, return a successful response with null data
+        // This allows the frontend to handle the 'no subscription' state gracefully
         if (!subscription) {
-            res.status(404).json({ success: false, message: 'Subscription not found.' });
+            res.status(200).json({ success: true, data: null });
             return;
         }
         res.status(200).json({ success: true, data: subscription });
