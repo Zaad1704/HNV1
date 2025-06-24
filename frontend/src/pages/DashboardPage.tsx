@@ -66,27 +66,27 @@ const DashboardPage = () => {
         <StatCard
           title="Total Properties"
           value={totalProperties}
-          icon={<Building className="text-brand-primary w-7 h-7" />} {/* text-cyan-300 --> text-brand-primary */}
-          accentColor="bg-brand-primary/50" {/* bg-cyan-500/50 --> bg-brand-primary/50 */}
+          icon={<Building className="text-brand-primary w-7 h-7" />}
+          accentColor="bg-brand-primary/50"
         />
         <StatCard
           title="Active Tenants"
           value={activeTenants}
-          icon={<Users className="text-brand-primary w-7 h-7" />} {/* text-pink-300 --> text-brand-primary */}
-          accentColor="bg-brand-primary/50" {/* bg-pink-500/50 --> bg-brand-primary/50 */}
+          icon={<Users className="text-brand-primary w-7 h-7" />}
+          accentColor="bg-brand-primary/50"
         />
         <StatCard
           title="Occupancy Rate"
           value={occupancyRate}
-          icon={<BarChart2 className="text-brand-primary w-7 h-7" />} {/* text-emerald-300 --> text-brand-primary */}
-          accentColor="bg-brand-primary/50" {/* bg-emerald-500/50 --> bg-brand-primary/50 */}
+          icon={<BarChart2 className="text-brand-primary w-7 h-7" />}
+          accentColor="bg-brand-primary/50"
         />
         <StatCard
           title="Monthly Revenue"
           value={monthlyRevenue}
           currency="$"
-          icon={<HandCoins className="text-brand-primary w-7 h-7" />} {/* text-yellow-300 --> text-brand-primary */}
-          accentColor="bg-brand-primary/50" {/* bg-yellow-500/50 --> bg-brand-primary/50 */}
+          icon={<HandCoins className="text-brand-primary w-7 h-7" />}
+          accentColor="bg-brand-primary/50"
         />
       </div>
 
