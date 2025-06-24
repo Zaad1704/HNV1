@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
 import mongoose from 'mongoose';
 import helmet from 'helmet';
-import passport from 'passport';
 
 // This line executes the file and registers the Google strategy with Passport.
 import './config/passport-setup'; 
@@ -84,7 +83,7 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(helmet());
+// app.use(helmet()); // <--- Commented out as requested
 app.use(passport.initialize());
 
 // --- Mount API Routes ---
