@@ -146,7 +146,7 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
     res.setHeader('Content-type', 'application/pdf');
     doc.pipe(res);
 
-    doc.fontSize(18).text(`Rent Collection Sheet - ${format(targetMonth, 'MMMM yyyy')}`, { align: 'center' });
+    doc.fontSize(18).text(`Rent Collection Sheet - ${format(targetMonth, 'MMMM<y_bin_46>')}`, { align: 'center' });
     doc.moveDown();
 
     const tableTop = doc.y;
@@ -185,16 +185,21 @@ export const exportMaintenance = async (req: Request, res: Response, next: NextF
         res.status(401).json({ message: 'Not authorized' });
         return;
     }
-    const { propertyId, agentId, tenantId, month, format = 'csv' } = req.query;
+
     const query: any = { organizationId: req.user.organizationId };
 
-    if (propertyId) query.propertyId = propertyId;
-    if (agentId) query.assignedTo = agentId;
-    if (tenantId) query.requestedBy = tenantId;
-    if (month && typeof month === 'string') {
-        const targetMonth = new Date(month);
-        // FIX: The query was on 'createdAt' but the Mongoose model schema did not have timestamps enabled.
-        // Assuming timestamps: true is on the MaintenanceRequestSchema, this is correct.
+    // FIX: Safely handle query parameters to avoid "not callable" error
+    if (req.query.propertyId && typeof req.query.propertyId === 'string') {
+        query.propertyId = req.query.propertyId;
+    }
+    if (req.query.agentId && typeof req.query.agentId === 'string') {
+        query.assignedTo = req.query.agentId;
+    }
+    if (req.query.tenantId && typeof req.query.tenantId === 'string') {
+        query.requestedBy = req.query.tenantId;
+    }
+    if (req.query.month && typeof req.query.month === 'string') {
+        const targetMonth = new Date(req.query.month);
         query.createdAt = { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) };
     }
 
