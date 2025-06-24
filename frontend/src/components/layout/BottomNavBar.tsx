@@ -1,3 +1,4 @@
+// frontend/src/components/layout/BottomNavBar.tsx
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -24,6 +25,7 @@ const BottomNavBar = () => {
     const getLinkClass = (path: string, isButton: boolean = false) => {
         const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors';
         const isActive = !isButton && location.pathname.startsWith(path);
+        // Adjusted colors for bottom nav links
         return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text'}`;
     };
 
@@ -58,7 +60,7 @@ const BottomNavBar = () => {
                 userRole={user?.role}
                 handleLogout={handleLogout}
             />
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30"> {/* bg-light-card is now dark */}
                 <div className="grid grid-cols-5 h-full">
                     {/* Left Items */}
                     <RoleGuard allowed={['Landlord', 'Agent']}>
@@ -72,7 +74,7 @@ const BottomNavBar = () => {
 
                     {/* Centered Home Button */}
                     <div className="relative flex justify-center">
-                        <Link to="/dashboard/overview" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg">
+                        <Link to="/dashboard/overview" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-dark-text rounded-full shadow-lg border-4 border-light-bg"> {/* bg-brand-primary is new, text-dark-text is light, border-light-bg is new dark */}
                             <Home size={24} />
                         </Link>
                     </div>
