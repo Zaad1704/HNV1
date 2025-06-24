@@ -15,7 +15,8 @@ import {
     getPlatformGrowth,
     getPlanDistribution,
     updateOrganizationSubscription, 
-    toggleSelfDeletion 
+    toggleSelfDeletion,
+    deleteUserByAdmin
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -38,6 +39,7 @@ router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelf
 
 router.get('/users', asyncHandler(getAllUsers));
 router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
+router.delete('/users/:userId', asyncHandler(deleteUserByAdmin)); // New Route
 
 router.get('/moderators', asyncHandler(getModerators));
 router.get('/billing', asyncHandler(getGlobalBilling));
