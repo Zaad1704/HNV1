@@ -25,7 +25,11 @@ const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
         fatherName: '', motherName: '', permanentAddress: '', govtIdNumber: '',
         referenceName: '', referencePhone: '', referenceIdNumber: '',
     });
-    const [imageFiles, setImageFiles] = useState({
+    const [imageFiles, setImageFiles] = useState<{
+        imageUrl: File | null;
+        govtIdImageUrlFront: File | null;
+        govtIdImageUrlBack: File | null;
+    }>({
         imageUrl: null,
         govtIdImageUrlFront: null,
         govtIdImageUrlBack: null,
@@ -49,7 +53,7 @@ const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
     
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setImageFiles(prev => ({ ...prev, [e.target.name]: e.target.files[0] }));
+            setImageFiles(prev => ({ ...prev, [e.target.name]: e.target.files?.[0] || null }));
         }
     };
 
@@ -61,12 +65,12 @@ const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
 
         // Append all simple form fields
         for (const key in formData) {
-            finalTenantData.append(key, formData[key]);
+            finalTenantData.append(key, (formData as any)[key]);
         }
         // Append file fields
         for (const key in imageFiles) {
-            if (imageFiles[key]) {
-                finalTenantData.append(key, imageFiles[key]);
+            if ((imageFiles as any)[key]) {
+                finalTenantData.append(key, (imageFiles as any)[key]);
             }
         }
         
@@ -77,7 +81,12 @@ const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => v
     };
     
     // Functions for managing additional adults (add/remove) remain the same
-    const handleAdultChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => { /* ... */ };
+    const handleAdultChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const newAdults = [...additionalAdults];
+        (newAdults[index] as any)[name] = value;
+        setAdditionalAdults(newAdults);
+    };
     const addAdult = () => setAdditionalAdults([...additionalAdults, { name: '', phone: '' }]);
     const removeAdult = (index: number) => setAdditionalAdults(additionalAdults.filter((_, i) => i !== index));
 
