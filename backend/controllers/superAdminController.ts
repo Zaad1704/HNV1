@@ -1,3 +1,4 @@
+// backend/controllers/superAdminController.ts
 import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
@@ -8,14 +9,36 @@ import Plan from '../models/Plan';
 import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
 import { Types } from 'mongoose';
 
-const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+
+export const deleteOrganization = asyncHandler(async (req: Request, res: Response) => {
+    const { orgId } = req.params;
+
+    const organization = await Organization.findById(orgId);
+    if (!organization) {
+        res.status(404);
+        throw new Error('Organization not found.');
+    }
+
+    // Perform a soft cascade delete
+    // 1. Delete all users belonging to the organization
+    await User.deleteMany({ organizationId: orgId });
+    // 2. Delete the subscription associated with the organization
+    await Subscription.deleteMany({ organizationId: orgId });
+    // 3. Delete the organization itself
+    await organization.deleteOne();
+
+    res.status(200).json({ success: true, message: `Organization '${organization.name}' and all associated data has been deleted.` });
+});
+
+
+export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const totalUsers = await User.countDocuments();
     const totalOrgs = await Organization.countDocuments();
     const activeSubscriptions = await Subscription.countDocuments({ status: 'active' });
     res.status(200).json({ success: true, data: { totalUsers, totalOrgs, activeSubscriptions } });
 });
 
-const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const organizations = await Organization.find({})
         .populate('owner', 'name email')
         .populate({
@@ -24,21 +47,6 @@ const getAllOrganizations = asyncHandler(async (req: Request, res: Response, nex
         });
     res.status(200).json({ success: true, data: organizations });
 });
-
-export const deleteUserByAdmin = asyncHandler(async (req: Request, res: Response) => {
-    const user = await User.findById(req.params.userId);
-
-    if (!user) {
-        res.status(404);
-        throw new Error('User not found');
-    }
-
-    // Add any additional checks here, e.g., preventing deletion of the primary super admin
-
-    await user.deleteOne();
-    res.status(200).json({ success: true, message: 'User deleted successfully.' });
-});
-
 
 // FIX: Added 'export' to all the functions below so they can be imported in the routes file.
 
@@ -226,6 +234,3 @@ export const getPlanDistribution = asyncHandler(async (req: Request, res: Respon
 
     res.status(200).json({ success: true, data: mockData });
 });
-
-// Finally, export the original two functions that were already exported.
-export { getDashboardStats, getAllOrganizations };
