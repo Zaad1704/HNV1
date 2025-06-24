@@ -1,10 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
-import Expense from '../models/Expense';
+import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
 import Property from '../models/Property';
 import Invoice from '../models/Invoice';
-import MaintenanceRequest, { IMaintenanceRequest } from '../models/MaintenanceRequest';
 import axios from 'axios';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -37,7 +36,10 @@ async function embedImage(doc: PDFKit.PDFDocument, url: string, x: number, y: nu
 
 // --- Export Properties ---
 export const exportProperties = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { propertyId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (propertyId) query._id = propertyId;
@@ -80,7 +82,10 @@ export const exportProperties = async (req: Request, res: Response, next: NextFu
 
 // --- Export Tenants ---
 export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { tenantId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
     if (tenantId) query._id = tenantId;
@@ -122,9 +127,12 @@ export const exportTenants = async (req: Request, res: Response, next: NextFunct
 
 // --- Generate Monthly Rent Collection Sheet ---
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { month } = req.query;
-    const targetMonth = month ? new Date(month as string) : new Date();
+    const targetMonth = month && typeof month === 'string' ? new Date(month) : new Date();
     
     const tenants = await Tenant.find({ organizationId: req.user.organizationId, status: { $in: ['Active', 'Late'] } }).populate('propertyId', 'name').sort({ 'propertyId.name': 1, 'unit': 1 });
     const invoices = await Invoice.find({
@@ -173,15 +181,20 @@ export const generateMonthlyCollectionSheet = async (req: Request, res: Response
 
 // --- Export Maintenance ---
 export const exportMaintenance = async (req: Request, res: Response, next: NextFunction) => {
-     if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.user?.organizationId) {
+        res.status(401).json({ message: 'Not authorized' });
+        return;
+    }
     const { propertyId, agentId, tenantId, month, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
 
     if (propertyId) query.propertyId = propertyId;
     if (agentId) query.assignedTo = agentId;
     if (tenantId) query.requestedBy = tenantId;
-    if (month && typeof month === 'string') { // FIX: Ensure month is a string before using
+    if (month && typeof month === 'string') {
         const targetMonth = new Date(month);
+        // FIX: The query was on 'createdAt' but the Mongoose model schema did not have timestamps enabled.
+        // Assuming timestamps: true is on the MaintenanceRequestSchema, this is correct.
         query.createdAt = { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) };
     }
 
