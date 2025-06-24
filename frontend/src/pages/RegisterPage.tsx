@@ -54,40 +54,40 @@ window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google`;
 };
 
 const roleCardClasses = "role-card p-5 border-2 rounded-lg cursor-pointer transition-all duration-200 text-center";
-const selectedRoleClasses = "border-brand-primary ring-2 ring-brand-primary/50 shadow-md bg-indigo-50";
+const selectedRoleClasses = "border-brand-primary ring-2 ring-brand-primary/50 shadow-md bg-brand-secondary"; // Changed bg-brand-accent-light to bg-brand-secondary
 
 return (
-<div className="min-h-screen bg-brand-bg flex items-center justify-center p-4">
+<div className="min-h-screen bg-light-bg flex items-center justify-center p-4"> {/* Changed bg-brand-bg to bg-light-bg */}
 <div className="w-full max-w-4xl bg-light-card grid md:grid-cols-2 shadow-xl rounded-2xl overflow-hidden border border-border-color">
-<div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center">
+<div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center bg-light-card"> {/* Added bg-light-card */}
 <div className="mb-8">
 <Link to="/" className="inline-flex items-center gap-3">
-<img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
-<span className="text-xl font-bold text-brand-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
+<img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" />
+<span className="text-xl font-bold text-dark-text">{settings?.logos?.companyName || 'HNV Solutions'}</span>
 </Link>
 </div>
-<h1 className="text-3xl font-bold mb-2">Create Your Account</h1>
+<h1 className="text-3xl font-bold mb-2 text-dark-text">Create Your Account</h1>
 <p className="text-light-text mb-8">Start your free trial today.</p>
 <form onSubmit={handleRegister} className="space-y-6">
 {error && <div className="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-center text-sm"><span>{error}</span></div>}
 <div>
 <label className="block text-sm font-medium text-light-text mb-2">First, choose your role</label>
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div onClick={() => handleRoleSelect('Landlord')} className={`${roleCardClasses} ${formData.role === 'Landlord' ? selectedRoleClasses : 'border-border-color bg-brand-bg hover:bg-gray-100'}`}><h3 className="font-bold text-base">I am a Landlord</h3></div>
-<div onClick={() => handleRoleSelect('Agent')} className={`${roleCardClasses} ${formData.role === 'Agent' ? selectedRoleClasses : 'border-border-color bg-brand-bg hover:bg-gray-100'}`}><h3 className="font-bold text-base">I am an Agent</h3></div>
+<div onClick={() => handleRoleSelect('Landlord')} className={`${roleCardClasses} ${formData.role === 'Landlord' ? selectedRoleClasses : 'border-border-color bg-light-card hover:bg-brand-accent-light'}`}><h3 className="font-bold text-dark-text">I am a Landlord</h3></div> {/* bg-brand-bg --> bg-light-card, hover to brand-accent-light */}
+<div onClick={() => handleRoleSelect('Agent')} className={`${roleCardClasses} ${formData.role === 'Agent' ? selectedRoleClasses : 'border-border-color bg-light-card hover:bg-brand-accent-light'}`}><h3 className="font-bold text-dark-text">I am an Agent</h3></div> {/* bg-brand-bg --> bg-light-card, hover to brand-accent-light */}
 </div>
 </div>
 <div>
 <label htmlFor="name" className="block text-sm font-medium text-light-text">Full Name</label>
-<input type="text" name="name" id="name" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-brand-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none" />
+<input type="text" name="name" id="name" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text" /> {/* bg-brand-bg --> bg-light-card, text-dark-text */}
 </div>
 <div>
 <label htmlFor="email" className="block text-sm font-medium text-light-text">Email Address</label>
-<input type="email" name="email" id="email" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-brand-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none" />
+<input type="email" name="email" id="email" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text" /> {/* bg-brand-bg --> bg-light-card, text-dark-text */}
 </div>
 <div>
 <label htmlFor="password"className="block text-sm font-medium text-light-text">Create Password</label>
-<input type="password" name="password" id="password" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-brand-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none" />
+<input type="password" name="password" id="password" required onChange={handleChange} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text" /> {/* bg-brand-bg --> bg-light-card, text-dark-text */}
 </div>
 
         <div className="flex items-start space-x-3">
@@ -97,7 +97,7 @@ return (
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="h-4 w-4 mt-1 text-brand-primary border-gray-300 rounded focus:ring-brand-primary"
+                className="h-4 w-4 mt-1 text-brand-primary border-border-color rounded focus:ring-brand-primary" {/* border-gray-300 --> border-border-color */}
             />
             <div className="text-sm">
                 <label htmlFor="terms" className="font-medium text-light-text">
@@ -109,7 +109,7 @@ return (
         </div>
 
         <div>
-            <button type="submit" disabled={loading || !agreedToTerms} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-sm font-bold text-white bg-brand-primary hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" disabled={loading || !agreedToTerms} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-dark-text bg-brand-primary hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading ? 'Creating Account...' : 'Create Account'}
             </button>
         </div>
@@ -120,17 +120,17 @@ return (
         <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
         <div className="flex-grow border-t border-border-color"></div>
     </div>
-    <button onClick={handleGoogleSignup} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-white hover:bg-gray-100 transition-colors">
+    <button onClick={handleGoogleSignup} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-card hover:bg-brand-accent-light transition-colors"> {/* bg-white --> bg-light-card, hover to brand-accent-light */}
         <Chrome size={20} /> Sign Up with Google
     </button>
 </div>
 
-<div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #3D52A0, #7091E6)'}}>
-    <h2 className="text-3xl font-bold text-white mb-4">A smarter way to manage properties.</h2>
-    <p className="text-indigo-200 mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
-    <div className="mt-4 border-t border-white/20 pt-6">
-        <p className="text-sm text-indigo-100">Already have an account?</p>
-        <Link to="/login" className="font-bold text-white hover:underline">Sign In Here</Link>
+<div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, #212A31, #2E3944)'}}> {/* Updated gradient to new dark blues */}
+    <h2 className="text-dark-text text-3xl font-bold mb-4">A smarter way to manage properties.</h2>
+    <p className="text-light-text mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
+    <div className="mt-4 border-t border-border-color pt-6">
+        <p className="text-light-text text-sm">Already have an account?</p> {/* Changed text-dark-text to text-light-text */}
+        <Link to="/login" className="font-bold text-brand-primary hover:underline">Sign In Here</Link> {/* Changed text-brand-dark to text-brand-primary */}
     </div>
 </div>
 </div>
