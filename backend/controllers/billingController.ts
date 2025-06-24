@@ -1,32 +1,63 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import Plan from '../models/Plan';
-import Subscription from '../models/Subscription';
 import Tenant from '../models/Tenant';
+import Subscription from '../models/Subscription';
 import Payment from '../models/Payment';
 import Invoice from '../models/Invoice';
 
-export const getSubscriptionDetails = asyncHandler(async (req: Request, res: Response) => {
+// --- SOLUTION: Added 'next: NextFunction' to the function signature ---
+export const getSubscriptionDetails = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization.' });
+        res.status(401).json({ success: false, message: 'Not authenticated or associated with an organization.' });
+        return;
     }
 
-    try {
-        const subscription = await Subscription.findOne({ organizationId: req.user.organizationId }).populate('planId');
+    const subscription = await Subscription.findOne({ organizationId: req.user.organizationId }).populate('planId');
 
-        // --- SOLUTION: Gracefully handle no subscription ---
-        if (!subscription) {
-            return res.status(200).json({ success: true, data: null });
-        }
-
-        res.status(200).json({ success: true, data: subscription });
-    } catch (error) {
-        console.error('Error fetching subscription details:', error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+    if (!subscription) {
+        res.status(200).json({ success: true, data: null });
+        return;
     }
+
+    res.status(200).json({ success: true, data: subscription });
 });
 
-// Other functions (createCheckoutSession, etc.) remain the same
-export const createCheckoutSession = async (req: Request, res: Response) => { /* ... */ };
-export const createRentPaymentSession = async (req: Request, res: Response) => { /* ... */ };
-export const handlePaymentWebhook = async (req: Request, res: Response) => { /* ... */ };
+export const createCheckoutSession = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // ... function logic remains the same
+    const { planId } = req.body;
+    const user = req.user;
+    if (!user) {
+        res.status(401).json({ success: false, message: 'User not authenticated.' });
+        return;
+    }
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+        res.status(404).json({ success: false, message: 'Plan not found.' });
+        return;
+    }
+    const redirectUrl = `https://hnv-1-frontend.onrender.com/payment-success?session_id=mock_session_${new Date().getTime()}`;
+    res.status(200).json({ success: true, redirectUrl: redirectUrl });
+});
+
+export const createRentPaymentSession = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // ... function logic remains the same
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ success: false, message: 'User not authenticated.' });
+      return;
+    }
+    const { invoiceId } = req.body; 
+
+    if (!invoiceId) {
+        res.status(400).json({ success: false, message: 'Invoice ID is required for rent payment.' });
+        return;
+    }
+    const redirectUrl = `${process.env.FRONTEND_URL}/payment-success?invoiceId=${invoiceId}&transactionId=mock_txn_id`;
+    res.status(200).json({ success: true, redirectUrl: redirectUrl });
+});
+
+export const handlePaymentWebhook = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    console.log('Webhook received:', req.body);
+    res.status(200).send('Webhook processed');
+});
