@@ -17,6 +17,11 @@
     "legal_links": "Legal",
     "social_links": "Social"
   },
+  "landing": {
+    "hero_title": "The All-in-One Platform for Modern Property Management",
+    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.",
+    "hero_cta": "Start Your Free Trial"
+  },
   "auth": {
     "welcome_back": "Welcome Back!",
     "login_prompt": "Log in to your account to continue.",
@@ -28,8 +33,20 @@
     "no_account": "Don't have an account?",
     "sign_up_here": "Sign Up Here",
     "forgot_password": "Forgot Password?",
+    "forgot_password_title": "Forgot Your Password?",
+    "forgot_password_prompt": "No problem. Enter your email address below, and we'll send you a link to reset it.",
+    "send_reset_link": "Send Reset Link",
+    "remembered_password": "Remembered your password?",
     "create_account": "Create Your Account",
-    "smarter_management": "A smarter way to manage properties."
+    "smarter_management": "A smarter way to manage properties.",
+    "by_signing_in": "By signing in, you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
+    "you_are_invited": "You're Invited!",
+    "invited_by": "{{inviterName}} has invited you to join their team as an Agent/Manager.",
+    "set_password_new": "Since you're new, please set a password to create your account.",
+    "accept_invitation": "Accept Invitation & Continue",
+    "invalid_token": "This invitation is invalid or has expired.",
+    "return_to_login": "Return to Login",
+    "verifying_invitation": "Verifying Invitation..."
   },
   "dashboard": {
     "overview": "Overview",
@@ -45,40 +62,19 @@
     "audit_log": "Audit Log",
     "admin_panel": "Admin Panel",
     "settings": "Settings",
-    "logout": "Logout"
-  },
-  "about": {
-    "title": "About HNV Solutions",
-    "subtitle": "We are dedicated to simplifying property management through innovative technology.",
-    "mission_title": "Our Mission",
-    "mission_statement": "To provide user-friendly tools that empower property managers to achieve operational excellence, enhance tenant satisfaction, and maximize profitability.",
-    "vision_title": "Our Vision",
-    "vision_statement": "To be the leading global platform for property management, recognized for our commitment to customer success and continuous innovation.",
-    "team_title": "Meet Our Leadership Team",
-    "team_subtitle": "The driving force behind our commitment to excellence and innovation."
-  },
-  "services": {
-    "title": "Our Services",
-    "subtitle": "Comprehensive solutions tailored for your property management needs.",
-    "tenant_management_title": "Tenant Management",
-    "tenant_management_desc": "Efficiently track tenant information, lease agreements, and communication logs.",
-    "property_tracking_title": "Property Tracking",
-    "property_tracking_desc": "Manage property details, maintenance schedules, and unit availability.",
-    "rent_collection_title": "Rent Collection",
-    "rent_collection_desc": "Automate rent reminders, process online payments, and track financial records."
-  },
-  "leadership": {
-    "title": "Meet Our Leadership",
-    "subtitle": "The driving force behind our commitment to excellence and innovation.",
-    "founder_visionary": "Visionary Founder",
-    "founder_1_quote": "Leading with vision to redefine property management through technology and customer-centric solutions.",
-    "founder_2_quote": "Innovating at the forefront of tech to build robust and scalable platforms for our users.",
-    "coo_quote": "Ensuring operational excellence and seamless service delivery for all our clients."
-  },
-  "pricing": {
-    "title": "Choose The Plan That's Right For You",
-    "subtitle": "Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.",
-    "choose_plan": "Choose Plan",
-    "disclaimer": "Subscription and billing are managed securely through our payment partner."
+    "logout": "Logout",
+    "monthly_revenue": "Monthly Revenue",
+    "total_properties": "Total Properties",
+    "active_tenants": "Active Tenants",
+    "occupancy_rate": "Occupancy Rate",
+    "financials_chart_title": "Financials (Last 6 Months)",
+    "rent_status_chart_title": "Rent Payment Status",
+    "overdue_rent_reminders": "Overdue Rent Reminders",
+    "upcoming_lease_expirations": "Upcoming Lease Expirations",
+    "send_reminder": "Send Reminder",
+    "renew_lease": "Renew Lease",
+    "no_overdue_rent": "No tenants with overdue rent.",
+    "no_expiring_leases": "No leases expiring soon.",
+    "loading_data": "Loading Dashboard Data..."
   }
 }
