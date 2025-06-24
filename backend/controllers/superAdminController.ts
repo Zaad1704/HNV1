@@ -25,6 +25,21 @@ const getAllOrganizations = asyncHandler(async (req: Request, res: Response, nex
     res.status(200).json({ success: true, data: organizations });
 });
 
+export const deleteUserByAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const user = await User.findById(req.params.userId);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Add any additional checks here, e.g., preventing deletion of the primary super admin
+
+    await user.deleteOne();
+    res.status(200).json({ success: true, message: 'User deleted successfully.' });
+});
+
+
 // FIX: Added 'export' to all the functions below so they can be imported in the routes file.
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
