@@ -2,15 +2,20 @@ import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
-import { Home, Building, Users, CreditCard, Shield, Settings, LogOut, Wrench, FileText, DollarSign, Repeat, CheckSquare } from 'lucide-react';
+import { useLang } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Home, Building, Users, CreditCard, Shield, Settings, LogOut, Wrench, FileText, DollarSign, Repeat, CheckSquare, Bell, Globe, Sun, Moon } from 'lucide-react';
 import RoleGuard from '../RoleGuard';
 import BottomNavBar from './BottomNavBar';
+import NotificationsPanel from '../dashboard/NotificationsPanel';
 
 const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
+    const { lang, setLang, getNextToggleLanguage } = useLang();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -23,41 +28,48 @@ const DashboardLayout = () => {
         return isActive ? `${base} bg-brand-primary/20 text-white` : `${base} text-indigo-200 hover:bg-brand-primary/10 hover:text-white`;
     };
 
+    // Main navigation links for the sidebar
+    const mainNavLinks = [
+        { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
+        { href: "/dashboard/tenant", icon: Users, label: 'My Portal', roles: ['Tenant'] },
+        { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/expenses", icon: CreditCard, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/reminders", icon: Repeat, label: t('dashboard.reminders'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/approvals", icon: CheckSquare, label: t('dashboard.approvals'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/users", icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/billing", icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
+        { href: "/dashboard/audit-log", icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
+    ];
+    
+    // Admin link, separated for clarity
+    const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
+
     return (
-        <div className="flex h-screen bg-brand-bg">
+        <div className="flex h-screen bg-brand-bg text-dark-text">
             {/* Desktop Sidebar */}
             <aside className="w-64 flex-shrink-0 bg-brand-dark flex-col hidden md:flex">
                 <div className="h-20 flex items-center justify-between px-4 border-b border-white/10">
                     <Link to="/dashboard" className="text-xl font-bold text-white flex items-center space-x-3 overflow-hidden">
-                       {/* FIX: Added Organization Logo */}
                        <img src={user?.organizationId?.branding?.companyLogoUrl || "/logo-min.png"} alt="Brand Logo" className="h-8 w-8 rounded-md flex-shrink-0 object-contain bg-white p-1" />
-                       {/* FIX: Added Organization Name */}
                        <span className="truncate">{user?.organizationId?.branding?.companyName || 'HNV Dashboard'}</span>
                     </Link>
                 </div>
                 <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                    <Link to="/dashboard/overview" className={getLinkClass('/dashboard/overview')}><Home size={20} /><span>{t('dashboard.overview')}</span></Link>
-                    
-                    <RoleGuard allowed={['Tenant']}>
-                        <Link to="/dashboard/tenant" className={getLinkClass('/dashboard/tenant')}><Users size={20} /><span>{t('dashboard.my_tenant_portal')}</span></Link>
-                    </RoleGuard>
-
-                    <RoleGuard allowed={['Super Admin', 'Super Moderator', 'Landlord', 'Agent']}>
-                        <Link to="/dashboard/properties" className={getLinkClass('/dashboard/properties')}><Building size={20} /><span>{t('dashboard.properties')}</span></Link>
-                        <Link to="/dashboard/tenants" className={getLinkClass('/dashboard/tenants')}><Users size={20} /><span>{t('dashboard.tenants')}</span></Link>
-                        <Link to="/dashboard/expenses" className={getLinkClass('/dashboard/expenses')}><CreditCard size={20} /><span>{t('dashboard.expenses')}</span></Link>
-                        <Link to="/dashboard/maintenance" className={getLinkClass('/dashboard/maintenance')}><Wrench size={20} /><span>{t('dashboard.maintenance')}</span></Link>
-                        <Link to="/dashboard/cashflow" className={getLinkClass('/dashboard/cashflow')}><DollarSign size={20} /><span>{t('dashboard.cash_flow')}</span></Link>
-                        <Link to="/dashboard/reminders" className={getLinkClass('/dashboard/reminders')}><Repeat size={20} /><span>{t('dashboard.reminders')}</span></Link>
-                        <Link to="/dashboard/approvals" className={getLinkClass('/dashboard/approvals')}><CheckSquare size={20} /><span>{t('dashboard.approvals')}</span></Link>
-                        <Link to="/dashboard/users" className={getLinkClass('/dashboard/users')}><Users size={20} /><span>{t('dashboard.users_invites')}</span></Link>
-                        <Link to="/dashboard/billing" className={getLinkClass('/dashboard/billing')}><CreditCard size={20} /><span>{t('dashboard.billing')}</span></Link>
-                        <Link to="/dashboard/audit-log" className={getLinkClass('/dashboard/audit-log')}><FileText size={20} /><span>{t('dashboard.audit_log')}</span></Link>
-                    </RoleGuard>
-
-                    <RoleGuard allowed={['Super Admin', 'Super Moderator']}>
+                    {mainNavLinks.map(link => (
+                         <RoleGuard key={link.href} allowed={link.roles}>
+                            <Link to={link.href} className={getLinkClass(link.href)}>
+                                <link.icon size={20} /><span>{link.label}</span>
+                            </Link>
+                         </RoleGuard>
+                    ))}
+                    <RoleGuard allowed={adminLink.roles}>
                         <hr className="my-4 border-white/10" />
-                        <Link to="/admin" className={getLinkClass('/admin')}><Shield size={20} /><span>{t('dashboard.admin_panel')}</span></Link>
+                        <Link to={adminLink.href} className={getLinkClass(adminLink.href)}>
+                            <adminLink.icon size={20} /><span>{adminLink.label}</span>
+                        </Link>
                     </RoleGuard>
                 </nav>
                 <div className="p-4 border-t border-white/10">
@@ -67,13 +79,41 @@ const DashboardLayout = () => {
                     </button>
                 </div>
             </aside>
-            {/* Main Content */}
+
+            {/* Main Content Area */}
             <main className="flex-1 flex flex-col">
+                {/* --- HEADER --- */}
+                <header className="h-20 bg-light-card/80 backdrop-blur-md border-b border-border-color flex-shrink-0 flex items-center justify-end px-4 sm:px-8 gap-4">
+                    {/* Language and Theme Toggles */}
+                    <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full hover:bg-gray-100" title={`Switch to ${getNextToggleLanguage().name}`}>
+                        <Globe size={20} className="text-light-text" />
+                    </button>
+                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100" title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
+                        {theme === 'light' ? <Moon size={20} className="text-light-text" /> : <Sun size={20} className="text-light-text" />}
+                    </button>
+                    
+                    {/* Notifications */}
+                    <NotificationsPanel />
+
+                    {/* User Profile Dropdown Placeholder */}
+                    <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">
+                            {user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="hidden sm:block text-right">
+                           <p className="font-semibold text-dark-text">{user?.name}</p>
+                           <p className="text-xs text-light-text">{user?.role}</p>
+                        </div>
+                    </div>
+                </header>
+                
+                {/* Scrollable Content */}
                 <div className="flex-1 p-4 sm:p-8 overflow-y-auto pb-24 md:pb-8">
                     <Outlet />
                 </div>
             </main>
 
+            {/* Mobile Bottom Navigation */}
             <BottomNavBar />
         </div>
     );
