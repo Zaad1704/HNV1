@@ -10,7 +10,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './components/layout/AdminLayout';
 
-// --- Lazy-loaded Page Components (Syntax Corrected) ---
+// --- Lazy-loaded Page Components ---
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
@@ -68,7 +68,7 @@ logout();
 setSessionLoading(false);
 };
 checkUserSession();
-}, []);
+}, [token, user, setUser, logout]);
 
 if (isSessionLoading) {
 return <FullScreenLoader />;
