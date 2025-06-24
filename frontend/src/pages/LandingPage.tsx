@@ -4,6 +4,7 @@ import React from 'react';
 import HeroSection from '../components/landing/HeroSection';
 import AboutSection from '../components/landing/AboutSection';
 import ServicesSection from '../components/landing/ServicesSection';
+import LeadershipSection from '../components/landing/LeadershipSection';
 import PricingSection from '../components/landing/PricingSection';
 import ContactSection from '../components/landing/ContactSection';
 import InstallAppSection from '../components/landing/InstallAppSection';
@@ -17,6 +18,16 @@ const LandingPage = () => {
       {/* Each section has a distinct background color from your palette */}
       <div id="about" className="py-20 md:py-28 bg-brand-dark">
         <AboutSection />
+      </div>
+      
+      {/* FIX: Added Services Section */}
+      <div id="services" className="py-20 md:py-28 bg-brand-secondary">
+        <ServicesSection />
+      </div>
+
+      {/* FIX: Added Leadership Section */}
+      <div id="leadership" className="py-20 md:py-28 bg-brand-dark">
+          <LeadershipSection />
       </div>
 
       <div id="featuresPage" className="py-20 md:py-28 bg-brand-secondary">
