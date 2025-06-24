@@ -12,19 +12,19 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // Updated Color Palette for more mixed and whitish feel
-        'brand-dark': '#2E4070',     // A richer, slightly darker blue
-        'brand-primary': '#4A70D0',  // A more vibrant, true blue
-        'brand-secondary': '#7A91DB', // Lighter shade of primary, good for accents
-        'brand-accent-light': '#E0F7FA', // A very light, subtle aqua/teal for mixing
-        'brand-accent-dark': '#20C997',  // A vibrant green/teal for standout elements
+        // Updated Color Palette for a lighter, balanced blue scheme
+        'brand-dark': '#3666A3',     // A richer, but not overly dark blue
+        'brand-primary': '#5B9AD9',  // A vibrant, clear lighter blue
+        'brand-secondary': '#8AC2E6', // Even lighter, softer blue for subtle accents
+        'brand-accent-light': '#F0F8FF', // Very light, almost white-blue for subtle backgrounds, enhances 'whiteness'
+        'brand-accent-dark': '#4CAF50',  // A distinct green for strong calls to action/emphasis, creating balance
         
         // Light Theme Semantics (more whitish)
-        'light-bg': '#FFFFFF',       // Pure white for main backgrounds
-        'light-card': '#F9FAFB',     // Very subtle off-white for card backgrounds
-        'dark-text': '#111827',      // Near-black for high contrast
-        'light-text': '#525F7F',     // Darker gray for secondary text for better contrast
-        'border-color': '#D1D5DB',   // Lighter border color for better contrast
+        'light-bg': '#FFFFFF',       // Pure white for main backgrounds (more whitish)
+        'light-card': '#F5F8FA',     // Very subtle off-white with a slight blue tint for card distinction
+        'dark-text': '#1A202C',      // Darker gray/blue for high contrast on lighter backgrounds
+        'light-text': '#60728C',     // Medium gray for secondary text, ensuring good readability
+        'border-color': '#CED9E6',   // A subtle light blue-gray for borders
 
         // Dark Theme Semantics (adjusted for consistency)
         'dark-bg': '#1a202c',
