@@ -13,23 +13,25 @@ import BottomNavBar from './BottomNavBar';
 import RoleGuard from '../RoleGuard';
 
 const DashboardLayout = () => {
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
     const { lang, setLang, getNextToggleLanguage } = useLang();
     const { theme, toggleTheme } = useTheme();
 
+    // This function handles the logout logic
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/login', { replace: true });
     };
 
+    // The DesktopSidebar component is defined inside DashboardLayout
+    // so it has access to the handleLogout function.
     const DesktopSidebar = () => {
         const getLinkClass = (path: string) => {
             const base = 'flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors';
             const isActive = location.pathname.startsWith(path);
-            // FIX: Added backticks for template literal
             return isActive ? `${base} bg-brand-primary/20 text-white` : `${base} text-indigo-200 hover:bg-brand-primary/10 hover:text-white`;
         };
 
@@ -68,6 +70,7 @@ const DashboardLayout = () => {
                 </nav>
                 <div className="p-4 border-t border-white/10">
                     <Link to="/dashboard/settings" className={getLinkClass('/dashboard/settings')}><Settings size={20} /><span>{t('dashboard.settings')}</span></Link>
+                    {/* This button now correctly calls the handleLogout function */}
                     <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-indigo-200 hover:bg-red-800/20 hover:text-white">
                         <LogOut size={20} /><span>{t('dashboard.logout')}</span>
                     </button>
@@ -79,10 +82,9 @@ const DashboardLayout = () => {
     return (
         <div className="flex h-screen bg-brand-bg">
             <DesktopSidebar />
-
             <main className="flex-1 flex flex-col">
                 <header className="h-20 bg-light-card border-b border-border-color flex-shrink-0 flex items-center justify-between px-4 sm:px-8">
-                    <div>{/* Placeholder for potential future items like breadcrumbs */}</div>
+                    <div></div>
                     <div className="flex items-center gap-4 ml-auto">
                         <button
                           onClick={toggleTheme}
@@ -112,7 +114,6 @@ const DashboardLayout = () => {
                     <Outlet />
                 </div>
             </main>
-
             <BottomNavBar />
         </div>
     );
