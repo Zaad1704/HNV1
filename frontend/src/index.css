@@ -9,6 +9,6 @@ html {
 }
 
 body {
-  background: #F7F8FA; /* A light background color for the body */
-  color: #1F2937; /* Default dark text color */
+  background: #212A31; /* Set global body background to the new brand-dark */
+  color: #F0F0F0; /* Default light text color */
 }
