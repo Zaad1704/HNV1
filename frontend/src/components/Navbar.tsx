@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.tsx
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
@@ -60,7 +61,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
         {/* Logo and Company Name */}
         <Link to="/" className="flex items-center space-x-3">
-          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" />
+          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" width="40" height="40" /> {/* Added width and height */}
           <span className="text-xl font-bold text-white sm:inline">
             {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
