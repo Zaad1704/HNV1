@@ -5,7 +5,7 @@ import { CheckCircle, CreditCard } from 'lucide-react';
 
 const fetchBillingInfo = async () => {
   const { data } = await apiClient.get("/billing");
-  return data.data;
+  return data.data; // This will be null if no subscription exists
 };
 
 const createCheckoutSession = async (planId: string): Promise<string> => {
@@ -14,9 +14,10 @@ const createCheckoutSession = async (planId: string): Promise<string> => {
 };
 
 const BillingPage: React.FC = () => {
-  const { data: billingInfo, isLoading, isError } = useQuery({
+  const { data: billingInfo, isLoading, isError, error } = useQuery({
       queryKey: ['billingInfo'],
-      queryFn: fetchBillingInfo
+      queryFn: fetchBillingInfo,
+      retry: false // It's often good to not retry auth-sensitive queries
   });
 
   const manageSubscriptionMutation = useMutation({
@@ -32,16 +33,11 @@ const BillingPage: React.FC = () => {
   });
 
   const handleManageSubscription = () => {
-      // Use the active planId from billingInfo to manage the subscription
       const planId = billingInfo?.planId?._id;
       if (planId) {
           manageSubscriptionMutation.mutate(planId);
       } else {
-          // If no plan, redirect to the main pricing page to choose a new one.
-          // This requires a new route in your App.tsx, e.g., <Route path="/pricing" element={<PricingPage />} />
-          // For now, we'll alert the user.
           alert("No active plan found. Please contact support or choose a new plan.");
-          // navigate('/pricing'); // Or navigate to a pricing page
       }
   };
 
@@ -64,57 +60,51 @@ const BillingPage: React.FC = () => {
       }
   };
 
-  if (isLoading) return <div className="text-center p-8">Loading Billing Information...</div>;
-  if (isError) return <div className="text-center text-red-500 p-8">Error loading subscription. Please try again later.</div>;
+  if (isLoading) return <div className="text-center p-8 text-dark-text">Loading Billing Information...</div>;
+  
+  if (isError) return <div className="text-center text-red-500 p-8">Error loading subscription details: {error.message}</div>;
 
-  // Case 1: No subscription data found at all
+  // --- SOLUTION: This handles the case where data is null ---
   if (!billingInfo) {
     return (
-        <div className="text-center text-amber-600 bg-amber-50 p-8 rounded-xl">
-            <h2 className="text-2xl font-bold">No Active Subscription Found</h2>
-            <p className="mt-2">It looks like your account does not have an active subscription.</p>
-            <p className="mt-1">Please contact support or subscribe to a plan to unlock all features.</p>
-            {/* Optional: Add a button to navigate to pricing page */}
-            {/* <Link to="/pricing" className="mt-4 inline-block bg-brand-primary text-white py-2 px-4 rounded-lg">View Plans</Link> */}
+        <div className="text-center bg-brand-secondary p-8 rounded-xl border border-border-color">
+            <h2 className="text-2xl font-bold text-dark-text">No Active Subscription Found</h2>
+            <p className="mt-2 text-light-text">It looks like your account does not have an active subscription.</p>
+            <p className="mt-1 text-light-text">Please contact support or subscribe to a plan to unlock all features.</p>
         </div>
     );
   }
 
-  // Case 2: Subscription found, but plan details are missing (e.g., plan was deleted)
   if (!billingInfo.planId) {
     return (
-        <div className="text-center text-red-600 bg-red-50 p-8 rounded-xl">
-            <h2 className="text-2xl font-bold">Plan Details Missing</h2>
-            <p className="mt-2">Your subscription is active, but the associated plan details could not be found. This might be due to a deleted plan.</p>
-            <p className="mt-1">Please contact support for assistance.</p>
+        <div className="text-center bg-red-500/10 p-8 rounded-xl border border-red-500/20">
+            <h2 className="text-2xl font-bold text-red-300">Plan Details Missing</h2>
+            <p className="mt-2 text-red-300/80">Your subscription is active, but the associated plan details could not be found. This might be due to a deleted plan.</p>
+            <p className="mt-1 text-red-300/80">Please contact support for assistance.</p>
         </div>
     );
   }
 
   return (
-    <div className="text-dark-text dark:text-dark-text-dark">
+    <div className="text-dark-text">
       <h1 className="text-3xl font-bold mb-8">Billing & Subscription</h1>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-light-card p-8 rounded-xl shadow-sm border border-border-color dark:bg-dark-card dark:border-border-color-dark">
-          <h2 className="text-2xl font-bold text-dark-text mb-1 dark:text-dark-text-dark">Your Current Plan</h2>
-          <p className="text-light-text mb-6 dark:text-light-text-dark">Manage your subscription and view plan details.</p>
-
-          <div className="bg-brand-bg p-6 rounded-lg border border-border-color dark:bg-dark-bg dark:border-border-color-dark">
+        <div className="lg:col-span-2 bg-light-card p-8 rounded-xl shadow-sm border border-border-color">
+          <h2 className="text-2xl font-bold text-dark-text mb-1">Your Current Plan</h2>
+          <p className="text-light-text mb-6">Manage your subscription and view plan details.</p>
+          <div className="bg-brand-dark/50 p-6 rounded-lg border border-border-color">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-3xl font-extrabold text-brand-dark dark:text-brand-primary">{billingInfo.planId.name}</h3>
-                <p className="text-lg font-mono mt-1 text-light-text dark:text-light-text-dark">
+                <h3 className="text-3xl font-extrabold text-brand-accent-light">{billingInfo.planId.name}</h3>
+                <p className="text-lg font-mono mt-1 text-light-text">
                   ${(billingInfo.planId.price / 100).toFixed(2)} / {billingInfo.planId.duration}
                 </p>
               </div>
               {getStatusChip(billingInfo.status)}
             </div>
-
-            <div className="border-t border-border-color my-6 dark:border-border-color-dark"></div>
-
-            <h4 className="font-semibold text-dark-text mb-3 dark:text-dark-text-dark">Plan Features:</h4>
-            <ul className="space-y-3 text-light-text dark:text-light-text-dark">
+            <div className="border-t border-border-color my-6"></div>
+            <h4 className="font-semibold text-dark-text mb-3">Plan Features:</h4>
+            <ul className="space-y-3 text-light-text">
               {(billingInfo.planId.features || []).map((feature: string) => (
                 <li key={feature} className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
@@ -126,28 +116,27 @@ const BillingPage: React.FC = () => {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
-            <p className="text-sm text-light-text dark:text-light-text-dark">Your subscription is currently {billingInfo.status}.</p>
-            <p className="font-semibold text-dark-text mt-1 dark:text-dark-text-dark">
+          <div className="bg-light-card p-6 rounded-xl border border-border-color">
+            <p className="text-sm text-light-text">Your subscription is currently {billingInfo.status}.</p>
+            <p className="font-semibold text-dark-text mt-1">
               {billingInfo.status === 'trialing' ? 'Your trial expires on:' : 'Your plan renews on:'}
             </p>
-            <p className="text-2xl font-bold font-mono text-brand-primary">
+            <p className="text-2xl font-bold font-mono text-brand-accent-dark">
               {formatDate(billingInfo.status === 'trialing' ? billingInfo.trialExpiresAt : billingInfo.currentPeriodEndsAt)}
             </p>
           </div>
-          <div className="bg-light-card p-6 rounded-xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
+          <div className="bg-light-card p-6 rounded-xl border border-border-color">
             <button
               onClick={handleManageSubscription}
               disabled={manageSubscriptionMutation.isLoading}
-              className="w-full flex items-center justify-center gap-3 px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-dark transition-colors shadow-md disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 px-5 py-3 bg-brand-primary text-dark-text font-bold rounded-lg hover:bg-brand-accent-dark transition-colors shadow-md disabled:opacity-50"
             >
               <CreditCard />
               {manageSubscriptionMutation.isLoading ? 'Redirecting...' : 'Manage Subscription'}
             </button>
-            <p className="text-xs text-light-text mt-3 text-center dark:text-light-text-dark">You will be redirected to our payment partner to manage your subscription.</p>
+            <p className="text-xs text-light-text mt-3 text-center">You will be redirected to our payment partner to manage your subscription.</p>
           </div>
         </div>
-
       </div>
     </div>
   );
