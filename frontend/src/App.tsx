@@ -21,6 +21,12 @@ const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvite
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
+const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
+// --- SOLUTION: Import new pages ---
+const PricingPage = React.lazy(() => import('./pages/PricingPage'));
+const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
+
+// Dashboard Pages
 const DashboardRedirector = React.lazy(() => import('./pages/DashboardRedirector'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
@@ -38,6 +44,8 @@ const AuditLogPage = React.lazy(() => import('./pages/AuditLogPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const ApprovalRequestsPage = React.lazy(() => import('./pages/ApprovalRequestsPage'));
 const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
+
+// Admin Pages
 const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
 const AdminOrganizationsPage = React.lazy(() => import('./pages/AdminOrganizationsPage'));
 const AdminUsersPage = React.lazy(() => import('./pages/AdminUsersPage'));
@@ -45,14 +53,10 @@ const AdminPlansPage = React.lazy(() => import('./pages/AdminPlansPage'));
 const SiteEditorPage = React.lazy(() => import('./pages/SuperAdmin/SiteEditorPage'));
 const AdminBillingPage = React.lazy(() => import('./pages/AdminBillingPage'));
 const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfilePage'));
-const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
-// --- SOLUTION: Import new pages ---
-const PricingPage = React.lazy(() => import('./pages/PricingPage'));
-const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
-
+const AdminModeratorsPage = React.lazy(() => import('./pages/SuperAdmin/AdminModeratorsPage'));
 
 const FullScreenLoader = () => (
-<div className="h-screen w-full flex items-center justify-center bg-brand-dark text-dark-text"><p>Loading Application...</p></div>
+    <div className="h-screen w-full flex items-center justify-center bg-brand-dark text-dark-text"><p>Loading Application...</p></div>
 );
 
 function App() {
@@ -128,6 +132,7 @@ function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="organizations" element={<AdminOrganizationsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="moderators" element={<AdminModeratorsPage />} />
             <Route path="plans" element={<AdminPlansPage />} />
             <Route path="site-editor" element={<SiteEditorPage />} />
             <Route path="billing" element={<AdminBillingPage />} />
