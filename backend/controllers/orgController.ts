@@ -81,7 +81,7 @@ export const setOrgStatus = async (req: Request, res: Response) => {
     }
 };
 
-// FIX: Add new function to handle branding updates
+// FIX: Corrected syntax and implemented the new function
 export const updateMyOrgBranding = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
@@ -93,4 +93,27 @@ export const updateMyOrgBranding = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Organization not found' });
         }
 
-        if (organization.owner.toString() !==
+        if (organization.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ success: false, message: 'Only the organization owner can update branding settings.' });
+        }
+
+        const { companyName } = req.body;
+
+        if (companyName) {
+            organization.branding.companyName = companyName;
+        }
+
+        // Check if a new logo file was uploaded by the 'upload.single('companyLogo')' middleware
+        if (req.file) {
+            // The upload middleware pipeline should handle placing the accessible URL here
+            organization.branding.companyLogoUrl = (req.file as any).imageUrl || req.file.path;
+        }
+
+        await organization.save();
+        res.status(200).json({ success: true, message: 'Branding updated successfully.', data: organization.branding });
+
+    } catch (error) {
+        console.error("Error updating organization branding:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
