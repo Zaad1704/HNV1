@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import { useWindowSize } from '../hooks/useWindowSize';
-import { Home, MapPin, Search, Edit, Trash2 } from 'lucide-react';
+import { Home, MapPin, Search, Edit, Trash2, Download } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const fetchProperties = async () => {
@@ -34,6 +34,25 @@ const PropertiesPage = () => {
         }
     });
 
+    const handleExport = async (format: 'csv' | 'pdf') => {
+        try {
+            const response = await apiClient.get('/reports/properties/export', {
+                params: { format },
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `properties-export.${format}`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        } catch (error) {
+            console.error("Failed to export properties:", error);
+            alert("Could not export properties.");
+        }
+    };
+
     const handleDeleteClick = (propertyId: string) => {
         if (window.confirm("Are you sure you want to permanently delete this property?")) {
             deleteMutation.mutate(propertyId);
@@ -46,7 +65,7 @@ const PropertiesPage = () => {
     
     const filteredProperties = useMemo(() => {
         if (!searchTerm) return properties;
-        return properties.filter(prop =>
+        return properties.filter((prop: any) =>
             prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (prop.address?.formattedAddress || '').toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -92,8 +111,7 @@ const PropertiesPage = () => {
             </div>
         </div>
     );
-
-    // --- FIX: Added the missing implementation for the MobileView component ---
+    
     const MobileView = () => (
         <div className="grid grid-cols-1 gap-4">
             {filteredProperties.map((prop: any) => (
@@ -120,9 +138,13 @@ const PropertiesPage = () => {
             <AddPropertyModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onPropertyAdded={handlePropertyAdded} />
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-3xl font-bold text-dark-text">Manage Properties</h1>
-                <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
-                    <span>+ Add Property</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => handleExport('csv')} className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"><Download size={18} /> CSV</button>
+                    <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700"><Download size={18} /> PDF</button>
+                    <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-lg shadow-md transition-colors">
+                        <span>+ Add Property</span>
+                    </button>
+                </div>
             </div>
 
             <div className="relative mb-6">
