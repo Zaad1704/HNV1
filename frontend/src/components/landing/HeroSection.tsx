@@ -6,14 +6,6 @@ const HeroSection = () => {
   const { t } = useTranslation();
   const { data: settings } = useSiteSettings();
 
-  const metallicTextStyle = {
-    backgroundImage: 'linear-gradient(to right, #FFFFFF, #EAEAEA, #D3D9D4, #C0C0C0)',
-    WebkitBackgroundClip: 'text',
-    backgroundClip: 'text',
-    color: 'transparent',
-    textShadow: '2px 4px 8px rgba(0, 0, 0, 0.6)',
-  };
-
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden bg-brand-dark">
       <div className="absolute inset-0 bg-cover bg-center"
@@ -23,12 +15,11 @@ const HeroSection = () => {
           filter: 'blur(8px)',
         }}
       ></div>
-      {/* FIX: Increased opacity from 70 to 80 for better contrast */}
       <div className="absolute inset-0 bg-brand-dark opacity-80"></div>
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
-          className="text-6xl sm:text-7xl lg:text-8xl font-white uppercase tracking-wider"
-          style={metallicTextStyle}
+          className="text-6xl sm:text-7xl lg:text-8xl font-black uppercase tracking-wider text-white"
+          style={{ textShadow: '2px 5px 10px rgba(0, 0, 0, 0.7)' }}
         >
           {settings?.heroSection?.title || t('hero.title')}
         </h1>
