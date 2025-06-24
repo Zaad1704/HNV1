@@ -50,7 +50,7 @@ const NotificationsPanel = () => {
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                         {notifications.length === 0 ? (
-                             <p className="text-center text-light-text py-8">No notifications</p> {/* text-light-text is light */}
+                             <p className="text-center text-light-text py-8">No notifications</p> /* Corrected: Removed inline comment */
                         ) : (
                             notifications.map(n => (
                                 <Link to={n.link} key={n._id} onClick={() => setIsOpen(false)} className={`block p-4 border-b border-border-color hover:bg-brand-secondary/20 ${!n.isRead ? 'bg-brand-primary/10' : ''}`}> {/* bg-blue-50 --> bg-brand-primary/10, hover:bg-gray-50 --> hover:bg-brand-secondary/20 */}
