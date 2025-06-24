@@ -13,7 +13,7 @@ services:
       # IMPORTANT: Your secret variables like MONGO_URI, JWT_SECRET, etc.
       # should be set in the Render Dashboard, not committed here.
       - key: CORS_ALLOWED_ORIGINS # New environment variable for CORS
-        value: "http://localhost:3000,https://hnv-1-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com" # Example values, customize as needed
+        value: "http://localhost:3000,https://hnv-1-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com" # Added app.hnvpm.com
 
   - type: static
     name: hnv-saas-frontend
