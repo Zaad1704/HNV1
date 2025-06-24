@@ -19,15 +19,10 @@ const LandingPage = () => {
       <div id="about" className="py-20 md:py-28 bg-brand-dark">
         <AboutSection />
       </div>
-      
-      {/* FIX: Added Services Section */}
-      <div id="services" className="py-20 md:py-28 bg-brand-secondary">
-        <ServicesSection />
-      </div>
 
-      {/* FIX: Added Leadership Section */}
-      <div id="leadership" className="py-20 md:py-28 bg-brand-dark">
-          <LeadershipSection />
+      {/* FIX: Re-added LeadershipSection to make it visible */}
+      <div id="leadership" className="py-20 md:py-28 bg-brand-secondary">
+        <LeadershipSection />
       </div>
 
       <div id="featuresPage" className="py-20 md:py-28 bg-brand-secondary">
