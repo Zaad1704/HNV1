@@ -1,3 +1,5 @@
+// frontend/src/components/landing/InstallAppSection.tsx
+
 import React, { useState, useEffect } from 'react';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { DownloadCloud } from 'lucide-react';
@@ -29,7 +31,7 @@ const InstallAppSection = () => {
             <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.installAppSection?.subtitle}</p>
             <button 
                 onClick={handleInstallClick}
-                className="mt-10 inline-flex items-center gap-3 bg-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-indigo-700 shadow-xl transition-transform transform hover:scale-105"
+                className="mt-10 inline-flex items-center gap-3 bg-brand-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-indigo-700 shadow-xl transition-transform transform hover:scale-105" // Changed bg-primary to bg-brand-primary
             >
                 <DownloadCloud />
                 Install App on Your Device
