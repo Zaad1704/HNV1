@@ -26,13 +26,17 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  
+  // --- SOLUTION: Make password conditionally required ---
   password: {
     type: String,
     required: function(this: IUser): boolean {
+      // Only require a password if googleId is not set
       return !this.googleId;
     },
     select: false
   },
+  
   role: { type: String, enum: ['Super Admin', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
   createdAt: { type: Date, default: Date.now },
@@ -55,6 +59,7 @@ UserSchema.pre<IUser>('save', async function(next) {
   next();
 });
 
+// --- Instance Methods ---
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
   if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
@@ -64,17 +69,9 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
-
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
-
-  const options: SignOptions = {
-    // @ts-ignore - This directive tells TypeScript to ignore the next line.
-    // This is a safe way to bypass a known issue with the @types/jsonwebtoken
-    // package in some build environments. The library itself handles the string value correctly.
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  };
-
+  const options: SignOptions = { expiresIn: process.env.JWT_EXPIRES_IN || '1d' };
   return jwt.sign(payload, secret, options);
 };
 
