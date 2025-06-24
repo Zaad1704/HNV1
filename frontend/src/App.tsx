@@ -1,3 +1,5 @@
+// frontend/src/App.tsx
+
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
@@ -45,6 +47,7 @@ const AdminPlansPage = React.lazy(() => import('./pages/AdminPlansPage'));
 const SiteEditorPage = React.lazy(() => import('./pages/SuperAdmin/SiteEditorPage'));
 const AdminBillingPage = React.lazy(() => import('./pages/AdminBillingPage'));
 const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfilePage'));
+const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage')); // Ensure this is imported
 
 const FullScreenLoader = () => (
 <div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white"><p>Loading Application...</p></div>
@@ -88,6 +91,7 @@ return (
 <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
 <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+**<Route path="/resubscribe" element={<ResubscribePage />} />** {/* ADD THIS LINE */}
 
 <Route path="/dashboard" element={<ProtectedRoute />}>
   <Route element={<DashboardLayout />}>
