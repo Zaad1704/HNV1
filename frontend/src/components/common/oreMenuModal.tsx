@@ -1,3 +1,4 @@
+// frontend/src/components/common/MoreMenuModal.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
@@ -35,7 +36,7 @@ const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems
                             <Link
                                 to={item.href}
                                 onClick={onClose}
-                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 transition-colors"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-brand-secondary transition-colors"
                             >
                                 <item.icon size={20} />
                                 <span className="font-semibold">{item.label}</span>
@@ -43,7 +44,7 @@ const MoreMenuModal: React.FC<MoreMenuModalProps> = ({ isOpen, onClose, navItems
                         ) : (
                             <button
                                 onClick={() => { item.action?.(); onClose(); }}
-                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-gray-100 w-full text-left"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-dark-text hover:bg-brand-secondary w-full text-left"
                             >
                                 <item.icon size={20} />
                                 <span className="font-semibold">{item.label}</span>
