@@ -8,11 +8,8 @@ import auditService from '../services/auditService';
 import { IUser } from '../models/User';
 import mongoose, { Types } from 'mongoose'; 
 
-// FIX: This function will now send all the data the frontend expects.
 const sendTokenResponse = async (user: IUser, statusCode: number, res: Response) => {
     const token = user.getSignedJwtToken();
-
-    // Get the user's subscription status to send to the frontend
     const subscription = await Subscription.findOne({ organizationId: user.organizationId });
 
     res.status(statusCode).json({
@@ -24,7 +21,7 @@ const sendTokenResponse = async (user: IUser, statusCode: number, res: Response)
             email: user.email,
             role: user.role,
         },
-        userStatus: subscription?.status || 'inactive' // Send subscription status
+        userStatus: subscription?.status || 'inactive'
     });
 };
 
@@ -112,7 +109,8 @@ export const getMe = async (req: Request, res: Response) => {
     }
     const user = await User.findById(req.user._id).populate({
         path: 'organizationId',
-        select: 'name status subscription',
+        // FIX: Added 'branding' to the select statement to fetch organization logo/name
+        select: 'name status subscription branding',
         populate: {
             path: 'subscription',
             model: 'Subscription',
@@ -122,7 +120,6 @@ export const getMe = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, data: user });
 };
 
-// FIX: This function now correctly generates a token and redirects to the frontend.
 export const googleAuthCallback = (req: Request, res: Response) => {
     if (!req.user) {
         return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
