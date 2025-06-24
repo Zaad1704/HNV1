@@ -11,6 +11,7 @@ import './config/passport-setup';
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
+import billingRoutes from './routes/billingRoutes'; // <--- FIX: Import billingRoutes
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
@@ -87,6 +88,7 @@ app.use(passport.initialize());
 // --- Mount API Routes ---
 // (All app.use(...) calls for your routes go here)
 app.use('/api/auth', authRoutes);
+app.use('/api/billing', billingRoutes); // <--- FIX: Mount the billing routes
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
