@@ -4,10 +4,9 @@
     "about": "About Us",
     "services": "Services",
     "leadership": "Leadership",
-    "install_app": "Install App",
     "pricing": "Pricing",
     "contact": "Contact",
-    "portal_login": "Portal Login",
+    "login": "Portal Login",
     "get_started": "Get Started",
     "sign_up": "Sign Up"
   },
@@ -18,10 +17,35 @@
     "legal_links": "Legal",
     "social_links": "Social"
   },
-  "hero": {
-    "title": "The All-in-One Platform for Modern Property Management",
-    "subtitle": "Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.",
-    "cta": "Start Your Free Trial"
+  "auth": {
+    "welcome_back": "Welcome Back!",
+    "login_prompt": "Log in to your account to continue.",
+    "email_address": "Email Address",
+    "password": "Password",
+    "sign_in": "Sign In",
+    "or": "OR",
+    "sign_in_google": "Sign In with Google",
+    "no_account": "Don't have an account?",
+    "sign_up_here": "Sign Up Here",
+    "forgot_password": "Forgot Password?",
+    "create_account": "Create Your Account",
+    "smarter_management": "A smarter way to manage properties."
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "properties": "Properties",
+    "tenants": "Tenants",
+    "expenses": "Expenses",
+    "maintenance": "Maintenance",
+    "cash_flow": "Cash Flow",
+    "reminders": "Reminders",
+    "approvals": "Approvals",
+    "users_invites": "Users & Invites",
+    "billing": "Billing",
+    "audit_log": "Audit Log",
+    "admin_panel": "Admin Panel",
+    "settings": "Settings",
+    "logout": "Logout"
   },
   "about": {
     "title": "About HNV Solutions",
@@ -45,7 +69,7 @@
   },
   "leadership": {
     "title": "Meet Our Leadership",
-    "subtitle": "The driving force behind ProManage Solutions, committed to excellence and innovation.",
+    "subtitle": "The driving force behind our commitment to excellence and innovation.",
     "founder_visionary": "Visionary Founder",
     "founder_1_quote": "Leading with vision to redefine property management through technology and customer-centric solutions.",
     "founder_2_quote": "Innovating at the forefront of tech to build robust and scalable platforms for our users.",
@@ -54,9 +78,7 @@
   "pricing": {
     "title": "Choose The Plan That's Right For You",
     "subtitle": "Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.",
-    "per_month": "/ month",
     "choose_plan": "Choose Plan",
-    "free": "Free",
-    "disclaimer": "Subscriptions and billing are securely managed by our payment partner."
+    "disclaimer": "Subscription and billing are managed securely through our payment partner."
   }
 }
