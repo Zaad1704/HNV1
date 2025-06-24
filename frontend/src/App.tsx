@@ -43,6 +43,7 @@ const AuditLogPage = React.lazy(() => import('./pages/AuditLogPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const ApprovalRequestsPage = React.lazy(() => import('./pages/ApprovalRequestsPage'));
 const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
+const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage')); // FIX: Import the PaymentsPage
 
 // Admin Pages
 const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
@@ -89,7 +90,6 @@ function App() {
           <Route index element={<LandingPage />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
-          {/* FIX: Moved pricing routes to be public */}
           <Route path="pricing" element={<PricingPage />} />
           <Route path="payment-summary/:planId" element={<PaymentSummaryPage />} />
         </Route>
@@ -121,6 +121,7 @@ function App() {
             <Route path="audit-log" element={<AuditLogPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="approvals" element={<ApprovalRequestsPage />} />
+            <Route path="payments" element={<PaymentsPage />} /> {/* FIX: Add the route for the payments page */}
           </Route>
         </Route>
 
