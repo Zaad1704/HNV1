@@ -50,7 +50,14 @@ setLoading(false);
 };
 
 const handleGoogleSignup = () => {
-window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google`;
+    // **SOLUTION: Check for role selection before redirecting**
+    if (!formData.role) {
+        setError('Please select a role (Landlord or Agent) before signing up with Google.');
+        return;
+    }
+    // **SOLUTION: Pass the selected role as a query parameter**
+    const roleQueryParam = `?role=${formData.role}`;
+    window.location.href = `${import.meta.env.VITE_API_URL || ''}/auth/google${roleQueryParam}`;
 };
 
 const roleCardClasses = "role-card p-5 border-2 rounded-lg cursor-pointer transition-all duration-200 text-center";
