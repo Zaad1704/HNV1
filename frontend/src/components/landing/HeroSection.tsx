@@ -17,6 +17,7 @@ const HeroSection = () => {
       ></div>
       <div className="absolute inset-0 bg-brand-dark opacity-80"></div>
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* FIX: Replaced complex text gradient with a solid, high-contrast style for universal visibility */}
         <h1
           className="text-6xl sm:text-7xl lg:text-8xl font-black uppercase tracking-wider text-white"
           style={{ textShadow: '2px 5px 10px rgba(0, 0, 0, 0.7)' }}
