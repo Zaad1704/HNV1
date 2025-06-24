@@ -6,19 +6,17 @@ const HeroSection = () => {
   const { t } = useTranslation();
   const { data: settings } = useSiteSettings();
 
-  // Style for the metallic gradient text effect
   const metallicTextStyle = {
-    backgroundImage: 'linear-gradient(to right, #EAEAEA, #D3D9D4, #C0C0C0, #D3D9D4, #EAEAEA)',
+    backgroundImage: 'linear-gradient(to right, #FFFFFF, #EAEAEA, #D3D9D4, #C0C0C0)',
     WebkitBackgroundClip: 'text',
     backgroundClip: 'text',
     color: 'transparent',
-    textShadow: '1px 1px 10px rgba(0, 0, 0, 0.3)',
+    // --- SOLUTION: Stronger text shadow for visibility ---
+    textShadow: '2px 4px 8px rgba(0, 0, 0, 0.5)',
   };
 
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden bg-brand-dark">
-      
-      {/* Blurred Background Image */}
       <div className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage: `url('${settings?.heroSection?.backgroundImageUrl || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop"}')`,
@@ -26,11 +24,7 @@ const HeroSection = () => {
           filter: 'blur(8px)',
         }}
       ></div>
-
-      {/* Semi-transparent color overlay */}
       <div className="absolute inset-0 bg-brand-dark opacity-70"></div>
-
-      {/* Content container */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
           className="text-6xl sm:text-7xl lg:text-8xl font-black uppercase tracking-wider"
