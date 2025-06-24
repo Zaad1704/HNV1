@@ -80,3 +80,17 @@ export const setOrgStatus = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+// FIX: Add new function to handle branding updates
+export const updateMyOrgBranding = async (req: Request, res: Response) => {
+    if (!req.user || !req.user.organizationId) {
+        return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    }
+
+    try {
+        const organization = await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({ success: false, message: 'Organization not found' });
+        }
+
+        if (organization.owner.toString() !==
