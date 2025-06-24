@@ -27,7 +27,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-brand-dark opacity-70"></div>
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
-          className="text-6xl sm:text-7xl lg:text-8xl font-black uppercase tracking-wider"
+          className="text-6xl sm:text-6xl lg:text-6xl font-white uppercase tracking-wider"
           style={metallicTextStyle}
         >
           {settings?.heroSection?.title || t('hero.title')}
