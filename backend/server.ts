@@ -1,3 +1,4 @@
+// backend/server.ts
 import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express';
 import dotenv from 'dotenv';
 import cors, { CorsOptions } from 'cors';
@@ -62,21 +63,17 @@ const connectDB = async () => {
 };
 connectDB();
 
-// FINAL FIX: Add ALL frontend domains, including your custom domain (with and without www)
-// and the Render-provided URL. This is the most robust solution.
-const allowedOrigins: string[] = [
-  'http://localhost:3000',
-  'https://hnv-1-frontend.onrender.com', 
-  'https://www.hnvpm.com',
-  'https://hnvpm.com'
-];
+// FIX: Dynamically configure CORS allowed origins from environment variable
+const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
+const allowedOrigins: string[] = allowedOriginsEnv ? allowedOriginsEnv.split(',') : [];
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Not allowed by CORS: ${origin}`)); // Improved error message
     }
   },
   credentials: true
