@@ -19,7 +19,7 @@ export default function AboutSection() {
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="rounded-lg overflow-hidden shadow-xl">
             <img
-              src={settings?.aboutPage?.imageUrl || "https://placehold.co/600x400/A5B4FC/FFFFFF?text=Our+Team+Working"}
+              src={settings?.aboutPage?.imageUrl || "https://placehold.co/600x400/A5B4FC/FFFFFF?text=HNV+Solutions"}
               alt="Team Collaboration"
               className="w-full h-auto object-cover"
             />
