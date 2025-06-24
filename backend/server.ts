@@ -20,24 +20,24 @@ import auditRoutes from './routes/auditRoutes';
 import setupRoutes from './routes/setupRoutes'; 
 import feedbackRoutes from './routes/feedbackRoutes';
 import planRoutes from './routes/planRoutes';
-import maintenanceRoutes from './routes/maintenanceRoutes';
-import cashFlowRoutes from './routes/cashFlowRoutes';
-import communicationRoutes from './routes/communicationRoutes';
-import dashboardRoutes from './routes/dashboardRoutes';
-import editRequestRoutes from './routes/editRequestRoutes';
-import fileUploadRoutes from './routes/fileUploadRoutes';
-import invoiceRoutes from './routes/invoiceRoutes';
-import invitationRoutes from './routes/invitationRoutes';
-import localizationRoutes from './routes/localizationRoutes';
-import notificationRoutes from './routes/notificationRoutes';
-import orgRoutes from './routes/orgRoutes';
-import passwordResetRoutes from './routes/passwordResetRoutes';
-import receiptRoutes from './routes/receiptRoutes';
-import reminderRoutes from './routes/reminderRoutes';
-import reportRoutes from './routes/reportRoutes';
-import siteSettingsRoutes from './routes/siteSettingsRoutes';
-import sharingRoutes from './routes/sharingRoutes';
-import tenantPortalRoutes from './routes/tenantPortalRoutes';
+import maintenanceRoutes from './routes/maintenanceRoutes'; 
+import cashFlowRoutes from './routes/cashFlowRoutes'; 
+import communicationRoutes from './routes/communicationRoutes'; 
+import dashboardRoutes from './routes/dashboardRoutes'; 
+import editRequestRoutes from './routes/editRequestRoutes'; 
+import fileUploadRoutes from './routes/fileUploadRoutes'; 
+import invoiceRoutes from './routes/invoiceRoutes'; 
+import invitationRoutes from './routes/invitationRoutes'; 
+import localizationRoutes from './routes/localizationRoutes'; 
+import notificationRoutes from './routes/notificationRoutes'; 
+import orgRoutes from './routes/orgRoutes'; 
+import passwordResetRoutes from './routes/passwordResetRoutes'; 
+import receiptRoutes from './routes/receiptRoutes'; 
+import reminderRoutes from './routes/reminderRoutes'; 
+import reportRoutes from './routes/reportRoutes'; 
+import siteSettingsRoutes from './routes/siteSettingsRoutes'; 
+import sharingRoutes from './routes/sharingRoutes'; 
+import tenantPortalRoutes from './routes/tenantPortalRoutes'; 
 import uploadRoutes from './routes/uploadRoutes';
 
 dotenv.config();
@@ -84,7 +84,7 @@ const corsOptions: CorsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(helmet());
+// app.use(helmet()); // <--- COMMENT OUT THIS LINE AGAIN
 app.use(passport.initialize());
 
 // --- Mount API Routes ---
