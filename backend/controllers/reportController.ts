@@ -1,177 +1,198 @@
 import { Request, Response, NextFunction } from 'express';
 import PDFDocument from 'pdfkit';
 import Tenant from '../models/Tenant';
-import Invoice from '../models/Invoice';
-import Payment from '../models/Payment';
 import Expense from '../models/Expense';
-import Lease from '../models/Lease';
-import { format, subMonths, getDaysInMonth, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
+import Property from '../models/Property';
+import Invoice from '../models/Invoice';
+import axios from 'axios';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 // Helper to convert data to CSV format
 function convertToCsv(data: any[]): string {
-    if (data.length === 0) {
-        return '';
-    }
+    if (data.length === 0) return '';
     const headers = Object.keys(data[0]);
     const csvRows = [headers.join(',')];
-
     for (const row of data) {
         const values = headers.map(header => {
-            let value = row[header];
-            if (value === null || value === undefined) {
-                value = '';
-            } else if (typeof value === 'object') {
-                value = JSON.stringify(value);
-            }
-            const stringValue = String(value).replace(/"/g, '""');
-            return `"${stringValue}"`;
+            const escaped = ('' + row[header]).replace(/"/g, '""');
+            return `"${escaped}"`;
         });
-        csvRows.push(values.join(',')); // Corrected from \n to ,
+        csvRows.push(values.join(','));
     }
     return csvRows.join('\n');
 }
 
-// Helper to generate a PDF table
-function generatePdfTable(doc: PDFKit.PDFDocument, tableTop: number, headers: string[], data: any[][]) {
-    doc.font('Helvetica-Bold');
-    let x = 50;
-    const columnWidth = (doc.page.width - 100) / headers.length;
-    headers.forEach(header => {
-        doc.text(header, x, tableTop, { width: columnWidth, align: 'left' });
-        x += columnWidth;
-    });
-    doc.moveTo(50, tableTop + 20).lineTo(doc.page.width - 50, tableTop + 20).stroke();
-
-    doc.font('Helvetica');
-    let y = tableTop + 30;
-    data.forEach(row => {
-        x = 50;
-        row.forEach(cell => {
-            doc.text(String(cell), x, y, { width: columnWidth, align: 'left' });
-            x += columnWidth;
-        });
-        y += 20;
-        if (y > doc.page.height - 50) {
-            doc.addPage();
-            y = 50;
-        }
-    });
+// Helper to embed an image from a URL into a PDF
+async function embedImage(doc: PDFKit.PDFDocument, url: string, x: number, y: number, options: any) {
+    try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        const imageBuffer = Buffer.from(response.data, 'binary');
+        doc.image(imageBuffer, x, y, options);
+    } catch (error) {
+        console.error(`Failed to fetch or embed image from ${url}:`, error);
+        doc.text('Image not found', x, y);
+    }
 }
 
-
-export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !req.user.organizationId) {
-        res.status(401).json({ success: false, message: 'Not authorized' });
-        return;
-    }
-
-    const { propertyId, format: fileFormat = 'csv' } = req.query;
+// --- Export Properties ---
+export const exportProperties = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    const { propertyId, format = 'csv' } = req.query;
     const query: any = { organizationId: req.user.organizationId };
+    if (propertyId) query._id = propertyId;
 
-    if (propertyId && propertyId !== 'all') {
-        query.propertyId = propertyId;
+    const properties = await Property.find(query).lean();
+    
+    if (format === 'pdf') {
+        const doc = new PDFDocument({ margin: 50, layout: 'portrait' });
+        res.setHeader('Content-disposition', 'attachment; filename="properties.pdf"');
+        res.setHeader('Content-type', 'application/pdf');
+        doc.pipe(res);
+        doc.fontSize(20).text('Properties Report', { align: 'center' });
+        doc.moveDown(2);
+
+        for (const prop of properties) {
+            doc.fontSize(16).font('Helvetica-Bold').text(prop.name, { underline: true });
+            doc.moveDown(0.5);
+            if (prop.imageUrl) {
+                await embedImage(doc, prop.imageUrl, doc.x, doc.y, { width: 250 });
+                doc.moveDown(0.5);
+            }
+            doc.fontSize(12).font('Helvetica').text(`Address: ${prop.address.formattedAddress}`);
+            doc.text(`Status: ${prop.status}`);
+            doc.text(`Number of Units: ${prop.numberOfUnits}`);
+            doc.moveDown(2);
+        }
+        doc.end();
+    } else {
+        const csvData = convertToCsv(properties.map(p => ({
+            id: p._id,
+            name: p.name,
+            address: p.address.formattedAddress,
+            status: p.status,
+            units: p.numberOfUnits,
+            imageUrl: p.imageUrl,
+        })));
+        res.header('Content-Type', 'text/csv').attachment('properties.csv').send(csvData);
     }
+};
+
+// --- Export Tenants ---
+export const exportTenants = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    const { tenantId, format = 'csv' } = req.query;
+    const query: any = { organizationId: req.user.organizationId };
+    if (tenantId) query._id = tenantId;
 
     const tenants = await Tenant.find(query).populate('propertyId', 'name').lean();
-    
-    if (fileFormat === 'pdf') {
-        const doc = new PDFDocument({ layout: 'landscape', margin: 50 });
-        const filename = `tenants-export-${new Date().toISOString().split('T')[0]}.pdf`;
-        res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
+
+    if (format === 'pdf') {
+        // PDF generation logic with images
+        const doc = new PDFDocument({ margin: 50 });
+        res.setHeader('Content-disposition', `attachment; filename="tenants.pdf"`);
         res.setHeader('Content-type', 'application/pdf');
         doc.pipe(res);
-
-        doc.fontSize(18).text('Tenant Report', { align: 'center' });
-        doc.moveDown();
-
-        const headers = ['Name', 'Email', 'Property', 'Unit', 'Status', 'Rent', 'Lease End'];
-        const data = tenants.map(t => [
-            t.name,
-            t.email,
-            (t.propertyId as any)?.name || 'N/A',
-            t.unit,
-            t.status,
-            `$${(t.rentAmount || 0).toFixed(2)}`,
-            t.leaseEndDate ? format(new Date(t.leaseEndDate), 'yyyy-MM-dd') : 'N/A',
-        ]);
-
-        generatePdfTable(doc, 150, headers, data);
-
+        for (const tenant of tenants) {
+            doc.fontSize(16).font('Helvetica-Bold').text(tenant.name, { underline: true });
+            doc.moveDown(0.5);
+             if (tenant.imageUrl) {
+                await embedImage(doc, tenant.imageUrl, doc.x, doc.y, { width: 150 });
+                doc.moveDown(0.5);
+            }
+            doc.fontSize(12).font('Helvetica').text(`Email: ${tenant.email}`);
+            doc.text(`Phone: ${tenant.phone || 'N/A'}`);
+            doc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}, Unit: ${tenant.unit}`);
+            doc.text(`Status: ${tenant.status}`);
+            doc.moveDown(2);
+        }
         doc.end();
     } else {
-        const flattenedTenants = tenants.map(t => ({
+        const csvData = convertToCsv(tenants.map(t => ({
+            id: t._id,
             name: t.name,
             email: t.email,
-            phone: t.phone || '',
-            propertyName: (t.propertyId as any)?.name || 'N/A',
+            phone: t.phone,
+            property: (t.propertyId as any)?.name,
             unit: t.unit,
             status: t.status,
-            leaseEndDate: t.leaseEndDate ? format(new Date(t.leaseEndDate), 'yyyy-MM-dd') : '',
-            rentAmount: t.rentAmount || 0,
-        }));
-        const csvData = convertToCsv(flattenedTenants);
-        res.header('Content-Type', 'text/csv');
-        res.attachment('tenants-export.csv');
-        res.status(200).send(csvData);
+        })));
+        res.header('Content-Type', 'text/csv').attachment('tenants.csv').send(csvData);
     }
 };
 
-export const exportExpenses = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !req.user.organizationId) {
-        res.status(401).json({ success: false, message: 'Not authorized' });
-        return;
-    }
-     const { propertyId, agentId, startDate, endDate, format: fileFormat = 'csv' } = req.query;
-    const query: any = { organizationId: req.user.organizationId };
-    if (propertyId) query.propertyId = propertyId;
-    if (agentId) query.paidToAgentId = agentId;
-    if (startDate && endDate) {
-        query.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
-    }
-    const expenses = await Expense.find(query).populate('propertyId', 'name').populate('paidToAgentId', 'name').sort({ date: -1 }).lean();
-
-    if (fileFormat === 'pdf') {
-        const doc = new PDFDocument({ margin: 50 });
-        res.setHeader('Content-disposition', `attachment; filename="expenses-export.pdf"`);
-        res.setHeader('Content-type', 'application/pdf');
-        doc.pipe(res);
-        doc.fontSize(18).text('Expense Report', { align: 'center' });
-        doc.moveDown();
-        const headers = ['Date', 'Description', 'Category', 'Amount', 'Property'];
-        const data = expenses.map(e => [
-            format(new Date(e.date), 'yyyy-MM-dd'),
-            e.description,
-            e.category,
-            `$${e.amount.toFixed(2)}`,
-            (e.propertyId as any)?.name || 'N/A',
-        ]);
-        generatePdfTable(doc, 150, headers, data);
-        doc.end();
-    } else {
-        const flattenedExpenses = expenses.map(e => ({
-            date: format(new Date(e.date), 'yyyy-MM-dd'),
-            description: e.description,
-            category: e.category,
-            amount: e.amount,
-            property: (e.propertyId as any)?.name,
-            paidToAgent: (e.paidToAgentId as any)?.name || '',
-        }));
-        const csvData = convertToCsv(flattenedExpenses);
-        res.header('Content-Type', 'text/csv');
-        res.attachment('expenses-export.csv');
-        res.status(200).send(csvData);
-    }
-};
-
+// --- Generate Monthly Rent Collection Sheet ---
 export const generateMonthlyCollectionSheet = async (req: Request, res: Response, next: NextFunction) => {
-    // Implementation needed
-    res.status(501).json({ success: false, message: 'Not implemented' });
+    if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    const { month } = req.query; // Expects format YYYY-MM
+    const targetMonth = month ? new Date(month as string) : new Date();
+    
+    const tenants = await Tenant.find({ organizationId: req.user.organizationId, status: { $in: ['Active', 'Late'] } }).populate('propertyId', 'name').sort({ 'propertyId.name': 1, 'unit': 1 });
+    const invoices = await Invoice.find({
+        organizationId: req.user.organizationId,
+        dueDate: { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) },
+        status: 'overdue'
+    });
+
+    const doc = new PDFDocument({ margin: 40 });
+    res.setHeader('Content-disposition', `attachment; filename="rent-collection-${format(targetMonth, 'yyyy-MM')}.pdf"`);
+    res.setHeader('Content-type', 'application/pdf');
+    doc.pipe(res);
+
+    doc.fontSize(18).text(`Rent Collection Sheet - ${format(targetMonth, 'MMMM yyyy')}`, { align: 'center' });
+    doc.moveDown();
+
+    const tableTop = doc.y;
+    const headers = ['Property/Unit', 'Tenant Name', 'Phone', 'Rent', 'Overdue', 'Collected'];
+    const columnWidths = [120, 100, 80, 70, 90, 60];
+    let x = doc.x;
+    
+    doc.font('Helvetica-Bold');
+    headers.forEach((header, i) => doc.text(header, x + (i > 0 ? columnWidths.slice(0, i).reduce((a, b) => a + b) : 0), tableTop, { width: columnWidths[i] }));
+    doc.moveTo(doc.x, doc.y).lineTo(doc.page.width - doc.x, doc.y).stroke();
+    doc.moveDown(0.5);
+    doc.font('Helvetica');
+
+    tenants.forEach(tenant => {
+        const overdueInvoice = invoices.find(inv => inv.tenantId.toString() === tenant._id.toString());
+        const row = [
+            `${(tenant.propertyId as any)?.name || ''} - ${tenant.unit}`,
+            tenant.name,
+            tenant.phone || '',
+            `$${tenant.rentAmount?.toFixed(2) || '0.00'}`,
+            overdueInvoice ? `$${overdueInvoice.amount.toFixed(2)} (${format(overdueInvoice.dueDate, 'MMM')})` : '$0.00',
+            '[   ]' // Checkbox
+        ];
+        
+        let y = doc.y;
+        row.forEach((text, i) => doc.text(text, x + (i > 0 ? columnWidths.slice(0, i).reduce((a, b) => a + b) : 0), y, { width: columnWidths[i] }));
+        doc.moveDown(1);
+    });
+
+    doc.end();
 };
-export const getTenantMonthlyStatement = async (req: Request, res: Response, next: NextFunction) => {
-    // Implementation needed
-     res.status(501).json({ success: false, message: 'Not implemented' });
-};
-export const generateTenantProfilePdf = async (req: Request, res: Response, next: NextFunction) => {
-    // Implementation needed
-     res.status(501).json({ success: false, message: 'Not implemented' });
+
+// --- Export Maintenance & Cash Flow (Example for Maintenance) ---
+export const exportMaintenance = async (req: Request, res: Response, next: NextFunction) => {
+     if (!req.user?.organizationId) return res.status(401).json({ message: 'Not authorized' });
+    const { propertyId, agentId, tenantId, month, format = 'csv' } = req.query;
+    const query: any = { organizationId: req.user.organizationId };
+
+    if (propertyId) query.propertyId = propertyId;
+    if (agentId) query.assignedTo = agentId;
+    if (tenantId) query.requestedBy = tenantId; // Assuming tenant is the requester
+    if (month) {
+        const targetMonth = new Date(month as string);
+        query.createdAt = { $gte: startOfMonth(targetMonth), $lte: endOfMonth(targetMonth) };
+    }
+
+    const requests = await MaintenanceRequest.find(query).populate('propertyId', 'name').populate('requestedBy', 'name').lean();
+    const csvData = convertToCsv(requests.map(r => ({
+        date: format(new Date(r.createdAt), 'yyyy-MM-dd'),
+        property: (r.propertyId as any)?.name,
+        requester: (r.requestedBy as any)?.name,
+        description: r.description,
+        status: r.status,
+        priority: r.priority,
+    })));
+    res.header('Content-Type', 'text/csv').attachment('maintenance.csv').send(csvData);
 };
