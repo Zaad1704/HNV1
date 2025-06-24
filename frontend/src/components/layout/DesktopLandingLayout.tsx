@@ -1,20 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ISiteSettings } from '../../../../backend/models/SiteSettings';
+import { ISiteSettings } from '../../types/siteSettings'; // Using local types
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
 import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
-// Import all necessary Lucide icons statically
 import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-interface DesktopLandingLayoutProps {
-    settings: ISiteSettings;
-    plans: any[]; 
-}
-
-// Map icon names (strings from SiteSettings) to Lucide icon components
+// This map allows the Super Admin to choose an icon by name in the Site Editor
 const IconMap: { [key: string]: React.ElementType } = {
     "briefcase": Briefcase,
     "lock": Lock,
@@ -25,25 +20,27 @@ const IconMap: { [key: string]: React.ElementType } = {
     "wrench": Wrench,
 };
 
-// Helper to get the correct icon component, gracefully handling missing ones
 const getFeatureIconComponent = (iconName: string): React.ElementType => {
-    return IconMap[iconName.toLowerCase()] || Star; // Normalize to lowercase, fallback to Star
+    return IconMap[iconName.toLowerCase()] || Star; // Fallback to a star icon
 };
 
+const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> = ({ settings, plans }) => {
+    const { t } = useTranslation();
 
-const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, plans }) => {
     return (
         <div className="bg-light-bg text-dark-text">
+            {/* Hero Section */}
             <section id="hero" className="text-white text-center py-40" style={{ background: `linear-gradient(135deg, #3D52A0, #7091E6), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                 <div className="container mx-auto px-6">
-                    <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{settings.heroSection?.title}</h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-xl text-indigo-200">{settings.heroSection?.subtitle}</p>
+                    <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{t('hero.title')}</h1>
+                    <p className="mt-6 max-w-3xl mx-auto text-xl text-indigo-200">{t('hero.subtitle')}</p>
                     <Link to="/register" className="mt-10 inline-block bg-white text-brand-dark font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-200 shadow-xl transition-all transform hover:scale-105">
-                        {settings.heroSection?.ctaText}
+                        {t('hero.cta')}
                     </Link>
                 </div>
             </section>
 
+            {/* Features Section */}
             <section id="featuresPage" className="py-20 md:py-28">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
@@ -65,29 +62,12 @@ const DesktopLandingLayout: React.FC<DesktopLandingLayoutProps> = ({ settings, p
                 </div>
             </section>
 
-            <section id="aboutPage" className="py-16 md:py-24 bg-white">
-                 <AboutSection />
-            </section>
-
-            <section id="servicesSection" className="py-16 md:py-24 bg-gray-100">
-                <ServicesSection />
-            </section>
-
-            <section id="pricingSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
-                 <PricingSection plans={plans} />
-            </section>
-
-            <section id="installAppSection" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
-                <div className="container mx-auto px-6">
-                    <InstallAppSection />
-                </div>
-            </section>
-
-            <section id="contact" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg">
-                <div className="container mx-auto px-6">
-                    <ContactSection />
-                </div>
-            </section>
+            {/* Other Sections */}
+            <AboutSection />
+            <ServicesSection />
+            <PricingSection plans={plans} />
+            <InstallAppSection />
+            <ContactSection />
         </div>
     );
 };
