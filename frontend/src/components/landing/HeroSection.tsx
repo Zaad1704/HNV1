@@ -9,11 +9,11 @@ export default function HeroSection() {
 
   return (
     <section
-      className="hero-bg text-white py-20 md:py-32"
+      id="hero"
+      className="text-white py-20 md:py-32"
       style={{
         backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url('${
-          settings?.heroSection?.backgroundImageUrl ||
-          "https://placehold.co/1600x900/6366F1/FFFFFF?text=Modern+Apartments"
+          settings?.heroSection?.backgroundImageUrl || "https://placehold.co/1600x900"
         }')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
