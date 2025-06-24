@@ -61,7 +61,7 @@ const ResubscribePage: React.FC = () => {
             reactivateMutation.mutate(billingInfo.planId._id);
         } else {
             alert('Could not retrieve your previous plan. Please choose a new plan from our pricing page.');
-            navigate('/#pricingSection');
+            navigate('/pricing');
         }
     };
 
@@ -74,7 +74,6 @@ const ResubscribePage: React.FC = () => {
         return <div className="min-h-screen bg-brand-dark flex items-center justify-center text-dark-text">Loading subscription details...</div>;
     }
 
-    // --- SOLUTION: Enhanced Error and Empty State Handling ---
     if (isError || !billingInfo) {
          return (
             <div className="min-h-screen bg-brand-dark text-dark-text flex justify-center items-center p-4">
@@ -85,7 +84,7 @@ const ResubscribePage: React.FC = () => {
                         We could not find an active or restorable subscription for your account. This can happen if the subscription has been removed or if your session has expired.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link to="/#pricingSection" className="px-6 py-3 bg-brand-primary font-semibold rounded-lg hover:bg-brand-accent-dark transition-colors">
+                        <Link to="/pricing" className="px-6 py-3 bg-brand-primary font-semibold rounded-lg hover:bg-brand-accent-dark transition-colors">
                             View Pricing Plans
                         </Link>
                         <button onClick={handleGoBackToLogin} className="px-6 py-3 bg-brand-subtle/20 font-semibold rounded-lg hover:bg-brand-subtle/40 transition-colors flex items-center gap-2 mx-auto sm:mx-0">
