@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
-  const { lang, setLang, getNextToggleLanguage } = useLang();
+  const { lang, setLang, getNextToggleLanguage, currentLanguageName } = useLang();
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -17,12 +17,12 @@ const Navbar = () => {
   // Navigation links defined with their target section IDs
   const navLinks = [
     { key: 'header.features', href: '#featuresPage' },
-    { key: 'header.about', href: '#aboutPage' },
+    { key: 'header.about', href: '#about' },
     { key: 'header.pricing', href: '#pricingSection' },
     { key: 'header.contact', href: '#contact' },
   ];
 
-  // This new handler correctly scrolls or navigates as needed
+  // This handler correctly scrolls or navigates as needed
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
     e.preventDefault();
     const targetId = href.substring(1); // Remove the '#' from the href
@@ -34,12 +34,12 @@ const Navbar = () => {
             targetElement.scrollIntoView({ behavior: 'smooth' });
         }
     } else {
-        // If we are on a different page (e.g., /login), navigate to the landing page with the hash.
-        // The browser will then handle scrolling to the correct section automatically.
+        // If we are on a different page, navigate to the landing page with the hash
         navigate(`/${href}`);
     }
   };
 
+  // Component for the desktop navigation links
   const NavLinksContent = () => (
     <>
       {navLinks.map((link) => (
@@ -58,16 +58,17 @@ const Navbar = () => {
   return (
     <header className="bg-brand-dark/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+        {/* Logo and Company Name */}
         <Link to="/" className="flex items-center space-x-3">
-          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Property Management Solutions Logo" className="h-10" />
+          <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" />
           <span className="text-xl font-bold text-white sm:inline">
-            {settings?.logos?.companyName || 'HNV Property Management Solutions'}
+            {settings?.logos?.companyName || 'HNV Solutions'}
           </span>
         </Link>
         
+        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-2">
           <NavLinksContent />
-          {/* Language and Theme Toggles for Desktop */}
           <button 
             onClick={() => setLang(getNextToggleLanguage().code)}
             className="ml-4 flex items-center gap-1 p-2 bg-transparent border border-gray-600 text-white rounded-md text-sm hover:bg-gray-700"
@@ -84,6 +85,7 @@ const Navbar = () => {
           </button>
         </nav>
         
+        {/* Desktop Action Buttons */}
         <div className="hidden lg:flex items-center space-x-4">
           <Link to="/login" className="font-semibold text-white hover:text-gray-300">
             {t('header.login')}
@@ -93,7 +95,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Mobile Header Links */}
+        {/* FIX: Mobile Header Controls Implemented */}
         <div className="lg:hidden flex items-center space-x-3">
             <button 
               onClick={() => setLang(getNextToggleLanguage().code)}
