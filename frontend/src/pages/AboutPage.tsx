@@ -1,3 +1,4 @@
+// frontend/src/pages/AboutPage.tsx
 import React from 'react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { useDynamicTranslation } from '../hooks/useDynamicTranslation'; // NEW: Import useDynamicTranslation
@@ -28,7 +29,7 @@ const AboutPage = () => {
         {/* NEW: Main About Page Image */}
         {settings.aboutPage?.imageUrl && (
             <div className="mt-12 text-center">
-                <img src={settings.aboutPage.imageUrl} alt="About Us" className="w-full max-w-4xl mx-auto rounded-xl shadow-lg border border-slate-700 dark:border-border-color-dark object-cover h-96"/>
+                <img src={settings.aboutPage.imageUrl} alt="About Us" className="w-full max-w-4xl mx-auto rounded-xl shadow-lg border border-slate-700 dark:border-border-color-dark object-cover h-96" width="auto" height="384"/> {/* Added width and height */}
             </div>
         )}
 
@@ -54,7 +55,7 @@ const AboutPage = () => {
                     const { translatedText: translatedExecTitle } = useDynamicTranslation(exec.title);
                     return (
                         <div key={index} className="text-center bg-slate-900/70 p-8 rounded-xl border border-slate-700 dark:bg-dark-card dark:border-border-color-dark"> {/* Added dark mode classes */}
-                            <img src={exec.imageUrl} alt={exec.name} className="w-40 h-40 rounded-full mx-auto mb-4 object-cover border-4 border-slate-700 dark:border-border-color-dark"/>
+                            <img src={exec.imageUrl} alt={exec.name} className="w-40 h-40 rounded-full mx-auto mb-4 object-cover border-4 border-slate-700 dark:border-border-color-dark" width="160" height="160" /> {/* Added width and height */}
                             <h4 className="text-xl font-bold text-white dark:text-dark-text-dark">{translatedExecName}</h4>
                             <p className="text-cyan-400 dark:text-brand-secondary">{translatedExecTitle}</p>
                         </div>
