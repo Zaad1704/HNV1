@@ -19,10 +19,10 @@ export default function LeadershipSection() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300">
             <img
               src="https://placehold.co/150x150/7C3AED/FFFFFF?text=CEO"
-              alt="Jane Doe - Founder"
+              alt="CEO"
               className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-indigo-200 object-cover"
             />
-            <h3 className="text-xl font-semibold text-gray-800">Jane Doe</h3>
+            <h3 className="text-xl font-semibold text-gray-800">M.A Halim</h3>
             <p className="text-indigo-600 font-medium mb-2">
               {t('leadership.founder_visionary')}
             </p>
@@ -33,10 +33,10 @@ export default function LeadershipSection() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300">
             <img
               src="https://placehold.co/150x150/EC4899/FFFFFF?text=CTO"
-              alt="John Smith - Founder"
+              alt="CTO"
               className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-pink-200 object-cover"
             />
-            <h3 className="text-xl font-semibold text-gray-800">John Smith</h3>
+            <h3 className="text-xl font-semibold text-gray-800">Nurunnahar Halim</h3>
             <p className="text-pink-600 font-medium mb-2">
               {t('leadership.founder_visionary')}
             </p>
@@ -47,7 +47,7 @@ export default function LeadershipSection() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300">
             <img
               src="https://placehold.co/150x150/10B981/FFFFFF?text=COO"
-              alt="Alice Brown - COO"
+              alt="COO"
               className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-emerald-200 object-cover"
             />
             <h3 className="text-xl font-semibold text-gray-800">Alice Brown</h3>
