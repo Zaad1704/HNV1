@@ -19,7 +19,7 @@ export default function LeadershipSection() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300">
             <img
               src="https://placehold.co/150x150/7C3AED/FFFFFF?text=CEO"
-              alt="CEO"
+              alt="M.A Halim - FOUNDER"
               className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-indigo-200 object-cover"
             />
             <h3 className="text-xl font-semibold text-gray-800">M.A Halim</h3>
@@ -33,7 +33,7 @@ export default function LeadershipSection() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300">
             <img
               src="https://placehold.co/150x150/EC4899/FFFFFF?text=CTO"
-              alt="CTO"
+              alt="NURUNNAHAR HALIM - FOUNDER"
               className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-pink-200 object-cover"
             />
             <h3 className="text-xl font-semibold text-gray-800">Nurunnahar Halim</h3>
