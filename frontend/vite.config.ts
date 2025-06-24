@@ -1,3 +1,4 @@
+// frontend/vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -39,7 +40,7 @@ export default defineConfig({
     })
   ],
   build: {
-    minify: false,
+    minify: true, // Changed from false to true
     sourcemap: true,
   }
 });
