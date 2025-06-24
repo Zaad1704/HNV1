@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User, { IUser } from "../models/User"; 
+import User, { IUser } from "../models/User";
 import { Document } from "mongoose";
 import Subscription from "../models/Subscription"; // Import Subscription model
 
@@ -47,7 +47,9 @@ export const protect = async (
             return next();
           }
           // For other roles, deny access if subscription is not active or trialing
-          return res.status(403).json({ success: false, message: "Your organization's subscription is not active. Please renew to continue accessing features." });
+          // ADDED REDIRECT: Redirect to /resubscribe
+          return res.redirect('/resubscribe');
+          //return res.status(403).json({ success: false, message: "Your organization's subscription is not active. Please renew to continue accessing features." });
         }
       } else {
         // If user has no organizationId, they cannot access protected routes
