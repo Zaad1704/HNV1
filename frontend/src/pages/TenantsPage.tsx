@@ -4,7 +4,7 @@ import apiClient from '../api/client';
 import AddTenantModal from '../components/common/AddTenantModal';
 import EditTenantModal from '../components/common/EditTenantModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Eye, Edit, Trash2, Search, Download } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Search, Download, FileSpreadsheet } from 'lucide-react';
 
 // Define the shape of a Tenant object for type safety
 export interface ITenant {
@@ -43,6 +43,11 @@ const TenantsPage = () => {
     const [selectedTenant, setSelectedTenant] = useState<ITenant | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPropertyFilter, setSelectedPropertyFilter] = useState('all');
+    
+    // FIX: State for the new monthly collection sheet feature
+    const [reportMonth, setReportMonth] = useState(new Date().toISOString().substring(0, 7));
+    const [isDownloadingSheet, setIsDownloadingSheet] = useState(false);
+
 
     // Queries to fetch data from the backend
     const { data: tenants = [], isLoading, isError } = useQuery({ queryKey: ['tenants'], queryFn: fetchTenants });
@@ -88,6 +93,29 @@ const TenantsPage = () => {
         } catch (error) {
             console.error("Failed to export tenants:", error);
             alert("Could not export tenants.");
+        }
+    };
+
+    // FIX: Handler for the new Monthly Collection Sheet download
+    const handleCollectionSheetDownload = async () => {
+        setIsDownloadingSheet(true);
+        try {
+            const response = await apiClient.get('/reports/monthly-collection-sheet', {
+                params: { month: reportMonth },
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `monthly-collection-sheet-${reportMonth}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+        } catch (error) {
+            console.error("Failed to download collection sheet:", error);
+            alert("Could not download collection sheet.");
+        } finally {
+            setIsDownloadingSheet(false);
         }
     };
     
@@ -154,28 +182,57 @@ const TenantsPage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                 <h1 className="text-3xl font-bold text-dark-text">Manage Tenants</h1>
                 <div className="flex items-center gap-2">
-                    <button onClick={handleExport} className="flex items-center space-x-2 px-4 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"><Download size={18} /><span>Export CSV</span></button>
                     <button onClick={() => setIsAddModalOpen(true)} className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary text-white font-bold rounded-lg"><Plus size={18} /><span>Add Tenant</span></button>
                 </div>
             </div>
 
-            {/* Search and Filter UI */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-light-text" size={20} />
-                    <input type="text" placeholder="Search by name, email, or unit..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-light-card border border-border-color rounded-lg" />
-                </div>
-                <div className="flex-shrink-0">
-                    <select
-                        value={selectedPropertyFilter}
-                        onChange={(e) => setSelectedPropertyFilter(e.target.value)}
-                        className="w-full sm:w-64 h-full px-4 py-3 bg-light-card border border-border-color rounded-lg text-dark-text"
-                    >
-                        <option value="all">All Properties</option>
-                        {properties.map(prop => (
-                            <option key={prop._id} value={prop._id}>{prop.name}</option>
-                        ))}
-                    </select>
+            {/* Search, Filter, and Reports UI */}
+            <div className="p-4 bg-light-card rounded-xl border border-border-color mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                    {/* Search Input */}
+                    <div className="lg:col-span-1">
+                        <label className="text-sm font-medium text-light-text mb-1 block">Search</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-light-text" size={20} />
+                            <input type="text" placeholder="Search by name, email, or unit..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-light-bg border border-border-color rounded-lg text-dark-text" />
+                        </div>
+                    </div>
+                    {/* Property Filter */}
+                    <div className="lg:col-span-1">
+                        <label className="text-sm font-medium text-light-text mb-1 block">Filter by Property</label>
+                        <select
+                            value={selectedPropertyFilter}
+                            onChange={(e) => setSelectedPropertyFilter(e.target.value)}
+                            className="w-full h-full px-4 py-3 bg-light-bg border border-border-color rounded-lg text-dark-text"
+                        >
+                            <option value="all">All Properties</option>
+                            {properties.map(prop => (
+                                <option key={prop._id} value={prop._id}>{prop.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* FIX: Monthly Collection Sheet Download */}
+                    <div className="lg:col-span-1">
+                        <label className="text-sm font-medium text-light-text mb-1 block">Monthly Reports</label>
+                        <div className="flex items-center gap-2">
+                             <input
+                                type="month"
+                                value={reportMonth}
+                                onChange={(e) => setReportMonth(e.target.value)}
+                                className="w-full h-full px-4 py-3 bg-light-bg border border-border-color rounded-lg text-dark-text"
+                            />
+                            <button
+                                onClick={handleCollectionSheetDownload}
+                                disabled={isDownloadingSheet}
+                                className="flex-shrink-0 flex items-center gap-2 px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                title="Download Monthly Collection Sheet"
+                            >
+                                <FileSpreadsheet size={18} />
+                                <span>{isDownloadingSheet ? '...' : 'PDF'}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
       
