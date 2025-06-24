@@ -1,3 +1,4 @@
+// frontend/src/pages/PrivacyPolicyPage.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
@@ -82,7 +83,7 @@ const PrivacyPolicyPage = () => {
             <header className="bg-light-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <Link to="/" className="flex items-center space-x-3">
-                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" />
+                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" /> {/* Added width and height */}
                         <span className="text-xl font-bold text-dark-text">{settings?.logos?.companyName || "HNV Property Management"}</span>
                     </Link>
                     <Link to="/login" className="font-semibold text-dark-text hover:text-brand-primary">
