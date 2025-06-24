@@ -1,7 +1,7 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './store/authStore';
-import apiClient from './api/client';
+import React, { Suspense, useEffect, useState } from &#39;react&#39;;
+import { Routes, Route, Navigate } from &#39;react-router-dom&#39;;
+import { useAuthStore } from &#39;./store/authStore&#39;;
+import apiClient from &#39;./api/client&#39;;
 
 // --- Layouts and Guards ---
 import PublicLayout from './components/layout/PublicLayout';
@@ -10,7 +10,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './components/layout/AdminLayout';
 
-// --- Lazy-loaded Page Components ---
+// --- Lazy-loaded Page Components (Syntax Corrected) ---
 const LandingPage = React.lazy(() =\> import('./pages/LandingPage'));
 const LoginPage = React.lazy(() =\> import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() =\> import('./pages/RegisterPage'));
@@ -47,7 +47,7 @@ const AdminBillingPage = React.lazy(() =\> import('./pages/AdminBillingPage'));
 const AdminProfilePage = React.lazy(() =\> import('./pages/SuperAdmin/AdminProfilePage'));
 
 const FullScreenLoader = () =\> (
-<div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white"><p>Loading Application...</p></div>
+&lt;div className=&quot;h-screen w-full flex items-center justify-center bg-slate-900 text-white&quot;&gt;&lt;p&gt;Loading Application...&lt;/p&gt;&lt;/div&gt;
 );
 
 function App() {
@@ -71,23 +71,23 @@ checkUserSession();
 }, []);
 
 if (isSessionLoading) {
-return <FullScreenLoader />;
+return &lt;FullScreenLoader /&gt;;
 }
 
 return (
-\<Suspense fallback={<FullScreenLoader />}\>
-<Routes>
-\<Route path="/" element={<PublicLayout />}\>
-\<Route index element={<LandingPage />} /\>
-\<Route path="terms" element={<TermsPage />} /\>
-\<Route path="privacy" element={<PrivacyPolicyPage />} /\>
-</Route>
-\<Route path="/login" element={<LoginPage />} /\>
-\<Route path="/register" element={<RegisterPage />} /\>
-\<Route path="/forgot-password" element={<ForgotPasswordPage />} /\>
-\<Route path="/reset-password/:token" element={<ResetPasswordPage />} /\>
-\<Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} /\>
-\<Route path="/auth/google/callback" element={<GoogleAuthCallback />} /\>
+\<Suspense fallback={&lt;FullScreenLoader /&gt;}\>
+&lt;Routes&gt;
+\<Route path="/" element={&lt;PublicLayout /&gt;}\>
+\<Route index element={&lt;LandingPage /&gt;} /\>
+\<Route path="terms" element={&lt;TermsPage /&gt;} /\>
+\<Route path="privacy" element={&lt;PrivacyPolicyPage /&gt;} /\>
+&lt;/Route&gt;
+\<Route path="/login" element={&lt;LoginPage /&gt;} /\>
+\<Route path="/register" element={&lt;RegisterPage /&gt;} /\>
+\<Route path="/forgot-password" element={&lt;ForgotPasswordPage /&gt;} /\>
+\<Route path="/reset-password/:token" element={&lt;ResetPasswordPage /&gt;} /\>
+\<Route path="/accept-agent-invite/:token" element={&lt;AcceptAgentInvitePage /&gt;} /\>
+\<Route path="/auth/google/callback" element={&lt;GoogleAuthCallback /&gt;} /\>
 
 <Route path="/dashboard" element={<ProtectedRoute />}>
   <Route element={<DashboardLayout />}>
