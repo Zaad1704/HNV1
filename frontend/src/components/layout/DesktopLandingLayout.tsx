@@ -1,3 +1,4 @@
+// frontend/src/components/layout/DesktopLandingLayout.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ISiteSettings } from '../../types/siteSettings'; // Using local types
@@ -28,20 +29,20 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
     const { t } = useTranslation();
 
     return (
-        <div className="bg-light-bg text-dark-text">
+        <div className="bg-light-bg text-dark-text"> {/* bg-light-bg is the new dark color */}
             {/* Hero Section */}
-            <section id="hero" className="text-white text-center py-40" style={{ background: `linear-gradient(135deg, #3D52A0, #7091E6), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+            <section id="hero" className="text-dark-text text-center py-40" style={{ background: `linear-gradient(135deg, rgba(33, 42, 49, 0.9), rgba(18, 78, 102, 0.8)), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}> {/* Adjusted text-white to text-dark-text and gradient colors */}
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{t('hero.title')}</h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-xl text-indigo-200">{t('hero.subtitle')}</p>
-                    <Link to="/register" className="mt-10 inline-block bg-white text-brand-dark font-bold py-4 px-8 rounded-lg text-lg hover:bg-gray-200 shadow-xl transition-all transform hover:scale-105">
+                    <p className="mt-6 max-w-3xl mx-auto text-light-text">{t('hero.subtitle')}</p> {/* text-indigo-200 --> text-light-text */}
+                    <Link to="/register" className="mt-10 inline-block bg-brand-primary text-dark-text font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-all transform hover:scale-105"> {/* bg-white text-brand-dark --> bg-brand-primary text-dark-text */}
                         {t('hero.cta')}
                     </Link>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section id="featuresPage" className="py-20 md:py-28">
+            <section id="featuresPage" className="py-20 md:py-28 bg-light-bg"> {/* Added bg-light-bg */}
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
                     <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
@@ -49,11 +50,11 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
                         {settings.featuresPage?.features?.map((feature, index) => {
                             const IconComponent = getFeatureIconComponent(feature.icon);
                             return (
-                                <div key={index} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all">
+                                <div key={index} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all"> {/* bg-light-card is now dark */}
                                     <div className="text-brand-primary mb-4">
                                         <IconComponent className="w-12 h-12" /> 
                                     </div>
-                                    <h3 className="text-2xl font-bold text-brand-dark mb-2">{feature.title}</h3>
+                                    <h3 className="text-2xl font-bold text-dark-text mb-2">{feature.title}</h3> {/* text-brand-dark --> text-dark-text */}
                                     <p className="text-light-text">{feature.text}</p>
                                 </div>
                             );
