@@ -1,3 +1,4 @@
+// frontend/src/components/layout/MobileLandingLayout.tsx
 import React from 'react';
 import { ISiteSettings } from '../../types/siteSettings'; // Using local types
 import AboutSection from '../landing/AboutSection';
@@ -23,12 +24,12 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
     const { t } = useTranslation();
 
     return (
-        <div className="bg-brand-bg text-dark-text pb-16">
+        <div className="bg-light-bg text-dark-text pb-16"> {/* bg-brand-bg --> bg-light-bg */}
             {/* Hero Section */}
             <section id="hero" className="p-4 py-8 text-center" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="bg-black/60 backdrop-blur-sm p-6 rounded-xl text-center text-white">
+                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-dark-text"> {/* bg-black/60 --> bg-brand-dark/60 */}
                     <h2 className="text-2xl font-extrabold">{t('hero.title')}</h2>
-                    <p className="mt-2 text-sm text-indigo-200">{t('hero.subtitle')}</p>
+                    <p className="mt-2 text-light-text">{t('hero.subtitle')}</p> {/* text-indigo-200 --> text-light-text */}
                 </div>
             </section>
 
@@ -37,7 +38,7 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
                 {settings.featuresPage?.features?.slice(0, 4).map((feature, index) => {
                     const IconComponent = getFeatureIconComponent(feature.icon);
                     return (
-                        <div key={index} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card border border-border-color shadow-sm">
+                        <div key={index} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card border border-border-color shadow-sm"> {/* bg-light-card is now dark */}
                             <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 text-brand-primary rounded-full mb-2">
                                 <IconComponent className="w-6 h-6" />
                             </div>
