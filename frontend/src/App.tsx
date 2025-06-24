@@ -22,7 +22,6 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
-// --- SOLUTION: Import new pages ---
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
 const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
 
@@ -90,6 +89,9 @@ function App() {
           <Route index element={<LandingPage />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
+          {/* FIX: Moved pricing routes to be public */}
+          <Route path="pricing" element={<PricingPage />} />
+          <Route path="payment-summary/:planId" element={<PaymentSummaryPage />} />
         </Route>
         
         <Route path="/login" element={<LoginPage />} />
@@ -99,10 +101,6 @@ function App() {
         <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
         <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
         <Route path="/resubscribe" element={<ResubscribePage />} />
-
-        {/* --- SOLUTION: Add new routes for pricing and payment summary --- */}
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/payment-summary/:planId" element={<PaymentSummaryPage />} />
         
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
