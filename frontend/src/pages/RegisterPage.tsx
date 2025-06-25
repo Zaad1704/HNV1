@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from '../api/client';
 import Navbar from "../components/layout/Navbar";
+import { UserPlus } from "lucide-react";
 
 const RegisterPage: React.FC = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '' });
@@ -76,8 +77,8 @@ const RegisterPage: React.FC = () => {
                             <input type="password" name="password" required onChange={handleChange} />
                         </div>
 
-                        <button type="submit" disabled={loading || !formData.role} className="w-full btn-primary py-3">
-                            {loading ? 'Creating Account...' : 'Create Account'}
+                        <button type="submit" disabled={loading || !formData.role} className="w-full btn-primary py-3 flex items-center justify-center gap-2">
+                           <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
                      <div className="mt-8 text-center text-sm">
