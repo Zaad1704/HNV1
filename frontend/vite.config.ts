@@ -2,9 +2,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import path from 'path' // Import the 'path' module
+import path from 'path' 
 
 export default defineConfig({
+  // Add this 'base' option for the build process
+  base: './', 
   plugins: [
     react(),
     VitePWA({
@@ -40,7 +42,6 @@ export default defineConfig({
       }
     })
   ],
-  // Add the resolve alias configuration here
   resolve: {
     alias: {
       'api': path.resolve(__dirname, './src/api'),
