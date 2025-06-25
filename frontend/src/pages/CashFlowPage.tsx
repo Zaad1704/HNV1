@@ -1,3 +1,4 @@
+// frontend/src/pages/CashFlowPage.tsx
 import React, { useState } from 'react';
 import apiClient from '../api/client';
 import { useQuery } from '@tanstack/react-query';
@@ -5,6 +6,7 @@ import { PlusCircle, DollarSign, ArrowRight, Edit, Trash2 } from 'lucide-react';
 import RecordCashFlowModal from '../components/common/RecordCashFlowModal';
 import RequestEditModal from '../components/common/RequestEditModal';
 import { useAuthStore } from '../store/authStore';
+import { motion } from 'framer-motion';
 
 interface ICashFlowRecord {
     _id: string;
@@ -40,7 +42,7 @@ const CashFlowPage: React.FC = () => {
 
     const getStatusBadge = (status: string) => {
         const map = {
-            'pending': 'bg-brand-accent-dark/20 text-brand-accent-dark',
+            'pending': 'bg-yellow-500/20 text-yellow-300',
             'completed': 'bg-green-500/20 text-green-300',
         };
         return map[status as keyof typeof map] || 'bg-light-text/20 text-light-text';
@@ -48,15 +50,28 @@ const CashFlowPage: React.FC = () => {
 
     const getTypeIcon = (type: string) => {
         if (type === 'cash_handover') return <ArrowRight size={16} className="text-brand-primary" />;
-        if (type === 'bank_deposit') return <DollarSign size={16} className="text-brand-secondary" />;
+        if (type === 'bank_deposit') return <DollarSign size={16} className="text-brand-teal" />;
         return null;
+    };
+    
+    const pageVariants = {
+        initial: { opacity: 0, y: 20 },
+        in: { opacity: 1, y: 0 },
+        out: { opacity: 0, y: -20 },
     };
 
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading cash flow records...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8 dark:text-red-400">Failed to fetch cash flow records.</div>;
+    if (isError) return <div className="text-center p-8 text-red-400 dark:text-red-400">Failed to fetch cash flow records.</div>;
 
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
+        <motion.div 
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={{ duration: 0.4 }}
+            className="text-dark-text dark:text-dark-text-dark"
+        >
             <RecordCashFlowModal
                 isOpen={isRecordModalOpen}
                 onClose={() => setIsRecordModalOpen(false)}
@@ -78,7 +93,7 @@ const CashFlowPage: React.FC = () => {
                 {user?.role === 'Agent' && (
                   <button
                       onClick={() => setIsRecordModalOpen(true)}
-                      className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-lg shadow-md transition-colors duration-200"
+                      className="btn-primary flex items-center space-x-2"
                   >
                       <PlusCircle size={18} />
                       <span>Record Transaction</span>
@@ -87,15 +102,15 @@ const CashFlowPage: React.FC = () => {
             </div>
 
             {records.length === 0 ? (
-                <div className="text-center py-16 bg-light-card rounded-xl border-2 border-dashed border-border-color dark:bg-dark-card dark:border-border-color-dark">
+                <div className="text-center py-16 bg-light-card rounded-3xl border-2 border-dashed border-border-color dark:bg-dark-card dark:border-border-color-dark">
                     <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">No Cash Flow Records Found</h3>
                     <p className="text-light-text mt-2 dark:text-light-text-dark">No cash flow transactions have been recorded yet.</p>
                 </div>
             ) : (
-                <div className="bg-light-card rounded-xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
+                <div className="bg-light-card rounded-3xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
+                            <thead className="bg-light-bg/50 border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                                 <tr>
                                     <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Date</th>
                                     <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Type</th>
@@ -108,7 +123,7 @@ const CashFlowPage: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
                                 {records.map((record) => (
-                                    <tr key={record._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
+                                    <tr key={record._id} className="hover:bg-light-bg/50 transition-colors duration-150 dark:hover:bg-dark-bg/40">
                                         <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{new Date(record.transactionDate).toLocaleDateString()}</td>
                                         <td className="p-4 flex items-center gap-2 text-light-text dark:text-light-text-dark capitalize">
                                             {getTypeIcon(record.type)} <span className="capitalize">{record.type.replace(/_/g, ' ')}</span>
@@ -128,10 +143,10 @@ const CashFlowPage: React.FC = () => {
                                             {user?.role === 'Landlord' ? (
                                                 <>
                                                     <button className="text-brand-primary hover:underline p-2 transition-colors duration-150" title="Edit Record"><Edit size={16}/></button>
-                                                    <button className="text-brand-orange hover:underline p-2 transition-colors duration-150" title="Delete Record"><Trash2 size={16}/></button>
+                                                    <button className="text-red-500 hover:underline p-2 transition-colors duration-150" title="Delete Record"><Trash2 size={16}/></button>
                                                 </>
                                             ) : ( user?.role === 'Agent' && record.fromUser._id === user?._id &&
-                                                <button onClick={() => handleRequestEdit(record)} className="text-brand-accent-dark hover:underline p-2 transition-colors duration-150" title="Request Permission to Edit">
+                                                <button onClick={() => handleRequestEdit(record)} className="text-brand-secondary hover:underline p-2 transition-colors duration-150" title="Request Permission to Edit">
                                                     <Edit size={16}/>
                                                 </button>
                                             )}
@@ -143,7 +158,7 @@ const CashFlowPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 
