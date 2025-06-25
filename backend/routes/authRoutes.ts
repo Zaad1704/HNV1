@@ -5,7 +5,8 @@ import {
     registerUser,
     loginUser,
     getMe,
-    googleAuthCallback
+    googleAuthCallback,
+    verifyEmail // FIX: Import new controller
 } from '../controllers/authController';
 import { protect } from "../middleware/authMiddleware";
 import { validate } from "../middleware/validateMiddleware";
@@ -17,11 +18,14 @@ router.post('/register', validate(registerSchema), asyncHandler(registerUser));
 router.post('/login', asyncHandler(loginUser));
 router.get('/me', protect, asyncHandler(getMe));
 
+// FIX: Add route for email verification
+router.get('/verify-email/:token', asyncHandler(verifyEmail));
+
 // Google OAuth
 router.get(
     '/google',
     (req: Request, res, next) => {
-        const role = req.query.role || 'Landlord'; // Default to Landlord if not provided
+        const role = req.query.role || 'Landlord';
         const state = Buffer.from(JSON.stringify({ role })).toString('base64');
         const authenticator = passport.authenticate('google', {
             scope: ['profile', 'email'],
@@ -36,7 +40,6 @@ router.get(
     (req, res, next) => {
         const state = req.query.state as string;
         const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        // Attach decoded role to the request object to be used in the passport callback
         (req as any).authRole = decodedState.role;
         
         const authenticator = passport.authenticate('google', {
