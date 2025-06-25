@@ -24,26 +24,26 @@ const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
     onActionClick, isActionLoading = false, loadingItemId = null 
 }) => {
     return (
-        <div className="bg-light-card p-6 rounded-xl border border-border-color shadow-sm h-full"> {/* bg-light-card is now dark */}
-            <h2 className="text-xl font-bold text-dark-text mb-4">{title}</h2> {/* text-dark-text is now light */}
+        <div className="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-border-color dark:border-border-color-dark shadow-sm h-full transition-all duration-200">
+            <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{title}</h2>
             {items && items.length > 0 ? (
                 <ul className="space-y-4">
                     {items.map(item => (
-                        <li key={item.id} className="bg-brand-secondary p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-border-color gap-2 sm:gap-4"> {/* bg-light-bg --> bg-brand-secondary, border-border-color is new */}
+                        <li key={item.id} className="bg-light-bg dark:bg-dark-bg/50 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-border-color dark:border-border-color-dark gap-2 sm:gap-4 transition-all duration-150">
                             <div className="flex-grow">
-                                <p className="font-semibold text-dark-text">{item.primaryText}</p> {/* text-dark-text is now light */}
-                                <p className="text-sm text-light-text">{item.secondaryText}</p> {/* text-light-text is now light */}
+                                <p className="font-semibold text-dark-text dark:text-dark-text-dark">{item.primaryText}</p>
+                                <p className="text-sm text-light-text dark:text-light-text-dark">{item.secondaryText}</p>
                             </div>
                             {onActionClick ? ( // Render button if onActionClick is provided
                                 <button
                                     onClick={() => onActionClick(item.id)}
-                                    className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" // bg-brand-orange --> bg-brand-primary, text-white --> text-dark-text
+                                    className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                     disabled={isActionLoading && loadingItemId === item.id}
                                 >
                                     {isActionLoading && loadingItemId === item.id ? 'Sending...' : actionText}
                                 </button>
                             ) : ( // Fallback to Link if no specific action
-                                <Link to={linkTo} className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90"> {/* bg-brand-orange --> bg-brand-primary, text-white --> text-dark-text */}
+                                <Link to={linkTo} className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90 transition-colors duration-200">
                                     {actionText}
                                 </Link>
                             )}
@@ -51,7 +51,7 @@ const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
                     ))}
                 </ul>
             ) : (
-                <p className="text-light-text text-center py-8">{emptyText}</p> /* Corrected: Removed inline comment */
+                <p className="text-light-text dark:text-light-text-dark text-center py-8">{emptyText}</p>
             )}
         </div>
     );
