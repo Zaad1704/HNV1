@@ -1,7 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#1A759F', '#168AAD', '#FF6B35', '#FFC300', '#A8DADC']; // New semantic brand colors or their variants
+const COLORS = ['var(--brand-primary)', 'var(--brand-secondary)', 'var(--brand-orange)', 'var(--brand-accent-dark)', 'var(--brand-subtle)']; // New semantic brand colors or their variants
 
 const PlanDistributionChart = ({ data }: { data: any[] }) => {
     return (
