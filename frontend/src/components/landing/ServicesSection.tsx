@@ -25,26 +25,26 @@ export default function ServicesSection() {
   ];
 
   return (
-    <section id="services" className="py-16 md:py-24 bg-light-bg"> {/* Changed bg-gray-100 to bg-light-bg */}
+    <section id="services" className="py-16 md:py-24 bg-light-bg dark:bg-dark-bg transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark-text mb-4"> {/* Changed text-indigo-700 to text-dark-text */}
+          <h2 className="text-3xl sm:text-4xl font-bold text-dark-text dark:text-dark-text-dark mb-4">
             {t('services.title')}
           </h2>
-          <p className="text-lg text-light-text max-w-2xl mx-auto"> {/* Changed text-gray-600 to text-light-text */}
+          <p className="text-lg text-light-text dark:text-light-text-dark max-w-2xl mx-auto">
             {t('services.subtitle')}
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <div key={index} className="bg-light-card p-6 rounded-xl shadow-lg hover:-translate-y-1 hover:shadow-xl transition duration-300"> {/* Changed bg-white to bg-light-card */}
-              <div className="text-brand-primary mb-4"> {/* Changed text-indigo-600 to text-brand-primary */}
+            <div key={index} className="bg-light-card p-6 rounded-xl shadow-lg hover:-translate-y-1 hover:shadow-xl transition duration-300 dark:bg-dark-card dark:border-border-color-dark">
+              <div className="text-brand-primary mb-4">
                 {service.icon}
               </div>
-              <h3 className="text-xl font-semibold text-dark-text mb-2"> {/* Changed text-gray-800 to text-dark-text */}
+              <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark mb-2">
                 {service.title}
               </h3>
-              <p className="text-light-text"> {/* Changed text-gray-600 to text-light-text */}
+              <p className="text-light-text dark:text-light-text-dark">
                 {service.description}
               </p>
             </div>
