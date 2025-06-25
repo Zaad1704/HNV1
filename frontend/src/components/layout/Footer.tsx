@@ -15,11 +15,11 @@ const Footer = () => {
             {links.map(link => (
                 <li key={link.text}>
                     {link.url.startsWith('/') ? (
-                        <Link to={link.url} className="text-light-text dark:text-light-text-dark hover:text-brand-accent-light transition-colors duration-150">
+                        <Link to={link.url} className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150">
                             {link.text}
                         </Link>
                     ) : (
-                        <a href={link.url} className="text-light-text dark:text-light-text-dark hover:text-brand-accent-light transition-colors duration-150" target="_blank" rel="noopener noreferrer">
+                        <a href={link.url} className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150" target="_blank" rel="noopener noreferrer">
                             {link.text}
                         </a>
                     )}
@@ -29,40 +29,38 @@ const Footer = () => {
     );
 
     return (
-        <footer className="bg-brand-dark border-t border-border-color/20 dark:border-border-color-dark/20 transition-colors duration-300">
-            <div className="container mx-auto px-6 py-16">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
-                    {/* Organization Info */}
-                    <div className="sm:col-span-2 md:col-span-1">
-                        <Link to="/" className="flex items-center space-x-3 mb-4">
-                            <img src={settings.logos?.footerLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-8" width="32" height="32" />
-                            <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings.logos?.companyName}</span>
-                        </Link>
-                        <p className="text-light-text dark:text-light-text-dark text-sm max-w-xs">{settings.footer.description}</p>
-                    </div>
-
-                    {/* Quick Links */}
-                    <div>
-                        <h3 className="font-bold text-dark-text dark:text-dark-text-dark mb-4 uppercase tracking-wider">{t('footer.quick_links')}</h3>
-                        {renderLinks(settings.footer.quickLinks)}
-                    </div>
-                    
-                    {/* Legal Links */}
-                    <div>
-                        <h3 className="font-bold text-dark-text dark:text-dark-text-dark mb-4 uppercase tracking-wider">{t('footer.legal_links')}</h3>
-                        {renderLinks(settings.footer.legalLinks)}
-                    </div>
-                    
-                    {/* Social Links */}
-                    <div>
-                        <h3 className="font-bold text-dark-text dark:text-dark-text-dark mb-4 uppercase tracking-wider">{t('footer.social_links')}</h3>
-                        {renderLinks(settings.footer.socialLinks)}
-                    </div>
-                </div>
-                <div className="mt-16 border-t border-border-color/20 dark:border-border-color-dark/20 pt-8 text-center text-sm text-light-text/50 dark:text-light-text-dark/50">
-                    <p>&copy; {new Date().getFullYear()} {settings.footer.copyrightText}</p>
-                </div>
+        <footer className="bg-light-card dark:bg-dark-card text-light-text dark:text-light-text-dark py-12 mt-12 transition-colors duration-300 border-t border-border-color dark:border-border-color-dark">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark mb-3">
+                  {settings.logos?.companyName || 'ProManage Solutions'}
+                </h3>
+                <p className="text-sm">{settings.footer.description}</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark mb-3">{t('footer.quick_links')}</h3>
+                {renderLinks(settings.footer.quickLinks)}
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark mb-3">{t('footer.newsletter_title', 'Newsletter')}</h3>
+                <p className="text-sm mb-3">{t('footer.newsletter_subtitle', 'Stay updated with our latest news and offers.')}</p>
+                <form className="flex">
+                  <input type="email" className="w-full px-3 py-2.5 rounded-l-lg text-dark-text dark:text-dark-text-dark bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors text-sm"
+                    placeholder="Enter your email" />
+                  <button type="submit" className="bg-brand-primary hover:bg-opacity-90 text-white px-4 py-2.5 rounded-r-lg font-semibold text-sm transition-colors">
+                    {t('footer.subscribe', 'Subscribe')}
+                  </button>
+                </form>
+              </div>
             </div>
+            <div className="border-t border-border-color dark:border-border-color-dark pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
+              <p>&copy; {new Date().getFullYear()} {settings.footer.copyrightText}</p>
+              <Link to="/login" className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors mt-4 md:mt-0">
+                {t('footer.portal_login', 'Portal Login')}
+              </Link>
+            </div>
+          </div>
         </footer>
     );
 };
