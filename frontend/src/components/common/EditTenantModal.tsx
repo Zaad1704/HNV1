@@ -75,7 +75,7 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
 
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color dark:border-border-color-dark mt-4">
                         <button type="button" onClick={onClose} className="px-6 py-2.5 bg-light-bg dark:bg-dark-bg rounded-lg text-dark-text dark:text-dark-text-dark hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
-                        <button type="submit" disabled={mutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-dark-text font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">
+                        <button type="submit" disabled={mutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50">
                             {mutation.isLoading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
