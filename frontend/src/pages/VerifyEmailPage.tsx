@@ -32,7 +32,7 @@ const VerifyEmailPage: React.FC = () => {
     const renderIcon = () => {
         switch (status) {
             case 'verifying':
-                return <LoaderCircle className="w-16 h-16 text-brand-primary animate-spin" />;
+                return <LoaderCircle className="w-16 h-16 text-brand-primary dark:text-brand-secondary animate-spin" />;
             case 'success':
                 return <CircleCheck className="w-16 h-16 text-green-500" />;
             case 'error':
@@ -41,8 +41,8 @@ const VerifyEmailPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-light-card dark:bg-dark-card text-center shadow-2xl rounded-xl p-8 sm:p-12 border border-border-color dark:border-border-color-dark">
+        <div className="min-h-screen bg-light-bg dark:bg-dark-bg flex items-center justify-center p-4 transition-colors duration-300">
+            <div className="w-full max-w-md bg-light-card dark:bg-dark-card text-center shadow-2xl rounded-xl p-8 sm:p-12 border border-border-color dark:border-border-color-dark transition-all duration-200">
                 <div className="mx-auto mb-6 w-16 h-16">
                     {renderIcon()}
                 </div>
@@ -55,7 +55,7 @@ const VerifyEmailPage: React.FC = () => {
                 {status !== 'verifying' && (
                      <Link 
                         to="/login" 
-                        className="w-full inline-block py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-primary hover:bg-opacity-90 transition-colors"
+                        className="w-full inline-block py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-primary hover:bg-brand-secondary transition-colors duration-200"
                     >
                         Proceed to Login
                     </Link>
