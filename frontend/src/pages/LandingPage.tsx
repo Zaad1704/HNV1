@@ -1,4 +1,6 @@
+// frontend/src/pages/LandingPage.tsx
 import React from 'react';
+import { motion } from 'framer-motion';
 
 // Import all the section components
 import HeroSection from '../components/landing/HeroSection';
@@ -9,39 +11,47 @@ import PricingSection from '../components/landing/PricingSection';
 import ContactSection from '../components/landing/ContactSection';
 import InstallAppSection from '../components/landing/InstallAppSection';
 
-// This is the main component that builds your landing page
 const LandingPage = () => {
+    const pageVariants = {
+        initial: { opacity: 0 },
+        in: { opacity: 1 },
+        out: { opacity: 0 },
+    };
+
+    const pageTransition = {
+        type: "tween",
+        ease: "anticipate",
+        duration: 0.5,
+    };
+
   return (
-    <div className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Main background color, added dark mode and transition */}
+    <motion.div
+        initial="initial"
+        animate="in"
+        exit="out"
+        variants={pageVariants}
+        transition={pageTransition}
+        className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"
+    >
       <HeroSection />
 
-      {/* Each section has a distinct background color from your palette */}
-      <div id="about" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Added dark mode and transition */}
+      {/* Each section can be further customized to match the Yartee glassmorphism style */}
+      <div id="features" className="py-20 md:py-28">
+        {/* Placeholder for a features section if needed */}
+      </div>
+
+      <div id="about" className="py-20 md:py-28">
         <AboutSection />
       </div>
-
-      {/* FIX: Re-added LeadershipSection to make it visible */}
-      <div id="leadership" className="py-20 md:py-28 bg-brand-subtle dark:bg-dark-card transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <LeadershipSection />
-      </div>
-
-      <div id="featuresPage" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        {/* You can create a FeaturesSection component here if needed */}
-        {/* For now, we are focusing on the main structure */}
-      </div>
-
-      <div id="pricingSection" className="py-20 md:py-28 bg-light-card dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
+      
+      <div id="pricing" className="py-20 md:py-28">
         <PricingSection />
       </div>
-      
-      <div id="installApp" className="py-20 md:py-28 bg-brand-subtle dark:bg-dark-card transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <InstallAppSection />
-      </div>
 
-      <div id="contact" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
+      <div id="contact" className="py-20 md:py-28">
         <ContactSection />
       </div>
-    </div>
+    </motion.div>
   );
 };
 
