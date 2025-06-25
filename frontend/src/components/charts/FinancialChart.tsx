@@ -32,7 +32,7 @@ const FinancialChart: React.FC<{ data: FinancialData[] }> = ({ data }) => {
                 />
                 <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--dark-text)' }}/> {/* Semantic text color */}
                 <Bar dataKey={t('dashboard.financial_chart.revenue')} fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /> {/* Semantic brand color */}
-                <Bar dataKey={t('dashboard.financial_chart.expenses')} fill="var(--brand-secondary)" radius={[4, 4, 0, 0]} /> {/* Semantic brand color */}
+                <Bar dataKey={t('dashboard.financial_chart.expenses')} fill="var(--brand-orange)" radius={[4, 4, 0, 0]} /> {/* Semantic brand orange */}
             </BarChart>
         </ResponsiveContainer>
     );
