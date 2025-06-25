@@ -24,12 +24,12 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
     const { t } = useTranslation();
 
     return (
-        <div className="bg-light-bg text-dark-text pb-16"> {/* bg-brand-bg --> bg-light-bg */}
+        <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark pb-16 transition-colors duration-300"> {/* Added dark mode and transition */}
             {/* Hero Section */}
             <section id="hero" className="p-4 py-8 text-center" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-dark-text"> {/* bg-black/60 --> bg-brand-dark/60 */}
+                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-dark-text dark:text-dark-text-dark"> {/* Adjusted bg and text colors */}
                     <h2 className="text-2xl font-extrabold">{t('hero.title')}</h2>
-                    <p className="mt-2 text-light-text">{t('hero.subtitle')}</p> {/* text-indigo-200 --> text-light-text */}
+                    <p className="mt-2 text-light-text dark:text-light-text-dark">{t('hero.subtitle')}</p>
                 </div>
             </section>
 
@@ -38,12 +38,12 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
                 {settings.featuresPage?.features?.slice(0, 4).map((feature, index) => {
                     const IconComponent = getFeatureIconComponent(feature.icon);
                     return (
-                        <div key={index} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card border border-border-color shadow-sm"> {/* bg-light-card is now dark */}
-                            <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 text-brand-primary rounded-full mb-2">
+                        <div key={index} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
+                            <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-secondary rounded-full mb-2 transition-colors">
                                 <IconComponent className="w-6 h-6" />
                             </div>
-                            <span className="font-bold text-dark-text">{feature.title}</span>
-                            <span className="text-light-text text-xs line-clamp-2">{feature.text}</span>
+                            <span className="font-bold text-dark-text dark:text-dark-text-dark">{feature.title}</span>
+                            <span className="text-light-text dark:text-light-text-dark text-xs line-clamp-2">{feature.text}</span>
                         </div>
                     );
                 })}
