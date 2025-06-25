@@ -30,22 +30,22 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
   };
 
   return (
-    <div className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg">
-      <h3 className="text-2xl font-bold text-brand-primary">{plan.name}</h3> {/* text-brand-orange to text-brand-primary */}
+    <div className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
+      <h3 className="text-2xl font-bold text-brand-primary">{plan.name}</h3>
       <p className="mt-4 text-4xl font-extrabold text-dark-text dark:text-dark-text-dark">
         {getPrice(plan.price)}
         {plan.price > 0 && (
-          <span className="text-base font-medium text-light-text dark:text-light-text-dark"> {/* text-slate-500 --> text-light-text */}
+          <span className="text-base font-medium text-light-text dark:text-light-text-dark">
             {" "}
             / {plan.duration}
           </span>
         )}
       </p>
-      <p className="mt-2 text-light-text dark:text-light-text-dark h-12">{plan.description || t('pricing.choose_plan', { plan: plan.name })}</p> {/* text-slate-500 --> text-light-text */}
+      <p className="mt-2 text-light-text dark:text-light-text-dark h-12">{plan.description || t('pricing.choose_plan', { plan: plan.name })}</p>
       <ul className="space-y-3 mt-8 flex-grow">
         {plan.features.map((feature: string, index: number) => (
-          <li key={index} className="flex items-center text-dark-text dark:text-light-text-dark"> {/* text-dark-text now light */}
-            <CheckCircle className="w-5 h-5 text-brand-accent-dark mr-3" /> {/* text-green-500 --> text-brand-accent-dark */}
+          <li key={index} className="flex items-center text-dark-text dark:text-light-text-dark">
+            <CheckCircle className="w-5 h-5 text-brand-secondary mr-3" /> {/* Changed to brand-secondary for consistency */}
             <span>{feature}</span>
           </li>
         ))}
@@ -53,7 +53,7 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
       <div className="mt-8">
         <Link
           to={`/register?plan=${plan._id}`}
-          className="block w-full text-center bg-brand-primary text-dark-text font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity" // bg-brand-orange --> bg-brand-primary, text-white --> text-dark-text
+          className="block w-full text-center bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-brand-secondary transition-opacity duration-200"
         >
           {t('pricing.choose_plan')}
         </Link>
