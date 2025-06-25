@@ -28,7 +28,7 @@ export default function LeadershipSection() {
     <section id="leadership" className="py-16 md:py-24 bg-light-card dark:bg-dark-card transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark-text dark:text-dark-text-dark mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-dark-text dark:text-dark-text-dark">
             {settings?.leadershipSection?.title || t('leadership.title')}
           </h2>
           <p className="text-lg text-light-text dark:text-light-text-dark max-w-2xl mx-auto">
@@ -38,14 +38,14 @@ export default function LeadershipSection() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
           {executives.map((executive, index) => (
-            <div key={index} className="bg-brand-secondary p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition duration-300 border border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
+            <div key={index} className="bg-light-bg dark:bg-dark-bg/50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-border-color dark:border-border-color-dark">
               <img
                 src={executive.imageUrl}
                 alt={executive.name}
-                className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-border-color object-cover dark:border-border-color-dark"
+                className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-border-color dark:border-border-color-dark object-cover"
               />
               <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">{executive.name}</h3>
-              <p className="text-brand-accent-dark font-medium mb-2">
+              <p className="text-brand-accent-dark dark:text-brand-primary font-medium mb-2 transition-colors">
                 {executive.title}
               </p>
             </div>
