@@ -38,7 +38,7 @@ const AdminBillingPage: React.FC = () => {
   };
 
   if (loading) return <div className="p-4 text-center text-dark-text dark:text-dark-text-dark">Loading Billing Data...</div>;
-  if (error) return <div className="p-4 text-center text-red-400">{error}</div>;
+  if (error) return <div className="p-4 text-center text-red-400 dark:text-red-400">{error}</div>;
 
   return (
     <div className="text-dark-text dark:text-dark-text-dark">
