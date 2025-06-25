@@ -7,17 +7,17 @@ const AdminLayout = () => {
   const { user } = useAuthStore();
 
   if (!user) {
-    return <div className="bg-light-bg h-screen flex items-center justify-center text-dark-text">Loading...</div>;
+    return <div className="bg-light-bg dark:bg-dark-bg h-screen flex items-center justify-center text-dark-text dark:text-dark-text-dark transition-colors duration-300">Loading...</div>;
   }
 
   return (
-    <div className="flex h-screen bg-dark-bg">
+    <div className="flex h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-300">
       <AdminSidebar />
-      <main className="flex-1 flex flex-col bg-light-bg">
-        <header className="h-20 bg-light-card/80 backdrop-blur-lg border-b border-border-color flex-shrink-0 flex items-center justify-end px-8">
+      <main className="flex-1 flex flex-col bg-light-bg dark:bg-dark-bg">
+        <header className="h-20 bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-border-color dark:border-border-color-dark flex-shrink-0 flex items-center justify-end px-8 shadow-sm transition-all duration-200">
             <div className="text-right">
-                <p className="font-semibold text-dark-text">{user.name}</p>
-                <p className="text-sm text-light-text">{user.role}</p>
+                <p className="font-semibold text-dark-text dark:text-dark-text-dark">{user.name}</p>
+                <p className="text-sm text-light-text dark:text-light-text-dark">{user.role}</p>
             </div>
         </header>
         <div className="flex-1 p-8 overflow-y-auto">
