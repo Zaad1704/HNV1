@@ -88,7 +88,7 @@ const LogExpenseModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Amount ($)</label>
-              <input type="number" name="amount" id="amount" required value={formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
+              <input type="number" step="0.01" name="amount" id="amount" required value={formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
             </div>
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Date</label>
