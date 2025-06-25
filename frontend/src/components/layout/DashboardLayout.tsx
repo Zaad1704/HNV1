@@ -1,4 +1,3 @@
-// frontend/src/components/layout/DashboardLayout.tsx
 import React from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -26,17 +25,18 @@ const DashboardLayout = () => {
     const getLinkClass = (path: string) => {
         const base = 'flex items-center space-x-3 px-4 py-2.5 font-semibold rounded-lg transition-colors';
         const isActive = location.pathname.startsWith(path);
-        // Adjusted colors for dashboard sidebar links
-        return isActive ? `${base} bg-brand-primary text-dark-text` : `${base} text-light-text hover:bg-brand-secondary hover:text-dark-text`;
+        // Sidebar link styles remain dark for contrast
+        return isActive 
+            ? `${base} bg-brand-secondary text-brand-dark` 
+            : `${base} text-gray-300 hover:bg-white/10 hover:text-white`;
     };
 
-    // Main navigation links for the sidebar
     const mainNavLinks = [
         { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
         { href: "/dashboard/tenant", icon: Users, label: 'My Portal', roles: ['Tenant'] },
         { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
-        { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] }, // FIX: Add Payments link
+        { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/expenses", icon: DollarSign, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
         { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },
@@ -47,16 +47,14 @@ const DashboardLayout = () => {
         { href: "/dashboard/audit-log", icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
     ];
     
-    // Admin link, separated for clarity
     const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
 
     return (
-        <div className="flex h-screen bg-light-bg text-dark-text"> {/* bg-brand-bg --> bg-light-bg */}
-            {/* Desktop Sidebar */}
-            <aside className="w-64 flex-shrink-0 bg-brand-dark flex-col hidden md:flex"> {/* bg-brand-dark is new dark color */}
-                <div className="h-20 flex items-center justify-between px-4 border-b border-border-color"> {/* border-white/10 --> border-border-color */}
-                    <Link to="/dashboard" className="text-xl font-bold text-dark-text flex items-center space-x-3 overflow-hidden"> {/* text-white --> text-dark-text */}
-                       <img src={user?.organizationId?.branding?.companyLogoUrl || "/logo-min.png"} alt="Brand Logo" className="h-8 w-8 rounded-md flex-shrink-0 object-contain bg-light-card p-1" /> {/* bg-white --> bg-light-card */}
+        <div className="flex h-screen bg-brand-secondary dark:bg-dark-bg text-dark-text dark:text-dark-text-dark">
+            <aside className="w-64 flex-shrink-0 bg-brand-dark flex-col hidden md:flex">
+                <div className="h-20 flex items-center justify-between px-4 border-b border-white/10">
+                    <Link to="/dashboard" className="text-xl font-bold text-white flex items-center space-x-3 overflow-hidden">
+                       <img src={user?.organizationId?.branding?.companyLogoUrl || "/logo-min.png"} alt="Brand Logo" className="h-8 w-8 rounded-md flex-shrink-0 object-contain bg-white p-1" />
                        <span className="truncate">{user?.organizationId?.branding?.companyName || 'HNV Dashboard'}</span>
                     </Link>
                 </div>
@@ -69,54 +67,45 @@ const DashboardLayout = () => {
                          </RoleGuard>
                     ))}
                     <RoleGuard allowed={adminLink.roles}>
-                        <hr className="my-4 border-border-color" /> {/* border-white/10 --> border-border-color */}
+                        <hr className="my-4 border-white/10" />
                         <Link to={adminLink.href} className={getLinkClass(adminLink.href)}>
                             <adminLink.icon size={20} /><span>{adminLink.label}</span>
                         </Link>
                     </RoleGuard>
                 </nav>
-                <div className="p-4 border-t border-border-color"> {/* border-white/10 --> border-border-color */}
+                <div className="p-4 border-t border-white/10">
                     <Link to="/dashboard/settings" className={getLinkClass('/dashboard/settings')}><Settings size={20} /><span>{t('dashboard.settings')}</span></Link>
-                    <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-light-text hover:bg-brand-secondary hover:text-dark-text"> {/* text-indigo-200 --> text-light-text, hover adjusted */}
+                    <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 mt-1 font-semibold rounded-lg text-gray-300 hover:bg-white/10 hover:text-white">
                         <LogOut size={20} /><span>{t('dashboard.logout')}</span>
                     </button>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
             <main className="flex-1 flex flex-col">
-                {/* --- HEADER --- */}
-                <header className="h-20 bg-light-card/80 backdrop-blur-md border-b border-border-color flex-shrink-0 flex items-center justify-end px-4 sm:px-8 gap-4">
-                    {/* Language and Theme Toggles */}
-                    <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full hover:bg-brand-accent-light"> {/* hover:bg-gray-100 --> hover:bg-brand-accent-light */}
-                        <Globe size={20} className="text-light-text" /> {/* text-light-text now light */}
+                <header className="h-20 bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-border-color dark:border-border-color-dark flex-shrink-0 flex items-center justify-end px-4 sm:px-8 gap-4">
+                    <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full text-light-text dark:text-light-text-dark hover:bg-gray-200 dark:hover:bg-dark-bg">
+                        <Globe size={20} />
                     </button>
-                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-brand-accent-light"> {/* hover:bg-gray-100 --> hover:bg-brand-accent-light */}
-                        {theme === 'light' ? <Moon size={20} className="text-light-text" /> : <Sun size={20} className="text-light-text" />} {/* text-light-text now light */}
+                    <button onClick={toggleTheme} className="p-2 rounded-full text-light-text dark:text-light-text-dark hover:bg-gray-200 dark:hover:bg-dark-bg">
+                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                     </button>
-                    
-                    {/* Notifications */}
                     <NotificationsPanel />
-
-                    {/* User Profile Dropdown Placeholder */}
                     <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-full bg-brand-primary text-dark-text flex items-center justify-center font-bold"> {/* text-white --> text-dark-text */}
+                         <div className="w-10 h-10 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold">
                             {user?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="hidden sm:block text-right">
-                           <p className="font-semibold text-dark-text">{user?.name}</p>
-                           <p className="text-xs text-light-text">{user?.role}</p>
+                           <p className="font-semibold text-dark-text dark:text-dark-text-dark">{user?.name}</p>
+                           <p className="text-xs text-light-text dark:text-light-text-dark">{user?.role}</p>
                         </div>
                     </div>
                 </header>
                 
-                {/* Scrollable Content */}
                 <div className="flex-1 p-4 sm:p-8 overflow-y-auto pb-24 md:pb-8">
                     <Outlet />
                 </div>
             </main>
 
-            {/* Mobile Bottom Navigation */}
             <BottomNavBar />
         </div>
     );
