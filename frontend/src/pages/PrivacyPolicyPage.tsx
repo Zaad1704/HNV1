@@ -76,26 +76,26 @@ If you have any questions about this Privacy Policy, please contact us at: **pri
 const PrivacyPolicyPage = () => {
     const { data: settings, isLoading } = useSiteSettings();
 
-    if (isLoading) return <div className="text-center p-8">Loading...</div>;
+    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading...</div>;
 
     return (
-        <div className="bg-light-bg min-h-screen text-dark-text">
-            <header className="bg-light-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color">
+        <div className="bg-light-bg min-h-screen text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300">
+            <header className="bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color dark:border-border-color-dark transition-colors duration-300">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <Link to="/" className="flex items-center space-x-3">
-                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" /> {/* Added width and height */}
-                        <span className="text-xl font-bold text-dark-text">{settings?.logos?.companyName || "HNV Property Management"}</span>
+                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" />
+                        <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.logos?.companyName || "HNV Property Management"}</span>
                     </Link>
-                    <Link to="/login" className="font-semibold text-dark-text hover:text-brand-primary">
+                    <Link to="/login" className="font-semibold text-dark-text dark:text-dark-text-dark hover:text-brand-primary transition-colors duration-150">
                         Portal Log In
                     </Link>
                 </div>
             </header>
 
             <main className="container mx-auto px-6 py-16">
-                <div className="bg-light-card max-w-4xl mx-auto p-8 md:p-12 rounded-xl border border-border-color shadow-sm">
-                    <h1 className="text-4xl font-extrabold mb-6">Privacy Policy</h1>
-                    <div className="prose prose-lg max-w-none prose-h3:font-bold prose-a:text-brand-primary hover:prose-a:opacity-80"
+                <div className="bg-light-card max-w-4xl mx-auto p-8 md:p-12 rounded-xl border border-border-color shadow-sm dark:bg-dark-card dark:border-border-color-dark">
+                    <h1 className="text-4xl font-extrabold mb-6 text-dark-text dark:text-dark-text-dark">Privacy Policy</h1>
+                    <div className="prose prose-lg max-w-none prose-h3:font-bold prose-a:text-brand-primary hover:prose-a:opacity-80 dark:text-light-text-dark"
                         dangerouslySetInnerHTML={{ __html: privacyContent.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
                     </div>
                 </div>
