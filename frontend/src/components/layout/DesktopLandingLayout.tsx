@@ -29,33 +29,33 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
     const { t } = useTranslation();
 
     return (
-        <div className="bg-light-bg text-dark-text"> {/* bg-light-bg is the new dark color */}
+        <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
             {/* Hero Section */}
-            <section id="hero" className="text-dark-text text-center py-40" style={{ background: `linear-gradient(135deg, rgba(33, 42, 49, 0.9), rgba(18, 78, 102, 0.8)), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}> {/* Adjusted text-white to text-dark-text and gradient colors */}
+            <section id="hero" className="text-center py-40" style={{ background: `linear-gradient(135deg, var(--brand-dark), var(--brand-secondary)), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}> {/* Adjusted gradient and text color */}
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{t('hero.title')}</h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-light-text">{t('hero.subtitle')}</p> {/* text-indigo-200 --> text-light-text */}
-                    <Link to="/register" className="mt-10 inline-block bg-brand-primary text-dark-text font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-all transform hover:scale-105"> {/* bg-white text-brand-dark --> bg-brand-primary text-dark-text */}
+                    <p className="mt-6 max-w-3xl mx-auto text-light-text dark:text-light-text-dark">{t('hero.subtitle')}</p>
+                    <Link to="/register" className="mt-10 inline-block bg-brand-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-all transform hover:scale-105">
                         {t('hero.cta')}
                     </Link>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section id="featuresPage" className="py-20 md:py-28 bg-light-bg"> {/* Added bg-light-bg */}
+            <section id="featuresPage" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Added dark mode */}
                 <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-4xl font-bold text-dark-text">{settings.featuresPage?.title}</h2>
-                    <p className="mt-4 text-light-text max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
+                    <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings.featuresPage?.title}</h2>
+                    <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                         {settings.featuresPage?.features?.map((feature, index) => {
                             const IconComponent = getFeatureIconComponent(feature.icon);
                             return (
-                                <div key={index} className="bg-light-card p-8 rounded-2xl border border-border-color shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all"> {/* bg-light-card is now dark */}
-                                    <div className="text-brand-primary mb-4">
+                                <div key={index} className="bg-light-card dark:bg-dark-card p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                                    <div className="text-brand-primary dark:text-brand-secondary mb-4 transition-colors">
                                         <IconComponent className="w-12 h-12" /> 
                                     </div>
-                                    <h3 className="text-2xl font-bold text-dark-text mb-2">{feature.title}</h3> {/* text-brand-dark --> text-dark-text */}
-                                    <p className="text-light-text">{feature.text}</p>
+                                    <h3 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark mb-2">{feature.title}</h3>
+                                    <p className="text-light-text dark:text-light-text-dark">{feature.text}</p>
                                 </div>
                             );
                         })}
