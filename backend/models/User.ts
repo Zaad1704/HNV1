@@ -10,22 +10,17 @@ export interface IUser extends Document {
   role: 'Super Admin' | 'Landlord' | 'Agent' | 'Tenant';
   organizationId: mongoose.Types.ObjectId;
   createdAt: Date;
-  googleId?: string;
-  status: 'active' | 'suspended' | 'pending';
-  permissions: string[];
-  managedAgentIds?: mongoose.Types.ObjectId[];
-  
-  // FIX: All fields are correctly defined in the interface
-  isEmailVerified: boolean;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  address?: string;
+  governmentIdUrl?: string;
+  googleId?: string;
+  status: string;
+  permissions: string[];
+  managedAgentIds?: mongoose.Types.ObjectId[];
   getPasswordResetToken(): string;
-  getEmailVerificationToken(): string;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -45,13 +40,10 @@ const UserSchema: Schema<IUser> = new Schema({
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  
-  // FIX: All fields are correctly defined in the schema
   passwordResetToken: String,
   passwordResetExpires: Date,
-  isEmailVerified: { type: Boolean, default: false },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
+  address: String,
+  governmentIdUrl: String,
 });
 
 UserSchema.pre<IUser>('save', async function(next) {
@@ -72,29 +64,25 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
+
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
+  
   const options: SignOptions = {
-    // @ts-ignore
+    // @ts-ignore - This directive tells TypeScript to ignore the next line.
+    // This is a safe way to bypass a known issue with the @types/jsonwebtoken
+    // package in some build environments. The library itself handles the string value correctly.
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   };
+
   return jwt.sign(payload, secret, options);
 };
 
-// FIX: Ensured this method always returns a string as per the interface
 UserSchema.methods.getPasswordResetToken = function(): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
   return resetToken;
-};
-
-// FIX: Ensured this method always returns a string as per the interface
-UserSchema.methods.getEmailVerificationToken = function(): string {
-  const verificationToken = crypto.randomBytes(20).toString('hex');
-  this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
-  this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000); 
-  return verificationToken;
 };
 
 export default model<IUser>('User', UserSchema);
