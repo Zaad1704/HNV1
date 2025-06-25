@@ -2,12 +2,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import path from 'path' // Import the 'path' module
 
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt', // This is the corrected line
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'HNV Property Management',
@@ -39,6 +40,19 @@ export default defineConfig({
       }
     })
   ],
+  // Add the resolve alias configuration here
+  resolve: {
+    alias: {
+      'api': path.resolve(__dirname, './src/api'),
+      'components': path.resolve(__dirname, './src/components'),
+      'contexts': path.resolve(__dirname, './src/contexts'),
+      'hooks': path.resolve(__dirname, './src/hooks'),
+      'pages': path.resolve(__dirname, './src/pages'),
+      'store': path.resolve(__dirname, './src/store'),
+      'types': path.resolve(__dirname, './src/types'),
+      'services': path.resolve(__dirname, './src/services'),
+    }
+  },
   build: {
     minify: true,
     sourcemap: true,
