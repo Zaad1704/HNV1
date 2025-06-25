@@ -113,3 +113,117 @@ select {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.9);
 }
+
+/* Styles for scattered cards in LandingPage */
+.hero-card-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 600px; /* Adjust height as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-card {
+    position: absolute;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    background-color: var(--light-card); /* Default background */
+    border: 1px solid var(--border-color); /* Default border */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.hero-card.gradient-primary {
+    background: var(--primary-card-gradient);
+    color: white;
+}
+
+.hero-card.gradient-secondary {
+    background: var(--secondary-card-gradient);
+    color: white;
+}
+
+/* Specific positioning and styling for each card */
+.card-main {
+    width: 500px;
+    height: 400px;
+    z-index: 5;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.card-small-1 {
+    width: 200px;
+    height: 150px;
+    top: 10%;
+    left: 15%;
+    transform: rotate(-8deg);
+    z-index: 3;
+}
+
+.card-small-2 {
+    width: 220px;
+    height: 180px;
+    bottom: 5%;
+    right: 10%;
+    transform: rotate(12deg);
+    z-index: 4;
+}
+
+.card-medium-1 {
+    width: 300px;
+    height: 250px;
+    top: 15%;
+    right: 5%;
+    transform: rotate(5deg);
+    z-index: 2;
+}
+
+.card-medium-2 {
+    width: 320px;
+    height: 200px;
+    bottom: 10%;
+    left: 8%;
+    transform: rotate(-10deg);
+    z-index: 3;
+}
+
+/* Adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .hero-card-container {
+    height: 700px; /* Allow more vertical space */
+  }
+  .card-main {
+    width: 80%;
+    height: auto;
+    max-width: 400px;
+  }
+  .hero-card {
+    position: relative; /* Make cards flow naturally */
+    transform: none !important; /* Remove rotations */
+    margin-bottom: 1rem;
+    width: 90%;
+    height: auto;
+    left: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    padding: 1.5rem;
+    align-self: center;
+    order: 1; /* Ensure main card is first */
+  }
+  .card-main { order: 0; } /* Ensure main card is at the top */
+  .hero-card:nth-child(n+2) {
+    order: 2; /* Put smaller cards after main card */
+  }
+}
