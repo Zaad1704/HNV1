@@ -76,7 +76,7 @@ const AdminPlansPage = () => {
                                         Prop: {plan.limits.maxProperties}, Tenants: {plan.limits.maxTenants}, Agents: {plan.limits.maxAgents}
                                     </td>
                                     <td className="p-4 text-center">
-                                        <input type="checkbox" checked={plan.isPublic} disabled className="h-4 w-4 text-brand-primary rounded"/>
+                                        <input type="checkbox" checked={plan.isPublic} disabled className="h-4 w-4 text-brand-primary rounded border-border-color focus:ring-brand-primary"/> {/* Added border-color and focus styling */}
                                     </td>
                                     <td className="p-4 space-x-4">
                                         <button onClick={() => handleEdit(plan)} className="font-medium text-brand-primary hover:underline transition-colors duration-150">Edit</button>
