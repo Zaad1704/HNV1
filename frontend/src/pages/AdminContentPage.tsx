@@ -16,8 +16,20 @@ const AdminContentPage: React.FC = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await apiClient.get("/admin/content");
-        setContent(response.data);
+        const response = await apiClient.get("/site-settings"); // Corrected endpoint to match siteSettingsRoutes.ts
+        // Map the site settings object to a simple array for the table display
+        const settingsData = response.data.data;
+        const mappedContent = [
+          { id: 'hero', page: 'Hero Section', title: settingsData.heroSection?.title || '', content: '' },
+          { id: 'about', page: 'About Page', title: settingsData.aboutPage?.title || '', content: '' },
+          { id: 'services', page: 'Services Section', title: settingsData.servicesSection?.title || '', content: '' },
+          { id: 'pricing', page: 'Pricing Section', title: settingsData.pricingSection?.title || '', content: '' },
+          { id: 'contact', page: 'Contact Page', title: settingsData.contactPage?.title || '', content: '' },
+          { id: 'install', page: 'Install App Section', title: settingsData.installAppSection?.title || '', content: '' },
+          { id: 'terms', page: 'Terms Page', title: settingsData.termsPageContent?.title || '', content: '' },
+          { id: 'privacy', page: 'Privacy Policy Page', title: settingsData.privacyPolicyPageContent?.title || '', content: '' },
+        ];
+        setContent(mappedContent);
       } catch (err) {
         setError("Failed to fetch content.");
       }
