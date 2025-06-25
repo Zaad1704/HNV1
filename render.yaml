@@ -4,7 +4,7 @@ services:
     name: hnv-saas-backend
     env: docker
     plan: standard
-    repo: https://github.com/Zaad1704/HNV1 # Using your repo name
+    repo: https://github.com/Zaad1704/HNV1
     branch: main
     rootDir: backend
     envVars:
@@ -12,16 +12,20 @@ services:
         value: 5001
       # IMPORTANT: Your secret variables like MONGO_URI, JWT_SECRET, etc.
       # should be set in the Render Dashboard, not committed here.
-      - key: CORS_ALLOWED_ORIGINS # New environment variable for CORS
-        value: "http://localhost:3000,https://hnv-1-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com" # Added app.hnvpm.com
+      - key: CORS_ALLOWED_ORIGINS 
+        value: "http://localhost:3000,https://hnv-1-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com"
 
   - type: static
     name: hnv-saas-frontend
-    repo: https://github.com/Zaad1704/HNV1 # Using your repo name
+    repo: https://github.com/Zaad1704/HNV1
     branch: main
-    buildCommand: npm run build
-    staticPublishPath: dist
+    # Build commands are now run from the project root
+    buildCommand: |
+      npm install
+      npm run build --workspace=frontend
+    # The publish path is now explicitly set from the root
+    staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_URL
-        # CORRECTED to your actual live backend URL
+        # This should be your actual live backend URL
         value: https://hnv.onrender.com/api
