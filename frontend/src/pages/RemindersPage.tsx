@@ -90,7 +90,7 @@ const RemindersPage: React.FC = () => {
                 <h1 className="text-3xl font-bold">Automated Reminders</h1>
                 <button
                     onClick={handleAddReminder}
-                    className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-opacity-90 text-dark-text font-bold rounded-lg shadow-md transition-colors duration-200"
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-lg shadow-md transition-colors duration-200"
                 >
                     <PlusCircle size={18} />
                     <span>Add New Reminder</span>
