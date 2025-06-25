@@ -2,6 +2,12 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
+const FullScreenLoader = () => (
+  <div className="flex items-center justify-center h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-300">
+    <div className="text-dark-text dark:text-dark-text-dark text-lg">Verifying Permissions...</div>
+  </div>
+);
+
 const ProtectedRoute = () => {
   const { isAuthenticated } = useAuthStore();
 
