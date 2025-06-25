@@ -104,7 +104,7 @@ const SettingsPage = () => {
     };
 
     return (
-        <div className="text-dark-text">
+        <div className="text-dark-text dark:text-dark-text-dark">
             <h1 className="text-3xl font-bold mb-8">Profile & Settings</h1>
             {message.text && (
                 <div className={`p-3 rounded-lg mb-6 text-center text-sm ${message.type === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-400'}`}>
@@ -113,28 +113,28 @@ const SettingsPage = () => {
             )}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 <div className="lg:col-span-3 space-y-8">
-                    <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-lg">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><UserIcon /> Your Profile</h2>
-                        <p><strong className="text-light-text">Name:</strong> {user?.name}</p>
-                        <p><strong className="text-light-text">Email:</strong> {user?.email}</p>
-                        <p><strong className="text-light-text">Role:</strong> {user?.role}</p>
+                    <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><UserIcon className="text-brand-primary" /> Your Profile</h2>
+                        <p><strong className="text-light-text dark:text-light-text-dark">Name:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.name}</span></p>
+                        <p><strong className="text-light-text dark:text-light-text-dark">Email:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.email}</span></p>
+                        <p><strong className="text-light-text dark:text-light-text-dark">Role:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.role}</span></p>
                     </div>
                     
                     {user?.role === 'Landlord' && (
-                        <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-lg">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Building /> Organization Branding</h2>
+                        <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Building className="text-brand-primary" /> Organization Branding</h2>
                             <form onSubmit={handleUpdateBranding} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-light-text mb-1">Company Name</label>
-                                    <input type="text" name="companyName" value={brandingData.companyName} onChange={handleBrandingInputChange} className="w-full bg-dark-bg p-2 rounded-md border border-border-color text-dark-text"/>
+                                    <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Company Name</label>
+                                    <input type="text" name="companyName" value={brandingData.companyName} onChange={handleBrandingInputChange} className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-light-text mb-1">Company Logo</label>
+                                    <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Company Logo</label>
                                     {logoPreview && <img src={logoPreview} alt="Logo Preview" className="h-16 w-auto rounded-md my-2 bg-white p-1" />}
-                                    <input type="file" name="companyLogo" accept="image/*" onChange={handleLogoFileChange} className="w-full text-sm text-light-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-dark-bg file:text-light-text hover:file:bg-border-color"/>
+                                    <input type="file" name="companyLogo" accept="image/*" onChange={handleLogoFileChange} className="w-full text-sm text-light-text dark:text-light-text-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-light-bg dark:file:bg-dark-bg file:text-light-text dark:file:text-light-text-dark hover:file:bg-border-color dark:hover:file:bg-border-color-dark"/>
                                 </div>
                                 <div className="text-right pt-2">
-                                    <button type="submit" disabled={brandingMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-brand-dark font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">
+                                    <button type="submit" disabled={brandingMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50">
                                         {brandingMutation.isLoading ? 'Saving...' : 'Update Branding'}
                                     </button>
                                 </div>
@@ -142,32 +142,32 @@ const SettingsPage = () => {
                         </div>
                     )}
                     
-                    <div className="bg-light-card p-8 rounded-xl border border-border-color shadow-lg">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Lock /> Change Password</h2>
+                    <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Lock className="text-brand-primary" /> Change Password</h2>
                         <form onSubmit={handleUpdatePassword} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-light-text mb-1">Current Password</label>
-                                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required className="w-full bg-dark-bg p-2 rounded-md border border-border-color text-dark-text"/>
+                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Current Password</label>
+                                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-light-text mb-1">New Password</label>
-                                <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required className="w-full bg-dark-bg p-2 rounded-md border border-border-color text-dark-text"/>
+                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">New Password</label>
+                                <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-light-text mb-1">Confirm New Password</label>
-                                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required className="w-full bg-dark-bg p-2 rounded-md border border-border-color text-dark-text"/>
+                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Confirm New Password</label>
+                                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
                             </div>
                             <div className="text-right pt-2">
-                                <button type="submit" disabled={passwordMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-brand-dark font-semibold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50">
-                                    {passwordMutation.isLoading ? 'Saving...' : 'Update Password'}
+                                <button type="submit" disabled={passwordMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
+                                    {passwordMutation.isLoading ? 'Updating...' : 'Update Password'}
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <div className="bg-light-card p-8 rounded-xl border-2 border-red-500/50 shadow-lg">
-                        <h2 className="text-xl font-bold mb-4 flex items-center gap-3 text-red-400"><AlertTriangle /> Danger Zone</h2>
-                        <p className="text-light-text mb-4">
+                    <div className="bg-light-card p-8 rounded-xl border-2 border-red-500/50 shadow-lg dark:bg-dark-card">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-3 text-brand-orange"><AlertTriangle /> Danger Zone</h2>
+                        <p className="text-light-text dark:text-light-text-dark mb-4">
                             Deleting your account is a permanent action. All of your data, including properties, tenants, and financial records, will be scheduled for permanent removal.
                         </p>
                         <div className="text-right">
