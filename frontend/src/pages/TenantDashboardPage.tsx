@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { HandCoins, MessageSquareWarning, Wrench, CreditCard, Home, Calendar, Phone, MapPin } from 'lucide-react';
+import { HandCoins, MessageSquareWarning, Wrench, CreditCard, Home, Calendar, Phone, MapPin, CheckCircle } from 'lucide-react';
 import MaintenanceRequestModal from '../components/common/MaintenanceRequestModal';
 import { useAuthStore } from '../store/authStore';
 
@@ -117,7 +117,7 @@ const TenantDashboardPage = () => {
             <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">
                 <h1 className="text-4xl font-bold mb-4">Welcome, {user?.name}!</h1>
                 <p className="text-light-text dark:text-light-text-dark mb-4">Your tenant dashboard is loading. If you do not see your lease information, please contact your landlord or administrator.</p>
-                <button onClick={() => setIsModalOpen(true)} className="mt-4 px-5 py-3 bg-brand-primary text-dark-text font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
+                <button onClick={() => setIsModalOpen(true)} className="mt-4 px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
                     Submit a Maintenance Request
                 </button>
             </div>
@@ -138,7 +138,7 @@ const TenantDashboardPage = () => {
             <h1 className="text-4xl font-bold">My Tenant Dashboard</h1>
 
             {/* Payment Hub Card */}
-            <div className="bg-light-card dark:bg-gradient-to-br from-brand-dark to-dark-card p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark transition-all duration-200">
+            <div className="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark transition-all duration-200">
                 <h2 className="text-xl font-bold mb-2">Payment Hub</h2>
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
@@ -151,7 +151,7 @@ const TenantDashboardPage = () => {
                         onClick={handlePayRent}
                         // Disable if no outstanding invoice is found or amount is 0
                         disabled={mutation.isLoading || !upcomingDues?.invoiceId || upcomingDues.totalAmount === 0}
-                        className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-brand-primary text-dark-text font-bold rounded-lg shadow-xl hover:bg-brand-secondary transition-all transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
+                        className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-brand-primary text-white font-bold rounded-lg shadow-xl hover:bg-brand-secondary transition-all transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
                     >
                         <CreditCard />
                         {mutation.isLoading ? 'Redirecting...' : 'Pay Rent Now'}
@@ -223,7 +223,7 @@ const TenantDashboardPage = () => {
                     <div className="bg-light-card dark:bg-dark-card/70 p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
                          <h2 className="text-xl font-bold text-brand-primary dark:text-brand-secondary mb-3 flex items-center"><Wrench className="mr-2" />Submit a Maintenance Request</h2>
                          <p className="text-light-text dark:text-light-text-dark mb-4">Have an issue in your unit? Let us know.</p>
-                         <button onClick={() => setIsModalOpen(true)} className="w-full px-5 py-3 bg-brand-primary text-dark-text font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
+                         <button onClick={() => setIsModalOpen(true)} className="w-full px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
                             Create Request
                          </button>
                     </div>
