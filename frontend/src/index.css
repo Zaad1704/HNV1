@@ -9,5 +9,5 @@ html {
 
 body {
   /* Set global body background to the new brand-secondary (Pewter Blue) */
-  @apply bg-brand-secondary dark:bg-dark-bg;
+  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300;
 }
