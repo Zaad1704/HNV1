@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import apiClient from '../../api/client'; // Your Axios API client
+import { Wrench, Calendar, Home, AlertCircle } from 'lucide-react';
 
 interface IMaintenanceRequest {
   _id: string;
@@ -45,9 +46,9 @@ const MaintenanceWidget: React.FC = () => {
     switch (status) {
       case 'Open': return 'bg-brand-primary/20 text-brand-primary'; // Adjusted colors
       case 'In Progress': return 'bg-brand-accent-dark/20 text-brand-accent-dark'; // Adjusted colors
-      case 'Completed': return 'bg-brand-accent-dark/20 text-brand-accent-dark'; // Adjusted colors
+      case 'Completed': return 'bg-green-500/20 text-green-300'; // Adjusted colors
       case 'Urgent': return 'bg-red-500/20 text-red-300'; // Special styling for urgent
-      default: return 'bg-brand-subtle/20 text-brand-subtle'; // Adjusted colors
+      default: return 'bg-brand-subtle/20 text-brand-dark'; // Adjusted colors
     }
   };
 
@@ -56,14 +57,14 @@ const MaintenanceWidget: React.FC = () => {
       case 'Urgent': return 'text-red-400 font-bold';
       case 'High': return 'text-brand-primary'; // Adjusted colors
       case 'Medium': return 'text-brand-secondary'; // Adjusted colors
-      case 'Low': return 'text-brand-accent-dark'; // Adjusted colors
-      default: return 'text-light-text'; // Adjusted colors
+      case 'Low': return 'text-brand-subtle'; // Adjusted colors
+      default: return 'text-light-text dark:text-light-text-dark'; // Adjusted colors
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-light-card p-8 rounded-2xl shadow-lg border border-border-color text-dark-text"> {/* Adjusted bg and text */}
+      <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark transition-all duration-200">
         <h2 className="text-xl font-bold mb-4">Recent Maintenance Requests</h2>
         <div className="text-center py-4">Loading requests...</div>
       </div>
@@ -80,18 +81,18 @@ const MaintenanceWidget: React.FC = () => {
   }
 
   return (
-    <div className="bg-light-card p-8 rounded-2xl shadow-lg border border-border-color text-dark-text"> {/* Adjusted bg and text */}
+    <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark transition-all duration-200">
       <h2 className="text-xl font-bold mb-4">Recent Maintenance Requests</h2>
       {requests.length === 0 ? (
-        <p className="text-light-text text-center py-4">No open or in-progress maintenance requests found.</p> {/* Adjusted text */}
+        <p className="text-light-text dark:text-light-text-dark text-center py-4">No open or in-progress maintenance requests found.</p>
       ) : (
         <ul className="space-y-4">
           {requests.slice(0, 5).map((req) => ( // Display top 5 recent requests
-            <li key={req._id} className="border border-border-color p-4 rounded-lg bg-brand-secondary flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"> {/* Adjusted bg and border */}
+            <li key={req._id} className="border border-border-color dark:border-border-color-dark p-4 rounded-lg bg-light-bg dark:bg-dark-bg/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 transition-all duration-150">
               <div className="flex-grow">
-                <p className="text-lg font-semibold text-dark-text truncate max-w-[calc(100%-80px)]">{req.description}</p>
-                <p className="text-light-text text-sm"> {/* Adjusted text */}
-                  Property: <span className="font-medium text-dark-text">{req.propertyId?.name || 'N/A'}</span> {/* Adjusted text */}
+                <p className="text-lg font-semibold text-dark-text dark:text-dark-text-dark truncate max-w-[calc(100%-80px)]">{req.description}</p>
+                <p className="text-light-text dark:text-light-text-dark text-sm">
+                  Property: <span className="font-medium text-dark-text dark:text-dark-text-dark">{req.propertyId?.name || 'N/A'}</span>
                 </p>
               </div>
               <div className="flex-shrink-0 flex items-center gap-3">
@@ -107,7 +108,7 @@ const MaintenanceWidget: React.FC = () => {
         </ul>
       )}
       <div className="mt-6 text-right">
-        <a href="/maintenance" className="text-brand-primary hover:text-brand-accent-dark text-sm font-medium"> {/* Adjusted colors */}
+        <a href="/dashboard/maintenance" className="text-brand-primary dark:text-brand-secondary hover:text-brand-accent-dark text-sm font-medium transition-colors">
           View All Maintenance Requests &rarr;
         </a>
       </div>
