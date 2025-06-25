@@ -3,11 +3,101 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Font if not already in index.html */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap'); */
+
+/* Define CSS variables for your Tailwind colors for broader use (e.g., in Recharts) */
+:root {
+  /* Light Theme */
+  --brand-primary: #1A759F;
+  --brand-secondary: #168AAD;
+  --brand-dark: #011627;
+  --brand-subtle: #A8DADC;
+  --brand-accent-light: #FDFFB6;
+  --brand-accent-dark: #FFC300;
+  --brand-orange: #FF6B35;
+
+  --light-bg: #F8F9FA;
+  --light-card: #FFFFFF;
+  --dark-text: #212529;
+  --light-text: #6C757D;
+  --border-color: #E0E0E0;
+
+  /* Chart specific colors, derived from brand colors for consistency */
+  --chart-color-1: #1A759F; /* brand-primary */
+  --chart-color-2: #FF6B35; /* brand-orange */
+  --chart-color-3: #168AAD; /* brand-secondary */
+  --chart-color-4: #FFC300; /* brand-accent-dark */
+  --chart-color-5: #A8DADC; /* brand-subtle */
+}
+
+/* Dark Mode Variables */
+html.dark {
+  --brand-primary: #1A759F;     /* Keep primary consistent or adjust slightly for dark mode contrast */
+  --brand-secondary: #168AAD;   /* Keep secondary consistent or adjust slightly for dark mode contrast */
+  --brand-dark: #011627;        /* Already darkest */
+  --brand-subtle: #A8DADC;      /* Used as light-text-dark in dark mode */
+  --brand-accent-light: #FDFFB6; /* Keep consistent */
+  --brand-accent-dark: #FFC300;  /* Keep consistent */
+  --brand-orange: #FF6B35;       /* Keep consistent */
+
+  --light-bg: #011627;          /* Dark mode background */
+  --light-card: #052F46;        /* Dark mode card background */
+  --dark-text: #F8F9FA;         /* Dark mode main text */
+  --light-text: #A8DADC;        /* Dark mode secondary text */
+  --border-color: #094E6A;      /* Dark mode border */
+
+  /* Chart specific colors for dark mode */
+  --chart-color-1: #1A759F; /* brand-primary */
+  --chart-color-2: #FF6B35; /* brand-orange */
+  --chart-color-3: #168AAD; /* brand-secondary */
+  --chart-color-4: #FFC300; /* brand-accent-dark */
+  --chart-color-5: #A8DADC; /* brand-subtle */
+}
+
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  /* Set global body background to the new brand-secondary (Pewter Blue) */
-  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300;
+  /* Set global body background and text colors using semantic variables */
+  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300 font-sans;
+}
+
+/* Base styles for common elements to ensure consistency */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-dark-text dark:text-dark-text-dark; /* Ensure headings respond to theme */
+}
+
+/* Input field base styles - important for consistent look */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="month"],
+textarea,
+select {
+  @apply bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
+  padding: 0.75rem 1rem; /* Consistent padding for inputs */
+  font-size: 0.95rem; /* Slightly larger default font size */
+}
+
+/* Focus styles for inputs, ensuring brand primary ring */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply ring-2 ring-brand-primary/50 outline-none;
+}
+
+/* Buttons with primary brand styling */
+.btn-primary {
+  @apply bg-brand-primary text-white font-bold py-2.5 px-6 rounded-lg hover:bg-brand-secondary transition-colors duration-200 shadow-md;
+}
+
+/* Secondary/outline buttons */
+.btn-secondary {
+  @apply bg-transparent border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark font-semibold py-2.5 px-6 rounded-lg hover:bg-light-bg dark:hover:bg-dark-bg/50 transition-colors duration-200;
 }
