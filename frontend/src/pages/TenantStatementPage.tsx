@@ -54,60 +54,60 @@ const TenantStatementPage: React.FC = () => {
         enabled: !!tenantId, // Only run query if tenantId exists
     });
 
-    if (!tenantId) return <div className="text-red-500 text-center p-8">Tenant ID not provided.</div>;
-    if (isLoading) return <div className="text-center p-8">Loading tenant statement...</div>;
-    if (isError) return <div className="text-red-500 text-center p-8">Failed to load statement: {error?.message || 'Unknown error.'}</div>;
+    if (!tenantId) return <div className="text-red-500 text-center p-8 dark:text-red-500">Tenant ID not provided.</div>;
+    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading tenant statement...</div>;
+    if (isError) return <div className="text-red-500 text-center p-8 dark:text-red-500">Failed to load statement: {error?.message || 'Unknown error.'}</div>;
 
     const statement = data?.data || [];
     const tenantName = data?.tenantName || 'Tenant';
 
     return (
-        <div className="text-dark-text">
+        <div className="text-dark-text dark:text-dark-text-dark">
             <div className="flex items-center gap-4 mb-6">
-                <a href="/dashboard/tenants" className="text-light-text hover:text-brand-primary">
+                <a href="/dashboard/tenants" className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150">
                     <ChevronLeft size={24} />
                 </a>
                 <h1 className="text-3xl font-bold">Monthly Statement for {tenantName}</h1>
             </div>
             
             {/* Date Range Filters (Optional) */}
-            <div className="bg-light-card p-4 rounded-xl border border-border-color mb-6 flex flex-col sm:flex-row gap-4">
+            <div className="bg-light-card dark:bg-dark-card p-4 rounded-xl border border-border-color dark:border-border-color-dark mb-6 flex flex-col sm:flex-row gap-4 transition-all duration-200">
                 <div>
-                    <label htmlFor="startMonth" className="block text-sm font-medium text-light-text mb-1">From Month:</label>
-                    <input type="month" id="startMonth" value={startMonth} onChange={(e) => setStartMonth(e.target.value)} className="bg-light-bg border border-border-color rounded-md px-3 py-2 text-dark-text"/>
+                    <label htmlFor="startMonth" className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">From Month:</label>
+                    <input type="month" id="startMonth" value={startMonth} onChange={(e) => setStartMonth(e.target.value)} className="bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md px-3 py-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
                 </div>
                 <div>
-                    <label htmlFor="endMonth" className="block text-sm font-medium text-light-text mb-1">To Month:</label>
-                    <input type="month" id="endMonth" value={endMonth} onChange={(e) => setEndMonth(e.target.value)} className="bg-light-bg border border-border-color rounded-md px-3 py-2 text-dark-text"/>
+                    <label htmlFor="endMonth" className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">To Month:</label>
+                    <input type="month" id="endMonth" value={endMonth} onChange={(e) => setEndMonth(e.target.value)} className="bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md px-3 py-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
                 </div>
             </div>
 
             {statement.length === 0 ? (
-                <div className="text-center py-16 bg-light-card rounded-xl border border-dashed">
-                    <h3 className="text-xl font-semibold text-dark-text">No Statement Data Found</h3>
-                    <p className="text-light-text mt-2 mb-4">Check the date range or ensure invoices/payments exist for this tenant.</p>
+                <div className="text-center py-16 bg-light-card dark:bg-dark-card rounded-xl border border-dashed border-border-color dark:border-border-color-dark transition-all duration-200">
+                    <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">No Statement Data Found</h3>
+                    <p className="text-light-text dark:text-light-text-dark mt-2 mb-4">Check the date range or ensure invoices/payments exist for this tenant.</p>
                 </div>
             ) : (
-                <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
+                <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-border-color dark:border-border-color-dark overflow-hidden transition-all duration-200">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-border-color">
+                            <thead className="bg-light-bg dark:bg-dark-bg/50 border-b border-border-color dark:border-border-color-dark">
                                 <tr>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Month</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Expected Due</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Amount Paid</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Monthly Balance</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Cumulative Balance</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Details</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Month</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Expected Due</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Amount Paid</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Monthly Balance</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Cumulative Balance</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Details</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border-color">
+                            <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
                                 {statement.map((entry) => (
                                     <React.Fragment key={entry.month}>
-                                        <tr className="hover:bg-gray-50 bg-light-bg">
-                                            <td className="p-4 font-bold text-dark-text">{entry.month}</td>
-                                            <td className="p-4 text-light-text">${entry.expectedDue.toFixed(2)}</td>
-                                            <td className="p-4 text-light-text">${entry.amountPaid.toFixed(2)}</td>
+                                        <tr className="hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors duration-150">
+                                            <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{entry.month}</td>
+                                            <td className="p-4 text-light-text dark:text-light-text-dark">${entry.expectedDue.toFixed(2)}</td>
+                                            <td className="p-4 text-light-text dark:text-light-text-dark">${entry.amountPaid.toFixed(2)}</td>
                                             <td className={`p-4 font-semibold ${entry.monthlyBalance < 0 ? 'text-red-600' : 'text-green-600'}`}>
                                                 ${entry.monthlyBalance.toFixed(2)}
                                             </td>
@@ -116,7 +116,7 @@ const TenantStatementPage: React.FC = () => {
                                             </td>
                                             <td className="p-4">
                                                 {/* Optional: Add a button to expand details for invoices/payments */}
-                                                <button className="text-brand-primary hover:underline text-sm">View Details</button>
+                                                <button className="text-brand-primary dark:text-brand-secondary hover:underline text-sm transition-colors">View Details</button>
                                             </td>
                                         </tr>
                                         {/* Optional: Detailed rows for invoices/payments within the month */}
