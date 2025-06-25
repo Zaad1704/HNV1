@@ -8,37 +8,38 @@ const OrganizationDashboardPage: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    apiClient.get("/org").then(res => {
-      setOrgs(res.data);
+    apiClient.get("/orgs/me").then(res => { // Corrected endpoint for user's orgs
+      setOrgs(res.data.data); // Access data.data
       // First load: set default or persisted org
-      if (res.data.length && !currentOrg) {
+      if (res.data.data.length && !currentOrg) { // Access data.data
         const persisted = localStorage.getItem("currentOrgId");
-        const found = res.data.find((o: any) => o._id === persisted);
-        persistCurrentOrg(found || res.data[0]);
+        const found = res.data.data.find((o: any) => o._id === persisted); // Access data.data
+        persistCurrentOrg(found || res.data.data[0]); // Access data.data
       }
     });
   }, []);
 
   useEffect(() => {
     if (currentOrg) {
-      apiClient.get(`/org/${currentOrg._id}/stats`).then(res => setStats(res.data));
+      apiClient.get(`/dashboard/overview-stats`).then(res => setStats(res.data.data)); // Use dashboard overview stats
     }
   }, [currentOrg]);
 
-  if (!currentOrg) return <div className="p-8">No organization selected.</div>;
+  if (!currentOrg) return <div className="p-8 text-dark-text dark:text-dark-text-dark">No organization selected.</div>;
 
   return (
-    <div className="p-8">
+    <div className="p-8 text-dark-text dark:text-dark-text-dark">
       <OrgSwitcher />
       <h1 className="text-2xl mb-4">{currentOrg.name} Dashboard</h1>
       {stats ? (
-        <div>
-          <div className="mb-2"><b>Members:</b> {stats.members}</div>
-          <div className="mb-2"><b>Active Tenants:</b> {stats.tenants}</div>
-          <div className="mb-2"><b>Properties:</b> {stats.properties}</div>
+        <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg shadow-md border border-border-color dark:border-border-color-dark transition-all duration-200">
+          <div className="mb-2"><strong className="text-dark-text dark:text-dark-text-dark">Total Properties:</strong> <span className="text-light-text dark:text-light-text-dark">{stats.totalProperties}</span></div>
+          <div className="mb-2"><strong className="text-dark-text dark:text-dark-text-dark">Active Tenants:</strong> <span className="text-light-text dark:text-light-text-dark">{stats.activeTenants}</span></div>
+          <div className="mb-2"><strong className="text-dark-text dark:text-dark-text-dark">Monthly Revenue:</strong> <span className="text-light-text dark:text-light-text-dark">${stats.monthlyRevenue?.toLocaleString() || 0}</span></div>
+          <div className="mb-2"><strong className="text-dark-text dark:text-dark-text-dark">Occupancy Rate:</strong> <span className="text-light-text dark:text-light-text-dark">{stats.occupancyRate}</span></div>
         </div>
       ) : (
-        <div>Loading organization stats...</div>
+        <div className="text-light-text dark:text-light-text-dark">Loading organization stats...</div>
       )}
     </div>
   );
