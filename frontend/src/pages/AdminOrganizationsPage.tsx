@@ -63,7 +63,7 @@ const AdminOrganizationsPage = () => {
                                     }
                                 </td>
                                 <td className="p-4">
-                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-400'}`}>
+                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-500/20 text-green-300' : 'bg-brand-orange/20 text-brand-orange'}`}> {/* Adjusted inactive/canceled to brand-orange */}
                                         {org.subscription?.status || 'inactive'}
                                     </span>
                                 </td>
