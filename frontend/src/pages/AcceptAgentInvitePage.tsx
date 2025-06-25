@@ -28,7 +28,8 @@ const AcceptAgentInvitePage: React.FC = () => {
   // Fetch the invitation details using the token from the URL
   const { data: inviteDetails, isLoading, isError, error } = useQuery({
       queryKey: ['inviteDetails', token],
-      queryFn: () => fetchInviteDetails(token)
+      queryFn: () => fetchInviteDetails(token),
+      enabled: !!token, // Only run query if token exists
   });
 
   const mutation = useMutation({
@@ -38,13 +39,16 @@ const AcceptAgentInvitePage: React.FC = () => {
           login(response.data.token);
           navigate('/dashboard'); // Redirect to the dashboard
       },
+      onError: (err: any) => {
+          // Error handling for mutation is already present, just ensure styling is correct.
+      }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteDetails.isExistingUser && password !== confirmPassword) {
-        mutation.reset();
-        mutation.mutate({ token, password: undefined }); // Clear error state
+    if (!inviteDetails?.isExistingUser && password !== confirmPassword) {
+        mutation.reset(); // Clear any previous error state if passwords don't match
+        // Manually set an error for passwords not matching
         mutation.setFailureReason(new Error("Passwords do not match."));
         return;
     }
@@ -75,11 +79,11 @@ const AcceptAgentInvitePage: React.FC = () => {
                         <p className="text-sm text-center bg-light-bg dark:bg-dark-bg/50 p-3 rounded-lg border border-border-color dark:border-border-color-dark transition-all duration-200">Since you're new, please set a password to create your account.</p>
                         <div>
                             <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Create Password</label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1 w-full px-4 py-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
+                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="mt-1 w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Confirm Password</label>
-                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="mt-1 w-full px-4 py-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
+                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="mt-1 w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
                         </div>
                     </>
                 )}
