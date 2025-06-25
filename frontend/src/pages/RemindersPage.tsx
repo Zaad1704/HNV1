@@ -58,11 +58,11 @@ const RemindersPage: React.FC = () => {
     const getStatusBadge = (status: string) => {
         const map = {
             active: 'bg-green-500/20 text-green-300',
-            inactive: 'bg-light-text/20 text-light-text',
-            sent: 'bg-brand-primary/20 text-brand-primary',
-            failed: 'bg-brand-orange/20 text-brand-orange',
+            inactive: 'bg-gray-500/20 text-gray-300',
+            sent: 'bg-blue-500/20 text-blue-300',
+            failed: 'bg-red-500/20 text-red-400',
         };
-        return map[status as keyof typeof map] || 'bg-light-text/20 text-light-text';
+        return map[status as keyof typeof map] || 'bg-gray-500/20 text-gray-300';
     };
 
     const getTypeIcon = (type: string) => {
@@ -75,7 +75,7 @@ const RemindersPage: React.FC = () => {
     };
 
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading reminders...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch reminders.</div>;
+    if (isError) return <div className="text-red-400 text-center p-8 dark:text-red-400">Failed to fetch reminders.</div>;
 
     return (
         <div className="text-dark-text dark:text-dark-text-dark">
@@ -90,7 +90,7 @@ const RemindersPage: React.FC = () => {
                 <h1 className="text-3xl font-bold">Automated Reminders</h1>
                 <button
                     onClick={handleAddReminder}
-                    className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-lg shadow-md transition-colors duration-200"
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-brand-primary hover:bg-opacity-90 text-dark-text font-bold rounded-lg shadow-md transition-colors duration-200"
                 >
                     <PlusCircle size={18} />
                     <span>Add New Reminder</span>
@@ -98,9 +98,51 @@ const RemindersPage: React.FC = () => {
             </div>
 
             {reminders.length === 0 ? (
-                <div className="text-center py-16 bg-light-card rounded-xl border-2 border-dashed border-border-color dark:bg-dark-card dark:border-border-color-dark">
+                <div className="text-center py-16 bg-light-card dark:bg-dark-card rounded-xl border-2 border-dashed border-border-color dark:border-border-color-dark transition-all duration-200">
                     <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">No Automated Reminders Configured</h3>
-                    <p className="text-light-text mt-2 mb-4 dark:text-light-text-dark">Set up recurring rent reminders for your tenants.</p>
+                    <p className="text-light-text dark:text-light-text-dark mt-2 mb-4">Set up recurring rent reminders for your tenants.</p>
                 </div>
             ) : (
-                <div className="bg-light-card rounded-xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
+                <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-lg border border-border-color dark:border-border-color-dark overflow-hidden transition-all duration-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-light-bg dark:bg-dark-bg/50 border-b border-border-color dark:border-border-color-dark">
+                                <tr>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Tenant</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Type</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Next Send</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Frequency</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Status</th>
+                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
+                                {reminders.map((reminder) => (
+                                    <tr key={reminder._id} className="hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors duration-150">
+                                        <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{reminder.tenantId.name} ({reminder.tenantId.unit})</td>
+                                        <td className="p-4 flex items-center gap-2 text-light-text dark:text-light-text-dark capitalize">
+                                            {getTypeIcon(reminder.type)} {reminder.type.replace(/_/g, ' ')}
+                                        </td>
+                                        <td className="p-4 text-light-text dark:text-light-text-dark">{new Date(reminder.nextRunDate).toLocaleDateString()}</td>
+                                        <td className="p-4 text-light-text dark:text-light-text-dark capitalize">{reminder.frequency}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadge(reminder.status)}`}>
+                                                {reminder.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right space-x-2">
+                                            <button onClick={() => handleEditReminder(reminder)} className="text-brand-primary dark:text-brand-secondary hover:underline p-2 transition-colors duration-150" title="Edit Reminder"><Edit size={16}/></button>
+                                            <button onClick={() => handleDeleteReminder(reminder._id)} className="text-red-400 hover:underline p-2 transition-colors duration-150" title="Delete Reminder" disabled={deleteMutation.isLoading}><Trash2 size={16}/></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default RemindersPage;
