@@ -13,18 +13,19 @@ const OccupancyChart: React.FC<{ data: OccupancyData[] }> = ({ data }) => {
                 data={data}
                 margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
             >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" /> {/* Semantic border color */}
+                <XAxis dataKey="name" stroke="var(--light-text)" fontSize={12} tickLine={false} axisLine={false} /> {/* Semantic text color */}
+                <YAxis stroke="var(--light-text)" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} /> {/* Semantic text color */}
                 <Tooltip 
                     contentStyle={{
-                        background: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        background: 'var(--light-card)', // Semantic light card
+                        border: '1px solid var(--border-color)', // Semantic border color
                         borderRadius: '0.5rem',
+                        color: 'var(--dark-text)' // Semantic dark text
                     }}
                 />
-                <Legend wrapperStyle={{ fontSize: '14px' }}/>
-                <Line type="monotone" dataKey="New Tenants" stroke="#3D52A0" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+                <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--dark-text)' }}/> {/* Semantic text color */}
+                <Line type="monotone" dataKey="New Tenants" stroke="var(--brand-primary)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} /> {/* Semantic brand color */}
             </LineChart>
         </ResponsiveContainer>
     );
