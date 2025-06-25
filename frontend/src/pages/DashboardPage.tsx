@@ -5,6 +5,7 @@ import MaintenanceWidget from '../components/dashboard/MaintenanceWidget';
 import { useQuery } from '@tanstack/react-query'; // Import useQuery
 import FinancialChart from '../components/charts/FinancialChart'; // Assuming this exists
 import OccupancyChart from '../components/charts/OccupancyChart'; // Assuming this exists
+import apiClient from '../api/client'; // Import apiClient
 
 // API Fetching Functions (re-using from OverviewPage or defining new ones if different)
 const fetchOverviewStats = async () => {
@@ -23,7 +24,7 @@ const fetchOccupancySummary = async () => {
 
 // Reusable StatCard Component
 const StatCard = ({ title, value, icon, accentColor, currency = '' }) => ( // Added currency prop
-  <div className={`bg-light-card p-6 rounded-2xl shadow-lg border border-border-color relative overflow-hidden`}> {/* Changed bg-slate-800/50 backdrop-blur-md text-white --> bg-light-card */}
+  <div className={`bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark relative overflow-hidden transition-all duration-200`}>
     <div className={`absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full opacity-10 ${accentColor}`}></div>
 
     <div className="flex items-center space-x-4">
@@ -31,8 +32,8 @@ const StatCard = ({ title, value, icon, accentColor, currency = '' }) => ( // Ad
         {icon}
       </div>
       <div>
-        <h3 className="text-sm font-semibold text-light-text uppercase">{title}</h3> {/* text-slate-400 --> text-light-text */}
-        <p className="text-3xl font-bold text-dark-text mt-1 font-mono">{currency}{typeof value === 'number' ? value.toLocaleString() : value}</p> {/* text-white --> text-dark-text */}
+        <h3 className="text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">{title}</h3>
+        <p className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mt-1 font-mono">{currency}{typeof value === 'number' ? value.toLocaleString() : value}</p>
       </div>
     </div>
   </div>
@@ -48,7 +49,7 @@ const DashboardPage = () => {
   const isLoading = isLoadingStats || isLoadingFinancial || isLoadingOccupancy;
 
   if (isLoading) {
-    return <div className="text-dark-text text-center p-8">Loading Dashboard Data...</div>; {/* text-white --> text-dark-text */}
+    return <div className="text-dark-text dark:text-dark-text-dark text-center p-8">Loading Dashboard Data...</div>;
   }
 
   // Use optional chaining for stats data
@@ -58,8 +59,8 @@ const DashboardPage = () => {
   const occupancyRate = stats?.occupancyRate || '0%'; // Assuming backend provides this or calculate
 
   return (
-    <div className="text-dark-text min-h-[calc(100vh-160px)]"> {/* text-white --> text-dark-text */}
-      <h1 className="text-4xl font-bold mb-8 text-dark-text">Overview</h1> {/* text-white --> text-dark-text */}
+    <div className="text-dark-text dark:text-dark-text-dark min-h-[calc(100vh-160px)]">
+      <h1 className="text-4xl font-bold mb-8">Overview</h1>
 
       {/* Stat Cards - Responsive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,38 +98,38 @@ const DashboardPage = () => {
         </div>
 
         {/* Revenue Analytics Widget */}
-        <div className="bg-light-card backdrop-blur-md p-8 rounded-2xl shadow-lg border border-border-color"> {/* bg-slate-800/70 --> bg-light-card, border-slate-700 --> border-border-color */}
-          <h2 className="text-xl font-bold text-dark-text mb-4">Financials (Last 6 Months)</h2> {/* text-white --> text-dark-text */}
-          {isLoadingFinancial ? <p className="text-light-text">Loading financial data...</p> : <FinancialChart data={financialData || []} />} {/* text-slate-400 --> text-light-text */}
+        <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+          <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">Financials (Last 6 Months)</h2>
+          {isLoadingFinancial ? <p className="text-light-text dark:text-light-text-dark">Loading financial data...</p> : <FinancialChart data={financialData || []} />}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"> {/* Added a new grid for another chart if needed */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         {/* Occupancy Growth Chart */}
-        <div className="bg-light-card backdrop-blur-md p-8 rounded-2xl shadow-lg border border-border-color"> {/* bg-slate-800/70 --> bg-light-card, border-slate-700 --> border-border-color */}
-            <h2 className="text-xl font-bold text-dark-text mb-4">Occupancy Growth</h2> {/* text-white --> text-dark-text */}
-            {isLoadingOccupancy ? <p className="text-light-text">Loading occupancy data...</p> : <OccupancyChart data={occupancyData || []} />} {/* text-slate-400 --> text-light-text */}
+        <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+            <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">Occupancy Growth</h2>
+            {isLoadingOccupancy ? <p className="text-light-text dark:text-light-text-dark">Loading occupancy data...</p> : <OccupancyChart data={occupancyData || []} />}
         </div>
 
         {/* Recent Activity - Adjusted Styling */}
-        <div className="bg-light-card backdrop-blur-md p-8 rounded-2xl shadow-lg border border-border-color"> {/* bg-slate-800/70 --> bg-light-card, border-slate-700 --> border-border-color */}
-          <h2 className="text-xl font-bold text-dark-text">Recent Activity</h2> {/* text-white --> text-dark-text */}
-          <p className="mt-4 text-light-text"> {/* text-slate-400 --> text-light-text */}
+        <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+          <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">Recent Activity</h2>
+          <p className="mt-4 text-light-text dark:text-light-text-dark">
             This area will display a list of recent payments, new tenant sign-ups, and other general activity, fetched from your backend API, in a clean, modern list.
           </p>
           {/* A developer would map over real activity data here */}
           <ul className="mt-6 space-y-3">
-              <li className="p-3 bg-brand-secondary rounded-lg border border-border-color text-dark-text text-sm flex justify-between items-center"> {/* bg-slate-900 --> bg-brand-secondary, border-slate-700 --> border-border-color, text-slate-300 --> text-dark-text */}
+              <li className="p-3 bg-light-bg dark:bg-dark-bg/50 rounded-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark text-sm flex justify-between items-center transition-all duration-150">
                   <span>Received $1200 from John Doe (Rent)</span>
-                  <span className="text-light-text text-xs">2 hours ago</span> {/* text-slate-500 --> text-light-text */}
+                  <span className="text-light-text dark:text-light-text-dark text-xs">2 hours ago</span>
               </li>
-              <li className="p-3 bg-brand-secondary rounded-lg border border-border-color text-dark-text text-sm flex justify-between items-center"> {/* bg-slate-900 --> bg-brand-secondary, border-slate-700 --> border-border-color, text-slate-300 --> text-dark-text */}
+              <li className="p-3 bg-light-bg dark:bg-dark-bg/50 rounded-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark text-sm flex justify-between items-center transition-all duration-150">
                   <span>New Tenant: Jane Smith (Unit 4B)</span>
-                  <span className="text-light-text text-xs">Yesterday</span> {/* text-slate-500 --> text-light-text */}
+                  <span className="text-light-text dark:text-light-text-dark text-xs">Yesterday</span>
               </li>
-              <li className="p-3 bg-brand-secondary rounded-lg border border-border-color text-dark-text text-sm flex justify-between items-center"> {/* bg-slate-900 --> bg-brand-secondary, border-slate-700 --> border-border-color, text-slate-300 --> text-dark-text */}
+              <li className="p-3 bg-light-bg dark:bg-dark-bg/50 rounded-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark text-sm flex justify-between items-center transition-all duration-150">
                   <span>Maintenance Request: Leaky Faucet (Property A)</span>
-                  <span className="text-light-text text-xs">3 days ago</span> {/* text-slate-500 --> text-light-text */}
+                  <span className="text-light-text dark:text-light-text-dark text-xs">3 days ago</span>
               </li>
           </ul>
         </div>
