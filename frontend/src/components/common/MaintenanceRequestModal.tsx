@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 
 const createRequest = async (newRequest: { category: string; description: string; }) => {
-    const { data } = await apiClient.post('/maintenance-requests', newRequest);
+    const { data } = await apiClient.post('/maintenance', newRequest); // Corrected endpoint from /maintenance-requests to /maintenance as per maintenanceRoutes.ts
     return data.data;
 };
 
@@ -12,7 +12,8 @@ const MaintenanceRequestModal = ({ isOpen, onClose }: { isOpen: boolean, onClose
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
-  const mutation = useMutation(createRequest, {
+  const mutation = useMutation({
+    mutationFn: createRequest,
     onSuccess: () => {
       // Could invalidate a query for requests here if we were displaying them
       alert('Your request has been submitted successfully!');
