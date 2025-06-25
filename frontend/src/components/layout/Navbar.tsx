@@ -1,16 +1,21 @@
 // frontend/src/components/layout/Navbar.tsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { Globe, Sun, Moon, Download } from 'lucide-react';
 import { useLang } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link as ScrollLink } from 'react-scroll';
+import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
   const { setLang, getNextToggleLanguage } = useLang();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
 
@@ -52,15 +57,52 @@ const Navbar = () => {
       }
       setDeferredPrompt(null);
     } else {
-      alert("To install the app, please use your browser's 'Add to Home Screen' or 'Install App' feature.");
+      alert(t('install_app_manual_prompt', "To install, please use the 'Install' option in your browser's menu (usually found in the three-dot menu)."));
     }
   };
 
+
+  const navLinks = [
+    { key: 'header.features', href: '#featuresPage' },
+    { key: 'header.about', href: '#about' },
+    { key: 'header.pricing', href: '#pricing' }, // Updated to #pricing as per new LandingPage.tsx
+    { key: 'header.contact', href: '#contact' },
+  ];
+
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
+    e.preventDefault();
+    const targetId = href.substring(1);
+
+    if (location.pathname !== '/') {
+        navigate(`/${href}`);
+    } else {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+  };
+
+  const NavLinksContent = () => (
+    <>
+      {navLinks.map((link) => (
+        <a
+          key={link.key}
+          href={link.href}
+          onClick={(e) => handleScroll(e, link.href)}
+          className="font-medium transition-colors rounded-md px-3 py-2 text-white hover:bg-white/20"
+        >
+          {t(link.key)}
+        </a>
+      ))}
+    </>
+  );
+
   return (
-    <header className="bg-gradient-to-r from-brand-secondary to-brand-primary backdrop-blur-md sticky top-0 z-50 border-b border-border-color/50 dark:border-border-color-dark/50">
+    <header className="bg-gradient-to-r from-brand-secondary to-brand-primary backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
       <div className="container mx-auto px-4 sm:px-6 py-2 flex justify-between items-center">
-        {/* Left-aligned Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Left-aligned utility buttons for desktop */}
+        <div className="hidden lg:flex items-center gap-2">
             <button 
                 onClick={() => setLang(getNextToggleLanguage().code)}
                 className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
@@ -76,8 +118,8 @@ const Navbar = () => {
                 {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
             {showInstallButton && (
-                <button onClick={handleInstallClick} className="hidden sm:inline-flex cursor-pointer items-center gap-2 bg-white text-brand-primary font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-100 transition-colors">
-                    <Download size={16} /> Install App
+                <button onClick={handleInstallClick} className="inline-flex cursor-pointer items-center gap-2 bg-white text-brand-primary font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-100 transition-colors">
+                    <Download size={16} /> {t('install_app.cta', 'Install App')}
                 </button>
             )}
         </div>
@@ -89,10 +131,26 @@ const Navbar = () => {
             </Link>
         </div>
 
-        {/* Right-aligned Logo */}
-        <div>
-            <Link to="/">
-                <img src="/logo-min.png" alt="Company Logo" className="h-12 w-12 sm:h-14 sm:w-14" />
+        {/* Right-aligned navigation and login for desktop */}
+        <div className="hidden lg:flex items-center gap-2">
+            <nav className="flex items-center gap-1">
+                <NavLinksContent />
+            </nav>
+
+            <div className="w-px h-6 bg-white/50 mx-2"></div>
+            
+            <Link to="/login" className="font-semibold text-white hover:bg-white/20 px-4 py-2 rounded-md">
+                {t('header.login')}
+            </Link>
+            <Link to="/register" className="flex items-center gap-2 font-bold text-brand-primary bg-white hover:bg-gray-100 py-2 px-5 rounded-lg transition-all">
+                {t('header.get_started')} <ArrowRight size={16} />
+            </Link>
+        </div>
+
+        {/* Mobile-specific buttons (login only, utilities are in PublicBottomNavBar) */}
+        <div className="lg:hidden flex items-center space-x-3">
+             <Link to="/login" className="font-semibold text-white hover:text-gray-200">
+                {t('header.login')}
             </Link>
         </div>
       </div>
