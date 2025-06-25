@@ -89,7 +89,7 @@ const RecordPaymentModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () 
           
           <div>
             <label htmlFor="tenantId" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Tenant</label>
-            <select name="tenantId" id="tenantId" required value={formData.tenantId} onChange={handleChange} disabled={isLoading} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200">
+            <select name="tenantId" id="tenantId" required value={formData.tenantId} onChange={handleChange} disabled={isLoading} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200">
               <option value="">{isLoading ? 'Loading...' : 'Select a Tenant'}</option>
               {tenants?.map((t: any) => <option key={t._id} value={t._id}>{t.name}</option>)}
             </select>
@@ -98,11 +98,11 @@ const RecordPaymentModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Total Amount ($)</label>
-              <input type="number" name="amount" id="amount" required value={formData.lineItems.length > 0 ? formData.totalCalculatedAmount.toFixed(2) : formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" disabled={formData.lineItems.length > 0}/>
+              <input type="number" step="0.01" name="amount" id="amount" required value={formData.lineItems.length > 0 ? formData.totalCalculatedAmount.toFixed(2) : formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" disabled={formData.lineItems.length > 0}/>
             </div>
             <div>
               <label htmlFor="paymentDate" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Payment Date</label>
-              <input type="date" name="paymentDate" id="paymentDate" required value={formData.paymentDate} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
+              <input type="date" name="paymentDate" id="paymentDate" required value={formData.paymentDate} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ const RecordPaymentModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () 
             <button
               type="submit"
               disabled={paymentMutation.isLoading}
-              className="px-5 py-2 bg-brand-primary text-dark-text font-semibold rounded-lg hover:bg-opacity-90 disabled:opacity-50 transition-colors duration-200"
+              className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200"
             >
                 {paymentMutation.isLoading ? 'Saving...' : 'Save Payment'}
             </button>
