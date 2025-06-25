@@ -18,7 +18,7 @@ const cardVariants = {
 
 const DashboardPage = () => {
   return (
-    <motion.main 
+    <motion.main
       className="p-6 pt-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -85,59 +85,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-```
-
-### **File 4: `frontend/src/components/layout/DashboardLayout.tsx`**
-
-This file is now updated to act as the main "app window" for the dashboard, matching the desktop application style from your design.
-
-
-```typescript
-// frontend/src/components/layout/DashboardLayout.tsx
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
-import { AnimatePresence } from 'framer-motion';
-
-const DashboardLayout = () => {
-    const { user } = useAuthStore();
-
-    return (
-        <div className="p-4 sm:p-8 flex items-center justify-center w-full min-h-screen">
-            {/* Desktop App Window Container */}
-            <div className="app-window w-full max-w-7xl mx-auto bg-light-card rounded-3xl shadow-2xl border border-border-color overflow-hidden flex flex-col">
-                {/* App Header */}
-                <header className="flex-shrink-0 flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3.5 h-3.5 rounded-full bg-red-400"></div>
-                        <div className="w-3.5 h-3.5 rounded-full bg-yellow-400"></div>
-                        <div className="w-3.5 h-3.5 rounded-full bg-green-400"></div>
-                    </div>
-                    <div className="font-bold text-lg text-gray-700">
-                        <Link to="/dashboard">HNV Dashboard</Link>
-                    </div>
-                    <div className="flex items-center gap-4 text-gray-500">
-                        {/* You can add back search, settings, etc. here */}
-                        <span className="font-semibold text-sm cursor-pointer hover:text-gray-900">
-                            {user?.name}
-                        </span>
-                        <img 
-                            src={`https://placehold.co/32x32/CBD5E0/4A5568?text=${user?.name?.charAt(0)}`}
-                            alt="User Avatar"
-                            className="rounded-full cursor-pointer"
-                        />
-                    </div>
-                </header>
-
-                {/* Main Content Area */}
-                <div className="flex-1 overflow-y-auto">
-                     <AnimatePresence mode="wait">
-                        <Outlet />
-                    </AnimatePresence>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default DashboardLayout;
