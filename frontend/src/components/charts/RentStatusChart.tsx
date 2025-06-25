@@ -6,7 +6,7 @@ interface RentStatusData {
     value: number;
 }
 
-const COLORS = ['#22c55e', '#ef4444']; // Green for Paid, Red for Overdue
+const COLORS = ['#22c55e', '#ef4444']; // Green for Paid, Red for Overdue (Standard Tailwind colors, can be mapped to new semantic if desired, e.g., brand-accent-dark for green, red-500)
 
 const RentStatusChart: React.FC<{ data: RentStatusData[] }> = ({ data }) => {
     return (
@@ -18,7 +18,7 @@ const RentStatusChart: React.FC<{ data: RentStatusData[] }> = ({ data }) => {
                     cy="50%"
                     labelLine={false}
                     outerRadius={100}
-                    fill="#8884d8"
+                    fill="#8884d8" // This can be default, as Cell override it
                     dataKey="value"
                     nameKey="name"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -27,8 +27,8 @@ const RentStatusChart: React.FC<{ data: RentStatusData[] }> = ({ data }) => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px' }}/>
+                <Tooltip contentStyle={{ background: 'var(--light-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', color: 'var(--dark-text)' }}/> {/* Semantic colors */}
+                <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--dark-text)' }}/> {/* Semantic text color */}
             </PieChart>
         </ResponsiveContainer>
     );
