@@ -8,7 +8,7 @@ const HeroSection = () => {
 
   return (
     // Use the main light background as the base for the hero section
-    <section className="relative bg-light-bg dark:bg-dark-bg py-20 md:py-32 flex items-center justify-center text-center overflow-hidden">
+    <section className="relative bg-light-bg dark:bg-dark-bg py-20 md:py-32 flex items-center justify-center text-center overflow-hidden transition-colors duration-300">
       {/* Optional: A subtle background pattern or image can be used if desired */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <h1
@@ -22,7 +22,7 @@ const HeroSection = () => {
         <div className="mt-10">
             <Link
               to="/register"
-              className="inline-block bg-brand-primary text-white py-4 px-10 rounded-lg font-bold text-lg hover:bg-opacity-90 shadow-lg transition-all transform hover:scale-105"
+              className="inline-block bg-brand-primary text-white py-4 px-10 rounded-lg font-bold text-lg hover:bg-brand-secondary shadow-lg transition-all transform hover:scale-105"
             >
               {t('landing.hero_cta')}
             </Link>
