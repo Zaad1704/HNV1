@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { X } } from 'lucide-react';
 
 // Interfaces for component props and data shapes
 interface TenantOption { _id: string; name: string; unit: string; propertyId: { name: string }; }
@@ -102,10 +102,15 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({ isOpen, onClose, 
                             <option value="active">Active</option><option value="inactive">Inactive</option>
                         </select>
                     </div>
+                    
+                    <div>
+                        <label htmlFor="message" className="block text-sm font-medium">Custom Message (Optional)</label>
+                        <textarea name="message" id="message" rows={3} value={formData.message} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"></textarea>
+                    </div>
 
                     <div className="flex justify-end space-x-4 pt-4">
                         <button type="button" onClick={onClose} className="px-5 py-2 bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
-                        <button type="submit" disabled={mutation.isLoading} className="px-5 py-2 bg-brand-primary text-dark-text font-semibold rounded-lg hover:bg-opacity-90 disabled:opacity-50 transition-colors duration-200">
+                        <button type="submit" disabled={mutation.isLoading} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
                             {mutation.isLoading ? 'Saving...' : (isEditing ? 'Save Reminder' : 'Create Reminder')}
                         </button>
                     </div>
