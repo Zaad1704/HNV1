@@ -1,48 +1,100 @@
-import React from 'react';
+// frontend/src/pages/LoginPage.tsx
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import apiClient from '../api/client';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { Chrome } from 'lucide-react'; 
 
-// Import all the section components
-import HeroSection from '../components/landing/HeroSection';
-import AboutSection from '../components/landing/AboutSection';
-import ServicesSection from '../components/landing/ServicesSection';
-import LeadershipSection from '../components/landing/LeadershipSection';
-import PricingSection from '../components/landing/PricingSection';
-import ContactSection from '../components/landing/ContactSection';
-import InstallAppSection from '../components/landing/InstallAppSection';
+const LoginPage: React.FC = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { setToken, setUser } = useAuthStore();
+    const { data: settings } = useSiteSettings();
 
-// This is the main component that builds your landing page
-const LandingPage = () => {
-  return (
-    <div className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Main background color, added dark mode and transition */}
-      <HeroSection />
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            const response = await apiClient.post('/auth/login', { email, password });
+            if (response.data.token && response.data.user) {
+                setToken(response.data.token);
+                setUser(response.data.user);
+                navigate('/dashboard', { replace: true });
+            } else {
+                throw new Error("Login response was missing token or user data.");
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Login failed.');
+            setLoading(false);
+        }
+    };
 
-      {/* Each section has a distinct background color from your palette */}
-      <div id="about" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Added dark mode and transition */}
-        <AboutSection />
-      </div>
+    const handleGoogleLogin = () => {
+        window.location.href = `${apiClient.defaults.baseURL}/auth/google`;
+    };
 
-      {/* FIX: Re-added LeadershipSection to make it visible */}
-      <div id="leadership" className="py-20 md:py-28 bg-brand-subtle dark:bg-dark-card transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <LeadershipSection />
-      </div>
-
-      <div id="featuresPage" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        {/* You can create a FeaturesSection component here if needed */}
-        {/* For now, we are focusing on the main structure */}
-      </div>
-
-      <div id="pricingSection" className="py-20 md:py-28 bg-light-card dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <PricingSection />
-      </div>
-      
-      <div id="installApp" className="py-20 md:py-28 bg-brand-subtle dark:bg-dark-card transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <InstallAppSection />
-      </div>
-
-      <div id="contact" className="py-20 md:py-28 bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Mapped to new palette and added transition */}
-        <ContactSection />
-      </div>
-    </div>
-  );
+    return (
+        <div className="min-h-screen bg-light-bg flex flex-col p-4 items-center justify-center">
+            <div className="w-full max-w-4xl bg-light-card grid md:grid-cols-2 shadow-xl rounded-2xl overflow-hidden border border-border-color dark:bg-dark-card dark:border-border-color-dark">
+                <div className="hidden md:flex flex-col justify-center p-12 order-1 md:order-2" style={{ background: 'linear-gradient(165deg, var(--brand-primary), var(--brand-secondary))'}}> {/* Updated gradient to new brand colors */}
+                    <h2 className="text-dark-text dark:text-dark-text-dark text-3xl font-bold mb-4">A smarter way to manage properties.</h2>
+                    <p className="text-light-text dark:text-light-text-dark mb-6">Our platform provides the tools, security, and support you need to grow your business.</p>
+                    <div className="mt-4 border-t border-border-color dark:border-border-color-dark pt-6">
+                        <p className="text-light-text dark:text-light-text-dark text-sm">Don't have an account?</p>
+                        <Link to="/register" className="font-bold text-brand-primary hover:underline transition-colors">Sign Up Here</Link>
+                    </div>
+                </div>
+                
+                <div className="p-8 sm:p-12 order-2 md:order-1 flex flex-col justify-center bg-light-card dark:bg-dark-card">
+                    <div className="mb-8">
+                        <Link to="/" className="inline-flex items-center gap-3">
+                            <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="Company Logo" className="h-10" width="40" height="40" />
+                            <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.logos?.companyName || 'HNV Solutions'}</span>
+                        </Link>
+                    </div>
+                    <h1 className="text-3xl font-bold mb-2 text-dark-text dark:text-dark-text-dark">Welcome Back!</h1>
+                    <p className="text-light-text dark:text-light-text-dark mb-8">Log in to your account to continue.</p>
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        {error && <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-lg text-center text-sm"><span>{error}</span></div>}
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Email Address</label>
+                            <input type="email" name="email" id="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text transition-all dark:bg-dark-card dark:border-border-color-dark dark:text-dark-text-dark" />
+                        </div>
+                        <div>
+                            <div className="flex justify-between items-baseline">
+                                <label htmlFor="password"className="block text-sm font-medium text-light-text dark:text-light-text-dark">Password</label>
+                                <Link to="/forgot-password" className="text-sm text-brand-primary hover:underline transition-colors">Forgot Password?</Link>
+                            </div>
+                            <input type="password" name="password" id="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full px-4 py-3 bg-light-card border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text transition-all dark:bg-dark-card dark:border-border-color-dark dark:text-dark-text-dark" />
+                        </div>
+                        <div>
+                            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md text-white bg-brand-primary hover:bg-brand-secondary transition-all duration-200 disabled:opacity-50">
+                                {loading ? 'Signing In...' : 'Sign In'}
+                            </button>
+                        </div>
+                    </form>
+                    <div className="relative flex items-center justify-center py-4">
+                        <div className="flex-grow border-t border-border-color dark:border-border-color-dark"></div>
+                        <span className="flex-shrink mx-4 text-light-text dark:text-light-text-dark text-sm">OR</span>
+                        <div className="flex-grow border-t border-border-color dark:border-border-color-dark"></div>
+                    </div>
+                    <button onClick={handleGoogleLogin} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-card hover:bg-brand-subtle/50 transition-all duration-200 dark:bg-dark-card dark:border-border-color-dark dark:text-dark-text-dark dark:hover:bg-dark-bg/50">
+                        <Chrome size={20} /> Sign In with Google
+                    </button>
+                    <div className="mt-8 text-center text-xs text-light-text dark:text-light-text-dark">
+                        By signing in, you agree to our 
+                        <Link to="/terms" target="_blank" className="underline hover:text-brand-primary transition-colors"> Terms</Link> and 
+                        <Link to="/privacy" target="_blank" className="underline hover:text-brand-primary transition-colors"> Privacy Policy</Link>.
+                    </div>
+                </div>
+              </div>
+        </div>
+    );
 };
 
-export default LandingPage;
+export default LoginPage;
