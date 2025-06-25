@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { Globe, Sun, Moon, Download } from 'lucide-react';
+import { Globe, Sun, Moon, Download, ArrowRight } from 'lucide-react'; // Added ArrowRight import
 import { useLang } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Link as ScrollLink } from 'react-scroll';
