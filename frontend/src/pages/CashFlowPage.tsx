@@ -53,7 +53,7 @@ const CashFlowPage: React.FC = () => {
     };
 
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading cash flow records...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch cash flow records.</div>;
+    if (isError) return <div className="text-red-400 text-center p-8 dark:text-red-400">Failed to fetch cash flow records.</div>;
 
     return (
         <div className="text-dark-text dark:text-dark-text-dark">
@@ -110,7 +110,7 @@ const CashFlowPage: React.FC = () => {
                                 {records.map((record) => (
                                     <tr key={record._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
                                         <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{new Date(record.transactionDate).toLocaleDateString()}</td>
-                                        <td className="p-4 flex items-center gap-2 text-light-text dark:text-light-text-dark">
+                                        <td className="p-4 flex items-center gap-2 text-light-text dark:text-light-text-dark capitalize">
                                             {getTypeIcon(record.type)} <span className="capitalize">{record.type.replace(/_/g, ' ')}</span>
                                         </td>
                                         <td className="p-4 text-light-text dark:text-light-text-dark">{record.fromUser.name}</td>
