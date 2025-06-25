@@ -1,7 +1,9 @@
+// frontend/src/pages/ApprovalRequestsPage.tsx
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { Check, X, FileWarning } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface IEditRequest {
     _id: string;
@@ -39,8 +41,21 @@ const ApprovalRequestsPage: React.FC = () => {
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading approval requests...</div>;
     if (isError) return <div className="text-center p-8 text-red-400 dark:text-red-400">Failed to load requests.</div>;
 
+    const pageVariants = {
+        initial: { opacity: 0, y: 20 },
+        in: { opacity: 1, y: 0 },
+        out: { opacity: 0, y: -20 },
+    };
+
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
+        <motion.div 
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={{ duration: 0.4 }}
+            className="text-dark-text dark:text-dark-text-dark"
+        >
             <h1 className="text-3xl font-bold mb-8">Pending Approval Requests</h1>
 
             {requests.length === 0 ? (
@@ -78,7 +93,7 @@ const ApprovalRequestsPage: React.FC = () => {
                     ))}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 
