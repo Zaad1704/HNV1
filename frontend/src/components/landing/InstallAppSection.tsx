@@ -26,12 +26,12 @@ const InstallAppSection = () => {
     };
 
     return (
-        <div className="text-center bg-light-bg py-20 rounded-xl"> {/* Added bg-light-bg and padding for visibility */}
+        <div className="text-center bg-light-bg py-20 rounded-xl dark:bg-dark-bg transition-colors duration-300">
             <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.installAppSection?.title}</h2>
             <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.installAppSection?.subtitle}</p>
             <button
                 onClick={handleInstallClick}
-                className="mt-10 inline-flex items-center gap-3 bg-brand-primary text-dark-text font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-transform transform hover:scale-105"
+                className="mt-10 inline-flex items-center gap-3 bg-brand-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-transform transform hover:scale-105 duration-200"
             >
                 <DownloadCloud />
                 Install App on Your Device
