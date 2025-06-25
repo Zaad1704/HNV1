@@ -1,3 +1,4 @@
+// frontend/src/pages/RegisterPage.tsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import apiClient from 'api/client';
@@ -41,8 +42,8 @@ const RegisterPage: React.FC = () => {
     const selectedRoleClasses = "border-brand-primary ring-2 ring-brand-primary/50 shadow-md bg-brand-primary/10";
 
     return (
-        <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="min-h-screen bg-light-bg flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-light-card rounded-2xl shadow-xl border border-border-color p-8">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-dark-text">Create Your Account</h1>
                     <p className="text-light-text">Start your free trial today.</p>
@@ -72,7 +73,7 @@ const RegisterPage: React.FC = () => {
                         <input type="password" name="password" required onChange={handleChange} className="w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary" />
                     </div>
 
-                    <button type="submit" disabled={loading || !formData.role} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-primary hover:bg-brand-primary/90 transition-all duration-200 disabled:opacity-50">
+                    <button type="submit" disabled={loading || !formData.role} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-primary hover:bg-opacity-90 transition-all duration-200 disabled:opacity-50">
                         {loading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </form>
