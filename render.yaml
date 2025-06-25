@@ -19,7 +19,6 @@ services:
     name: hnv-saas-frontend
     repo: https://github.com/Zaad1704/HNV1 # Using your repo name
     branch: main
-    rootDir: frontend
     buildCommand: npm run build
     staticPublishPath: dist
     envVars:
