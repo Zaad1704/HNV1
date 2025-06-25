@@ -1,4 +1,4 @@
-\// frontend/src/components/admin/PlanFormModal.tsx
+// frontend/src/components/admin/PlanFormModal.tsx
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 // Ensure you have an IPlan interface or use 'any' for now
@@ -47,7 +47,7 @@ const PlanFormModal = ({ isOpen, onClose, onSave, plan }) => {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else if (name.startsWith('limits.')) {
       const limitKey = name.split('.')[1];
-      setFormData(prev => ({ ...prev, limits: { ...prev.limits, [limitKey]: Number(value) } }));
+      setFormData(prev => ({ ...prev.limits, [limitKey]: Number(value) }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
