@@ -80,13 +80,13 @@ const AuditLogPage = () => {
                         <p className="text-xs text-light-text dark:text-light-text-dark">{log.user?.email || 'Unknown'}</p>
                     </td>
                     <td className="p-4 align-top">
-                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-brand-primary/20 text-brand-primary"> {/* Changed color to brand-primary */}
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-brand-primary/20 text-brand-primary">
                             {log.action}
                         </span>
                     </td>
                     <td className="p-4 align-top text-xs text-light-text font-mono dark:text-light-text-dark">
                       {log.details && Object.entries(log.details).map(([key, value]) => (
-                        <div key={key}><strong className="text-dark-text dark:text-dark-text-dark">{key}:</strong> {JSON.stringify(value)}</div> {/* Adjusted text color for strong */}
+                        <div key={key}><strong className="text-dark-text dark:text-dark-text-dark">{key}:</strong> {JSON.stringify(value)}</div>
                       ))}
                     </td>
                     <td className="p-4 align-top text-sm text-light-text dark:text-light-text-dark">{formatDate(log.timestamp)}</td>
