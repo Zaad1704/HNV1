@@ -1,3 +1,4 @@
+// frontend/src/components/layout/DashboardLayout.tsx
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -8,6 +9,7 @@ import { Home, Building, Users, CreditCard, Shield, Settings, LogOut, Wrench, Fi
 import RoleGuard from '../RoleGuard';
 import BottomNavBar from './BottomNavBar';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
+import { AnimatePresence } from 'framer-motion';
 
 const DashboardLayout = () => {
     const { user, logout } = useAuthStore();
@@ -102,7 +104,9 @@ const DashboardLayout = () => {
                 </header>
                 
                 <div className="flex-1 p-4 sm:p-8 overflow-y-auto pb-24 md:pb-8">
-                    <Outlet />
+                    <AnimatePresence mode="wait">
+                        <Outlet />
+                    </AnimatePresence>
                 </div>
             </main>
 
