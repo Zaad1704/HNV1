@@ -1,143 +1,143 @@
 // frontend/src/pages/DashboardPage.tsx
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '../api/client';
-import { Link } from 'react-router-dom';
-import FinancialChart from '../components/charts/FinancialChart';
-import RentStatusChart from '../components/charts/RentStatusChart';
-import ActionItemWidget from '../components/dashboard/ActionItemWidget';
-import { DollarSign, Building2, Users, UserCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useLang } from '../contexts/LanguageContext';
-import { IExpiringLease } from '../hooks/useExpiringLeases';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
-const fetchOverviewStats = async () => {
-    const { data } = await apiClient.get('/dashboard/overview-stats');
-    return data.data;
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1,
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  }),
 };
-const fetchLateTenants = async () => {
-    const { data } = await apiClient.get('/dashboard/late-tenants');
-    return data.data;
-};
-const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => {
-    const { data } = await apiClient.get('/dashboard/expiring-leases');
-    return data.data;
-};
-const fetchFinancialSummary = async () => {
-    const { data } = await apiClient.get('/dashboard/financial-summary');
-    return data.data;
-};
-const fetchRentStatus = async () => {
-    const { data } = await apiClient.get('/dashboard/rent-status');
-    return data.data;
-};
-const sendRentReminder = async (tenantId: string) => {
-    const { data } = await apiClient.post('/communication/send-rent-reminder', { tenantId });
-    return data;
-};
-
-const StatCard = ({ title, value, icon, to, delay = 0 }: { title: string, value: number | string, icon: React.ReactNode, to: string, delay?: number }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-    >
-        <Link to={to} className="bg-light-card dark:bg-dark-card p-6 rounded-3xl border border-border-color dark:border-border-color-dark shadow-sm flex items-center justify-between hover:shadow-xl hover:-translate-y-2 transform transition-all group duration-300">
-            <div>
-                <p className="text-sm font-medium text-light-text group-hover:text-dark-text dark:group-hover:text-dark-text-dark transition-colors duration-200">{title}</p>
-                <p className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mt-1">{value}</p>
-            </div>
-            <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-accent-light transition-colors duration-200">
-                {icon}
-            </div>
-        </Link>
-    </motion.div>
-);
 
 const DashboardPage = () => {
-    const { t } = useTranslation();
-    const { currencyName } = useLang();
-    const queryClient = useQueryClient();
-    const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
-
-    const { data: stats, isLoading: isLoadingStats } = useQuery({ queryKey: ['overviewStats'], queryFn: fetchOverviewStats });
-    const { data: lateTenants } = useQuery({ queryKey: ['lateTenants'], queryFn: fetchLateTenants });
-    const { data: expiringLeases } = useQuery({ queryKey: ['expiringLeases'], queryFn: fetchExpiringLeases });
-    const { data: financialData } = useQuery({ queryKey: ['financialSummary'], queryFn: fetchFinancialSummary });
-    const { data: rentStatusData } = useQuery({ queryKey: ['rentStatus'], queryFn: fetchRentStatus });
-
-    const reminderMutation = useMutation({
-        mutationFn: sendRentReminder,
-        onSuccess: (data, tenantId) => { alert(data.message || `Reminder sent to tenant ${tenantId}!`); },
-        onError: (error: any) => { alert(`Failed to send reminder: ${error.response?.data?.message || error.message}`); },
-        onSettled: () => { setRemindingTenantId(null); }
-    });
-
-    const handleSendReminder = (tenantId: string) => {
-        setRemindingTenantId(tenantId);
-        reminderMutation.mutate(tenantId);
-    };
-
-    if (isLoadingStats) {
-        return <div className="text-dark-text dark:text-dark-text-dark text-center p-8">Loading Dashboard Data...</div>;
-    }
-
-    const lateTenantItems = lateTenants?.map((t: any) => ({ id: t._id, primaryText: `${t.name} (${t.propertyId?.name || 'N/A'})`, secondaryText: `Unit: ${t.unit}` })) || [];
-    const expiringLeaseItems = expiringLeases?.map((l: any) => ({ id: l._id, primaryText: `${l.name} (${l.propertyId?.name || 'N/A'})`, secondaryText: `Expires: ${new Date(l.leaseEndDate).toLocaleDateString()}` })) || [];
-    
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
+  return (
+    <motion.main 
+      className="p-6 pt-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div 
+          className="card bg-primary-card-gradient rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between"
+          variants={cardVariants}
+          custom={0}
+          initial="hidden"
+          animate="visible"
         >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard delay={0.1} title={t('dashboard.monthly_revenue')} value={`${currencyName}${stats?.monthlyRevenue?.toLocaleString() || 0}`} icon={<DollarSign className="w-8 h-8" />} to="/dashboard/cashflow" />
-                <StatCard delay={0.2} title={t('dashboard.total_properties')} value={stats?.totalProperties || 0} icon={<Building2 className="w-8 h-8" />} to="/dashboard/properties" />
-                <StatCard delay={0.3} title={t('dashboard.active_tenants')} value={stats?.activeTenants || 0} icon={<Users className="w-8 h-8" />} to="/dashboard/tenants" />
-                <StatCard delay={0.4} title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck className="w-8 h-8" />} to="/dashboard/tenants" />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-2 bg-light-card dark:bg-dark-card p-6 rounded-3xl border border-border-color dark:border-border-color-dark shadow-sm">
-                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.financials_chart_title')}</h2>
-                    <FinancialChart data={financialData || []} />
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="lg:col-span-1 bg-light-card dark:bg-dark-card p-6 rounded-3xl border border-border-color dark:border-border-color-dark shadow-sm">
-                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.rent_status_chart_title')}</h2>
-                    <RentStatusChart data={rentStatusData || []} />
-                </motion.div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-light-card dark:bg-dark-card p-6 rounded-3xl border border-border-color dark:border-border-color-dark shadow-sm">
-                    <ActionItemWidget
-                        title={t('dashboard.overdue_rent_reminders')}
-                        items={lateTenantItems}
-                        actionText={t('dashboard.send_reminder')}
-                        emptyText={t('dashboard.no_overdue_rent')}
-                        linkTo="/dashboard/tenants?filter=late"
-                        onActionClick={handleSendReminder}
-                        isActionLoading={reminderMutation.isLoading}
-                        loadingItemId={remindingTenantId}
-                    />
-                </motion.div>
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="bg-light-card dark:bg-dark-card p-6 rounded-3xl border border-border-color dark:border-border-color-dark shadow-sm">
-                    <ActionItemWidget
-                        title={t('dashboard.upcoming_lease_expirations')}
-                        items={expiringLeaseItems}
-                        actionText={t('dashboard.renew_lease')}
-                        emptyText={t('dashboard.no_expiring_leases')}
-                        linkTo="/dashboard/tenants?filter=expiring"
-                        onActionClick={(itemId) => alert(`Renew Lease for ${itemId}`)}
-                    />
-                </motion.div>
-            </div>
+          <div>
+            <div className="w-12 h-12 bg-white/25 rounded-full mb-4"></div>
+            <h1 className="text-5xl font-bold text-white leading-tight">Dashboard</h1>
+            <p className="text-white/80 mt-4 max-w-sm">Welcome to your property management hub. Access all your tools and insights from here.</p>
+          </div>
+          <Link to="/dashboard/properties" className="btn-light font-bold py-3 px-6 rounded-lg mt-8 self-start text-sm">
+            View Properties
+          </Link>
         </motion.div>
-    );
+
+        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={1} initial="hidden" animate="visible">
+          <div className="w-full h-24 bg-white/50 rounded-xl mb-4 flex items-center justify-center">
+            {/* Chart or Stat Placeholder */}
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">Key Metrics</h2>
+          <p className="text-gray-500 text-sm mt-2 flex-grow">A quick overview of your portfolio's performance.</p>
+        </motion.div>
+
+        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2} initial="hidden" animate="visible">
+          <h2 className="text-2xl font-bold text-gray-800">Recent Activity</h2>
+          <p className="text-gray-500 text-sm mt-2 flex-grow">See the latest tenant payments and maintenance requests.</p>
+          <Link to="/dashboard/audit-log" className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">View Log</Link>
+        </motion.div>
+        
+        <motion.div className="card bg-secondary-card-gradient rounded-3xl p-6" style={{ transform: 'rotate(-4deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
+          <div className="w-10 h-10 bg-white/25 rounded-full mb-3"></div>
+          <h2 className="text-xl font-bold text-white">Quick Links</h2>
+          <p className="text-white/80 text-sm mt-1">Jump to your most used pages.</p>
+        </motion.div>
+
+        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center" variants={cardVariants} custom={4} initial="hidden" animate="visible">
+          <h2 className="text-3xl font-extrabold gradient-text">
+              HNV Platform
+          </h2>
+        </motion.div>
+        
+        <motion.div className="card neutral-glass rounded-3xl p-6 sm:col-span-2" variants={cardVariants} custom={5} initial="hidden" animate="visible">
+          <h3 className="text-gray-500 font-semibold text-sm">Announcements</h3>
+          <h2 className="text-2xl font-bold mt-1 text-gray-800">Platform Updates</h2>
+          <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
+              <img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Update image"/>
+              <div className="flex-1">
+                  <p className="text-gray-600 text-sm">We've just launched new features to help you streamline your workflow. Check out the latest updates and let us know what you think!</p>
+                  <a href="#" className="text-blue-600 font-semibold mt-2 inline-block hover:underline text-sm">Read more &rarr;</a>
+              </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.main>
+  );
 };
 
 export default DashboardPage;
+```
+
+### **File 4: `frontend/src/components/layout/DashboardLayout.tsx`**
+
+This file is now updated to act as the main "app window" for the dashboard, matching the desktop application style from your design.
+
+
+```typescript
+// frontend/src/components/layout/DashboardLayout.tsx
+import React from 'react';
+import { Outlet, Link } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { AnimatePresence } from 'framer-motion';
+
+const DashboardLayout = () => {
+    const { user } = useAuthStore();
+
+    return (
+        <div className="p-4 sm:p-8 flex items-center justify-center w-full min-h-screen">
+            {/* Desktop App Window Container */}
+            <div className="app-window w-full max-w-7xl mx-auto bg-light-card rounded-3xl shadow-2xl border border-border-color overflow-hidden flex flex-col">
+                {/* App Header */}
+                <header className="flex-shrink-0 flex justify-between items-center p-4 sm:p-6 border-b border-gray-200">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-3.5 h-3.5 rounded-full bg-red-400"></div>
+                        <div className="w-3.5 h-3.5 rounded-full bg-yellow-400"></div>
+                        <div className="w-3.5 h-3.5 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="font-bold text-lg text-gray-700">
+                        <Link to="/dashboard">HNV Dashboard</Link>
+                    </div>
+                    <div className="flex items-center gap-4 text-gray-500">
+                        {/* You can add back search, settings, etc. here */}
+                        <span className="font-semibold text-sm cursor-pointer hover:text-gray-900">
+                            {user?.name}
+                        </span>
+                        <img 
+                            src={`https://placehold.co/32x32/CBD5E0/4A5568?text=${user?.name?.charAt(0)}`}
+                            alt="User Avatar"
+                            className="rounded-full cursor-pointer"
+                        />
+                    </div>
+                </header>
+
+                {/* Main Content Area */}
+                <div className="flex-1 overflow-y-auto">
+                     <AnimatePresence mode="wait">
+                        <Outlet />
+                    </AnimatePresence>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DashboardLayout;
