@@ -27,9 +27,9 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
         <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark pb-16 transition-colors duration-300"> {/* Added dark mode and transition */}
             {/* Hero Section */}
             <section id="hero" className="p-4 py-8 text-center" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-dark-text dark:text-dark-text-dark"> {/* Adjusted bg and text colors */}
+                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-white"> {/* Adjusted bg and text colors */}
                     <h2 className="text-2xl font-extrabold">{t('hero.title')}</h2>
-                    <p className="mt-2 text-light-text dark:text-light-text-dark">{t('hero.subtitle')}</p>
+                    <p className="mt-2 text-white/90">{t('hero.subtitle')}</p>
                 </div>
             </section>
 
