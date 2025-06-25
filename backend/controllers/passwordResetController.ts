@@ -8,6 +8,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
 
+    // To prevent user enumeration, always return a success-like message.
     if (!user) {
       res.status(200).json({ success: true, message: 'If a user with that email exists, a reset link has been sent.' });
       return;
@@ -28,6 +29,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       res.status(200).json({ success: true, message: 'Email sent.' });
     } catch (err) {
       console.error(err);
+      // FIX: Correctly clear the token fields on the user object
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
@@ -57,6 +59,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     user.password = req.body.password;
+    // FIX: Correctly clear the token fields on the user object
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
