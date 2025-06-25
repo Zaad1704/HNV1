@@ -42,7 +42,7 @@ const fetchTenantStatement = async (tenantId: string, startMonth: string, endMon
 const TenantStatementPage: React.FC = () => {
     const { tenantId } = useParams<{ tenantId: string }>(); // Get tenantId from URL
     const today = new Date();
-    const defaultEndMonth = today.toISOString().substring(0, 7); // YYYY-MM
+    const defaultEndMonth = today.toISOString().substring(0, 7); //YYYY-MM
     const defaultStartMonth = new Date(today.getFullYear(), today.getMonth() - 11, 1).toISOString().substring(0, 7); // 12 months ago
 
     const [startMonth, setStartMonth] = useState(defaultStartMonth);
@@ -108,10 +108,10 @@ const TenantStatementPage: React.FC = () => {
                                             <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{entry.month}</td>
                                             <td className="p-4 text-light-text dark:text-light-text-dark">${entry.expectedDue.toFixed(2)}</td>
                                             <td className="p-4 text-light-text dark:text-light-text-dark">${entry.amountPaid.toFixed(2)}</td>
-                                            <td className={`p-4 font-semibold ${entry.monthlyBalance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                            <td className={`p-4 font-semibold ${entry.monthlyBalance < 0 ? 'text-brand-orange' : 'text-green-600'}`}> {/* Adjusted text-red-600 to brand-orange */}
                                                 ${entry.monthlyBalance.toFixed(2)}
                                             </td>
-                                            <td className={`p-4 font-bold ${entry.cumulativeBalance < 0 ? 'text-red-700' : 'text-green-700'}`}>
+                                            <td className={`p-4 font-bold ${entry.cumulativeBalance < 0 ? 'text-brand-orange' : 'text-green-700'}`}> {/* Adjusted text-red-700 to brand-orange */}
                                                 ${entry.cumulativeBalance.toFixed(2)}
                                             </td>
                                             <td className="p-4">
