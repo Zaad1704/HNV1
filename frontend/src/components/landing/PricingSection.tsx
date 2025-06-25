@@ -22,10 +22,10 @@ const PricingSection = () => {
 
   return (
     <section className="container mx-auto px-6 text-center">
-      <h2 className="text-4xl font-bold text-dark-text">
+      <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">
         {t('pricing.title')}
       </h2>
-      <p className="mt-4 text-light-text max-w-2xl mx-auto">
+      <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">
         {t('pricing.subtitle')}
       </p>
       <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -33,7 +33,7 @@ const PricingSection = () => {
           <PricingPlanCard key={plan._id} plan={plan} />
         ))}
       </div>
-      <p className="text-light-text text-xs mt-8">
+      <p className="text-light-text dark:text-light-text-dark text-xs mt-8">
         {t('pricing.disclaimer')}
       </p>
     </section>
