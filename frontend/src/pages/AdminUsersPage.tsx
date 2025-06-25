@@ -25,7 +25,7 @@ const AdminUsersPage: React.FC = () => {
   }, [users, searchTerm]);
 
   if (isLoading) return <div className="p-4 text-center text-dark-text dark:text-dark-text-dark">Loading users...</div>;
-  if (isError) return <div className="p-4 text-center text-red-400">Failed to fetch users.</div>;
+  if (isError) return <div className="p-4 text-center text-red-400 dark:text-red-400">Failed to fetch users.</div>;
 
   return (
     <div className="text-dark-text dark:text-dark-text-dark">
