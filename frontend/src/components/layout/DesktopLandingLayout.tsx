@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ISiteSettings } from '../../types/siteSettings'; // Using local types
 import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
-import PricingSection from '../landing/PricingSection'; 
+import PricingSection from '../landing/pricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
 import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react';
