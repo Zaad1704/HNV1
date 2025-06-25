@@ -22,7 +22,7 @@ const HeroSection = () => {
         <div className="mt-10">
             <Link
               to="/register"
-              className="inline-block bg-brand-primary text-white py-4 px-10 rounded-lg font-bold text-lg hover:bg-brand-secondary shadow-lg transition-all transform hover:scale-105"
+              className="inline-block bg-brand-primary text-white py-4 px-10 rounded-lg font-bold text-lg hover:bg-opacity-90 shadow-lg transition-all transform hover:scale-105"
             >
               {t('landing.hero_cta')}
             </Link>
