@@ -43,7 +43,7 @@ const PaymentSummaryPage = () => {
             if (response.data.redirectUrl) {
                 window.location.href = response.data.redirectUrl;
             }
-        } catch (err) {
+        } catch (err: any) {
             setError('Could not initiate payment session. Please try again later.');
             setLoading(false);
         }
