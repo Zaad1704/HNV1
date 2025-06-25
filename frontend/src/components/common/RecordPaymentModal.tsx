@@ -78,18 +78,18 @@ const RecordPaymentModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-      <div className="bg-light-card rounded-2xl shadow-2xl w-full max-w-lg border border-border-color">
-        <div className="flex justify-between items-center p-6 border-b border-border-color">
-          <h2 className="text-xl font-bold text-dark-text">Record Manual Payment</h2>
-          <button onClick={onClose} className="text-light-text hover:text-dark-text text-2xl">&times;</button>
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4 transition-opacity duration-300">
+      <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+        <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
+          <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">Record Manual Payment</h2>
+          <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark text-2xl transition-colors">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
-          {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg">{error}</div>}
+          {error && <div className="bg-red-500/20 text-red-400 p-3 rounded-lg transition-all duration-200">{error}</div>}
           
           <div>
-            <label htmlFor="tenantId" className="block text-sm font-medium text-light-text">Tenant</label>
-            <select name="tenantId" id="tenantId" required value={formData.tenantId} onChange={handleChange} disabled={isLoading} className="mt-1 block w-full px-3 py-2 bg-dark-bg border border-border-color rounded-md text-dark-text">
+            <label htmlFor="tenantId" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Tenant</label>
+            <select name="tenantId" id="tenantId" required value={formData.tenantId} onChange={handleChange} disabled={isLoading} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200">
               <option value="">{isLoading ? 'Loading...' : 'Select a Tenant'}</option>
               {tenants?.map((t: any) => <option key={t._id} value={t._id}>{t.name}</option>)}
             </select>
@@ -97,21 +97,21 @@ const RecordPaymentModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () 
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-light-text">Total Amount ($)</label>
-              <input type="number" name="amount" id="amount" required value={formData.lineItems.length > 0 ? formData.totalCalculatedAmount.toFixed(2) : formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-dark-bg border border-border-color rounded-md text-dark-text" disabled={formData.lineItems.length > 0}/>
+              <label htmlFor="amount" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Total Amount ($)</label>
+              <input type="number" name="amount" id="amount" required value={formData.lineItems.length > 0 ? formData.totalCalculatedAmount.toFixed(2) : formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" disabled={formData.lineItems.length > 0}/>
             </div>
             <div>
-              <label htmlFor="paymentDate" className="block text-sm font-medium text-light-text">Payment Date</label>
-              <input type="date" name="paymentDate" id="paymentDate" required value={formData.paymentDate} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-dark-bg border border-border-color rounded-md text-dark-text"/>
+              <label htmlFor="paymentDate" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Payment Date</label>
+              <input type="date" name="paymentDate" id="paymentDate" required value={formData.paymentDate} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
             </div>
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">
-            <button type="button" onClick={onClose} className="px-5 py-2 bg-dark-bg text-dark-text font-semibold rounded-lg hover:bg-border-color">Cancel</button>
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
             <button
               type="submit"
               disabled={paymentMutation.isLoading}
-              className="px-5 py-2 bg-brand-primary text-brand-dark font-semibold rounded-lg hover:bg-opacity-90 disabled:bg-slate-600"
+              className="px-5 py-2 bg-brand-primary text-dark-text font-semibold rounded-lg hover:bg-opacity-90 disabled:opacity-50 transition-colors duration-200"
             >
                 {paymentMutation.isLoading ? 'Saving...' : 'Save Payment'}
             </button>
