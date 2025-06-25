@@ -30,8 +30,8 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
   };
 
   return (
-    <div className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
-      <h3 className="text-2xl font-bold text-brand-primary">{plan.name}</h3>
+    <div className="bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-2xl p-8 text-left flex flex-col shadow-lg transition-all duration-200">
+      <h3 className="text-2xl font-bold text-brand-primary dark:text-brand-secondary">{plan.name}</h3>
       <p className="mt-4 text-4xl font-extrabold text-dark-text dark:text-dark-text-dark">
         {getPrice(plan.price)}
         {plan.price > 0 && (
@@ -45,7 +45,7 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
       <ul className="space-y-3 mt-8 flex-grow">
         {plan.features.map((feature: string, index: number) => (
           <li key={index} className="flex items-center text-dark-text dark:text-light-text-dark">
-            <CheckCircle className="w-5 h-5 text-brand-secondary mr-3" /> {/* Changed to brand-secondary for consistency */}
+            <CheckCircle className="w-5 h-5 text-brand-primary dark:text-brand-secondary mr-3" />
             <span>{feature}</span>
           </li>
         ))}
@@ -53,7 +53,7 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
       <div className="mt-8">
         <Link
           to={`/register?plan=${plan._id}`}
-          className="block w-full text-center bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-brand-secondary transition-opacity duration-200"
+          className="block w-full text-center bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-opacity duration-200"
         >
           {t('pricing.choose_plan')}
         </Link>
