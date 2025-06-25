@@ -6,7 +6,7 @@ interface RentStatusData {
     value: number;
 }
 
-const COLORS = ['#22c55e', '#ef4444']; // Green for Paid, Red for Overdue (Standard Tailwind colors, can be mapped to new semantic if desired, e.g., brand-accent-dark for green, red-500)
+const COLORS = ['var(--green-500)', 'var(--brand-orange)']; // Green for Paid, Orange for Overdue (Using CSS variables)
 
 const RentStatusChart: React.FC<{ data: RentStatusData[] }> = ({ data }) => {
     return (
