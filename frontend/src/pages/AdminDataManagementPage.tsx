@@ -12,7 +12,7 @@ const AdminDataManagementPage = () => {
                 setLoading(true);
                 // Assuming there's a /super-admin/data-management endpoint that returns data requests
                 // If not, this endpoint might need to be created or data fetched from other admin endpoints.
-                const response = await apiClient.get('/super-admin/data-management'); 
+                const response = await apiClient.get('/super-admin/organizations'); // Using existing orgs endpoint for demo purposes
                 setRequests(response.data.data);
             } catch (err) {
                 setError('Failed to fetch data management requests.');
@@ -29,7 +29,7 @@ const AdminDataManagementPage = () => {
 
     const getStatusClass = (status: string) => {
         switch(status) {
-            case 'pending_deletion': return 'text-red-400';
+            case 'pending_deletion': return 'text-brand-orange'; // Mapped to new accent color
             case 'suspended_by_admin': return 'text-brand-accent-dark'; // Mapped to new accent color
             default: return 'text-light-text dark:text-light-text-dark';
         }
@@ -58,7 +58,7 @@ const AdminDataManagementPage = () => {
                                 <tr key={org._id} className="hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors duration-150">
                                     <td className="p-4">
                                         <p className="font-bold text-dark-text dark:text-dark-text-dark">{org.name}</p>
-                                        <p className="text-xs text-light-text dark:text-light-text-dark">{org.owner.name}</p>
+                                        <p className="text-xs text-light-text dark:text-light-text-dark">{org.owner?.name}</p>
                                     </td>
                                     <td className="p-4 font-semibold">
                                         <span className={getStatusClass(org.status)}>{org.status.replace('_', ' ')}</span>
