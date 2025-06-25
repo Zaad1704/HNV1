@@ -19,26 +19,26 @@ const PricingPage = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen bg-brand-dark text-dark-text p-8">
+        <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark p-8 transition-colors duration-300">
             <div className="text-center max-w-4xl mx-auto">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">Choose Your Plan</h1>
-                <p className="text-lg text-light-text mb-12">
+                <p className="text-lg text-light-text dark:text-light-text-dark mb-12">
                     Select the plan that best fits your needs to continue.
                 </p>
 
                 {isLoading && <p>Loading plans...</p>}
-                {isError && <p className="text-red-400">Could not load pricing plans. Please try again later.</p>}
+                {isError && <p className="text-red-400 dark:text-red-400">Could not load pricing plans. Please try again later.</p>}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {plans.map((plan: any) => (
-                        <div key={plan._id} onClick={() => navigate(`/payment-summary/${plan._id}`)} className="cursor-pointer">
+                        <div key={plan._id} onClick={() => navigate(`/payment-summary/${plan._id}`)} className="cursor-pointer transition-transform duration-200 hover:scale-[1.02]">
                             <PricingPlanCard plan={plan} />
                         </div>
                     ))}
                 </div>
 
                  <div className="mt-12">
-                    <Link to="/dashboard" className="text-brand-accent-light hover:underline">
+                    <Link to="/dashboard" className="text-brand-primary dark:text-brand-secondary hover:underline transition-colors">
                         &larr; Back to Dashboard
                     </Link>
                 </div>
