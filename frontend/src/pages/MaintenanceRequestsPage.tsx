@@ -44,7 +44,7 @@ const MaintenanceRequestsPage = () => {
     };
 
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading requests...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8">Failed to fetch maintenance requests.</div>;
+    if (isError) return <div className="text-red-400 text-center p-8 dark:text-red-400">Failed to fetch maintenance requests.</div>;
 
     const DesktopView = () => (
         <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
