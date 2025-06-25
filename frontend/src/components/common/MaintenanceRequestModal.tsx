@@ -1,9 +1,11 @@
+// frontend/src/components/common/MaintenanceRequestModal.tsx
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
+import { X } from 'lucide-react';
 
 const createRequest = async (newRequest: { category: string; description: string; }) => {
-    const { data } = await apiClient.post('/maintenance', newRequest); // Corrected endpoint from /maintenance-requests to /maintenance as per maintenanceRoutes.ts
+    const { data } = await apiClient.post('/maintenance', newRequest);
     return data.data;
 };
 
@@ -15,7 +17,6 @@ const MaintenanceRequestModal = ({ isOpen, onClose }: { isOpen: boolean, onClose
   const mutation = useMutation({
     mutationFn: createRequest,
     onSuccess: () => {
-      // Could invalidate a query for requests here if we were displaying them
       alert('Your request has been submitted successfully!');
       onClose();
     },
@@ -33,30 +34,30 @@ const MaintenanceRequestModal = ({ isOpen, onClose }: { isOpen: boolean, onClose
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300">
-      <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
+      <div className="bg-light-card dark:bg-dark-card rounded-3xl shadow-xl w-full max-w-lg border border-border-color dark:border-border-color-dark">
         <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
           <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">New Maintenance Request</h2>
-          <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark text-2xl transition-colors">&times;</button>
+          <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark text-2xl">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-lg transition-all duration-200">{error}</div>}
+          {error && <div className="bg-red-500/10 text-red-500 p-3 rounded-lg">{error}</div>}
           
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Category</label>
-            <select id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200">
+            <select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option>General</option><option>Plumbing</option><option>Electrical</option><option>Appliances</option><option>Other</option>
             </select>
           </div>
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Describe the Issue</label>
-            <textarea id="description" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+            <textarea id="description" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required />
           </div>
             
           <div className="flex justify-end space-x-4 pt-4">
-            <button type="button" onClick={onClose} className="px-5 py-2 bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
-            <button type="submit" disabled={mutation.isLoading} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
+            <button type="button" onClick={onClose} className="btn-light">Cancel</button>
+            <button type="submit" disabled={mutation.isLoading} className="btn-primary">
                 {mutation.isLoading ? 'Submitting...' : 'Submit Request'}
             </button>
           </div>
