@@ -81,14 +81,14 @@ const PropertiesPage = () => {
 
     const getStatusClass = (status: string) => {
         switch (status) {
-            case 'Active': return 'bg-green-100 text-green-800';
-            case 'Under Renovation': return 'bg-amber-100 text-amber-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'Active': return 'bg-green-500/20 text-green-300';
+            case 'Under Renovation': return 'bg-amber-500/20 text-amber-300';
+            default: return 'bg-gray-500/20 text-gray-300';
         }
     };
 
     const DesktopView = () => (
-        <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-border-color dark:border-border-color-dark overflow-hidden transition-all duration-200">
+        <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-lg border border-border-color dark:border-border-color-dark overflow-hidden transition-all duration-200">
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="bg-light-bg dark:bg-dark-bg/50 border-b border-border-color dark:border-border-color-dark">
@@ -149,7 +149,7 @@ const PropertiesPage = () => {
                 <h1 className="text-3xl font-bold">Manage Properties</h1>
                 <div className="flex items-center gap-2">
                     <button onClick={() => handleExport('csv')} className="flex items-center gap-2 px-4 py-2.5 bg-brand-secondary text-white font-bold rounded-lg hover:bg-brand-primary transition-colors"><Download size={18} /> CSV</button>
-                    <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"><Download size={18} /> PDF</button>
+                    <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white font-bold rounded-lg hover:bg-brand-orange/90 transition-colors"><Download size={18} /> PDF</button>
                     <button onClick={() => setIsAddModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-lg shadow-md transition-colors">
                         <span>+ Add Property</span>
                     </button>
