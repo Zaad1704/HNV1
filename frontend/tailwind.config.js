@@ -12,18 +12,18 @@ export default {
         sans: ['Poppins', 'sans-serif'],
       },
       colors: {
-        // --- Redesigned Color Palette ---        
-        'brand-primary': '#4A69E2', // Vibrant Blue from Yartee
-        'brand-secondary': '#FFA87A', // Soft Orange from Yartee
-        'brand-teal': '#4AE2B6', // Vibrant Teal from Yartee secondary gradient
-        'brand-blue-2': '#4A90E2', // Blue from Yartee secondary gradient
+        // --- Redesigned Color Palette from Yartee/Gold Standard ---
+        'brand-primary': '#4A69E2',     // Vibrant Blue
+        'brand-secondary': '#FFA87A',   // Soft Orange
+        'brand-teal': '#4AE2B6',        // Vibrant Teal for secondary gradient
+        'brand-blue-2': '#4A90E2',      // Second blue for secondary gradient
 
         // --- Semantic Colors for Light Theme (Default) ---
-        'light-bg': '#E5E7EB',         // Yartee main background
-        'light-card': '#FFFFFF',       // Pure white for cards
-        'dark-text': '#1a202c',        // Default dark text from Yartee
-        'light-text': '#6B7280',       // Lighter gray for subtitles
-        'border-color': '#D1D5DB',     // Subtle border color from Yartee
+        'light-bg': '#E5E7EB',         // Main light background from design
+        'light-card': '#FFFFFF',       // Pure white for cards and surfaces
+        'dark-text': '#1a202c',        // Main text color
+        'light-text': '#6B7280',       // Lighter gray for subtitles and secondary text
+        'border-color': '#D1D5DB',     // Subtle border color
 
         // --- Semantic Colors for Dark Theme ---
         'dark-bg': '#111827',          // Dark blue-gray background
@@ -32,7 +32,7 @@ export default {
         'light-text-dark': '#9CA3AF',  // Lighter gray for subtitles in dark mode
         'border-color-dark': '#374151', // Subtle border for dark elements
       },
-      // --- Custom Gradients for Backgrounds and Cards from Yartee ---
+      // --- Custom Gradients from Yartee/Gold Standard ---
       backgroundImage: {
         'primary-card-gradient': 'linear-gradient(135deg, #4A69E2 0%, #FFA87A 100%)',
         'secondary-card-gradient': 'linear-gradient(135deg, #4AE2B6 0%, #4A90E2 100%)',
