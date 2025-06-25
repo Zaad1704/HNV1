@@ -33,7 +33,7 @@ export default {
         'dark-bg': '#011627',          // Deepest background color (matches new brand-dark)
         'dark-card': '#052F46',        // A slightly lighter dark blue for cards, reducing harshness
         'dark-text-dark': '#F8F9FA',   // Off-white for text in dark mode (matches light-bg)
-        'light-text-dark': '#A8DADC',  // Light blue-green for secondary text (matches new brand-subtle)
+        'light-text-dark': '#A8DADC',  // Light blue-green for secondary text in dark mode (matches new brand-subtle)
         'border-color-dark': '#094E6A', // Subtle blue border for dark elements
       }
     },
