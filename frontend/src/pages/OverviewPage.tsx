@@ -1,4 +1,3 @@
-// frontend/src/pages/OverviewPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -11,23 +10,38 @@ import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
 import { IExpiringLease } from '../hooks/useExpiringLeases';
 
-// API Fetching Functions
-const fetchOverviewStats = async () => { /* ... */ };
-const fetchLateTenants = async () => { /* ... */ };
-const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => { /* ... */ };
-const fetchFinancialSummary = async () => { /* ... */ };
-const fetchRentStatus = async () => { /* ... */ };
-const sendRentReminder = async (tenantId: string) => { /* ... */ };
+const fetchOverviewStats = async () => {
+    const { data } = await apiClient.get('/dashboard/overview-stats');
+    return data.data;
+};
+const fetchLateTenants = async () => {
+    const { data } = await apiClient.get('/dashboard/late-tenants');
+    return data.data;
+};
+const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => {
+    const { data } = await apiClient.get('/dashboard/expiring-leases');
+    return data.data;
+};
+const fetchFinancialSummary = async () => {
+    const { data } = await apiClient.get('/dashboard/financial-summary');
+    return data.data;
+};
+const fetchRentStatus = async () => {
+    const { data } = await apiClient.get('/dashboard/rent-status');
+    return data.data;
+};
+const sendRentReminder = async (tenantId: string) => {
+    const { data } = await apiClient.post('/communication/send-rent-reminder', { tenantId });
+    return data;
+};
 
-
-// --- SOLUTION: Updated StatCard with more style options ---
 const StatCard = ({ title, value, icon, to }: { title: string, value: number | string, icon: React.ReactNode, to: string }) => (
-    <Link to={to} className="bg-brand-secondary p-6 rounded-2xl border border-border-color shadow-lg flex items-center justify-between hover:shadow-xl hover:border-brand-primary transition-all duration-300 group">
+    <Link to={to} className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm flex items-center justify-between hover:shadow-md hover:border-brand-primary dark:hover:border-brand-secondary transition-all group">
         <div>
-            <p className="text-sm font-medium text-light-text group-hover:text-dark-text transition-colors">{title}</p>
-            <p className="text-3xl font-bold text-dark-text mt-1">{value}</p>
+            <p className="text-sm font-medium text-light-text group-hover:text-dark-text dark:group-hover:text-white transition-colors">{title}</p>
+            <p className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mt-1">{value}</p>
         </div>
-        <div className="text-brand-primary group-hover:text-brand-accent-dark transition-colors">
+        <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-secondary transition-colors">
             {icon}
         </div>
     </Link>
@@ -58,7 +72,7 @@ const OverviewPage = () => {
     };
 
     if (isLoadingStats) {
-        return <div className="text-dark-text text-center p-8">Loading Dashboard Data...</div>;
+        return <div className="text-dark-text dark:text-dark-text-dark text-center p-8">Loading Dashboard Data...</div>;
     }
 
     const lateTenantItems = lateTenants?.map((t: any) => ({ id: t._id, primaryText: `${t.name} (${t.propertyId?.name || 'N/A'})`, secondaryText: `Unit: ${t.unit}` })) || [];
@@ -73,20 +87,19 @@ const OverviewPage = () => {
                 <StatCard title={t('dashboard.occupancy_rate')} value={stats?.occupancyRate || '0%'} icon={<UserCheck className="w-8 h-8" />} to="/dashboard/tenants" />
             </div>
             
-            {/* --- SOLUTION: Using different colors for sections --- */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-brand-secondary p-6 rounded-2xl border border-border-color shadow-sm">
-                    <h2 className="text-xl font-bold text-dark-text mb-4">{t('dashboard.financials_chart_title')}</h2>
+                <div className="lg:col-span-2 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.financials_chart_title')}</h2>
                     <FinancialChart data={financialData || []} />
                 </div>
-                <div className="lg:col-span-1 bg-brand-primary/10 p-6 rounded-2xl border border-border-color shadow-sm">
-                    <h2 className="text-xl font-bold text-dark-text mb-4">{t('dashboard.rent_status_chart_title')}</h2>
+                <div className="lg:col-span-1 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.rent_status_chart_title')}</h2>
                     <RentStatusChart data={rentStatusData || []} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-brand-dark p-6 rounded-xl border border-border-color">
+                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
                     <ActionItemWidget
                         title={t('dashboard.overdue_rent_reminders')}
                         items={lateTenantItems}
@@ -98,7 +111,7 @@ const OverviewPage = () => {
                         loadingItemId={remindingTenantId}
                     />
                 </div>
-                <div className="bg-brand-dark p-6 rounded-xl border border-border-color">
+                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
                     <ActionItemWidget
                         title={t('dashboard.upcoming_lease_expirations')}
                         items={expiringLeaseItems}
