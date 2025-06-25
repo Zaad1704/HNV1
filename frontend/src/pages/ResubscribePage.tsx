@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { CreditCard, ArrowLeftCircle, ShieldAlert } from 'lucide-react';
+import { CreditCard, ArrowLeftCircle, ShieldAlert, CheckCircle } from 'lucide-react'; // Added CheckCircle
 import { useAuthStore } from '../store/authStore';
 
 // Interfaces for type safety
@@ -78,7 +78,7 @@ const ResubscribePage: React.FC = () => {
          return (
             <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark flex justify-center items-center p-4 transition-colors duration-300">
                 <div className="text-center bg-light-card dark:bg-dark-card p-10 rounded-2xl shadow-xl border border-border-color dark:border-border-color-dark max-w-lg transition-all duration-200">
-                    <ShieldAlert className="mx-auto text-brand-accent-dark w-16 h-16 mb-4" />
+                    <ShieldAlert className="mx-auto text-brand-orange w-16 h-16 mb-4" /> {/* Adjusted color to brand-orange */}
                     <h1 className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mb-4">Subscription Issue</h1>
                     <p className="text-light-text dark:text-light-text-dark text-lg mb-8">
                         We could not find an active or restorable subscription for your account. This can happen if the subscription has been removed or if your session has expired.
