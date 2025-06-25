@@ -8,7 +8,7 @@ import PublicBottomNavBar from './PublicBottomNavBar'; // Import the new bottom 
 
 const PublicLayout = () => {
   return (
-    <div className="bg-slate-900">
+    <div className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"> {/* Set background to semantic, added dark mode and transition */}
       <Navbar />
       <main>
         <Outlet />
