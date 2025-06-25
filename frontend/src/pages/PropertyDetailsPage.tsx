@@ -73,13 +73,13 @@ const PropertyDetailsPage = () => {
 
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                  <Link to="/dashboard/properties" className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150" title="Back to Properties">
+                  <Link to="/dashboard/properties" className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150" title="Back to Properties List">
                       <ChevronLeft size={24} />
                   </Link>
                   <h1 className="text-3xl font-bold">{property?.name || 'Property Details'}</h1>
               </div>
               <div className="flex items-center gap-2">
-                  <button onClick={() => setIsEditModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark font-semibold hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors"><Edit size={16}/> Edit</button>
+                  <button onClick={() => setIsEditModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark font-semibold hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors"><Edit size={16} /> Edit Profile</button>
                   <button onClick={handleDeleteClick} disabled={deleteMutation.isLoading} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"><Trash2 size={16}/> Delete</button>
               </div>
             </div>
