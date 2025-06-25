@@ -3,23 +3,30 @@ import * as bcrypt from 'bcryptjs';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
+// The IUser interface now includes all the necessary fields and method signatures.
 export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: 'Super Admin' | 'Landlord' | 'Agent' | 'Tenant';
+  role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
   organizationId: mongoose.Types.ObjectId;
   createdAt: Date;
-  matchPassword(enteredPassword: string): Promise<boolean>;
-  getSignedJwtToken(): string;
-  passwordResetToken?: string;
-  passwordResetExpires?: Date;
-  address?: string;
-  governmentIdUrl?: string;
   googleId?: string;
-  status: string;
+  status: 'active' | 'suspended' | 'pending';
   permissions: string[];
   managedAgentIds?: mongoose.Types.ObjectId[];
+  
+  // --- Fields to fix the build error ---
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  
+  // --- Method signatures ---
+  matchPassword(enteredPassword: string): Promise<boolean>;
+  getSignedJwtToken(): string;
+  getEmailVerificationToken(): string; // Added method
   getPasswordResetToken(): string;
 }
 
@@ -33,19 +40,23 @@ const UserSchema: Schema<IUser> = new Schema({
     },
     select: false
   },
-  role: { type: String, enum: ['Super Admin', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
-  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+  role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
   createdAt: { type: Date, default: Date.now },
   googleId: String,
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  address: String,
-  governmentIdUrl: String,
+
+  // --- Schema definitions for the new fields ---
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String, select: false },
+  emailVerificationExpires: { type: Date, select: false },
+  passwordResetToken: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false }
 });
 
+// --- Lifecycle Hooks (pre-save for password hashing) ---
 UserSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password') || !this.password) {
     return next();
@@ -54,6 +65,8 @@ UserSchema.pre<IUser>('save', async function(next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
+// --- Instance Methods ---
 
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
   if (!this.password) return false;
@@ -64,20 +77,24 @@ UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
   }
-
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
-  
   const options: SignOptions = {
-    // @ts-ignore - This directive tells TypeScript to ignore the next line.
-    // This is a safe way to bypass a known issue with the @types/jsonwebtoken
-    // package in some build environments. The library itself handles the string value correctly.
+    // @ts-ignore
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   };
-
   return jwt.sign(payload, secret, options);
 };
 
+// Implementation for the email verification token method
+UserSchema.methods.getEmailVerificationToken = function(): string {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+  this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+  return verificationToken;
+};
+
+// Implementation for the password reset token method
 UserSchema.methods.getPasswordResetToken = function(): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
