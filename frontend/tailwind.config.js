@@ -11,28 +11,30 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // --- High-Contrast & Professional Palette ---
-        'brand-primary': '#005f73',     // A strong, deep teal for primary actions
-        'brand-secondary': '#0a9396',   // A vibrant teal for secondary elements
-        'brand-dark': '#001219',       // Nearly black for high-contrast text
-        'brand-subtle': '#94d2bd',      // A soft, muted teal for accents
-        'brand-accent-light': '#e9d8a6',// A warm, light accent (sand)
-        'brand-accent-dark': '#ee9b00', // A bold, warm accent (amber)
-        'brand-orange': '#ca6702',      // A deeper orange for specific highlights
+        // --- Core Brand Colors (Slightly warmer, more inviting) ---
+        'brand-primary': '#1A759F',     // A richer, slightly darker blue-teal for primary actions
+        'brand-secondary': '#168AAD',   // A more vibrant, appealing blue-green
+        'brand-dark': '#011627',        // A very dark blue, almost black, for deep contrast
+        'brand-subtle': '#A8DADC',      // A very light, calming blue-green for subtle backgrounds/accents
+        
+        // --- Accent Colors (Energetic & Eye-catching) ---
+        'brand-accent-light': '#FDFFB6', // A soft, warm yellow for highlights
+        'brand-accent-dark': '#FFC300',  // A bright, energetic gold/yellow for strong accents
+        'brand-orange': '#FF6B35',       // A vibrant, clear orange for calls to action or warnings
 
-        // --- SEMANTIC COLORS FOR LIGHT THEME (DEFAULT) ---
-        'light-bg': '#f8f9fa',        // Clean, off-white background
-        'light-card': '#ffffff',      // Pure white for cards to stand out
-        'dark-text': '#001219',       // Main text color (high contrast)
-        'light-text': '#5a6b74',      // Softer, secondary text color
-        'border-color': '#dee2e6',    // Standard light border color
+        // --- Semantic Colors for Light Theme (Default) ---
+        'light-bg': '#F8F9FA',         // Clean, off-white background (same)
+        'light-card': '#FFFFFF',       // Pure white for cards (same)
+        'dark-text': '#212529',        // Dark charcoal for main text (slightly softer than original brand-dark)
+        'light-text': '#6C757D',       // Medium gray for secondary text (softer)
+        'border-color': '#E0E0E0',     // Lighter, subtle border
 
-        // --- SEMANTIC COLORS FOR DARK THEME ---
-        'dark-bg': '#001219',         // Deepest color for the background
-        'dark-card': '#002a35',       // A slightly lighter card background
-        'dark-text-dark': '#e9ecef',  // Main text for dark mode (off-white)
-        'light-text-dark': '#94d2bd', // Muted teal for secondary text in dark mode
-        'border-color-dark': '#004150', // Subtle border color for dark elements
+        // --- Semantic Colors for Dark Theme (Comfortable for long use) ---
+        'dark-bg': '#011627',          // Deepest background color (matches new brand-dark)
+        'dark-card': '#052F46',        // A slightly lighter dark blue for cards, reducing harshness
+        'dark-text-dark': '#F8F9FA',   // Off-white for text in dark mode (matches light-bg)
+        'light-text-dark': '#A8DADC',  // Light blue-green for secondary text (matches new brand-subtle)
+        'border-color-dark': '#094E6A', // Subtle blue border for dark elements
       }
     },
   },
