@@ -1,5 +1,4 @@
 /* frontend/src/index.css */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,6 +8,6 @@ html {
 }
 
 body {
-  background: #212A31; /* Set global body background to the new brand-dark */
-  color: #F0F0F0; /* Default light text color */
+  /* Set global body background to the new brand-secondary (Pewter Blue) */
+  @apply bg-brand-secondary dark:bg-dark-bg;
 }
