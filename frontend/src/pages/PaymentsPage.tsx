@@ -1,8 +1,10 @@
+// frontend/src/pages/PaymentsPage.tsx
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import RecordPaymentModal from '../components/common/RecordPaymentModal';
 import { Download, PlusCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const fetchPayments = async () => {
     const { data } = await apiClient.get('/payments');
@@ -50,24 +52,37 @@ const PaymentsPage = () => {
           year: 'numeric', month: 'long', day: 'numeric',
       });
   };
+  
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    in: { opacity: 1, y: 0 },
+    out: { opacity: 0, y: -20 },
+  };
 
   if (isLoading) return <div className="text-dark-text text-center p-8">Loading...</div>;
   if (isError) return <div className="text-red-400 text-center p-8">Error loading payments.</div>;
 
   return (
-    <div className="text-dark-text dark:text-dark-text-dark">
+    <motion.div
+        initial="initial"
+        animate="in"
+        exit="out"
+        variants={pageVariants}
+        transition={{ duration: 0.4 }}
+        className="text-dark-text dark:text-dark-text-dark"
+    >
       <RecordPaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Payment History</h1>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary shadow-md">
+        <button onClick={() => setIsModalOpen(true)} className="btn-primary flex items-center gap-2">
           <PlusCircle size={18} />
           Record Manual Payment
         </button>
       </div>
-      <div className="bg-light-card rounded-2xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
+      <div className="bg-light-card rounded-3xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
+            <thead className="bg-light-bg/50 border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
               <tr>
                 <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Transaction ID</th>
                 <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Tenant</th>
@@ -80,7 +95,7 @@ const PaymentsPage = () => {
             </thead>
             <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
               {payments.map((payment: any) => (
-                <tr key={payment._id} className="hover:bg-light-bg dark:hover:bg-dark-bg/40">
+                <tr key={payment._id} className="hover:bg-light-bg/50 dark:hover:bg-dark-bg/40">
                   <td className="p-4 text-light-text dark:text-light-text-dark font-mono text-xs">{payment.transactionId || payment._id}</td>
                   <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{payment.tenantId?.name || 'N/A'}</td>
                   <td className="p-4 text-light-text dark:text-light-text-dark">{payment.propertyId?.name || 'N/A'}</td>
@@ -107,7 +122,7 @@ const PaymentsPage = () => {
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
