@@ -22,17 +22,17 @@ const FinancialChart: React.FC<{ data: FinancialData[] }> = ({ data }) => {
     return (
         <ResponsiveContainer width="100%" height={320}>
             <BarChart data={translatedData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${currencyName}${value/1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" /> {/* Semantic border color */}
+                <XAxis dataKey="name" stroke="var(--light-text)" fontSize={12} tickLine={false} axisLine={false} /> {/* Semantic text color */}
+                <YAxis stroke="var(--light-text)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${currencyName}${value/1000}k`} /> {/* Semantic text color */}
                 <Tooltip 
-                    cursor={{fill: 'rgba(229, 231, 235, 0.5)'}}
-                    contentStyle={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '0.5rem' }}
+                    cursor={{fill: 'var(--light-bg)'}} // Semantic light background
+                    contentStyle={{ background: 'var(--light-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', color: 'var(--dark-text)' }} // Semantic colors
                     formatter={(value: number) => `${currencyName}${value.toLocaleString()}`}
                 />
-                <Legend wrapperStyle={{ fontSize: '14px' }}/>
-                <Bar dataKey={t('dashboard.financial_chart.revenue')} fill="#7091E6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey={t('dashboard.financial_chart.expenses')} fill="#ADBBDA" radius={[4, 4, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--dark-text)' }}/> {/* Semantic text color */}
+                <Bar dataKey={t('dashboard.financial_chart.revenue')} fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /> {/* Semantic brand color */}
+                <Bar dataKey={t('dashboard.financial_chart.expenses')} fill="var(--brand-secondary)" radius={[4, 4, 0, 0]} /> {/* Semantic brand color */}
             </BarChart>
         </ResponsiveContainer>
     );
