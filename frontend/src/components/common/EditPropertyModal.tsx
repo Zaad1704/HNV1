@@ -87,21 +87,21 @@ const EditPropertyModal = ({ isOpen, onClose, property, onPropertyUpdated }) => 
           {/* Form fields are similar to AddPropertyModal */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Property Name</label>
-            <input type="text" name="name" id="name" required value={formData.name} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+            <input type="text" name="name" id="name" required value={formData.name} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
           </div>
           {/* ... other fields for address, units etc. ... */}
           <div>
             <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Address</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
-              <input name="street" placeholder="Street" value={formData.street} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-              <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-              <input name="state" placeholder="State" value={formData.state} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-              <input name="zipCode" placeholder="Zip Code" value={formData.zipCode} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+              <input name="street" placeholder="Street" value={formData.street} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+              <input name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+              <input name="state" placeholder="State" value={formData.state} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
+              <input name="zipCode" placeholder="Zip Code" value={formData.zipCode} onChange={handleChange} className="w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
             </div>
           </div>
           <div>
             <label htmlFor="numberOfUnits" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Number of Units</label>
-            <input type="number" min="1" name="numberOfUnits" id="numberOfUnits" required value={formData.numberOfUnits} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
+            <input type="number" min="1" name="numberOfUnits" id="numberOfUnits" required value={formData.numberOfUnits} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
           </div>
 
           <div>
