@@ -14,15 +14,18 @@ export interface IUser extends Document {
   status: 'active' | 'suspended' | 'pending';
   permissions: string[];
   managedAgentIds?: mongoose.Types.ObjectId[];
-  // FIX: New fields for email verification
+  
+  // FIX: All fields are correctly defined in the interface
   isEmailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
   getPasswordResetToken(): string;
-  getEmailVerificationToken(): string; // FIX: New method signature
+  getEmailVerificationToken(): string;
 }
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -42,9 +45,10 @@ const UserSchema: Schema<IUser> = new Schema({
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  
+  // FIX: All fields are correctly defined in the schema
   passwordResetToken: String,
   passwordResetExpires: Date,
-  // FIX: Schema definition for new fields
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: String,
   emailVerificationExpires: Date,
@@ -65,27 +69,32 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
 };
 
 UserSchema.methods.getSignedJwtToken = function(): string {
-  // ... (no changes to this method)
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT Secret is not defined in environment variables.');
+  }
+  const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
+  const secret: Secret = process.env.JWT_SECRET;
+  const options: SignOptions = {
+    // @ts-ignore
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+  };
+  return jwt.sign(payload, secret, options);
 };
 
+// FIX: Ensured this method always returns a string as per the interface
 UserSchema.methods.getPasswordResetToken = function(): string {
-  // ... (no changes to this method)
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  return resetToken;
 };
 
-// FIX: New method to generate email verification token
+// FIX: Ensured this method always returns a string as per the interface
 UserSchema.methods.getEmailVerificationToken = function(): string {
   const verificationToken = crypto.randomBytes(20).toString('hex');
-  
-  this.emailVerificationToken = crypto
-    .createHash('sha256')
-    .update(verificationToken)
-    .digest('hex');
-    
-  // Set expiry to 1 hour from now
+  this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
   this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000); 
-  
   return verificationToken;
 };
-
 
 export default model<IUser>('User', UserSchema);
