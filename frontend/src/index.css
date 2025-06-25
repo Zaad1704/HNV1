@@ -1,76 +1,51 @@
 /* frontend/src/index.css */
+@import url('https://fonts.googleapis.com/css?family=Poppins:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Import Google Font if not already in index.html */
-/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap'); */
-
 /* Define CSS variables for your Tailwind colors for broader use (e.g., in Recharts) */
 :root {
-  /* Light Theme */
-  --brand-primary: #1A759F;
-  --brand-secondary: #168AAD;
-  --brand-dark: #011627;
-  --brand-subtle: #A8DADC;
-  --brand-accent-light: #FDFFB6;
-  --brand-accent-dark: #FFC300;
-  --brand-orange: #FF6B35;
+  /* Light Theme based on Yartee design */
+  --brand-primary: #4A69E2;
+  --brand-secondary: #FFA87A;
+  --brand-teal: #4AE2B6;
+  --brand-blue-2: #4A90E2;
 
-  --light-bg: #F8F9FA;
+  --light-bg: #E5E7EB;
   --light-card: #FFFFFF;
-  --dark-text: #212529;
-  --light-text: #6C757D;
-  --border-color: #E0E0E0;
+  --dark-text: #1a202c;
+  --light-text: #6B7280;
+  --border-color: #D1D5DB;
 
-  /* Chart specific colors, derived from brand colors for consistency */
-  --chart-color-1: #1A759F; /* brand-primary */
-  --chart-color-2: #FF6B35; /* brand-orange */
-  --chart-color-3: #168AAD; /* brand-secondary */
-  --chart-color-4: #FFC300; /* brand-accent-dark */
-  --chart-color-5: #A8DADC; /* brand-subtle */
+  /* Dark Theme (can be customized further) */
+  --dark-bg': #111827';
+  --dark-card': #1F2937';
+  --dark-text-dark': #F9FAFB';
+  --light-text-dark': #9CA3AF';
+  --border-color-dark': #374151';
+
+  /* Gradients */
+  --primary-card-gradient: linear-gradient(135deg, #4A69E2 0%, #FFA87A 100%);
+  --secondary-card-gradient: linear-gradient(135deg, #4AE2B6 0%, #4A90E2 100%);
 }
-
-/* Dark Mode Variables */
-html.dark {
-  --brand-primary: #1A759F;     /* Keep primary consistent or adjust slightly for dark mode contrast */
-  --brand-secondary: #168AAD;   /* Keep secondary consistent or adjust slightly for dark mode contrast */
-  --brand-dark: #011627;        /* Already darkest */
-  --brand-subtle: #A8DADC;      /* Used as light-text-dark in dark mode */
-  --brand-accent-light: #FDFFB6; /* Keep consistent */
-  --brand-accent-dark: #FFC300;  /* Keep consistent */
-  --brand-orange: #FF6B35;       /* Keep consistent */
-
-  --light-bg: #011627;          /* Dark mode background */
-  --light-card: #052F46;        /* Dark mode card background */
-  --dark-text: #F8F9FA;         /* Dark mode main text */
-  --light-text: #A8DADC;        /* Dark mode secondary text */
-  --border-color: #094E6A;      /* Dark mode border */
-
-  /* Chart specific colors for dark mode */
-  --chart-color-1: #1A759F; /* brand-primary */
-  --chart-color-2: #FF6B35; /* brand-orange */
-  --chart-color-3: #168AAD; /* brand-secondary */
-  --chart-color-4: #FFC300; /* brand-accent-dark */
-  --chart-color-5: #A8DADC; /* brand-subtle */
-}
-
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  /* Set global body background and text colors using semantic variables */
   @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300 font-sans;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* Base styles for common elements to ensure consistency */
 h1, h2, h3, h4, h5, h6 {
-  @apply text-dark-text dark:text-dark-text-dark; /* Ensure headings respond to theme */
+  @apply text-dark-text dark:text-dark-text-dark;
 }
 
-/* Input field base styles - important for consistent look */
+/* Input field base styles */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -80,9 +55,9 @@ input[type="date"],
 input[type="month"],
 textarea,
 select {
-  @apply bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
-  padding: 0.75rem 1rem; /* Consistent padding for inputs */
-  font-size: 0.95rem; /* Slightly larger default font size */
+  @apply bg-light-card border border-border-color rounded-lg text-dark-text focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
+  padding: 0.75rem 1rem; 
+  font-size: 0.95rem; 
 }
 
 /* Focus styles for inputs, ensuring brand primary ring */
@@ -94,10 +69,43 @@ select:focus {
 
 /* Buttons with primary brand styling */
 .btn-primary {
-  @apply bg-brand-primary text-white font-bold py-2.5 px-6 rounded-lg hover:bg-brand-secondary transition-colors duration-200 shadow-md;
+  @apply bg-brand-primary text-white font-bold py-2.5 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md;
 }
 
-/* Secondary/outline buttons */
-.btn-secondary {
-  @apply bg-transparent border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark font-semibold py-2.5 px-6 rounded-lg hover:bg-light-bg dark:hover:bg-dark-bg/50 transition-colors duration-200;
+.btn-light {
+  background-color: #FFFFFF;
+  color: #4A69E2;
+  transition: all 0.3s ease;
+}
+.btn-light:hover {
+  background-color: #F0F2F5;
+}
+
+.btn-dark {
+  background-color: #2D3748;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+.neutral-glass {
+  background-color: rgba(240, 242, 245, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+/* --- ADDED FOR TRANSITIONS --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
 }
