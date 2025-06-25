@@ -20,11 +20,11 @@
   --border-color: #D1D5DB;
 
   /* Dark Theme (can be customized further) */
-  --dark-bg': #111827';
-  --dark-card': #1F2937';
-  --dark-text-dark': #F9FAFB';
-  --light-text-dark': #9CA3AF';
-  --border-color-dark': #374151';
+  --dark-bg: #111827;
+  --dark-card: #1F2937;
+  --dark-text-dark: #F9FAFB;
+  --light-text-dark: #9CA3AF;
+  --border-color-dark: #374151;
 
   /* Gradients */
   --primary-card-gradient: linear-gradient(135deg, #4A69E2 0%, #FFA87A 100%);
