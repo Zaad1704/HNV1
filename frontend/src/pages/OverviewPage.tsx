@@ -36,12 +36,12 @@ const sendRentReminder = async (tenantId: string) => {
 };
 
 const StatCard = ({ title, value, icon, to }: { title: string, value: number | string, icon: React.ReactNode, to: string }) => (
-    <Link to={to} className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm flex items-center justify-between hover:shadow-md hover:border-brand-primary dark:hover:border-brand-secondary transition-all group">
+    <Link to={to} className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm flex items-center justify-between hover:shadow-md hover:border-brand-primary dark:hover:border-brand-secondary transition-all group duration-200">
         <div>
-            <p className="text-sm font-medium text-light-text group-hover:text-dark-text dark:group-hover:text-white transition-colors">{title}</p>
+            <p className="text-sm font-medium text-light-text group-hover:text-dark-text dark:group-hover:text-dark-text-dark transition-colors duration-200">{title}</p>
             <p className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mt-1">{value}</p>
         </div>
-        <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-secondary transition-colors">
+        <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-secondary transition-colors duration-200">
             {icon}
         </div>
     </Link>
