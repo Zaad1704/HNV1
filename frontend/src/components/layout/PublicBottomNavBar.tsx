@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Compass, Tag, Phone, LogIn, MoreHorizontal, Globe, Sun, Moon } from 'lucide-react';
 import { useScrollSpy } from '../../hooks/useScrollSpy';
@@ -11,28 +11,30 @@ const PublicBottomNavBar = () => {
     const { t } = useTranslation();
     const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
     
-    // FIX: Import theme and language hooks
     const { theme, toggleTheme } = useTheme();
     const { setLang, getNextToggleLanguage } = useLang();
 
+    // Sections on the landing page that this bottom nav will link to
     const navItems = [
-        { name: t('header.features', 'Features'), href: '/#featuresPage', icon: Compass, sectionId: 'featuresPage' },
         { name: t('header.about', 'About'), href: '/#about', icon: Home, sectionId: 'about' },
-        { name: t('header.pricing', 'Pricing'), href: '/#pricingSection', icon: Tag, sectionId: 'pricingSection' },
+        { name: t('header.services', 'Services'), href: '/#services', icon: Compass, sectionId: 'services' },
+        { name: t('header.pricing', 'Pricing'), href: '/#pricing', icon: Tag, sectionId: 'pricing' },
         { name: t('header.contact', 'Contact'), href: '/#contact', icon: Phone, sectionId: 'contact' },
     ];
     
-    const leftItems = navItems.slice(0, 2);
-    const rightItems = navItems.slice(2, 3);
-    const moreMenuItems = navItems.slice(3);
+    // For the 4 main visible icons + 1 "More" icon
+    const visibleNavItems = navItems.slice(0, 3); // Take first 3 for direct display
+    const moreMenuItems = navItems.slice(3); // The rest go into 'More'
 
     const sectionIds = navItems.map(item => item.sectionId).filter(Boolean) as string[];
-    const activeSectionId = useScrollSpy(sectionIds, 150);
+    const activeSectionId = useScrollSpy(sectionIds, 150); // Using useScrollSpy to highlight active section
 
     const getLinkClass = (itemHref: string, itemSectionId?: string) => {
-        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors duration-150';
-        const isActive = (itemSectionId && location.pathname === '/' && activeSectionId === itemSectionId) || (location.pathname === itemHref);
-        return `${base} ${isActive ? 'text-brand-primary' : 'text-light-text dark:text-light-text-dark group-hover:text-brand-primary dark:group-hover:text-brand-accent-light'}`;
+        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors rounded-lg';
+        // Determine if the link is active based on current path or scroll spy for landing page
+        const isActive = (location.pathname === '/' && itemSectionId && activeSectionId === itemSectionId) || (location.pathname === itemHref);
+        
+        return `${base} ${isActive ? 'text-brand-primary dark:text-brand-secondary' : 'text-light-text dark:text-light-text-dark group-hover:text-brand-primary dark:group-hover:text-brand-secondary'}`;
     };
 
     const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
@@ -44,10 +46,12 @@ const PublicBottomNavBar = () => {
             if (targetElement) {
                 targetElement.scrollIntoView({ behavior: 'smooth' });
             }
+        } else {
+            // For direct page links like /login
+            // The Link component handles navigation, so no need for manual navigate()
         }
     };
 
-    // FIX: Handlers for new menu buttons
     const handleLanguageToggle = () => {
         setLang(getNextToggleLanguage().code);
         setMoreMenuOpen(false);
@@ -59,10 +63,10 @@ const PublicBottomNavBar = () => {
     };
 
     return (
+        // Only show on screens smaller than 'md' breakpoint
         <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card dark:bg-dark-card border-t border-border-color dark:border-border-color-dark shadow-t-lg z-30 transition-colors duration-300">
             {isMoreMenuOpen && (
-                // FIX: Added theme and language toggles to the "More" menu
-                <div className="absolute bottom-16 right-4 w-48 bg-light-card dark:bg-dark-card rounded-lg shadow-xl border border-border-color dark:border-border-color-dark p-2 text-sm text-dark-text dark:text-dark-text-dark transition-all duration-300">
+                <div className="absolute bottom-16 right-4 w-48 bg-light-card dark:bg-dark-card rounded-lg shadow-xl border border-border-color dark:border-border-color-dark p-2 text-sm text-dark-text dark:text-dark-text-dark transition-all duration-300 origin-bottom-right animate-fade-in-up">
                     {moreMenuItems.map(item => (
                         <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className="flex items-center gap-3 p-2 rounded-md hover:bg-light-bg dark:hover:bg-dark-bg transition-colors">
                            <item.icon size={16} /> {item.name}
@@ -78,26 +82,21 @@ const PublicBottomNavBar = () => {
                 </div>
             )}
             <div className="grid grid-cols-5 h-full">
-                {leftItems.map(item => (
+                {visibleNavItems.map(item => (
                     <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className={`${getLinkClass(item.href, item.sectionId)} group`}>
                         <item.icon size={20} />
                         <span className="font-medium mt-1">{item.name}</span>
                     </a>
                 ))}
                 
+                {/* Central Login Button - prominent position */}
                 <div className="relative flex justify-center">
                     <Link to="/login" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg dark:border-dark-bg transition-all duration-200 hover:scale-105">
-                        <span className="text-sm font-bold">Login</span>
+                        <span className="text-sm font-bold">{t('header.login', 'Login')}</span>
                     </Link>
                 </div>
                 
-                {rightItems.map(item => (
-                     <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className={`${getLinkClass(item.href, item.sectionId)} group`}>
-                        <item.icon size={20} />
-                        <span className="font-medium mt-1">{item.name}</span>
-                    </a>
-                ))}
-
+                {/* More button to show hidden items and utilities */}
                 <button onClick={() => setMoreMenuOpen(!isMoreMenuOpen)} className="flex flex-col items-center justify-center w-full h-full text-xs text-light-text dark:text-light-text-dark transition-colors duration-150">
                     <MoreHorizontal size={20} />
                     <span className="font-medium mt-1">More</span>
