@@ -55,37 +55,37 @@ const PaymentsPage = () => {
   if (isError) return <div className="text-red-400 text-center p-8">Error loading payments.</div>;
 
   return (
-    <div className="text-dark-text">
+    <div className="text-dark-text dark:text-dark-text-dark">
       <RecordPaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Payment History</h1>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-brand-dark font-bold rounded-lg hover:bg-opacity-90 shadow-md">
+        <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary shadow-md">
           <PlusCircle size={18} />
           Record Manual Payment
         </button>
       </div>
-      <div className="bg-light-card rounded-2xl shadow-lg border border-border-color overflow-hidden">
+      <div className="bg-light-card rounded-2xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-dark-bg/50 border-b border-border-color">
+            <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
               <tr>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Transaction ID</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Tenant</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Property</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Amount</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Date</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text">Status</th>
-                <th className="p-4 uppercase text-sm font-semibold text-light-text text-right">Actions</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Transaction ID</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Tenant</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Property</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Amount</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Date</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Status</th>
+                <th className="p-4 uppercase text-sm font-semibold text-light-text text-right dark:text-light-text-dark">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-color">
+            <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
               {payments.map((payment: any) => (
-                <tr key={payment._id} className="hover:bg-dark-bg/40">
-                  <td className="p-4 text-gray-400 font-mono text-xs">{payment.transactionId || payment._id}</td>
-                  <td className="p-4 font-bold text-dark-text">{payment.tenantId?.name || 'N/A'}</td>
-                  <td className="p-4 text-light-text">{payment.propertyId?.name || 'N/A'}</td>
-                  <td className="p-4 text-dark-text font-semibold">${payment.amount.toFixed(2)}</td>
-                  <td className="p-4 text-light-text">{formatDate(payment.paymentDate)}</td>
+                <tr key={payment._id} className="hover:bg-light-bg dark:hover:bg-dark-bg/40">
+                  <td className="p-4 text-light-text dark:text-light-text-dark font-mono text-xs">{payment.transactionId || payment._id}</td>
+                  <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{payment.tenantId?.name || 'N/A'}</td>
+                  <td className="p-4 text-light-text dark:text-light-text-dark">{payment.propertyId?.name || 'N/A'}</td>
+                  <td className="p-4 text-dark-text font-semibold dark:text-dark-text-dark">${payment.amount.toFixed(2)}</td>
+                  <td className="p-4 text-light-text dark:text-light-text-dark">{formatDate(payment.paymentDate)}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(payment.status)}`}>
                       {payment.status}
@@ -95,7 +95,7 @@ const PaymentsPage = () => {
                     <button 
                         onClick={() => handleDownloadReceipt(payment._id)}
                         disabled={downloadingId === payment._id}
-                        className="font-medium text-brand-primary hover:text-opacity-80 flex items-center gap-1 ml-auto disabled:opacity-50"
+                        className="font-medium text-brand-primary hover:text-brand-secondary flex items-center gap-1 ml-auto disabled:opacity-50"
                         title="Download PDF Receipt"
                     >
                         {downloadingId === payment._id ? '...' : <Download size={16}/>}
