@@ -59,6 +59,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         isEmailVerified: false // User starts as unverified
     });
 
+    // This method now exists on the user object
     const verificationToken = user.getEmailVerificationToken();
     
     organization.owner = user._id as Types.ObjectId; 
@@ -86,7 +87,6 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
     } catch (emailError) {
         console.error("Failed to send verification email:", emailError);
-        // This is a critical failure point. In a production system, you might add the user to a re-verification queue.
         return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
     }
   } catch (error) {
@@ -109,6 +109,7 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    // This property now exists on the user object
     if (!user.isEmailVerified) {
         return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
     }
@@ -130,6 +131,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
         .update(token)
         .digest('hex');
 
+    // These properties now exist on the User model
     const user = await User.findOne({
         emailVerificationToken: hashedToken,
         emailVerificationExpires: { $gt: Date.now() }
@@ -139,6 +141,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: 'Invalid or expired verification token. Please try registering again.' });
     }
 
+    // These properties now exist on the user object
     user.isEmailVerified = true;
     user.status = 'active';
     user.emailVerificationToken = undefined;
