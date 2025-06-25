@@ -5,8 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path' 
 
 export default defineConfig({
-  // Add this 'base' option for the build process
-  base: './', 
+  base: './', // Ensures relative asset paths for correct loading on any server.
   plugins: [
     react(),
     VitePWA({
@@ -16,32 +15,20 @@ export default defineConfig({
         name: 'HNV Property Management',
         short_name: 'HNV',
         description: 'The All-in-One Platform for Modern Property Management',
-        theme_color: '#3D52A0', 
-        background_color: '#F7F8FA', 
+        theme_color: '#4A69E2',
+        background_color: '#E5E7EB',
         display: 'standalone',
         scope: '/',
         start_url: '/',
         icons: [
-          {
-            src: 'pwa-192x192.png', 
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png', 
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
         ]
       }
     })
   ],
+  // Resolves absolute path imports for the build process.
   resolve: {
     alias: {
       'api': path.resolve(__dirname, './src/api'),
