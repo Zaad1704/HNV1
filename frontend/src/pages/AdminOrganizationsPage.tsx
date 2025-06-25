@@ -33,33 +33,33 @@ const AdminOrganizationsPage = () => {
         }
     };
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text">Loading organizations...</div>;
+    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading organizations...</div>;
     if (isError) return <div className="text-center text-red-400 p-8">Failed to fetch organizations.</div>;
 
     return (
-        <div className="text-dark-text">
+        <div className="text-dark-text dark:text-dark-text-dark">
             <h1 className="text-3xl font-bold mb-8">Manage All Organizations</h1>
-            <div className="bg-light-card rounded-xl border border-border-color overflow-hidden shadow-lg">
+            <div className="bg-light-card rounded-xl border border-border-color overflow-hidden shadow-lg dark:bg-dark-card dark:border-border-color-dark">
                 <table className="w-full text-left">
-                    <thead className="bg-dark-bg/50">
+                    <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                         <tr>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text">Organization</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text">Plan</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text">Status</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text text-right">Actions</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Organization</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Plan</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Status</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-light-text text-right dark:text-light-text-dark">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-color">
+                    <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
                         {organizations.map((org) => (
-                            <tr key={org._id} className="hover:bg-dark-bg/40">
+                            <tr key={org._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
                                 <td className="p-4">
-                                    <p className="font-bold text-dark-text">{org.name}</p>
-                                    <p className="text-sm text-light-text">{org.owner?.email}</p>
+                                    <p className="font-bold text-dark-text dark:text-dark-text-dark">{org.name}</p>
+                                    <p className="text-sm text-light-text dark:text-light-text-dark">{org.owner?.email}</p>
                                 </td>
                                 <td className="p-4">
                                     {org.subscription?.isLifetime 
-                                        ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500/20 text-yellow-300"><ShieldCheck size={14}/> Lifetime</span>
-                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-light-text/10 text-light-text">{org.subscription?.planId?.name || 'No Plan'}</span>
+                                        ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-brand-accent-dark/20 text-brand-accent-dark"><ShieldCheck size={14}/> Lifetime</span>
+                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-light-text/10 text-light-text dark:text-light-text-dark">{org.subscription?.planId?.name || 'No Plan'}</span>
                                     }
                                 </td>
                                 <td className="p-4">
@@ -69,7 +69,7 @@ const AdminOrganizationsPage = () => {
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                        <button onClick={() => handleDeleteOrg(org._id, org.name)} className="p-2 rounded-md text-red-400 hover:bg-dark-bg" title="Delete Organization Permanently"><Trash2 size={16}/></button>
+                                        <button onClick={() => handleDeleteOrg(org._id, org.name)} className="p-2 rounded-md text-brand-orange hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/50" title="Delete Organization Permanently"><Trash2 size={16}/></button>
                                     </div>
                                 </td>
                             </tr>
