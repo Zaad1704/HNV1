@@ -1,64 +1,49 @@
 import React, { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
-import apiClient from '../api/client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from 'store/authStore';
+import apiClient from 'api/client';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Lock, AlertTriangle, User as UserIcon, Building } from 'lucide-react';
+import { Lock, AlertTriangle, User as UserIcon } from 'lucide-react';
+
+// Reusable Card component for this page
+const SettingsCard = ({ title, icon: Icon, children }) => (
+    <div className="bg-light-card dark:bg-dark-card p-6 sm:p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-sm">
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-3 text-dark-text dark:text-dark-text-dark">
+            <Icon className="text-brand-primary" size={22} />
+            {title}
+        </h2>
+        <div className="space-y-4">
+            {children}
+        </div>
+    </div>
+);
+
+// Reusable Input component
+const FormInput = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">{label}</label>
+        <input {...props} className="w-full px-4 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-2 focus:ring-brand-primary" />
+    </div>
+);
 
 const SettingsPage = () => {
-    const { user, setToken, logout, setUser } = useAuthStore();
+    const { user, logout } = useAuthStore();
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    
-    const [brandingData, setBrandingData] = useState({
-        companyName: user?.organizationId?.branding?.companyName || '',
-    });
-    const [logoFile, setLogoFile] = useState<File | null>(null);
-    const [logoPreview, setLogoPreview] = useState<string | null>(user?.organizationId?.branding?.companyLogoUrl || null);
-
     const [message, setMessage] = useState({ type: '', text: '' });
 
     const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
     };
-    
-    const handleBrandingInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setBrandingData({ ...brandingData, [e.target.name]: e.target.value });
-    };
-
-    const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setLogoFile(file);
-            setLogoPreview(URL.createObjectURL(file));
-        }
-    };
 
     const passwordMutation = useMutation({
         mutationFn: (passData: any) => apiClient.put('/users/update-password', passData),
-        onSuccess: (data) => {
+        onSuccess: () => {
             setMessage({ type: 'success', text: 'Password updated successfully!' });
-            setToken(data.data.token);
             setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         },
         onError: (err: any) => {
             setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
-        }
-    });
-    
-    const brandingMutation = useMutation({
-        mutationFn: (formData: FormData) => apiClient.put('/orgs/me/branding', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        }),
-        onSuccess: async () => {
-            setMessage({ type: 'success', text: 'Branding updated successfully! Refreshing session...' });
-            const response = await apiClient.get('/auth/me');
-            setUser(response.data.data);
-            queryClient.invalidateQueries({ queryKey: ['user'] });
-        },
-        onError: (err: any) => {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update branding.' });
         }
     });
 
@@ -72,21 +57,10 @@ const SettingsPage = () => {
         passwordMutation.mutate({ currentPassword: passwordData.currentPassword, newPassword: passwordData.newPassword });
     };
 
-    const handleUpdateBranding = (e: React.FormEvent) => {
-        e.preventDefault();
-        setMessage({ type: '', text: '' });
-        const formData = new FormData();
-        formData.append('companyName', brandingData.companyName);
-        if (logoFile) {
-            formData.append('companyLogo', logoFile);
-        }
-        brandingMutation.mutate(formData);
-    };
-
     const deleteAccountMutation = useMutation({
         mutationFn: () => apiClient.post('/users/request-deletion'),
         onSuccess: () => {
-            setMessage({ type: 'success', text: 'Deletion request successful. You will be logged out now.' });
+            setMessage({ type: 'success', text: 'Deletion request successful. You will be logged out.' });
             setTimeout(() => {
                 logout();
                 navigate('/login', { replace: true });
@@ -104,77 +78,42 @@ const SettingsPage = () => {
     };
 
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
-            <h1 className="text-3xl font-bold mb-8">Profile & Settings</h1>
+        <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8 text-dark-text dark:text-dark-text-dark">Settings</h1>
             {message.text && (
-                <div className={`p-3 rounded-lg mb-6 text-center text-sm ${message.type === 'success' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-400'}`}>
+                <div className={`p-3 rounded-lg mb-6 text-center text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
                     {message.text}
                 </div>
             )}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <div className="lg:col-span-3 space-y-8">
-                    <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><UserIcon className="text-brand-primary" /> Your Profile</h2>
-                        <p><strong className="text-light-text dark:text-light-text-dark">Name:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.name}</span></p>
-                        <p><strong className="text-light-text dark:text-light-text-dark">Email:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.email}</span></p>
-                        <p><strong className="text-light-text dark:text-light-text-dark">Role:</strong> <span className="text-dark-text dark:text-dark-text-dark">{user?.role}</span></p>
-                    </div>
-                    
-                    {user?.role === 'Landlord' && (
-                        <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Building className="text-brand-primary" /> Organization Branding</h2>
-                            <form onSubmit={handleUpdateBranding} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Company Name</label>
-                                    <input type="text" name="companyName" value={brandingData.companyName} onChange={handleBrandingInputChange} className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Company Logo</label>
-                                    {logoPreview && <img src={logoPreview} alt="Logo Preview" className="h-16 w-auto rounded-md my-2 bg-white p-1" />}
-                                    <input type="file" name="companyLogo" accept="image/*" onChange={handleLogoFileChange} className="w-full text-sm text-light-text dark:text-light-text-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-light-bg dark:file:bg-dark-bg file:text-light-text dark:file:text-light-text-dark hover:file:bg-border-color dark:hover:file:bg-border-color-dark"/>
-                                </div>
-                                <div className="text-right pt-2">
-                                    <button type="submit" disabled={brandingMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50">
-                                        {brandingMutation.isLoading ? 'Saving...' : 'Update Branding'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
-                    
-                    <div className="bg-light-card dark:bg-dark-card p-8 rounded-xl border border-border-color dark:border-border-color-dark shadow-lg">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-3"><Lock className="text-brand-primary" /> Change Password</h2>
-                        <form onSubmit={handleUpdatePassword} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Current Password</label>
-                                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">New Password</label>
-                                <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Confirm New Password</label>
-                                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required className="w-full bg-light-bg p-2 rounded-md border border-border-color text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"/>
-                            </div>
-                            <div className="text-right pt-2">
-                                <button type="submit" disabled={passwordMutation.isLoading} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
-                                    {passwordMutation.isLoading ? 'Updating...' : 'Update Password'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div className="bg-light-card p-8 rounded-xl border-2 border-red-500/50 shadow-lg dark:bg-dark-card">
-                        <h2 className="text-xl font-bold mb-4 flex items-center gap-3 text-brand-orange"><AlertTriangle /> Danger Zone</h2>
-                        <p className="text-light-text dark:text-light-text-dark mb-4">
-                            Deleting your account is a permanent action. All of your data, including properties, tenants, and financial records, will be scheduled for permanent removal.
-                        </p>
-                        <div className="text-right">
-                            <button onClick={handleDeleteAccount} disabled={deleteAccountMutation.isLoading} className="px-6 py-2.5 bg-red-600 rounded-lg text-white font-semibold shadow-md hover:bg-red-700 transition-colors disabled:opacity-50">
-                                {deleteAccountMutation.isLoading ? 'Processing...' : 'Request Account Deletion'}
+            <div className="space-y-8">
+                <SettingsCard title="Your Profile" icon={UserIcon}>
+                    <p><strong className="text-light-text dark:text-light-text-dark">Name:</strong> <span className="font-semibold">{user?.name}</span></p>
+                    <p><strong className="text-light-text dark:text-light-text-dark">Email:</strong> <span className="font-semibold">{user?.email}</span></p>
+                    <p><strong className="text-light-text dark:text-light-text-dark">Role:</strong> <span className="font-semibold">{user?.role}</span></p>
+                </SettingsCard>
+                
+                <SettingsCard title="Change Password" icon={Lock}>
+                    <form onSubmit={handleUpdatePassword} className="space-y-4">
+                        <FormInput label="Current Password" type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required />
+                        <FormInput label="New Password" type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required />
+                        <FormInput label="Confirm New Password" type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required />
+                        <div className="text-right pt-2">
+                            <button type="submit" disabled={passwordMutation.isLoading} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-primary/90 disabled:opacity-50">
+                                {passwordMutation.isLoading ? 'Updating...' : 'Update Password'}
                             </button>
                         </div>
+                    </form>
+                </SettingsCard>
+
+                 <div className="bg-light-card p-6 sm:p-8 rounded-2xl border-2 border-red-500/30">
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-3 text-red-600"><AlertTriangle /> Danger Zone</h2>
+                    <p className="text-light-text dark:text-light-text-dark mb-4">
+                        Requesting account deletion is a permanent action. All your data will be erased after a grace period.
+                    </p>
+                    <div className="text-right">
+                        <button onClick={handleDeleteAccount} disabled={deleteAccountMutation.isLoading} className="px-5 py-2 bg-red-600 rounded-lg text-white font-semibold shadow-md hover:bg-red-700 disabled:opacity-50">
+                            {deleteAccountMutation.isLoading ? 'Processing...' : 'Request Account Deletion'}
+                        </button>
                     </div>
                 </div>
             </div>
