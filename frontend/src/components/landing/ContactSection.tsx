@@ -60,8 +60,8 @@ const ContactSection = () => {
                 </div>
                 <div className="space-y-8 text-light-text dark:text-light-text-dark">
                     {settings?.contactPage?.addresses?.map((addr, index) => (
-                        <div key={index}>
-                            <h4 className="text-xl font-bold text-brand-primary">{addr.locationName}</h4>
+                        <div key={index} className="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
+                            <h4 className="text-xl font-bold text-brand-primary dark:text-brand-secondary">{addr.locationName}</h4>
                             <p className="mt-2 text-dark-text dark:text-dark-text-dark">{addr.fullAddress}</p>
                             <p>Phone: {addr.phone}</p>
                             <p>Email: {addr.email}</p>
