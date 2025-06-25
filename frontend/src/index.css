@@ -5,7 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Define CSS variables for your Tailwind colors for broader use (e.g., in Recharts) */
+/* Define CSS variables for the entire application based on the new design */
 :root {
   /* Light Theme based on Yartee design */
   --brand-primary: #4A69E2;
@@ -19,7 +19,7 @@
   --light-text: #6B7280;
   --border-color: #D1D5DB;
 
-  /* Dark Theme (can be customized further) */
+  /* Dark Theme */
   --dark-bg: #111827;
   --dark-card: #1F2937;
   --dark-text-dark: #F9FAFB;
@@ -36,8 +36,37 @@ html {
 }
 
 body {
-  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300 font-sans;
+  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300;
   font-family: 'Poppins', sans-serif;
+}
+
+/* Custom utility for gradient text like "Here Greant" */
+@layer utilities {
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-primary-card-gradient;
+  }
+}
+
+/* Card animation from Gold Standard design */
+.card {
+  transition: all 0.3s ease-in-out;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Base styles for common elements to ensure consistency */
@@ -55,16 +84,7 @@ input[type="date"],
 input[type="month"],
 textarea,
 select {
-  @apply bg-light-card border border-border-color rounded-lg text-dark-text focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
-  padding: 0.75rem 1rem; 
-  font-size: 0.95rem; 
-}
-
-/* Focus styles for inputs, ensuring brand primary ring */
-input:focus,
-textarea:focus,
-select:focus {
-  @apply ring-2 ring-brand-primary/50 outline-none;
+  @apply w-full mt-1 p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
 }
 
 /* Buttons with primary brand styling */
@@ -92,20 +112,4 @@ select:focus {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.9);
-}
-
-/* --- ADDED FOR TRANSITIONS --- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fadeInUp {
-    animation: fadeInUp 0.5s ease-out forwards;
 }
