@@ -58,9 +58,8 @@ const BottomNavBar = () => {
                 onClose={() => setMoreMenuOpen(false)}
                 navItems={moreNavItems}
                 userRole={user?.role}
-                handleLogout={handleLogout}
             />
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30"> {/* bg-light-card is now dark */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card border-t border-border-color shadow-t-lg z-30 dark:bg-dark-card dark:border-border-color-dark transition-colors duration-300">
                 <div className="grid grid-cols-5 h-full">
                     {/* Left Items */}
                     <RoleGuard allowed={['Landlord', 'Agent']}>
@@ -74,7 +73,7 @@ const BottomNavBar = () => {
 
                     {/* Centered Home Button */}
                     <div className="relative flex justify-center">
-                        <Link to="/dashboard/overview" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-dark-text rounded-full shadow-lg border-4 border-light-bg"> {/* bg-brand-primary is new, text-dark-text is light, border-light-bg is new dark */}
+                        <Link to="/dashboard/overview" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-dark-text rounded-full shadow-lg border-4 border-light-bg dark:border-dark-bg transition-all duration-200 hover:scale-105"> {/* bg-brand-primary is new, text-dark-text is light, border-light-bg is new dark */}
                             <Home size={24} />
                         </Link>
                     </div>
