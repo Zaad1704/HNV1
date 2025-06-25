@@ -51,9 +51,8 @@ const Navbar = () => {
   );
 
   return (
-    <header className="bg-light-card dark:bg-dark-card shadow-md sticky top-0 z-50">
+    <header className="bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-border-color dark:border-border-color-dark">
       <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-        {/* Left Aligned: Logo */}
         <div className="flex-shrink-0">
             <Link to="/" className="flex items-center space-x-3">
             <img src={settings?.logos?.navbarLogoUrl || "/logo-min.png"} alt="HNV Logo" className="h-10" width="40" height="40" />
@@ -63,14 +62,12 @@ const Navbar = () => {
             </Link>
         </div>
         
-        {/* Centered Navigation (Desktop) */}
         <div className="hidden lg:flex flex-grow justify-center">
             <nav className="flex items-center gap-2">
                 <NavLinksContent />
             </nav>
         </div>
 
-        {/* Right Aligned Actions (Desktop) */}
         <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
             <button 
                 onClick={() => setLang(getNextToggleLanguage().code)}
@@ -91,8 +88,15 @@ const Navbar = () => {
             </Link>
         </div>
 
-        {/* Mobile Header (retains previous functional design) */}
         <div className="lg:hidden flex items-center space-x-2">
+            <button 
+                onClick={() => setLang(getNextToggleLanguage().code)}
+                className="p-2 text-light-text dark:text-light-text-dark rounded-md hover:bg-gray-100 dark:hover:bg-dark-bg"
+            > <Globe size={20} /> </button>
+             <button
+                onClick={toggleTheme}
+                className="p-2 text-light-text dark:text-light-text-dark rounded-md hover:bg-gray-100 dark:hover:bg-dark-bg"
+            > {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />} </button>
             <Link to="/register" className="font-semibold text-sm bg-brand-primary text-white py-2 px-4 rounded-lg">
                 {t('header.sign_up')}
             </Link>
