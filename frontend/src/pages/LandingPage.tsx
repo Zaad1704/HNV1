@@ -2,15 +2,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, LogIn, UserPlus } from 'lucide-react';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
-import { useSiteSettings } from '../hooks/useSiteSettings'; // Import useSiteSettings
+import { ArrowRight, LogIn, UserPlus } from 'lucide-react'; // Ensure ArrowRight is imported
+import { useTranslation } from 'react-i18next';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 
 // Import all the section components
 import AboutSection from '../components/landing/AboutSection';
 import ServicesSection from '../components/landing/ServicesSection';
 import PricingSection from '../components/landing/PricingSection';
-import InstallAppSection from '../components/landing/InstallAppSection'; // Import InstallAppSection
+import InstallAppSection from '../components/landing/InstallAppSection';
 import ContactSection from '../components/landing/ContactSection';
 import LeadershipSection from '../components/landing/LeadershipSection';
 
@@ -31,7 +31,6 @@ const LandingPage = () => {
         }),
     };
 
-    // Updated sections for the new scattered layout, removed install app as a card
     const sections = [
         { id: 'about', titleKey: 'header.about', description: t('about.subtitle'), type: 'default' },
         { id: 'services', titleKey: 'header.services', description: t('services.subtitle'), type: 'gradient-primary' },
