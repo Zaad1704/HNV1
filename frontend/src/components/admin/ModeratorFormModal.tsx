@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 import { useMutation } from '@tanstack/react-query';
+import { X } from 'lucide-react';
 
 // Define the list of available permissions for your platform
 const AVAILABLE_PERMISSIONS = [
@@ -80,47 +81,47 @@ const ModeratorFormModal = ({ isOpen, onClose, moderator }: { isOpen: boolean, o
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-6 border-b">
-                    <h2 className="text-xl font-bold text-gray-800">{isEditing ? 'Edit Moderator' : 'Add New Moderator'}</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300">
+            <div className="bg-light-card dark:bg-dark-card rounded-lg shadow-xl w-full max-w-lg transition-all duration-200" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
+                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{isEditing ? 'Edit Moderator' : 'Add New Moderator'}</h2>
+                    <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark text-2xl transition-colors">&times;</button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm">{error}</div>}
+                    {error && <div className="bg-red-100 text-red-700 p-3 rounded-md text-sm transition-all duration-200">{error}</div>}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                        <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full px-3 py-2 border rounded-md" />
+                        <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Full Name</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} required disabled={isEditing} className="mt-1 w-full px-3 py-2 border rounded-md disabled:bg-gray-100" />
+                        <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Email Address</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} required disabled={isEditing} className="mt-1 w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark disabled:opacity-70 disabled:cursor-not-allowed focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
                     </div>
                     {!isEditing && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Password</label>
-                            <input type="password" name="password" value={formData.password} onChange={handleChange} required className="mt-1 w-full px-3 py-2 border rounded-md" />
+                            <label className="block text-sm font-medium text-light-text dark:text-light-text-dark">Password</label>
+                            <input type="password" name="password" value={formData.password} onChange={handleChange} required className="mt-1 w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
                         </div>
                     )}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+                        <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-2">Permissions</label>
                         <div className="grid grid-cols-2 gap-2">
                             {AVAILABLE_PERMISSIONS.map(perm => (
-                                <label key={perm.id} className="flex items-center space-x-2 p-2 border rounded-md">
+                                <label key={perm.id} className="flex items-center space-x-2 p-2 border border-border-color dark:border-border-color-dark rounded-md bg-light-bg dark:bg-dark-bg transition-colors duration-150">
                                     <input 
                                         type="checkbox" 
                                         checked={formData.permissions.includes(perm.id)}
                                         onChange={() => handlePermissionChange(perm.id)}
-                                        className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                                        className="h-4 w-4 text-brand-primary dark:text-brand-secondary border-border-color dark:border-border-color-dark rounded focus:ring-brand-primary transition-colors"
                                     />
-                                    <span>{perm.label}</span>
+                                    <span className="text-dark-text dark:text-dark-text-dark">{perm.label}</span>
                                 </label>
                             ))}
                         </div>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Cancel</button>
-                        <button type="submit" disabled={mutation.isPending} className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400">
+                        <button type="button" onClick={onClose} className="px-5 py-2 bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
+                        <button type="submit" disabled={mutation.isPending} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
                             {mutation.isPending ? 'Saving...' : 'Save Moderator'}
                         </button>
                     </div>
