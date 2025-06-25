@@ -6,15 +6,15 @@ const OrgSwitcher: React.FC = () => {
 
   useEffect(() => {
     loadPersistedOrg();
-  }, [orgs.length]);
+  }, [orgs.length, loadPersistedOrg]); // Added loadPersistedOrg to dependency array
 
   if (orgs.length < 2) return null;
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 text-dark-text dark:text-dark-text-dark">
       <label className="mr-2 font-semibold">Organization:</label>
       <select
-        className="border p-1"
+        className="border border-border-color dark:border-border-color-dark p-1 bg-light-card dark:bg-dark-card rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"
         value={currentOrg?._id || ""}
         onChange={e => {
           const selected = orgs.find((o) => o._id === e.target.value);
