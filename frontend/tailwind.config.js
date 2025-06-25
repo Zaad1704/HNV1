@@ -1,7 +1,6 @@
-// frontend/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class', // <--- Correctly set to 'class'
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -12,27 +11,26 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
        colors: {
-        // New Color Palette based on provided image
-        'brand-dark': '#212A31',     // Main dark background color
-        'brand-primary': '#124E66',  // Primary accent/interactive color (Teal)
-        'brand-secondary': '#2E3944', // Secondary dark background/element color
-        'brand-subtle': '#748D92',   // Muted blue-gray for subtle elements/borders
-        'brand-accent-light': '#D3D9D4', // Lightest color from palette for subtle highlights
-        'brand-accent-dark': '#208AAB',  // A brighter variant of brand-primary for strong accents
+        // "Corporate and Traditional" Palette
+        'brand-primary': '#254E58',     // Primary accent color (Dark Slate Blue-Green) for buttons/links
+        'brand-secondary': '#88BDBC',   // Secondary accent color (Pewter Blue)
+        'brand-dark': '#112D32',       // Deepest Teal for text 
+        'brand-subtle': '#6E6658',      // Muted brown for secondary text
+        'brand-accent': '#4F4A41',     // Accent brown
 
-        // Semantic colors for Light (now Dark) Theme
-        'light-bg': '#212A31',       // Global page background (dark)
-        'light-card': '#2E3944',     // Card background (secondary dark)
-        'dark-text': '#F0F0F0',      // Main text color (light gray/near white) on dark backgrounds
-        'light-text': '#D3D9D4',     // Secondary text color (muted light gray/green) on dark backgrounds
-        'border-color': '#4A5C6F',   // A middle-ground gray-blue for borders
+        // --- SEMANTIC COLORS FOR LIGHT THEME (DEFAULT) ---
+        'light-bg': '#88BDBC',        // Page background is now Pewter Blue
+        'light-card': '#ffffff',      // Cards are white for contrast
+        'dark-text': '#112D32',       // Main text color is Deep Teal
+        'light-text': '#6E6658',      // Muted/secondary text color
+        'border-color': '#dee2e6',    // Standard light border color for cards
 
-        // Dark Theme Semantics (if applicable, though new scheme is generally dark)
-        'dark-bg': '#212A31', // Duplicated for clarity, as the scheme is mostly dark
-        'dark-card': '#2E3944', // Duplicated for clarity
-        'dark-text-dark': '#F0F0F0', // Light text for dark mode (new scheme's default)
-        'light-text-dark': '#D3D9D4', // Muted light text for dark mode
-        'border-color-dark': '#4A5C6F', // Border for dark mode
+        // --- SEMANTIC COLORS FOR DARK THEME ---
+        'dark-bg': '#112D32',
+        'dark-card': '#254E58',
+        'dark-text-dark': '#f8f9fa',
+        'light-text-dark': '#88BDBC',
+        'border-color-dark': '#4F4A41',
       }
     },
   },
