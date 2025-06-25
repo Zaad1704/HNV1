@@ -1,4 +1,4 @@
-\// frontend/src/pages/OrganizationPage.tsx
+// frontend/src/pages/OrganizationPage.tsx
 import React, { useEffect, useState } from "react";
 import apiClient from "../api/client";
 import OrgSwitcher from "../components/OrgSwitcher";
