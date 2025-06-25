@@ -3,14 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 
-// --- Layouts and Guards ---
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './components/layout/AdminLayout';
 
-// --- Lazy-loaded Page Components ---
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
@@ -24,8 +22,8 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
 const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
+const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 
-// Dashboard Pages
 const DashboardRedirector = React.lazy(() => import('./pages/DashboardRedirector'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
@@ -43,9 +41,8 @@ const AuditLogPage = React.lazy(() => import('./pages/AuditLogPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const ApprovalRequestsPage = React.lazy(() => import('./pages/ApprovalRequestsPage'));
 const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
-const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage')); // FIX: Import the PaymentsPage
+const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage'));
 
-// Admin Pages
 const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
 const AdminOrganizationsPage = React.lazy(() => import('./pages/AdminOrganizationsPage'));
 const AdminUsersPage = React.lazy(() => import('./pages/AdminUsersPage'));
@@ -56,7 +53,7 @@ const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfil
 const AdminModeratorsPage = React.lazy(() => import('./pages/SuperAdmin/AdminModeratorsPage'));
 
 const FullScreenLoader = () => (
-    <div className="h-screen w-full flex items-center justify-center bg-brand-dark text-dark-text"><p>Loading Application...</p></div>
+    <div className="h-screen w-full flex items-center justify-center bg-brand-secondary"><p className="text-dark-text">Loading Application...</p></div>
 );
 
 function App() {
@@ -101,7 +98,8 @@ function App() {
         <Route path="/accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
         <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
         <Route path="/resubscribe" element={<ResubscribePage />} />
-        
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route index element={<DashboardRedirector />} />
@@ -118,10 +116,10 @@ function App() {
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
+            <Route path="payments" element={<PaymentsPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="approvals" element={<ApprovalRequestsPage />} />
-            <Route path="payments" element={<PaymentsPage />} /> {/* FIX: Add the route for the payments page */}
           </Route>
         </Route>
 
