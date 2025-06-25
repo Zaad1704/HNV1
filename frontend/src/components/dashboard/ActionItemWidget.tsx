@@ -37,13 +37,13 @@ const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
                             {onActionClick ? ( // Render button if onActionClick is provided
                                 <button
                                     onClick={() => onActionClick(item.id)}
-                                    className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                    className="bg-brand-primary text-white font-bold text-xs py-2 px-4 rounded-lg hover:bg-brand-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                     disabled={isActionLoading && loadingItemId === item.id}
                                 >
                                     {isActionLoading && loadingItemId === item.id ? 'Sending...' : actionText}
                                 </button>
                             ) : ( // Fallback to Link if no specific action
-                                <Link to={linkTo} className="bg-brand-primary text-dark-text font-bold text-xs py-2 px-4 rounded-lg hover:opacity-90 transition-colors duration-200">
+                                <Link to={linkTo} className="bg-brand-primary text-white font-bold text-xs py-2 px-4 rounded-lg hover:bg-brand-secondary transition-colors duration-200">
                                     {actionText}
                                 </Link>
                             )}
