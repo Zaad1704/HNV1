@@ -112,7 +112,7 @@ const ModeratorFormModal = ({ isOpen, onClose, moderator }: { isOpen: boolean, o
                                         type="checkbox" 
                                         checked={formData.permissions.includes(perm.id)}
                                         onChange={() => handlePermissionChange(perm.id)}
-                                        className="h-4 w-4 text-brand-primary dark:text-brand-secondary border-border-color dark:border-border-color-dark rounded focus:ring-brand-primary transition-colors"
+                                        className="h-4 w-4 rounded text-brand-primary dark:text-brand-secondary border-border-color dark:border-border-color-dark focus:ring-brand-primary transition-colors"
                                     />
                                     <span className="text-dark-text dark:text-dark-text-dark">{perm.label}</span>
                                 </label>
