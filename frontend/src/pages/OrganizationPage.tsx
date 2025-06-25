@@ -51,7 +51,7 @@ const OrganizationPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
         <div>Loading organization details...</div>
       </div>
     );
@@ -59,25 +59,25 @@ const OrganizationPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">{error}</div>
+      <div className="flex items-center justify-center min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
+        <div className="text-red-500 dark:text-red-500">{error}</div>
       </div>
     );
   }
 
   if (!org) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
         <div>No organization data found.</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 text-dark-text dark:text-dark-text-dark">
       {/* <OrgSwitcher /> Uncomment if you want to allow switching orgs */}
       <h1 className="text-2xl font-bold mb-4">Organization Details: {org.name}</h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg shadow-md border border-border-color dark:border-border-color-dark transition-all duration-200">
         <p>
           <strong>ID:</strong> {org._id}
         </p>
