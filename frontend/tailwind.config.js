@@ -22,7 +22,7 @@ export default {
         'light-bg': '#88BDBC',        // Page background is now Pewter Blue
         'light-card': '#ffffff',      // Cards are white for contrast
         'dark-text': '#112D32',       // Main text color is Deep Teal
-        'light-text': '#6E6658',      // Muted/secondary text is Muted Brown
+        'light-text': '#6E6658',      // Muted/secondary text color
         'border-color': '#dee2e6',    // Standard light border color for cards
 
         // --- SEMANTIC COLORS FOR DARK THEME ---
