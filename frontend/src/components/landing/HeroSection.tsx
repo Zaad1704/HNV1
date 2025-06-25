@@ -7,30 +7,22 @@ const HeroSection = () => {
   const { data: settings } = useSiteSettings();
 
   return (
-    <section className="relative h-screen flex items-center justify-center text-center overflow-hidden bg-brand-dark">
-      <div className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url('${settings?.heroSection?.backgroundImageUrl || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop"}')`,
-          transform: 'scale(1.1)',
-          filter: 'blur(8px)',
-        }}
-      ></div>
-      <div className="absolute inset-0 bg-brand-dark opacity-80"></div>
+    // Use the main light background as the base for the hero section
+    <section className="relative bg-light-bg dark:bg-dark-bg py-20 md:py-32 flex items-center justify-center text-center overflow-hidden">
+      {/* Optional: A subtle background pattern or image can be used if desired */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* FIX: Responsive text size for better mobile scaling */}
         <h1
-          className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-wider text-white"
-          style={{ textShadow: '2px 5px 10px rgba(0, 0, 0, 0.7)' }}
+          className="text-5xl md:text-7xl font-extrabold tracking-tight text-dark-text dark:text-dark-text-dark"
         >
           {settings?.heroSection?.title || t('hero.title')}
         </h1>
-        <p className="text-lg sm:text-xl text-light-text mt-6 max-w-2xl mx-auto" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+        <p className="text-lg sm:text-xl text-light-text dark:text-light-text-dark mt-6 max-w-3xl mx-auto">
           {settings?.heroSection?.subtitle || t('hero.subtitle')}
         </p>
         <div className="mt-10">
             <Link
               to="/register"
-              className="inline-block bg-brand-accent-light text-brand-dark py-4 px-10 rounded-full font-bold uppercase tracking-widest text-sm hover:bg-opacity-90 shadow-lg transition-all transform hover:scale-105"
+              className="inline-block bg-brand-primary text-white py-4 px-10 rounded-lg font-bold text-lg hover:bg-opacity-90 shadow-lg transition-all transform hover:scale-105"
             >
               {t('landing.hero_cta')}
             </Link>
