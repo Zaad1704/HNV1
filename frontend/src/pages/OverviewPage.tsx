@@ -41,7 +41,7 @@ const StatCard = ({ title, value, icon, to }: { title: string, value: number | s
             <p className="text-sm font-medium text-light-text group-hover:text-dark-text dark:group-hover:text-dark-text-dark transition-colors duration-200">{title}</p>
             <p className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mt-1">{value}</p>
         </div>
-        <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-secondary transition-colors duration-200">
+        <div className="text-brand-primary dark:text-brand-secondary group-hover:text-brand-dark dark:group-hover:text-brand-accent-light transition-colors duration-200">
             {icon}
         </div>
     </Link>
@@ -88,18 +88,18 @@ const OverviewPage = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                <div className="lg:col-span-2 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
                     <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.financials_chart_title')}</h2>
                     <FinancialChart data={financialData || []} />
                 </div>
-                <div className="lg:col-span-1 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                <div className="lg:col-span-1 bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
                     <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{t('dashboard.rent_status_chart_title')}</h2>
                     <RentStatusChart data={rentStatusData || []} />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
                     <ActionItemWidget
                         title={t('dashboard.overdue_rent_reminders')}
                         items={lateTenantItems}
@@ -111,7 +111,7 @@ const OverviewPage = () => {
                         loadingItemId={remindingTenantId}
                     />
                 </div>
-                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm">
+                <div className="bg-light-card dark:bg-dark-card p-6 rounded-lg border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
                     <ActionItemWidget
                         title={t('dashboard.upcoming_lease_expirations')}
                         items={expiringLeaseItems}
