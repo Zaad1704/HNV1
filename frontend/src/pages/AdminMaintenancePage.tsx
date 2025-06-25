@@ -11,28 +11,28 @@ const fetchAllRequests = async () => {
 const AdminMaintenancePage = () => {
     const { data: requests = [], isLoading } = useQuery(['allMaintenanceRequests'], fetchAllRequests);
 
-    if (isLoading) return <div className="text-center p-8">Loading all maintenance requests...</div>;
+    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading all maintenance requests...</div>;
 
     return (
-        <div className="text-dark-text">
+        <div className="text-dark-text dark:text-dark-text-dark">
             <h1 className="text-3xl font-bold mb-8">Platform-Wide Maintenance Requests</h1>
-            <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden">
+            <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b border-border-color">
+                    <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                         <tr>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Organization</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Property</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Issue</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Organization</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Property</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Issue</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Status</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-color">
+                    <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
                         {requests.map((req: any) => (
-                            <tr key={req._id}>
-                                <td className="p-4 font-semibold">{req.organizationId?.name || 'N/A'}</td>
-                                <td className="p-4 text-light-text">{req.propertyId?.name || 'N/A'}</td>
-                                <td className="p-4 text-light-text">{req.description}</td>
-                                <td className="p-4 text-light-text">{req.status}</td>
+                            <tr key={req._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
+                                <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{req.organizationId?.name || 'N/A'}</td>
+                                <td className="p-4 text-light-text dark:text-light-text-dark">{req.propertyId?.name || 'N/A'}</td>
+                                <td className="p-4 text-light-text dark:text-light-text-dark">{req.description}</td>
+                                <td className="p-4 text-light-text dark:text-light-text-dark">{req.status}</td>
                             </tr>
                         ))}
                     </tbody>
