@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path' 
 
 export default defineConfig({
-  base: './', // Ensures relative asset paths for correct loading on any server.
+  base: './', // Ensures relative asset paths for correct loading
   plugins: [
     react(),
     VitePWA({
@@ -28,7 +28,6 @@ export default defineConfig({
       }
     })
   ],
-  // Resolves absolute path imports for the build process.
   resolve: {
     alias: {
       'api': path.resolve(__dirname, './src/api'),
