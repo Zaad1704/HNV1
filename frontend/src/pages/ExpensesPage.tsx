@@ -28,42 +28,42 @@ const ExpensesPage = () => {
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
-    <div>
+    <div className="text-dark-text dark:text-dark-text-dark">
       <LogExpenseModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} />
       
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-dark-text">Manage Expenses</h1>
-        <button onClick={() => setIsLogModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-opacity-90 text-brand-dark font-bold rounded-lg shadow-md transition-colors">
+        <h1 className="text-3xl font-bold text-dark-text dark:text-dark-text-dark">Manage Expenses</h1>
+        <button onClick={() => setIsLogModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-lg shadow-md transition-colors">
             <PlusCircle size={18} /><span>Log Expense</span>
         </button>
       </div>
       
-       {isLoading ? <div className="text-center p-8 text-dark-text">Loading expenses...</div> : (
-            <div className="bg-light-card rounded-xl shadow-lg border border-border-color overflow-hidden">
+       {isLoading ? <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading expenses...</div> : (
+            <div className="bg-light-card rounded-xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
                 <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                    <thead className="bg-dark-bg/50 border-b border-border-color">
+                    <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                         <tr>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Description</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Property</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Date</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase">Category</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase text-right">Amount</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase text-right">Actions</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Description</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Property</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Date</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Category</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase text-right dark:text-light-text-dark">Amount</th>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase text-right dark:text-light-text-dark">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-color">
+                    <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
                     {expenses.map((expense: any) => (
-                        <tr key={expense._id} className="hover:bg-dark-bg/40">
-                            <td className="p-4 font-semibold text-dark-text">{expense.description}</td>
-                            <td className="p-4 text-light-text">{expense.propertyId?.name || 'N/A'}</td>
-                            <td className="p-4 text-light-text">{formatDate(expense.date)}</td>
-                            <td className="p-4 text-light-text">{expense.category}</td>
-                            <td className="p-4 text-right font-semibold text-red-400">-${expense.amount.toFixed(2)}</td>
+                        <tr key={expense._id} className="hover:bg-light-bg dark:hover:bg-dark-bg/40">
+                            <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{expense.description}</td>
+                            <td className="p-4 text-light-text dark:text-light-text-dark">{expense.propertyId?.name || 'N/A'}</td>
+                            <td className="p-4 text-light-text dark:text-light-text-dark">{formatDate(expense.date)}</td>
+                            <td className="p-4 text-light-text dark:text-light-text-dark">{expense.category}</td>
+                            <td className="p-4 text-right font-semibold text-brand-orange">-${expense.amount.toFixed(2)}</td> {/* Adjusted color to brand-orange */}
                             <td className="p-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
-                                    <button className="p-2 text-gray-300 hover:bg-dark-bg rounded-md" title="Edit Expense"><Edit size={16}/></button>
-                                    <button onClick={() => deleteMutation.mutate(expense._id)} className="p-2 text-red-400 hover:bg-dark-bg rounded-md" title="Delete Expense"><Trash2 size={16}/></button>
+                                    <button className="p-2 text-light-text dark:text-light-text-dark hover:bg-light-bg dark:hover:bg-dark-bg rounded-md" title="Edit Expense"><Edit size={16}/></button>
+                                    <button onClick={() => deleteMutation.mutate(expense._id)} className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-md" title="Delete Expense"><Trash2 size={16}/></button>
                                 </div>
                             </td>
                         </tr>
