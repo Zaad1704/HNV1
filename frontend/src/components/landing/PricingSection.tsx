@@ -21,7 +21,7 @@ const PricingSection = () => {
   }, []);
 
   return (
-    <section className="container mx-auto px-6 text-center">
+    <section id="pricing" className="container mx-auto px-6 text-center py-20 md:py-28">
       <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">
         {t('pricing.title')}
       </h2>
