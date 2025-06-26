@@ -1,6 +1,7 @@
 export interface IFeature {
   title: string;
   description: string;
+  text: string;
   icon: string;
   sectionId: string;
 }
@@ -29,6 +30,11 @@ export interface ISiteSettings {
       text: string;
       url: string;
     }>;
+  };
+  contact?: {
+    email?: string;
+    phone?: string;
+    addresses?: string[];
   };
   featuresPage?: IFeaturesPage;
 }
