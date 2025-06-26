@@ -1,64 +1,111 @@
-/* Add these styles to your existing index.css */
+/* frontend/src/index.css */
+@import url('https://fonts.googleapis.com/css?family=Poppins:wght@400;500;600;700;800&display=swap');
 
-.hero-card-container {
-    position: relative;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    padding: 2rem;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define CSS variables for your Tailwind colors for broader use (e.g., in Recharts) */
+:root {
+  /* Light Theme based on Yartee design */
+  --brand-primary: #4A69E2;
+  --brand-secondary: #FFA87A;
+  --brand-teal: #4AE2B6;
+  --brand-blue-2: #4A90E2;
+
+  --light-bg: #E5E7EB;
+  --light-card: #FFFFFF;
+  --dark-text: #1a202c;
+  --light-text: #6B7280;
+  --border-color: #D1D5DB;
+
+  /* Dark Theme (can be customized further) */
+  --dark-bg': #111827';
+  --dark-card': #1F2937';
+  --dark-text-dark': #F9FAFB';
+  --light-text-dark': #9CA3AF';
+  --border-color-dark': #374151';
+
+  /* Gradients */
+  --primary-card-gradient: linear-gradient(135deg, #4A69E2 0%, #FFA87A 100%);
+  --secondary-card-gradient: linear-gradient(135deg, #4AE2B6 0%, #4A90E2 100%);
 }
 
-.hero-card {
-    border-radius: 1rem;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+html {
+  scroll-behavior: smooth;
 }
 
-.card-main {
-    grid-column: 1 / -1;
-    min-height: 400px;
+body {
+  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300 font-sans;
+  font-family: 'Poppins', sans-serif;
 }
 
-@media (min-width: 768px) {
-    .card-small-1 {
-        grid-column: span 1;
-    }
-
-    .card-medium-1 {
-        grid-column: span 2;
-    }
-
-    .card-small-2 {
-        grid-column: span 1;
-    }
-
-    .card-medium-2 {
-        grid-column: span 2;
-    }
+/* Base styles for common elements to ensure consistency */
+h1, h2, h3, h4, h5, h6 {
+  @apply text-dark-text dark:text-dark-text-dark;
 }
 
-.gradient-primary {
-    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+/* Input field base styles */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="month"],
+textarea,
+select {
+  @apply bg-light-card border border-border-color rounded-lg text-dark-text focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
+  padding: 0.75rem 1rem; 
+  font-size: 0.95rem; 
 }
 
-.neutral-glass {
-    background-color: rgba(240, 242, 245, 0.7);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+/* Focus styles for inputs, ensuring brand primary ring */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply ring-2 ring-brand-primary/50 outline-none;
+}
+
+/* Buttons with primary brand styling */
+.btn-primary {
+  @apply bg-brand-primary text-white font-bold py-2.5 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md;
 }
 
 .btn-light {
-    background-color: #FFFFFF;
-    color: var(--brand-primary);
-    transition: all 0.3s ease;
+  background-color: #FFFFFF;
+  color: #4A69E2;
+  transition: all 0.3s ease;
+}
+.btn-light:hover {
+  background-color: #F0F2F5;
 }
 
-.btn-light:hover {
-    background-color: #F0F2F5;
-    transform: translateY(-2px);
+.btn-dark {
+  background-color: #2D3748;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+.neutral-glass {
+  background-color: rgba(240, 242, 245, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+/* --- ADDED FOR TRANSITIONS --- */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
 }
