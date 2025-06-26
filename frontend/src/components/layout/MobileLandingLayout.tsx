@@ -5,6 +5,7 @@ import AboutSection from '../landing/AboutSection';
 import ServicesSection from '../landing/ServicesSection';
 import PricingSection from '../landing/PricingSection';
 import InstallAppSection from '../landing/InstallAppSection';
+import LandingHeroContent from '../landing/LandingHeroContent'; // Import the new hero content component
 import LeadershipSection from '../landing/LeadershipSection'; // Added LeadershipSection
 import ContactSection from '../landing/ContactSection';
 import { Home, ShieldCheck, Briefcase, Star, Wrench, CreditCard, Users, Mail, Bolt, MapPin, Layers, Settings, Globe, Lock } from 'lucide-react';
@@ -26,13 +27,9 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
 
     return (
         <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark pb-16 transition-colors duration-300">
-            {/* Hero Section - Restored immersive design */}
-            <section id="hero" className="relative text-center min-h-[60vh] flex items-center justify-center text-white p-4" style={{ background: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                <div className="relative z-10">
-                    <h2 className="text-3xl font-extrabold drop-shadow-lg">{t('hero.title')}</h2>
-                    <p className="mt-2 text-white/90 drop-shadow-md">{t('hero.subtitle')}</p>
-                </div>
+            {/* Hero Section - Now renders the detailed LandingHeroContent component */}
+            <section id="hero">
+                <LandingHeroContent />
             </section>
 
             {/* Features Section */}
@@ -46,7 +43,7 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
                             key={index}
                             href={isLinkable ? `#${feature.sectionId}` : undefined}
                             onClick={isLinkable ? (e) => { e.preventDefault(); document.getElementById(feature.sectionId)?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
-                            className={`flex flex-col items-center gap-1 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200 ${isLinkable ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`}
+                            className={`flex flex-col items-center gap-1 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200 ${isLinkable ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`} // Kept hover effects for features
                         >
                             <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-secondary rounded-full mb-2 transition-colors">
                                 <IconComponent className="w-6 h-6" />
