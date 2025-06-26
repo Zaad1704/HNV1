@@ -1,9 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Users, TrendingUp, Clock } from 'lucide-react';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
+import { useTranslation } from 'react-i18next';
 
 const AboutSection = () => {
-  const features = [
+  const { data: settings } = useSiteSettings();
+  const { t } = useTranslation();
+  
+  const defaultFeatures = [
     {
       icon: Shield,
       title: 'Secure & Reliable',
@@ -25,6 +30,15 @@ const AboutSection = () => {
       description: 'Round-the-clock customer support when you need it'
     }
   ];
+  
+  // Use live data if available, otherwise use defaults
+  const features = settings?.featuresPage?.features?.length > 0 
+    ? settings.featuresPage.features.map((feature, index) => ({
+        icon: [Shield, Users, TrendingUp, Clock][index % 4],
+        title: feature.title,
+        description: feature.description
+      }))
+    : defaultFeatures;
 
   return (
     <section className="py-20 bg-app-bg">
@@ -36,10 +50,10 @@ const AboutSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            Why Choose Our Platform?
+            {settings?.featuresPage?.title || 'Why Choose Our Platform?'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Built for modern property managers who demand efficiency, security, and growth.
+            {settings?.featuresPage?.subtitle || 'Built for modern property managers who demand efficiency, security, and growth.'}
           </p>
         </motion.div>
 
@@ -52,7 +66,7 @@ const AboutSection = () => {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="text-center"
             >
-              <div className="w-16 h-16 app-gradient rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform">
                 <feature.icon size={32} className="text-white" />
               </div>
               <h3 className="text-xl font-semibold text-text-primary mb-2">

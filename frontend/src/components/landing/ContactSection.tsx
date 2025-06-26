@@ -76,7 +76,7 @@ const ContactSection = () => {
               
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 gradient-dark-orange-blue rounded-xl flex items-center justify-center">
                     <Mail size={20} className="text-white" />
                   </div>
                   <div>
@@ -86,7 +86,7 @@ const ContactSection = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 gradient-dark-orange-blue rounded-xl flex items-center justify-center">
                     <Phone size={20} className="text-white" />
                   </div>
                   <div>
@@ -96,7 +96,7 @@ const ContactSection = () => {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 gradient-dark-orange-blue rounded-xl flex items-center justify-center">
                     <MapPin size={20} className="text-white" />
                   </div>
                   <div>
@@ -188,7 +188,7 @@ const ContactSection = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full btn-gradient py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full gradient-dark-orange-blue text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-lg transition-all"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

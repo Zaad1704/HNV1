@@ -12,6 +12,6 @@ export default defineConfig({
     sourcemap: true
   },
   define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://hnv-saas-backend.onrender.com/api')
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://hnv.onrender.com/api')
   }
 })
