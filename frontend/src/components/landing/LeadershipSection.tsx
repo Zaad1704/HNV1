@@ -1,57 +1,89 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { useSiteSettings } from '../../hooks/useSiteSettings';
+import React from 'react';
+import { motion } from 'framer-motion';
 
-export default function LeadershipSection() {
-  const { t } = useTranslation();
-  const { data: settings, isLoading, isError } = useSiteSettings();
+interface Executive {
+  name: string;
+  position: string;
+  bio: string;
+  imageUrl?: string;
+}
 
-  // FIX: This logic is now more robust.
-  // It checks for loading/error states and ensures executives data exists before trying to render.
-  // This prevents the page from crashing.
-  if (isLoading) {
-    return (
-      <div className="py-16 md:py-24 text-center text-light-text dark:text-light-text-dark">
-        Loading Leadership...
-      </div>
-    );
-  }
-
-  // Don't render the section at all if there's an error or no executives are defined in the CMS
-  if (isError || !settings?.aboutPage?.executives || settings.aboutPage.executives.length === 0) {
-    return null;
-  }
-
-  const executives = settings.aboutPage.executives;
+const LeadershipSection = () => {
+  const executives: Executive[] = [
+    {
+      name: 'John Smith',
+      position: 'CEO & Founder',
+      bio: 'Over 15 years of experience in property management and technology.',
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    },
+    {
+      name: 'Sarah Johnson',
+      position: 'CTO',
+      bio: 'Former tech lead at major real estate platforms with expertise in scalable systems.',
+      imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+    },
+    {
+      name: 'Michael Chen',
+      position: 'Head of Product',
+      bio: 'Product strategist focused on user experience and customer success.',
+      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+    }
+  ];
 
   return (
-    <section id="leadership" className="py-16 md:py-24 bg-light-card dark:bg-dark-card transition-colors duration-300">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-dark-text dark:text-dark-text-dark">
-            {settings?.leadershipSection?.title || t('leadership.title')}
+    <section className="py-20 bg-app-surface">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold text-text-primary mb-4">
+            Meet Our Leadership
           </h2>
-          <p className="text-lg text-light-text dark:text-light-text-dark max-w-2xl mx-auto">
-            {settings?.leadershipSection?.subtitle || t('leadership.subtitle')}
+          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+            Our experienced team is dedicated to revolutionizing property management.
           </p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-          {executives.map((executive, index) => (
-            <div key={index} className="bg-light-bg dark:bg-dark-bg/50 p-6 rounded-xl shadow-lg text-center hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-border-color dark:border-border-color-dark">
-              <img
-                src={executive.imageUrl}
-                alt={executive.name}
-                className="w-32 h-32 rounded-full mx-auto mb-5 border-4 border-border-color dark:border-border-color-dark object-cover"
-              />
-              <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">{executive.name}</h3>
-              <p className="text-brand-accent-dark dark:text-brand-primary font-medium mb-2 transition-colors">
-                {executive.title}
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {executives.map((executive: Executive, index: number) => (
+            <motion.div
+              key={executive.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="text-center"
+            >
+              <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                {executive.imageUrl ? (
+                  <img
+                    src={executive.imageUrl}
+                    alt={executive.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full app-gradient flex items-center justify-center text-white text-2xl font-bold">
+                    {executive.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <h3 className="text-xl font-semibold text-text-primary mb-1">
+                {executive.name}
+              </h3>
+              <p className="text-brand-blue font-medium mb-3">
+                {executive.position}
               </p>
-            </div>
+              <p className="text-text-secondary">
+                {executive.bio}
+              </p>
+            </motion.div>
           ))}
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default LeadershipSection;

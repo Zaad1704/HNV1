@@ -1,62 +1,96 @@
-// frontend/src/components/landing/FeaturesSection.tsx
 import React from 'react';
-import { IFeaturesPage } from '../../types/siteSettings'; // Assuming type exists
-import { Home, ShieldCheck, Briefcase, Star, Wrench, CreditCard, Users, Mail, Bolt, MapPin, Layers, Settings, Globe, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { IFeaturesPage } from '../../types/siteSettings';
+import { Shield, Users, TrendingUp, Clock } from 'lucide-react';
 
-const FeatureIconMap: { [key: string]: React.ElementType } = {
-    "briefcase": Briefcase, "lock": Lock, "shield-check": ShieldCheck, "home": Home,
-    "users": Users, "credit-card": CreditCard, "wrench": Wrench, "mail": Mail,
-    "bolt": Bolt, "map-pin": MapPin, "layers": Layers, "settings": Settings, "globe": Globe,
-};
+interface FeaturesSectionProps {
+  data?: IFeaturesPage;
+}
 
-const getFeatureIconComponent = (iconName: string): React.ElementType => {
-    return FeatureIconMap[iconName?.toLowerCase()] || Star;
-};
+const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
+  const defaultFeatures = [
+    {
+      icon: 'Shield',
+      title: 'Secure & Reliable',
+      text: 'Bank-level security with 99.9% uptime guarantee',
+      sectionId: 'security'
+    },
+    {
+      icon: 'Users',
+      title: 'Tenant Management',
+      text: 'Streamline tenant communications and lease management',
+      sectionId: 'tenants'
+    },
+    {
+      icon: 'TrendingUp',
+      title: 'Financial Insights',
+      text: 'Track revenue, expenses, and profitability in real-time',
+      sectionId: 'analytics'
+    },
+    {
+      icon: 'Clock',
+      title: '24/7 Support',
+      text: 'Round-the-clock customer support when you need it',
+      sectionId: 'support'
+    }
+  ];
 
-const FeaturesSection: React.FC<{ settings?: IFeaturesPage }> = ({ settings }) => {
-    
-    const features = settings?.features || [
-        { icon: 'home', title: 'Property Management', text: 'Centralize all your property information.', sectionId: 'services' },
-        { icon: 'users', title: 'Tenant Portal', text: 'Give tenants access to their lease and payment history.', sectionId: 'services' },
-        { icon: 'credit-card', title: 'Online Payments', text: 'Collect rent and fees securely online.', sectionId: 'pricing' },
-        { icon: 'wrench', title: 'Maintenance Tracking', text: 'Manage work orders from start to finish.', sectionId: 'services' },
-    ];
+  const features = data?.features || defaultFeatures;
 
-    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, sectionId?: string) => {
-        if (sectionId) {
-            e.preventDefault();
-            document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Shield': return Shield;
+      case 'Users': return Users;
+      case 'TrendingUp': return TrendingUp;
+      case 'Clock': return Clock;
+      default: return Shield;
+    }
+  };
 
-    return (
-        <section id="features" className="py-16 md:py-24 bg-light-bg dark:bg-dark-bg">
-            <div className="container mx-auto px-6">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-dark-text dark:text-dark-text-dark">
-                        {settings?.title || "Powerful Features for Modern Management"}
-                    </h2>
-                    <p className="mt-4 text-lg text-light-text dark:text-light-text-dark max-w-2xl mx-auto">
-                        {settings?.subtitle || "Everything you need to streamline your operations and grow your business."}
-                    </p>
+  return (
+    <section className="py-20 bg-app-bg">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold text-text-primary mb-4">
+            {data?.title || 'Why Choose Our Platform?'}
+          </h2>
+          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+            {data?.subtitle || 'Built for modern property managers who demand efficiency, security, and growth.'}
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature: any, index: number) => {
+            const IconComponent = getIcon(feature.icon);
+            return (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 app-gradient rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <IconComponent size={32} className="text-white" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {features.map((feature, index) => {
-                        const IconComponent = getFeatureIconComponent(feature.icon);
-                        return (
-                            <a key={index} href={`#${feature.sectionId}`} onClick={(e) => handleScroll(e, feature.sectionId)} className="block p-8 bg-light-card dark:bg-dark-card rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border-color dark:border-border-color-dark text-center">
-                                <div className="w-16 h-16 flex items-center justify-center bg-brand-primary/10 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-secondary rounded-full mb-6 mx-auto">
-                                    <IconComponent className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-2">{feature.title}</h3>
-                                <p className="text-light-text dark:text-light-text-dark">{feature.text}</p>
-                            </a>
-                        );
-                    })}
-                </div>
-            </div>
-        </section>
-    );
+                <h3 className="text-xl font-semibold text-text-primary mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-text-secondary">
+                  {feature.text}
+                </p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default FeaturesSection;
