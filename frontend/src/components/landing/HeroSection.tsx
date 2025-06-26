@@ -1,13 +1,24 @@
 // frontend/src/components/landing/HeroSection.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 
 const LandingHeroContent = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data: settings } = useSiteSettings();
+
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, sectionId: string) => {
+    e.preventDefault();
+    // Ensure we are on the root path before attempting to scroll
+    if (window.location.pathname !== '/') {
+      navigate('/', { replace: true }); // Navigate to home, then scroll
+    }
+    const targetElement = document.getElementById(sectionId);
+    if (targetElement) targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -51,38 +62,63 @@ const LandingHeroContent = () => {
           </motion.div>
 
           {/* Other cards from the Yartee design */}
-          <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={1}>
-            <div className="w-full h-24 bg-white/50 rounded-xl mb-4"></div>
-            <h2 className="text-2xl font-bold text-gray-800">Herre</h2>
-            <p className="text-gray-500 text-sm mt-2 flex-grow">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.</p>
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={1}
+            onClick={(e) => handleCardClick(e, 'about')}
+          >
+            <div className="w-full h-24 bg-brand-primary/10 rounded-xl mb-4 flex items-center justify-center text-brand-primary text-4xl font-bold">About</div>
+            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">About Us</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Learn more about our mission and vision.</p>
           </motion.div>
 
-          <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2}>
-            <h2 className="text-2xl font-bold text-gray-800">Adcure Aoticles</h2>
-            <p className="text-gray-500 text-sm mt-2 flex-grow">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            <button className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">Call Natin</button>
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={2}
+            onClick={(e) => handleCardClick(e, 'services')}
+          >
+            <div className="w-full h-24 bg-brand-secondary/10 rounded-xl mb-4 flex items-center justify-center text-brand-secondary text-4xl font-bold">Services</div>
+            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">Our Services</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Discover how we can help you manage properties.</p>
+            <button className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">Explore</button>
           </motion.div>
           
-          <motion.div className="card secondary-card-gradient rounded-3xl p-6" style={{ transform: 'rotate(-4deg)'}} variants={cardVariants} custom={3}>
-            <div className="w-10 h-10 bg-white/25 rounded-full mb-3"></div>
-            <h2 className="text-xl font-bold text-white">Spoder Noot</h2>
-            <p className="text-white/80 text-sm mt-1">Lorem ipsum dolor sit amet.</p>
+          <motion.div 
+            className="card secondary-card-gradient rounded-3xl p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={3}
+            onClick={(e) => handleCardClick(e, 'pricing')}
+          >
+            <div className="w-10 h-10 bg-white/25 rounded-full mb-3 flex items-center justify-center text-white text-2xl font-bold">$$</div>
+            <h2 className="text-xl font-bold text-white">Pricing Plans</h2>
+            <p className="text-white/80 text-sm mt-1">Find the perfect plan for your needs.</p>
           </motion.div>
 
-          <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center" variants={cardVariants} custom={4}>
-            <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-primary-card-gradient">
-                Here Greant
-            </h2>
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={4}
+            onClick={(e) => handleCardClick(e, 'leadership')}
+          >
+            <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-primary-card-gradient">Our Leadership</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2">Meet the team driving our success.</p>
           </motion.div>
           
-          <motion.div className="card neutral-glass rounded-3xl p-6 sm:col-span-2" variants={cardVariants} custom={5}>
-            <h3 className="text-gray-500 font-semibold text-sm">Blog</h3>
-            <h2 className="text-2xl font-bold mt-1 text-gray-800">Featured Articles</h2>
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 sm:col-span-2 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={5}
+            onClick={(e) => handleCardClick(e, 'contact')}
+          >
+            <h3 className="text-light-text dark:text-light-text-dark font-semibold text-sm">Get in Touch</h3>
+            <h2 className="text-2xl font-bold mt-1 text-dark-text dark:text-dark-text-dark">Contact Us</h2>
             <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
-                <img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Blog post image"/>
+                <img src="https://images.unsplash.com/photo-1587560699334-cc4ff6349d04?auto=format&fit=crop&q=80&w=400&h=300&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Contact image"/>
                 <div className="flex-1">
-                    <p className="text-gray-600 text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    <a href="#" className="text-blue-600 font-semibold mt-2 inline-block hover:underline text-sm">Read more &rarr;</a>
+                    <p className="text-light-text dark:text-light-text-dark text-sm">Have questions or need support? Reach out to our team.</p>
+                    <span className="text-brand-primary dark:text-brand-secondary font-semibold mt-2 inline-block text-sm">Send a Message &rarr;</span>
                 </div>
             </div>
           </motion.div>
