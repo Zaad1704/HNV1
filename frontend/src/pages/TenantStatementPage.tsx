@@ -1,135 +1,228 @@
-// frontend/src/pages/TenantStatementPage.tsx
-
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom'; // To get tenantId from URL
+import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { ChevronLeft } from 'lucide-react'; // Icon for back button
+import { motion } from 'framer-motion';
+import { FileText, Download, Calendar, DollarSign, User } from 'lucide-react';
 
-// Define interfaces for statement data
-interface IStatementEntry {
-    month: string;
-    expectedDue: number;
-    amountPaid: number;
-    monthlyBalance: number;
-    cumulativeBalance: number;
-    invoices: {
-        id: string;
-        invoiceNumber: string;
-        amount: number;
-        status: string;
-        dueDate: string;
-    }[];
-    payments: {
-        id: string;
-        amount: number;
-        date: string;
-    }[];
+interface StatementItem {
+  _id: string;
+  date: string;
+  description: string;
+  amount: number;
+  type: 'charge' | 'payment' | 'credit';
 }
 
-interface ITenantStatementData {
-    data: IStatementEntry[];
-    tenantName: string;
+interface TenantStatement {
+  tenant: {
+    name: string;
+    email: string;
+    unit: string;
+  };
+  property: {
+    name: string;
+    address: string;
+  };
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  items: StatementItem[];
+  totalCharges: number;
+  totalPayments: number;
+  balance: number;
 }
 
-const fetchTenantStatement = async (tenantId: string, startMonth: string, endMonth: string): Promise<ITenantStatementData> => {
-    const { data } = await apiClient.get(`/reports/tenant-statement/${tenantId}`, {
-        params: { startMonth, endMonth }
-    });
-    return data; // Assuming backend returns { success: true, data: statement, tenantName: string }
+const fetchTenantStatement = async (tenantId: string, period: string): Promise<TenantStatement> => {
+  const { data } = await apiClient.get(`/tenant-portal/statement/${tenantId}?period=${period}`);
+  return data.data;
 };
 
-const TenantStatementPage: React.FC = () => {
-    const { tenantId } = useParams<{ tenantId: string }>(); // Get tenantId from URL
-    const today = new Date();
-    const defaultEndMonth = today.toISOString().substring(0, 7); //YYYY-MM
-    const defaultStartMonth = new Date(today.getFullYear(), today.getMonth() - 11, 1).toISOString().substring(0, 7); // 12 months ago
+const TenantStatementPage = () => {
+  const { tenantId } = useParams<{ tenantId: string }>();
+  const [selectedPeriod, setSelectedPeriod] = useState('current');
 
-    const [startMonth, setStartMonth] = useState(defaultStartMonth);
-    const [endMonth, setEndMonth] = useState(defaultEndMonth);
+  const { data: statement, isLoading, error } = useQuery({
+    queryKey: ['tenantStatement', tenantId, selectedPeriod],
+    queryFn: () => fetchTenantStatement(tenantId!, selectedPeriod),
+    enabled: !!tenantId
+  });
 
-    const { data, isLoading, isError, error } = useQuery({
-        queryKey: ['tenantStatement', tenantId, startMonth, endMonth],
-        queryFn: () => fetchTenantStatement(tenantId!, startMonth, endMonth), // Fetch data
-        enabled: !!tenantId, // Only run query if tenantId exists
-    });
+  const handleDownloadPDF = async () => {
+    try {
+      const response = await apiClient.get(`/tenant-portal/statement/${tenantId}/pdf?period=${selectedPeriod}`, {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `statement-${selectedPeriod}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Failed to download statement';
+      alert(`Error: ${errorMessage}`);
+    }
+  };
 
-    if (!tenantId) return <div className="text-red-500 text-center p-8 dark:text-red-500">Tenant ID not provided.</div>;
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading tenant statement...</div>;
-    if (isError) return <div className="text-red-500 text-center p-8 dark:text-red-500">Failed to load statement: {error?.message || 'Unknown error.'}</div>;
-
-    const statement = data?.data || [];
-    const tenantName = data?.tenantName || 'Tenant';
-
+  if (isLoading) {
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
-            <div className="flex items-center gap-4 mb-6">
-                <a href="/dashboard/tenants" className="text-light-text dark:text-light-text-dark hover:text-brand-primary dark:hover:text-brand-secondary transition-colors duration-150">
-                    <ChevronLeft size={24} />
-                </a>
-                <h1 className="text-3xl font-bold">Monthly Statement for {tenantName}</h1>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading statement...</span>
+      </div>
+    );
+  }
+
+  if (error || !statement) {
+    return (
+      <div className="text-center py-16">
+        <FileText size={48} className="mx-auto text-text-muted mb-4" />
+        <h3 className="text-xl font-semibold text-text-primary mb-2">Statement Not Available</h3>
+        <p className="text-text-secondary">Unable to load the tenant statement.</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Tenant Statement</h1>
+          <p className="text-text-secondary mt-1">
+            {new Date(statement.period.startDate).toLocaleDateString()} - {new Date(statement.period.endDate).toLocaleDateString()}
+          </p>
+        </div>
+        
+        <div className="flex gap-4">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="px-4 py-2 rounded-2xl border border-app-border bg-app-surface"
+          >
+            <option value="current">Current Month</option>
+            <option value="last">Last Month</option>
+            <option value="quarter">Last Quarter</option>
+            <option value="year">Last Year</option>
+          </select>
+          
+          <button
+            onClick={handleDownloadPDF}
+            className="btn-gradient px-6 py-2 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Download size={16} />
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Statement Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Tenant & Property Info */}
+        <div className="app-surface rounded-3xl p-6 border border-app-border">
+          <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
+            <User size={20} />
+            Tenant Information
+          </h3>
+          
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm text-text-secondary">Name</p>
+              <p className="font-medium text-text-primary">{statement.tenant.name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-text-secondary">Email</p>
+              <p className="font-medium text-text-primary">{statement.tenant.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-text-secondary">Unit</p>
+              <p className="font-medium text-text-primary">{statement.tenant.unit}</p>
+            </div>
+            <div>
+              <p className="text-sm text-text-secondary">Property</p>
+              <p className="font-medium text-text-primary">{statement.property.name}</p>
+              <p className="text-xs text-text-muted">{statement.property.address}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="lg:col-span-2 app-surface rounded-3xl p-6 border border-app-border">
+          <h3 className="font-semibold text-text-primary mb-6 flex items-center gap-2">
+            <DollarSign size={20} />
+            Statement Summary
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="text-center p-4 bg-blue-50 rounded-2xl">
+              <p className="text-2xl font-bold text-blue-600">
+                ${statement.totalCharges.toLocaleString()}
+              </p>
+              <p className="text-sm text-blue-800">Total Charges</p>
             </div>
             
-            {/* Date Range Filters (Optional) */}
-            <div className="bg-light-card dark:bg-dark-card p-4 rounded-xl border border-border-color dark:border-border-color-dark mb-6 flex flex-col sm:flex-row gap-4 transition-all duration-200">
-                <div>
-                    <label htmlFor="startMonth" className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">From Month:</label>
-                    <input type="month" id="startMonth" value={startMonth} onChange={(e) => setStartMonth(e.target.value)} className="bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md px-3 py-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
-                </div>
-                <div>
-                    <label htmlFor="endMonth" className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">To Month:</label>
-                    <input type="month" id="endMonth" value={endMonth} onChange={(e) => setEndMonth(e.target.value)} className="bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-md px-3 py-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
-                </div>
+            <div className="text-center p-4 bg-green-50 rounded-2xl">
+              <p className="text-2xl font-bold text-green-600">
+                ${statement.totalPayments.toLocaleString()}
+              </p>
+              <p className="text-sm text-green-800">Total Payments</p>
             </div>
+            
+            <div className={`text-center p-4 rounded-2xl ${
+              statement.balance >= 0 ? 'bg-red-50' : 'bg-green-50'
+            }`}>
+              <p className={`text-2xl font-bold ${
+                statement.balance >= 0 ? 'text-red-600' : 'text-green-600'
+              }`}>
+                ${Math.abs(statement.balance).toLocaleString()}
+              </p>
+              <p className={`text-sm ${
+                statement.balance >= 0 ? 'text-red-800' : 'text-green-800'
+              }`}>
+                {statement.balance >= 0 ? 'Amount Due' : 'Credit Balance'}
+              </p>
+            </div>
+          </div>
 
-            {statement.length === 0 ? (
-                <div className="text-center py-16 bg-light-card dark:bg-dark-card rounded-xl border border-dashed border-border-color dark:border-border-color-dark transition-all duration-200">
-                    <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">No Statement Data Found</h3>
-                    <p className="text-light-text dark:text-light-text-dark mt-2 mb-4">Check the date range or ensure invoices/payments exist for this tenant.</p>
+          {/* Statement Items */}
+          <div className="space-y-3">
+            <h4 className="font-medium text-text-primary">Transaction Details</h4>
+            {statement.items.map((item: StatementItem) => (
+              <div key={item._id} className="flex justify-between items-center p-4 bg-app-bg rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <Calendar size={16} className="text-text-muted" />
+                  <div>
+                    <p className="font-medium text-text-primary">{item.description}</p>
+                    <p className="text-sm text-text-secondary">
+                      {new Date(item.date).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-            ) : (
-                <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-border-color dark:border-border-color-dark overflow-hidden transition-all duration-200">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-light-bg dark:bg-dark-bg/50 border-b border-border-color dark:border-border-color-dark">
-                                <tr>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Month</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Expected Due</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Amount Paid</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Monthly Balance</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Cumulative Balance</th>
-                                    <th className="p-4 text-sm font-semibold text-light-text dark:text-light-text-dark uppercase">Details</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
-                                {statement.map((entry) => (
-                                    <React.Fragment key={entry.month}>
-                                        <tr className="hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors duration-150">
-                                            <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{entry.month}</td>
-                                            <td className="p-4 text-light-text dark:text-light-text-dark">${entry.expectedDue.toFixed(2)}</td>
-                                            <td className="p-4 text-light-text dark:text-light-text-dark">${entry.amountPaid.toFixed(2)}</td>
-                                            <td className={`p-4 font-semibold ${entry.monthlyBalance < 0 ? 'text-brand-orange' : 'text-green-600'}`}> {/* Adjusted text-red-600 to brand-orange */}
-                                                ${entry.monthlyBalance.toFixed(2)}
-                                            </td>
-                                            <td className={`p-4 font-bold ${entry.cumulativeBalance < 0 ? 'text-brand-orange' : 'text-green-700'}`}> {/* Adjusted text-red-700 to brand-orange */}
-                                                ${entry.cumulativeBalance.toFixed(2)}
-                                            </td>
-                                            <td className="p-4">
-                                                {/* Optional: Add a button to expand details for invoices/payments */}
-                                                <button className="text-brand-primary dark:text-brand-secondary hover:underline text-sm transition-colors">View Details</button>
-                                            </td>
-                                        </tr>
-                                        {/* Optional: Detailed rows for invoices/payments within the month */}
-                                        {/* For a true Montrose table, you'd integrate these more directly */}
-                                    </React.Fragment>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                
+                <div className="text-right">
+                  <p className={`font-semibold ${
+                    item.type === 'payment' ? 'text-green-600' : 
+                    item.type === 'credit' ? 'text-blue-600' : 'text-red-600'
+                  }`}>
+                    {item.type === 'payment' || item.type === 'credit' ? '-' : '+'}
+                    ${item.amount.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-text-muted capitalize">{item.type}</p>
                 </div>
-            )}
+              </div>
+            ))}
+          </div>
         </div>
-    );
+      </div>
+    </motion.div>
+  );
 };
 
 export default TenantStatementPage;
