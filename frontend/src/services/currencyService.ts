@@ -15,8 +15,8 @@ const BASE_CURRENCY = 'USD';
 export const fetchExchangeRates = async (): Promise<ExchangeRates> => {
   try {
     const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${BASE_CURRENCY}`);
-    const data: CurrencyResponse = await response.json();
-    return data.rates || data.conversion_rates;
+    const data: any = await response.json();
+    return data.rates || data.conversion_rates || {};
   } catch (error) {
     console.warn('Failed to fetch exchange rates, using fallback rates');
     // Fallback rates
