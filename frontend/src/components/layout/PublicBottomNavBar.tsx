@@ -4,7 +4,7 @@ import { Home, Compass, Tag, Phone, LogIn, MoreHorizontal, Globe, Sun, Moon } fr
 import { useScrollSpy } from '../../hooks/useScrollSpy';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useLang } from '../../contexts/LanguageContext';
+import { useLang } from '../../contexts/LanguageContext'; // Added Download import
 
 const PublicBottomNavBar = () => {
     const location = useLocation();
@@ -17,9 +17,12 @@ const PublicBottomNavBar = () => {
     // Sections on the landing page that this bottom nav will link to
     const navItems = [
         { name: t('header.about', 'About'), href: '/#about', icon: Home, sectionId: 'about' },
+        { name: t('header.features', 'Features'), href: '/#featuresPage', icon: Compass, sectionId: 'featuresPage' }, // Added features
         { name: t('header.services', 'Services'), href: '/#services', icon: Compass, sectionId: 'services' },
+        { name: t('header.leadership', 'Leadership'), href: '/#leadership', icon: Compass, sectionId: 'leadership' }, // Added leadership
         { name: t('header.pricing', 'Pricing'), href: '/#pricing', icon: Tag, sectionId: 'pricing' },
         { name: t('header.contact', 'Contact'), href: '/#contact', icon: Phone, sectionId: 'contact' },
+        { name: t('install_app.cta', 'Install App'), href: '/#install-app', icon: Download, sectionId: 'install-app' }, // Added install app
     ];
     
     // For the 4 main visible icons + 1 "More" icon
@@ -39,13 +42,12 @@ const PublicBottomNavBar = () => {
 
     const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
         setMoreMenuOpen(false);
-        if (href.startsWith('/#')) {
-            e.preventDefault();
-            const targetId = href.substring(2);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth' });
-            }
+        e.preventDefault();
+        const targetId = href.substring(2); // Remove '/#'
+        // Always navigate to the root path first if not already there, then scroll
+        if (location.pathname !== '/') { navigate('/'); }
+        if (document.getElementById(targetId)) {
+            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
         } else {
             // For direct page links like /login
             // The Link component handles navigation, so no need for manual navigate()
