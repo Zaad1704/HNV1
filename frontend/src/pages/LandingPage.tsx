@@ -1,54 +1,72 @@
 // frontend/src/pages/LandingPage.tsx
 import React from 'react';
-import { useSiteSettings } from '../hooks/useSiteSettings';
-import { usePublicPlans } from '../hooks/usePublicPlans'; // Assuming this hook exists to fetch plans
-import PublicHeader from '../components/layout/PublicHeader';
-import Footer from '../components/layout/Footer';
-import PublicBottomNavBar from '../components/layout/PublicBottomNavBar';
-import Spinner from '../components/uikit/Spinner';
+import { motion } from 'framer-motion';
 
-// Import Section Components
+// Import all the section components
 import HeroSection from '../components/landing/HeroSection';
-import FeaturesSection from '../components/landing/FeaturesSection';
 import AboutSection from '../components/landing/AboutSection';
 import ServicesSection from '../components/landing/ServicesSection';
+import LeadershipSection from '../components/landing/LeadershipSection';
 import PricingSection from '../components/landing/PricingSection';
-import InstallAppSection from '../components/landing/InstallAppSection';
 import ContactSection from '../components/landing/ContactSection';
+import InstallAppSection from '../components/landing/InstallAppSection';
 
 const LandingPage = () => {
-    const { data: settings, isLoading: isLoadingSettings } = useSiteSettings();
-    // NOTE: I've assumed a `usePublicPlans` hook exists to fetch pricing plans for the landing page.
-    const { data: plans, isLoading: isLoadingPlans } = usePublicPlans(); 
+    const pageVariants = {
+        initial: { opacity: 0 },
+        in: { opacity: 1 },
+        out: { opacity: 0 },
+    };
 
-    if (isLoadingSettings || isLoadingPlans) {
-        return (
-            <div className="flex justify-center items-center min-h-screen bg-light-bg dark:bg-dark-bg">
-                <Spinner />
-            </div>
-        );
-    }
+    const pageTransition = {
+        type: "tween",
+        ease: "anticipate",
+        duration: 0.5,
+    };
 
-    if (!settings) {
-        return <div className="text-center p-8 text-red-500">Error: Could not load site configuration.</div>;
-    }
+  return (
+    <motion.div
+        initial="initial"
+        animate="in"
+        exit="out"
+        variants={pageVariants}
+        transition={pageTransition}
+        className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"
+    >
+      <HeroSection />
 
-    return (
-        <div className="bg-light-bg dark:bg-dark-bg">
-            <PublicHeader />
-            <main>
-                <HeroSection settings={settings.heroSection} />
-                <FeaturesSection settings={settings.featuresPage} />
-                <AboutSection settings={settings.aboutSection} />
-                <ServicesSection settings={settings.servicesSection} />
-                <PricingSection plans={plans || []} settings={settings.pricingSection} />
-                <InstallAppSection settings={settings.installAppSection} />
-                <ContactSection settings={settings.contactSection} />
-            </main>
-            <Footer />
-            <PublicBottomNavBar />
-        </div>
-    );
+      {/* Features Section - This will be populated by DesktopLandingLayout/MobileLandingLayout */}
+      {/* The actual content for this section is rendered by the layout components,
+          but we keep the ID here for consistent scrolling targets. */}
+      <div id="featuresPage" className="py-20 md:py-28">
+        {/* Content will be injected by the layout components */}
+      </div>
+
+      <div id="about" className="py-20 md:py-28">
+        <AboutSection />
+      </div>
+      
+      <div id="services" className="py-20 md:py-28">
+        <ServicesSection />
+      </div>
+
+      <div id="leadership" className="py-20 md:py-28">
+        <LeadershipSection />
+      </div>
+
+      <div id="pricing" className="py-20 md:py-28">
+        <PricingSection />
+      </div>
+
+      <div id="contact" className="py-20 md:py-28">
+        <ContactSection />
+      </div>
+
+      <div id="install-app" className="py-20 md:py-28">
+        <InstallAppSection />
+      </div>
+    </motion.div>
+  );
 };
 
 export default LandingPage;
