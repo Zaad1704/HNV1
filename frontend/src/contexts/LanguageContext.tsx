@@ -1,49 +1,49 @@
-import React, {
-  createContext, useContext, useState, ReactNode, useEffect, useMemo,
-} from "react";
-import { useTranslation } from "react-i18next";
-import apiClient from "../api/client";
+import React, { createContext, useContext, useState } from 'react';
 
-export const ALL_SUPPORTED_LANGUAGES_MAP = {
-  en: { code: "en", name: "English" },
-  bn: { code: "bn", name: "বাংলা" },
-};
-
-type LangCode = keyof typeof ALL_SUPPORTED_LANGUAGES_MAP;
-type LangOption = typeof ALL_SUPPORTED_LANGUAGES_MAP[LangCode];
-
-interface LangContextType {
-  lang: LangCode;
-  setLang: (l: LangCode) => void;
-  toggleLanguages: LangOption[];
-  currentLanguageName: string;
-  getNextToggleLanguage: () => LangOption;
-  currencyCode: string;
+interface LanguageContextType {
+  lang: string;
+  setLang: (lang: string) => void;
   currencyName: string;
+  getNextToggleLanguage: () => { code: string; name: string };
 }
 
-const LangContext = createContext<LangContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+const languages = [
+  { code: 'en', name: 'English', currency: '$' },
+  { code: 'bn', name: 'বাংলা', currency: '৳' }
+];
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [lang, setLang] = useState('en');
+  
+  const currentLang = languages.find(l => l.code === lang) || languages[0];
+  
+  const getNextToggleLanguage = () => {
+    const currentIndex = languages.findIndex(l => l.code === lang);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    return languages[nextIndex];
+  };
+
+  return (
+    <LanguageContext.Provider value={{
+      lang,
+      setLang,
+      currencyName: currentLang.currency,
+      getNextToggleLanguage
+    }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
 
 export const useLang = () => {
-  const context = useContext(LangContext);
+  const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error("useLang must be used within a LangProvider");
+    throw new Error('useLang must be used within LanguageProvider');
   }
   return context;
 };
-
-export const LangProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { i18n } = useTranslation();
-
-  const [lang, setLangState] = useState<LangCode>(() => {
-    const persistedLang = localStorage.getItem("preferredLang") as LangCode;
-    return (persistedLang && ALL_SUPPORTED_LANGUAGES_MAP[persistedLang]) ? persistedLang : "en";
-  });
-
-  // --- THIS IS THE KEY CHANGE ---
-  // The currency information is now derived directly from the current language state.
-  const currencyInfo = useMemo(() => {
-    if (lang === 'bn') {
       return { code: 'BDT', name: '৳' };
     }
     // Default currency
