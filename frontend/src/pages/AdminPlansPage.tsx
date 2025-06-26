@@ -1,95 +1,217 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import { motion } from 'framer-motion';
+import { Plus, Edit, Trash2, CreditCard } from 'lucide-react';
 import PlanFormModal from '../components/admin/PlanFormModal';
 
+interface Plan {
+  _id: string;
+  name: string;
+  price: number;
+  duration: string;
+  features: string;
+  limits: {
+    maxProperties: number;
+    maxTenants: number;
+    maxAgents: number;
+  };
+  isPublic: boolean;
+}
+
+const fetchPlans = async (): Promise<Plan[]> => {
+  const { data } = await apiClient.get('/admin/plans');
+  return data.data;
+};
+
+const createPlan = async (plan: Omit<Plan, '_id'>) => {
+  const { data } = await apiClient.post('/admin/plans', plan);
+  return data.data;
+};
+
+const updatePlan = async ({ id, ...plan }: { id: string } & Partial<Plan>) => {
+  const { data } = await apiClient.put(`/admin/plans/${id}`, plan);
+  return data.data;
+};
+
+const deletePlan = async (planId: string) => {
+  await apiClient.delete(`/admin/plans/${planId}`);
+};
+
 const AdminPlansPage = () => {
-    const [plans, setPlans] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState(null);
+  const queryClient = useQueryClient();
+  const [showModal, setShowModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
-    const fetchPlans = async () => {
-        try {
-            setLoading(true);
-            const response = await apiClient.get('/plans');
-            setPlans(response.data.data);
-        } catch (err) {
-            setError("Failed to fetch plans.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const { data: plans = [], isLoading } = useQuery({
+    queryKey: ['adminPlans'],
+    queryFn: fetchPlans
+  });
 
-    useEffect(() => {
-        fetchPlans();
-    }, []);
-    
-    const handleAddNew = () => { setSelectedPlan(null); setIsModalOpen(true); };
-    const handleEdit = (plan) => { setSelectedPlan(plan); setIsModalOpen(true); };
-    const handleDelete = async (planId) => {
-        if(window.confirm('Are you sure you want to delete this plan? This action cannot be undone.')) {
-            try {
-                await apiClient.delete(`/plans/${planId}`);
-                fetchPlans(); // Refetch plans after deletion
-            } catch (err) {
-                alert('Failed to delete plan.');
-            }
-        }
-     };
+  const createMutation = useMutation({
+    mutationFn: createPlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['adminPlans']);
+      setShowModal(false);
+    }
+  });
 
-    if (loading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading plans...</div>;
-    if (error) return <div className="text-red-500 text-center p-8">{error}</div>;
+  const updateMutation = useMutation({
+    mutationFn: updatePlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['adminPlans']);
+      setShowModal(false);
+      setEditingPlan(null);
+    }
+  });
 
+  const deleteMutation = useMutation({
+    mutationFn: deletePlan,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['adminPlans']);
+    }
+  });
+
+  const handleSavePlan = (plan: any) => {
+    if (editingPlan) {
+      updateMutation.mutate({ id: editingPlan._id, ...plan });
+    } else {
+      createMutation.mutate(plan);
+    }
+  };
+
+  const handleEditPlan = (plan: Plan) => {
+    setEditingPlan(plan);
+    setShowModal(true);
+  };
+
+  const handleDeletePlan = (planId: string) => {
+    if (confirm('Are you sure you want to delete this plan?')) {
+      deleteMutation.mutate(planId);
+    }
+  };
+
+  if (isLoading) {
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
-            <PlanFormModal 
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSave={fetchPlans}
-                plan={selectedPlan}
-            />
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Manage Subscription Plans</h1>
-                <button onClick={handleAddNew} className="px-5 py-2.5 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary shadow-md transition-colors duration-200">
-                    + Add New Plan
-                </button>
-            </div>
-            <div className="bg-light-card rounded-xl shadow-sm border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
-                            <tr>
-                                <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Plan Name</th>
-                                <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Price</th>
-                                <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Limits</th>
-                                <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Public</th>
-                                <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
-                            {plans.map(plan => (
-                                <tr key={plan._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
-                                    <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{plan.name}</td>
-                                    <td className="p-4 text-light-text dark:text-light-text-dark">${(plan.price / 100).toFixed(2)} / {plan.duration}</td>
-                                    <td className="p-4 text-sm text-light-text dark:text-light-text-dark">
-                                        Prop: {plan.limits.maxProperties}, Tenants: {plan.limits.maxTenants}, Agents: {plan.limits.maxAgents}
-                                    </td>
-                                    <td className="p-4 text-center">
-                                        <input type="checkbox" checked={plan.isPublic} disabled className="h-4 w-4 text-brand-primary rounded border-border-color focus:ring-brand-primary"/> {/* Added border-color and focus styling */}
-                                    </td>
-                                    <td className="p-4 space-x-4">
-                                        <button onClick={() => handleEdit(plan)} className="font-medium text-brand-primary hover:underline transition-colors duration-150">Edit</button>
-                                        <button onClick={() => handleDelete(plan._id)} className="font-medium text-brand-orange hover:underline transition-colors duration-150">Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading plans...</span>
+      </div>
     );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Subscription Plans</h1>
+          <p className="text-text-secondary mt-1">Manage pricing plans and features</p>
+        </div>
+        <button
+          onClick={() => {
+            setEditingPlan(null);
+            setShowModal(true);
+          }}
+          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+        >
+          <Plus size={20} />
+          Add Plan
+        </button>
+      </div>
+
+      {plans.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {plans.map((plan: Plan, index: number) => (
+            <motion.div
+              key={plan._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all duration-300"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-text-primary">{plan.name}</h3>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  plan.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {plan.isPublic ? 'Public' : 'Private'}
+                </span>
+              </div>
+
+              <div className="mb-4">
+                <span className="text-3xl font-bold text-text-primary">${plan.price}</span>
+                <span className="text-text-secondary">/{plan.duration}</span>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm text-text-secondary mb-2">Limits:</p>
+                <div className="text-xs text-text-muted space-y-1">
+                  <div>Properties: {plan.limits.maxProperties}</div>
+                  <div>Tenants: {plan.limits.maxTenants}</div>
+                  <div>Agents: {plan.limits.maxAgents}</div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEditPlan(plan)}
+                  className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Edit size={14} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeletePlan(plan._id)}
+                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16"
+        >
+          <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <CreditCard size={48} className="text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-text-primary mb-2">No Plans Yet</h3>
+          <p className="text-text-secondary mb-8 max-w-md mx-auto">
+            Create your first subscription plan to start monetizing your platform.
+          </p>
+          <button
+            onClick={() => {
+              setEditingPlan(null);
+              setShowModal(true);
+            }}
+            className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto"
+          >
+            <Plus size={20} />
+            Create First Plan
+          </button>
+        </motion.div>
+      )}
+
+      <PlanFormModal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditingPlan(null);
+        }}
+        onSave={handleSavePlan}
+        plan={editingPlan}
+      />
+    </motion.div>
+  );
 };
 
 export default AdminPlansPage;
