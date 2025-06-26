@@ -10,6 +10,10 @@
     "get_started": "Get Started",
     "sign_up": "Sign Up"
   },
+  "install_app": {
+    "cta": "Install App",
+    "manual_prompt": "To install, please use the 'Install' option in your browser's menu (usually found in the three-dot menu)."
+  },
   "footer": {
     "description": "HNV Solutions is the leading platform for streamlining property management tasks, from tenant communication to financial tracking.",
     "copyright_text": "HNV Property Management Solutions. All Rights Reserved.",
