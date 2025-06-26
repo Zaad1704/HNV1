@@ -1,37 +1,56 @@
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-interface RentStatusData {
+interface RentStatusChartProps {
+  data: Array<{
     name: string;
     value: number;
+  }>;
 }
 
-const COLORS = ['var(--green-500)', 'var(--brand-orange)']; // Green for Paid, Orange for Overdue (Using CSS variables)
+const COLORS = ['#22c55e', '#ef4444'];
 
-const RentStatusChart: React.FC<{ data: RentStatusData[] }> = ({ data }) => {
-    return (
-        <ResponsiveContainer width="100%" height={320}>
-            <PieChart>
-                <Pie
-                    data={data}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={100}
-                    fill="#8884d8" // This can be default, as Cell override it
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                    {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <Tooltip contentStyle={{ background: 'var(--light-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', color: 'var(--dark-text)' }}/> {/* Semantic colors */}
-                <Legend wrapperStyle={{ fontSize: '14px', color: 'var(--dark-text)' }}/> {/* Semantic text color */}
-            </PieChart>
-        </ResponsiveContainer>
-    );
+const RentStatusChart: React.FC<RentStatusChartProps> = ({ data }) => {
+  return (
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={40}
+            outerRadius={80}
+            paddingAngle={5}
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)',
+              borderRadius: '12px',
+              color: 'var(--text-primary)'
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="mt-4 flex justify-center gap-4">
+        {data.map((entry, index) => (
+          <div key={entry.name} className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            ></div>
+            <span className="text-sm text-text-secondary">{entry.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default RentStatusChart;
