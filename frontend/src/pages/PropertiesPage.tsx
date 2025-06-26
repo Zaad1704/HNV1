@@ -1,163 +1,163 @@
-// frontend/src/pages/PropertiesPage.tsx
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import AddPropertyModal from '../components/common/AddPropertyModal';
-import EditPropertyModal from '../components/common/EditPropertyModal';
-import { useWindowSize } from '../hooks/useWindowSize';
-import { Home, MapPin, Search, Edit, Trash2, Download, PlusCircle } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye } from 'lucide-react';
+import AddPropertyModal from '../components/common/AddPropertyModal';
+import { Link } from 'react-router-dom';
 
 const fetchProperties = async () => {
-    const { data } = await apiClient.get('/properties');
-    return data.data;
+  const { data } = await apiClient.get('/properties');
+  return data.data;
 };
 
 const PropertiesPage = () => {
-    const queryClient = useQueryClient();
-    const navigate = useNavigate();
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedProperty, setSelectedProperty] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const { width } = useWindowSize();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const queryClient = useQueryClient();
 
-    const { data: properties = [], isLoading, isError } = useQuery({
-        queryKey: ['properties'],
-        queryFn: fetchProperties,
-    });
+  const { data: properties, isLoading } = useQuery({
+    queryKey: ['properties'],
+    queryFn: fetchProperties
+  });
 
-    const deleteMutation = useMutation({
-        mutationFn: (propertyId: string) => apiClient.delete(`/properties/${propertyId}`),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['properties'] });
-            alert('Property deleted successfully!');
-        },
-        onError: (err: any) => {
-            alert(err.response?.data?.message || "Failed to delete property.");
-        }
-    });
+  const handlePropertyAdded = (newProperty: any) => {
+    queryClient.setQueryData(['properties'], (old: any) => [...(old || []), newProperty]);
+  };
 
-    const handleExport = async (format: 'csv' | 'pdf') => {
-        try {
-            const response = await apiClient.get('/reports/properties/export', {
-                params: { format },
-                responseType: 'blob',
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `properties-export.${format}`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode?.removeChild(link);
-        } catch (error) {
-            console.error("Failed to export properties:", error);
-            alert("Could not export properties.");
-        }
-    };
-
-    const handleEditClick = (property: any) => {
-        setSelectedProperty(property);
-        setIsEditModalOpen(true);
-    };
-
-    const handleDeleteClick = (propertyId: string) => {
-        if (window.confirm("Are you sure you want to permanently delete this property?")) {
-            deleteMutation.mutate(propertyId);
-        }
-    };
-
-    const handlePropertyAdded = () => {
-        queryClient.invalidateQueries({ queryKey: ['properties'] });
-    };
-    
-    const filteredProperties = useMemo(() => {
-        if (!searchTerm) return properties;
-        return properties.filter((prop: any) =>
-            prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (prop.address?.formattedAddress || '').toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [searchTerm, properties]);
-
-    const getStatusClass = (status: string) => {
-        switch (status) {
-            case 'Active': return 'bg-green-500/20 text-green-300';
-            case 'Under Renovation': return 'bg-yellow-500/20 text-yellow-300';
-            default: return 'bg-gray-500/20 text-gray-300';
-        }
-    };
-
-    const pageVariants = {
-        initial: { opacity: 0, y: 20 },
-        in: { opacity: 1, y: 0 },
-        out: { opacity: 0, y: -20 },
-    };
-    
-    const DesktopView = () => (
-        <div className="bg-light-card rounded-3xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
-                        <tr>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Property Name</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Address</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Units</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Status</th>
-                            <th className="p-4 text-sm font-semibold text-light-text uppercase text-right dark:text-light-text-dark">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
-                        {filteredProperties.map((prop: any) => (
-                            <tr key={prop._id} className="hover:bg-light-bg/50 dark:hover:bg-dark-bg/40 transition-colors duration-150">
-                                <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{prop.name}</td>
-                                <td className="p-4 text-light-text dark:text-light-text-dark">{prop.address.formattedAddress}</td>
-                                <td className="p-4 text-light-text dark:text-light-text-dark">{prop.numberOfUnits}</td>
-                                <td className="p-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span></td>
-                                <td className="p-4 text-right flex items-center justify-end gap-2">
-                                    <button onClick={() => navigate(`/dashboard/properties/${prop._id}`)} className="font-medium text-brand-primary dark:text-brand-secondary hover:underline p-2 rounded-md hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors" title="View Details">Manage</button>
-                                    <button onClick={() => handleEditClick(prop)} className="p-2 text-light-text dark:text-light-text-dark hover:bg-light-bg dark:hover:bg-dark-bg/40 rounded-md transition-colors" title="Edit Property"><Edit size={16} /></button>
-                                    <button onClick={() => handleDeleteClick(prop._id)} disabled={deleteMutation.isLoading} className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Delete Property"><Trash2 size={16} /></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-    
-    const MobileView = () => (
-        <div className="grid grid-cols-1 gap-4">
-            {filteredProperties.map((prop: any) => (
-                <motion.div 
-                    key={prop._id} 
-                    className="bg-light-card dark:bg-dark-card p-4 rounded-3xl border border-border-color shadow-sm transition-all duration-200"
-                    onClick={() => navigate(`/dashboard/properties/${prop._id}`)}
-                    whileHover={{ scale: 1.02, y: -5 }}
-                >
-                    <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-dark-text dark:text-dark-text-dark text-lg">{prop.name}</h3>
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(prop.status)}`}>{prop.status}</span>
-                    </div>
-                    <p className="text-light-text dark:text-light-text-dark text-sm flex items-center gap-2 mb-1"><MapPin size={14}/> {prop.address.formattedAddress}</p>
-                    <p className="text-light-text dark:text-light-text-dark text-sm flex items-center gap-2 mb-1"><Home size={14}/> {prop.numberOfUnits} Units</p>
-                    <div className="flex justify-end mt-4">
-                        <span className="font-medium text-sm text-brand-primary dark:text-brand-secondary">View Details &rarr;</span>
-                    </div>
-                </motion.div>
-            ))}
-        </div>
-    );
-
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading properties...</div>;
-    if (isError) return <div className="text-red-500 text-center p-8 text-red-500">Failed to fetch properties.</div>;
-
+  if (isLoading) {
     return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading properties...</span>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Properties</h1>
+          <p className="text-text-secondary mt-1">Manage your property portfolio</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+        >
+          <Plus size={20} />
+          Add Property
+        </button>
+      </div>
+
+      {/* Properties Grid */}
+      {properties && properties.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.map((property: any, index: number) => (
+            <motion.div
+              key={property._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-app-lg transition-all duration-300 group"
+            >
+              {/* Property Image */}
+              <div className="h-48 bg-gradient-to-br from-brand-blue to-brand-orange relative overflow-hidden">
+                {property.imageUrl ? (
+                  <img
+                    src={property.imageUrl}
+                    alt={property.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Building2 size={48} className="text-white/80" />
+                  </div>
+                )}
+                <div className="absolute top-4 right-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    property.status === 'Active' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {property.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Property Info */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-text-primary mb-2">
+                  {property.name}
+                </h3>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-text-secondary text-sm">
+                    <MapPin size={14} />
+                    <span>{property.address?.formattedAddress || 'Address not available'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-text-secondary text-sm">
+                    <Users size={14} />
+                    <span>{property.numberOfUnits} {property.numberOfUnits === 1 ? 'Unit' : 'Units'}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Link
+                    to={`/dashboard/properties/${property._id}`}
+                    className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Eye size={14} />
+                    View
+                  </Link>
+                  <button className="flex-1 app-gradient text-white py-2 px-4 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center justify-center gap-2">
+                    <Edit size={14} />
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
         <motion.div
-            initial="initial"
-            animate="in"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16"
+        >
+          <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <Building2 size={48} className="text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-text-primary mb-2">No Properties Yet</h3>
+          <p className="text-text-secondary mb-8 max-w-md mx-auto">
+            Start building your property portfolio by adding your first property.
+          </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto"
+          >
+            <Plus size={20} />
+            Add Your First Property
+          </button>
+        </motion.div>
+      )}
+
+      {/* Add Property Modal */}
+      <AddPropertyModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onPropertyAdded={handlePropertyAdded}
+      />
+    </motion.div>
+  );
+};
+
+export default PropertiesPage;
             exit="out"
             variants={pageVariants}
             transition={{ duration: 0.4 }}
