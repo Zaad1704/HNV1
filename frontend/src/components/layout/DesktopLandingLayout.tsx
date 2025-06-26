@@ -7,6 +7,7 @@ import ServicesSection from '../landing/ServicesSection';
 import PricingSection from '../landing/PricingSection'; 
 import InstallAppSection from '../landing/InstallAppSection';
 import ContactSection from '../landing/ContactSection';
+import LeadershipSection from '../landing/LeadershipSection'; // Added LeadershipSection
 import { Home, ShieldCheck, Briefcase, Star, Lock, Wrench, Users, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +31,7 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
 
     return (
         <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
-            {/* Hero Section */}
+            {/* Hero Section - Using brand colors for gradient */}
             <section id="hero" className="text-center py-40" style={{ background: `linear-gradient(135deg, var(--brand-dark), var(--brand-secondary)), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}> {/* Adjusted gradient and text color */}
                 <div className="container mx-auto px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{t('hero.title')}</h1>
@@ -49,14 +50,21 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
                     <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
                         {settings.featuresPage?.features?.map((feature, index) => {
                             const IconComponent = getFeatureIconComponent(feature.icon);
+                            // Assuming feature.sectionId exists for linking
+                            const isLinkable = feature.sectionId && document.getElementById(feature.sectionId);
                             return (
-                                <div key={index} className="bg-light-card dark:bg-dark-card p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                                <a
+                                    key={index}
+                                    href={isLinkable ? `#${feature.sectionId}` : undefined}
+                                    onClick={isLinkable ? (e) => { e.preventDefault(); document.getElementById(feature.sectionId)?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
+                                    className={`block bg-light-card dark:bg-dark-card p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-lg transition-all duration-300 ${isLinkable ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''}`}
+                                >
                                     <div className="text-brand-primary dark:text-brand-secondary mb-4 transition-colors">
-                                        <IconComponent className="w-12 h-12" /> 
+                                        <IconComponent className="w-12 h-12" />
                                     </div>
                                     <h3 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark mb-2">{feature.title}</h3>
                                     <p className="text-light-text dark:text-light-text-dark">{feature.text}</p>
-                                </div>
+                                </a>
                             );
                         })}
                     </div>
@@ -66,6 +74,7 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
             {/* Other Sections */}
             <AboutSection />
             <ServicesSection />
+            <LeadershipSection /> {/* Added LeadershipSection */}
             <PricingSection plans={plans} />
             <InstallAppSection />
             <ContactSection />
