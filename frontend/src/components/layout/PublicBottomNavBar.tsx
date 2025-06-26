@@ -1,93 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Compass, Tag, Phone, LogIn, MoreHorizontal, Globe, Sun, Moon } from 'lucide-react';
-import { useScrollSpy } from '../../hooks/useScrollSpy';
+import { Home, Info, DollarSign, Phone, LogIn, MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useLang } from '../../contexts/LanguageContext'; // Added Download import
 
 const PublicBottomNavBar = () => {
-    const location = useLocation();
-    const { t } = useTranslation();
-    const [isMoreMenuOpen, setMoreMenuOpen] = useState(false);
-    
-    const { theme, toggleTheme } = useTheme();
-    const { setLang, getNextToggleLanguage } = useLang();
+  const location = useLocation();
+  const { t } = useTranslation();
 
-    // Sections on the landing page that this bottom nav will link to
-    const navItems = [
-        { name: t('header.about', 'About'), href: '/#about', icon: Home, sectionId: 'about' },
-        { name: t('header.features', 'Features'), href: '/#featuresPage', icon: Compass, sectionId: 'featuresPage' }, // Added features
-        { name: t('header.services', 'Services'), href: '/#services', icon: Compass, sectionId: 'services' },
-        { name: t('header.leadership', 'Leadership'), href: '/#leadership', icon: Compass, sectionId: 'leadership' }, // Added leadership
-        { name: t('header.pricing', 'Pricing'), href: '/#pricing', icon: Tag, sectionId: 'pricing' },
-        { name: t('header.contact', 'Contact'), href: '/#contact', icon: Phone, sectionId: 'contact' },
-        { name: t('install_app.cta', 'Install App'), href: '/#install-app', icon: Download, sectionId: 'install-app' }, // Added install app
-    ];
-    
-    // For the 4 main visible icons + 1 "More" icon
-    const visibleNavItems = navItems.slice(0, 3); // Take first 3 for direct display
-    const moreMenuItems = navItems.slice(3); // The rest go into 'More'
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-    const sectionIds = navItems.map(item => item.sectionId).filter(Boolean) as string[];
-    const activeSectionId = useScrollSpy(sectionIds, 150); // Using useScrollSpy to highlight active section
+  const navItems = [
+    { 
+      id: 'home', 
+      icon: Home, 
+      label: t('nav.home'), 
+      action: () => scrollToSection('hero') 
+    },
+    { 
+      id: 'about', 
+      icon: Info, 
+      label: t('nav.about'), 
+      action: () => scrollToSection('about') 
+    },
+    { 
+      id: 'login', 
+      icon: LogIn, 
+      label: t('nav.login'), 
+      isHighlighted: true,
+      link: '/login'
+    },
+    { 
+      id: 'pricing', 
+      icon: DollarSign, 
+      label: t('nav.pricing'), 
+      action: () => scrollToSection('pricing') 
+    },
+    { 
+      id: 'contact', 
+      icon: Phone, 
+      label: t('nav.contact'), 
+      action: () => scrollToSection('contact') 
+    },
+  ];
 
-    const getLinkClass = (itemHref: string, itemSectionId?: string) => {
-        const base = 'flex flex-col items-center justify-center w-full h-full text-xs transition-colors rounded-lg';
-        // Determine if the link is active based on current path or scroll spy for landing page
-        const isActive = (location.pathname === '/' && itemSectionId && activeSectionId === itemSectionId) || (location.pathname === itemHref);
-        
-        return `${base} ${isActive ? 'text-brand-primary dark:text-brand-secondary' : 'text-light-text dark:text-light-text-dark group-hover:text-brand-primary dark:group-hover:text-brand-secondary'}`;
-    };
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border">
+      <div className="grid grid-cols-5 h-20">
+        {navItems.map((item) => {
+          const IconComponent = item.icon;
+          
+          if (item.link) {
+            return (
+              <Link
+                key={item.id}
+                to={item.link}
+                className={`flex flex-col items-center justify-center transition-all duration-300 ${
+                  item.isHighlighted 
+                    ? 'app-gradient text-white rounded-t-3xl mx-2 mt-2 shadow-app-lg' 
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                <IconComponent size={20} />
+                <span className="text-xs font-medium mt-1">{item.label}</span>
+              </Link>
+            );
+          }
 
-    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
-        setMoreMenuOpen(false);
-        e.preventDefault();
-        const targetId = href.substring(2); // Remove '/#'
-        // Always navigate to the root path first if not already there, then scroll
-        if (location.pathname !== '/') { navigate('/'); }
-        if (document.getElementById(targetId)) {
-            document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            // For direct page links like /login
-            // The Link component handles navigation, so no need for manual navigate()
-        }
-    };
+          return (
+            <button
+              key={item.id}
+              onClick={item.action}
+              className="flex flex-col items-center justify-center text-text-secondary hover:text-text-primary transition-colors duration-300"
+            >
+              <IconComponent size={20} />
+              <span className="text-xs font-medium mt-1">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
 
-    const handleLanguageToggle = () => {
-        setLang(getNextToggleLanguage().code);
-        setMoreMenuOpen(false);
-    };
-
-    const handleThemeToggle = () => {
-        toggleTheme();
-        setMoreMenuOpen(false);
-    };
-
-    return (
-        // Only show on screens smaller than 'md' breakpoint
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-light-card dark:bg-dark-card border-t border-border-color dark:border-border-color-dark shadow-t-lg z-30 transition-colors duration-300">
-            {isMoreMenuOpen && (
-                <div className="absolute bottom-16 right-4 w-48 bg-light-card dark:bg-dark-card rounded-lg shadow-xl border border-border-color dark:border-border-color-dark p-2 text-sm text-dark-text dark:text-dark-text-dark transition-all duration-300 origin-bottom-right animate-fade-in-up">
-                    {moreMenuItems.map(item => (
-                        <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className="flex items-center gap-3 p-2 rounded-md hover:bg-light-bg dark:hover:bg-dark-bg transition-colors">
-                           <item.icon size={16} /> {item.name}
-                        </a>
-                    ))}
-                    <div className="border-t my-1 border-border-color dark:border-border-color-dark"></div>
-                    <button onClick={handleLanguageToggle} className="flex items-center gap-3 p-2 rounded-md hover:bg-light-bg dark:hover:bg-dark-bg w-full text-left transition-colors">
-                       <Globe size={16} /> <span>Switch to {getNextToggleLanguage().name}</span>
-                    </button>
-                    <button onClick={handleThemeToggle} className="flex items-center gap-3 p-2 rounded-md hover:bg-light-bg dark:hover:bg-dark-bg w-full text-left transition-colors">
-                       {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} <span>Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</span>
-                    </button>
-                </div>
-            )}
-            <div className="grid grid-cols-5 h-full">
-                {visibleNavItems.map(item => (
-                    <a key={item.name} href={item.href} onClick={(e) => handleScroll(e, item.href)} className={`${getLinkClass(item.href, item.sectionId)} group`}>
-                        <item.icon size={20} />
-                        <span className="font-medium mt-1">{item.name}</span>
+export default PublicBottomNavBar;
                     </a>
                 ))}
                 
