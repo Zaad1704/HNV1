@@ -1,3 +1,4 @@
+// backend/controllers/authController.ts
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
@@ -89,18 +90,18 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             verificationUrl: verificationUrl
         });
         res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
-    } catch (error) {
+    } catch (error: unknown) {
         await session.abortTransaction();
         console.error("Registration failed:", error);
         // Check if it was an email error after the transaction
-        if (error.message.includes('Failed to send')) {
+        if (error instanceof Error && error.message.includes('Failed to send')) { 
             return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
         }
         res.status(500).json({ success: false, message: 'Server Error during registration.' });
     } finally {
         session.endSession();
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
