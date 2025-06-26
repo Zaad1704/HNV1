@@ -26,26 +26,27 @@ const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> =
 
     return (
         <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark pb-16 transition-colors duration-300">
-            {/* Hero Section - Using brand colors for gradient */}
-            <section id="hero" className="p-4 py-8 text-center" style={{ backgroundImage: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                <div className="bg-brand-dark/60 backdrop-blur-sm p-6 rounded-xl text-center text-white"> {/* Adjusted bg and text colors */}
-                    <h2 className="text-2xl font-extrabold">{t('hero.title')}</h2>
-                    <p className="mt-2 text-white/90">{t('hero.subtitle')}</p>
+            {/* Hero Section - Restored immersive design */}
+            <section id="hero" className="relative text-center min-h-[60vh] flex items-center justify-center text-white p-4" style={{ background: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="relative z-10">
+                    <h2 className="text-3xl font-extrabold drop-shadow-lg">{t('hero.title')}</h2>
+                    <p className="mt-2 text-white/90 drop-shadow-md">{t('hero.subtitle')}</p>
                 </div>
             </section>
 
             {/* Features Section */}
             <section id="featuresPage" className="grid grid-cols-2 gap-4 p-4 text-center text-xs">
-                {settings.featuresPage?.features?.slice(0, 4).map((feature, index) => {
+                {settings.featuresPage?.features?.map((feature, index) => {
                     const IconComponent = getFeatureIconComponent(feature.icon);
-                    // Assuming feature.sectionId exists for linking
-                    const isLinkable = feature.sectionId && document.getElementById(feature.sectionId);
+                    const isLinkable = !!feature.sectionId;
+
                     return (
                         <a
                             key={index}
                             href={isLinkable ? `#${feature.sectionId}` : undefined}
                             onClick={isLinkable ? (e) => { e.preventDefault(); document.getElementById(feature.sectionId)?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
-                            className={`flex flex-col items-center gap-1 p-2 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200 ${isLinkable ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`}
+                            className={`flex flex-col items-center gap-1 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200 ${isLinkable ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`}
                         >
                             <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-secondary rounded-full mb-2 transition-colors">
                                 <IconComponent className="w-6 h-6" />
