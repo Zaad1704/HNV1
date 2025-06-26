@@ -1,60 +1,56 @@
-// frontend/src/components/dashboard/ActionItemWidget.tsx
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-// Define props to accept onActionClick as a function
-interface ActionItemWidgetProps {
-  title: string;
-  items: {
-    id: string;
-    primaryText: string;
-    secondaryText: string;
-  }[];
-  actionText: string;
-  emptyText: string;
-  linkTo: string; // The original link if they want to navigate to the list page
-  onActionClick?: (itemId: string) => void; // NEW PROP: Function to call on action button click
-  isActionLoading?: boolean; // NEW PROP: To show loading state on action button
-  loadingItemId?: string | null; // NEW PROP: To identify which item is loading
+interface RentStatusChartProps {
+  data: Array<{
+    name: string;
+    value: number;
+  }>;
 }
 
-const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({ 
-    title, items, actionText, emptyText, linkTo, 
-    onActionClick, isActionLoading = false, loadingItemId = null 
-}) => {
-    return (
-        <div className="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-border-color dark:border-border-color-dark shadow-sm h-full transition-all duration-200">
-            <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark mb-4">{title}</h2>
-            {items && items.length > 0 ? (
-                <ul className="space-y-4">
-                    {items.map(item => (
-                        <li key={item.id} className="bg-light-bg dark:bg-dark-bg/50 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-border-color dark:border-border-color-dark gap-2 sm:gap-4 transition-all duration-150">
-                            <div className="flex-grow">
-                                <p className="font-semibold text-dark-text dark:text-dark-text-dark">{item.primaryText}</p>
-                                <p className="text-sm text-light-text dark:text-light-text-dark">{item.secondaryText}</p>
-                            </div>
-                            {onActionClick ? ( // Render button if onActionClick is provided
-                                <button
-                                    onClick={() => onActionClick(item.id)}
-                                    className="bg-brand-primary text-white font-bold text-xs py-2 px-4 rounded-lg hover:bg-brand-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                                    disabled={isActionLoading && loadingItemId === item.id}
-                                >
-                                    {isActionLoading && loadingItemId === item.id ? 'Sending...' : actionText}
-                                </button>
-                            ) : ( // Fallback to Link if no specific action
-                                <Link to={linkTo} className="bg-brand-primary text-white font-bold text-xs py-2 px-4 rounded-lg hover:bg-brand-secondary transition-colors duration-200">
-                                    {actionText}
-                                </Link>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-light-text dark:text-light-text-dark text-center py-8">{emptyText}</p>
-            )}
-        </div>
-    );
+const COLORS = ['#22c55e', '#ef4444'];
+
+const RentStatusChart: React.FC<RentStatusChartProps> = ({ data }) => {
+  return (
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={40}
+            outerRadius={80}
+            paddingAngle={5}
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'var(--app-surface)',
+              border: '1px solid var(--app-border)',
+              borderRadius: '12px',
+              color: 'var(--text-primary)'
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="mt-4 flex justify-center gap-4">
+        {data.map((entry, index) => (
+          <div key={entry.name} className="flex items-center gap-2">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            ></div>
+            <span className="text-sm text-text-secondary">{entry.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default ActionItemWidget;
+export default RentStatusChart;
