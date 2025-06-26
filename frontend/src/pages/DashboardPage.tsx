@@ -1,7 +1,12 @@
-// frontend/src/pages/DashboardPage.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
+import apiClient from '../api/client';
+import { useLang } from '../contexts/LanguageContext';
+import { convertPrice, formatCurrency } from '../services/currencyService';
+import { useCurrencyRates } from '../services/currencyService';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -16,7 +21,56 @@ const cardVariants = {
   }),
 };
 
+interface DashboardStats {
+  totalProperties: number;
+  totalTenants: number;
+  monthlyRevenue: number;
+  occupancyRate: number;
+  pendingMaintenance: number;
+  recentPayments: number;
+}
+
+const fetchDashboardStats = async (): Promise<DashboardStats> => {
+  const { data } = await apiClient.get('/dashboard/stats');
+  return data.data;
+};
+
 const DashboardPage = () => {
+  const { currencyCode } = useLang();
+  const { data: exchangeRates = {} } = useCurrencyRates();
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: fetchDashboardStats,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const defaultStats: DashboardStats = {
+    totalProperties: 0,
+    totalTenants: 0,
+    monthlyRevenue: 0,
+    occupancyRate: 0,
+    pendingMaintenance: 0,
+    recentPayments: 0
+  };
+
+  const dashboardStats = stats || defaultStats;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 pt-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="app-surface rounded-3xl p-6 animate-pulse">
+              <div className="w-12 h-12 bg-gray-300 rounded-full mb-4"></div>
+              <div className="h-6 bg-gray-300 rounded mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.main
       className="p-6 pt-0"
@@ -26,57 +80,133 @@ const DashboardPage = () => {
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div 
-          className="card bg-primary-card-gradient rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between"
+          className="gradient-dark-orange-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between text-white"
           variants={cardVariants}
           custom={0}
           initial="hidden"
           animate="visible"
         >
           <div>
-            <div className="w-12 h-12 bg-white/25 rounded-full mb-4"></div>
-            <h1 className="text-5xl font-bold text-white leading-tight">Dashboard</h1>
+            <div className="w-12 h-12 bg-white/25 rounded-full mb-4 flex items-center justify-center">
+              <BarChart3 size={24} className="text-white" />
+            </div>
+            <h1 className="text-5xl font-bold leading-tight">Dashboard</h1>
             <p className="text-white/80 mt-4 max-w-sm">Welcome to your property management hub. Access all your tools and insights from here.</p>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-white/70 text-sm">Properties</p>
+                <p className="text-2xl font-bold">{dashboardStats.totalProperties}</p>
+              </div>
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-white/70 text-sm">Tenants</p>
+                <p className="text-2xl font-bold">{dashboardStats.totalTenants}</p>
+              </div>
+            </div>
           </div>
-          <Link to="/dashboard/properties" className="btn-light font-bold py-3 px-6 rounded-lg mt-8 self-start text-sm">
+          <Link to="/dashboard/properties" className="bg-white text-brand-orange font-bold py-3 px-6 rounded-2xl mt-8 self-start text-sm hover:shadow-lg transition-all">
             View Properties
           </Link>
         </motion.div>
 
-        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={1} initial="hidden" animate="visible">
-          <div className="w-full h-24 bg-white/50 rounded-xl mb-4 flex items-center justify-center">
-            {/* Chart or Stat Placeholder */}
+        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={1} initial="hidden" animate="visible">
+          <div className="w-12 h-12 gradient-orange-blue rounded-xl mb-4 flex items-center justify-center">
+            <DollarSign size={24} className="text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Key Metrics</h2>
-          <p className="text-gray-500 text-sm mt-2 flex-grow">A quick overview of your portfolio's performance.</p>
+          <h2 className="text-2xl font-bold text-text-primary">Monthly Revenue</h2>
+          <p className="text-3xl font-bold text-brand-orange mt-2">
+            {formatCurrency(
+              convertPrice(dashboardStats.monthlyRevenue, 'USD', currencyCode, exchangeRates),
+              currencyCode
+            )}
+          </p>
+          <p className="text-text-secondary text-sm mt-2 flex-grow">Total revenue this month</p>
         </motion.div>
 
-        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2} initial="hidden" animate="visible">
-          <h2 className="text-2xl font-bold text-gray-800">Recent Activity</h2>
-          <p className="text-gray-500 text-sm mt-2 flex-grow">See the latest tenant payments and maintenance requests.</p>
-          <Link to="/dashboard/audit-log" className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">View Log</Link>
+        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2} initial="hidden" animate="visible">
+          <div className="w-12 h-12 gradient-orange-blue rounded-xl mb-4 flex items-center justify-center">
+            <TrendingUp size={24} className="text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-text-primary">Occupancy Rate</h2>
+          <p className="text-3xl font-bold text-brand-blue mt-2">{dashboardStats.occupancyRate}%</p>
+          <p className="text-text-secondary text-sm mt-2 flex-grow">Current occupancy across all properties</p>
+          <Link to="/dashboard/properties" className="gradient-dark-orange-blue text-white font-semibold py-2 px-5 rounded-2xl mt-4 self-start text-sm hover:shadow-lg transition-all">View Properties</Link>
         </motion.div>
         
-        <motion.div className="card bg-secondary-card-gradient rounded-3xl p-6" style={{ transform: 'rotate(-4deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
-          <div className="w-10 h-10 bg-white/25 rounded-full mb-3"></div>
-          <h2 className="text-xl font-bold text-white">Quick Links</h2>
-          <p className="text-white/80 text-sm mt-1">Jump to your most used pages.</p>
+        <motion.div className="gradient-orange-blue rounded-3xl p-6 text-white" style={{ transform: 'rotate(-2deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
+          <div className="w-10 h-10 bg-white/25 rounded-full mb-3 flex items-center justify-center">
+            <Bell size={20} className="text-white" />
+          </div>
+          <h2 className="text-xl font-bold">Maintenance</h2>
+          <p className="text-white/80 text-sm mt-1">{dashboardStats.pendingMaintenance} pending requests</p>
+          <Link to="/dashboard/maintenance" className="bg-white text-brand-orange px-3 py-1 rounded-full text-xs font-semibold mt-3 inline-block hover:shadow-lg transition-all">
+            View All
+          </Link>
         </motion.div>
 
-        <motion.div className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center" variants={cardVariants} custom={4} initial="hidden" animate="visible">
-          <h2 className="text-3xl font-extrabold gradient-text">
+        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col justify-center items-center text-center" variants={cardVariants} custom={4} initial="hidden" animate="visible">
+          <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl mb-4 flex items-center justify-center">
+            <img src="/logo-min.png" alt="HNV Logo" className="w-10 h-10 object-contain" />
+          </div>
+          <h2 className="text-2xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
               HNV Platform
           </h2>
+          <p className="text-text-secondary text-sm mt-2">Property Management Solutions</p>
         </motion.div>
         
-        <motion.div className="card neutral-glass rounded-3xl p-6 sm:col-span-2" variants={cardVariants} custom={5} initial="hidden" animate="visible">
-          <h3 className="text-gray-500 font-semibold text-sm">Announcements</h3>
-          <h2 className="text-2xl font-bold mt-1 text-gray-800">Platform Updates</h2>
-          <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
-              <img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Update image"/>
-              <div className="flex-1">
-                  <p className="text-gray-600 text-sm">We've just launched new features to help you streamline your workflow. Check out the latest updates and let us know what you think!</p>
-                  <a href="#" className="text-blue-600 font-semibold mt-2 inline-block hover:underline text-sm">Read more &rarr;</a>
+        <motion.div className="app-surface border border-app-border rounded-3xl p-6 sm:col-span-2" variants={cardVariants} custom={5} initial="hidden" animate="visible">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 gradient-dark-orange-blue rounded-lg flex items-center justify-center">
+              <Calendar size={16} className="text-white" />
+            </div>
+            <h3 className="text-text-secondary font-semibold text-sm">Recent Activity</h3>
+          </div>
+          <h2 className="text-2xl font-bold mt-1 text-text-primary">Latest Updates</h2>
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center gap-4 p-4 bg-app-bg rounded-2xl">
+              <div className="w-10 h-10 gradient-orange-blue rounded-full flex items-center justify-center">
+                <DollarSign size={16} className="text-white" />
               </div>
+              <div className="flex-1">
+                <p className="font-semibold text-text-primary">{dashboardStats.recentPayments} new payments</p>
+                <p className="text-text-secondary text-sm">Received in the last 24 hours</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 bg-app-bg rounded-2xl">
+              <div className="w-10 h-10 gradient-dark-orange-blue rounded-full flex items-center justify-center">
+                <Users size={16} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-text-primary">Tenant portal active</p>
+                <p className="text-text-secondary text-sm">All tenants can access their accounts</p>
+              </div>
+            </div>
+          </div>
+          <Link to="/dashboard/audit-log" className="gradient-dark-orange-blue text-white font-semibold py-2 px-4 rounded-2xl mt-4 inline-block text-sm hover:shadow-lg transition-all">
+            View Activity Log →
+          </Link>
+        </motion.div>
+        {/* Quick Actions */}
+        <motion.div className="app-surface border border-app-border rounded-3xl p-6 sm:col-span-2 lg:col-span-4" variants={cardVariants} custom={6} initial="hidden" animate="visible">
+          <h3 className="text-text-secondary font-semibold text-sm mb-2">Quick Actions</h3>
+          <h2 className="text-2xl font-bold text-text-primary mb-6">Frequently Used</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: Building2, label: 'Add Property', to: '/dashboard/properties/new', color: 'gradient-dark-orange-blue' },
+              { icon: Users, label: 'Manage Tenants', to: '/dashboard/tenants', color: 'gradient-orange-blue' },
+              { icon: DollarSign, label: 'View Payments', to: '/dashboard/payments', color: 'gradient-dark-orange-blue' },
+              { icon: Settings, label: 'Settings', to: '/dashboard/settings', color: 'gradient-orange-blue' }
+            ].map((action, index) => (
+              <Link
+                key={action.label}
+                to={action.to}
+                className={`${action.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all`}
+              >
+                <action.icon size={24} />
+                <span className="text-sm font-semibold text-center">{action.label}</span>
+              </Link>
+            ))}
           </div>
         </motion.div>
       </div>

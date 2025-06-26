@@ -14,7 +14,7 @@ const Navbar = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
-    <header className="app-gradient sticky top-0 z-50 backdrop-blur-md">
+    <header className="gradient-dark-orange-blue sticky top-0 z-50 backdrop-blur-md">
       <div className="container mx-auto px-4 sm:px-6 py-3">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">
@@ -38,13 +38,11 @@ const Navbar = () => {
 
           {/* Center: Brand */}
           <Link to="/" className="flex items-center gap-3 text-xl font-bold text-white">
-            {settings?.logos?.faviconUrl && (
-              <img 
-                src={settings.logos.faviconUrl} 
-                alt="Logo" 
-                className="h-8 w-8 rounded-lg" 
-              />
-            )}
+            <img 
+              src={settings?.logos?.faviconUrl || '/logo-min.png'} 
+              alt="Logo" 
+              className="h-8 w-8 rounded-lg object-contain" 
+            />
             <span>
               {settings?.logos?.companyName || 'HNV Solutions'}
             </span>
@@ -72,13 +70,11 @@ const Navbar = () => {
 
           {/* Center: Brand - Optimized for mobile */}
           <Link to="/" className="flex items-center gap-2 text-white">
-            {settings?.logos?.faviconUrl && (
-              <img 
-                src={settings.logos.faviconUrl} 
-                alt="Logo" 
-                className="h-8 w-8 rounded-lg" 
-              />
-            )}
+            <img 
+              src={settings?.logos?.faviconUrl || '/logo-min.png'} 
+              alt="Logo" 
+              className="h-8 w-8 rounded-lg object-contain" 
+            />
             <div className="flex flex-col leading-tight">
               <span className="text-lg font-bold truncate max-w-[140px]">
                 {settings?.logos?.companyName || 'HNV Solutions'}
@@ -104,13 +100,11 @@ const Navbar = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-app-border">
               <div className="flex items-center gap-3">
-                {settings?.logos?.faviconUrl && (
-                  <img 
-                    src={settings.logos.faviconUrl} 
-                    alt="Logo" 
-                    className="h-10 w-10 rounded-xl" 
-                  />
-                )}
+                <img 
+                  src={settings?.logos?.faviconUrl || '/logo-min.png'} 
+                  alt="Logo" 
+                  className="h-10 w-10 rounded-xl object-contain" 
+                />
                 <div>
                   <h2 className="text-lg font-bold text-text-primary">
                     {settings?.logos?.companyName || 'HNV Solutions'}
@@ -135,7 +129,7 @@ const Navbar = () => {
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
               >
-                <Globe size={24} className="text-brand-blue" />
+                <Globe size={24} className="text-brand-orange" />
                 <div className="text-left">
                   <p className="font-semibold text-text-primary">Language</p>
                   <p className="text-sm text-text-secondary">Switch to {getNextToggleLanguage().name}</p>
@@ -149,7 +143,7 @@ const Navbar = () => {
                 }}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
               >
-                {theme === 'light' ? <Moon size={24} className="text-brand-blue" /> : <Sun size={24} className="text-brand-blue" />}
+                {theme === 'light' ? <Moon size={24} className="text-brand-orange" /> : <Sun size={24} className="text-brand-orange" />}
                 <div className="text-left">
                   <p className="font-semibold text-text-primary">Theme</p>
                   <p className="text-sm text-text-secondary">Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</p>
@@ -161,7 +155,7 @@ const Navbar = () => {
                 onClick={() => setShowMobileMenu(false)}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
               >
-                <div className="w-6 h-6 bg-brand-blue rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-brand-orange rounded-full flex items-center justify-center">
                   <span className="text-white text-sm">→</span>
                 </div>
                 <div className="text-left">
@@ -173,7 +167,7 @@ const Navbar = () => {
               <Link 
                 to="/register"
                 onClick={() => setShowMobileMenu(false)}
-                className="w-full btn-gradient p-4 rounded-2xl text-center font-semibold text-white"
+                className="w-full gradient-dark-orange-blue p-4 rounded-2xl text-center font-semibold text-white"
               >
                 {t('header.get_started')}
               </Link>

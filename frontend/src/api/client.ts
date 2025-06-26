@@ -9,7 +9,7 @@ const getApiUrl = () => {
   }
   // Use environment variable or fallback to production
   const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-  return viteApiUrl || 'https://hnv-saas-backend.onrender.com/api';
+  return viteApiUrl || 'https://hnv.onrender.com/api';
 };
 
 const apiClient = axios.create({

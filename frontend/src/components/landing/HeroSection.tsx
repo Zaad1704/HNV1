@@ -19,9 +19,9 @@ const HeroSection = () => {
   return (
     <section id="hero" className="relative min-h-screen flex items-center bg-app-bg overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-purple/5"></div>
-      <div className="absolute top-20 right-10 w-72 h-72 bg-brand-blue/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-brand-purple/10 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-orange/5 to-brand-blue/5"></div>
+      <div className="absolute top-20 right-10 w-72 h-72 bg-brand-orange/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-brand-blue/10 rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Desktop Layout */}
@@ -32,6 +32,17 @@ const HeroSection = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
+            {/* Logo */}
+            <div className="flex items-center gap-4 mb-8">
+              <img 
+                src="/logo-min.png" 
+                alt="HNV Logo" 
+                className="w-16 h-16 object-contain"
+              />
+              <div className="text-2xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
+                {settings?.logos?.companyName || 'HNV Property Management'}
+              </div>
+            </div>
             <h1 className="text-6xl font-bold text-text-primary mb-6 leading-tight">
               {settings?.heroSection?.title || t('landing.hero_title')}
             </h1>
@@ -41,7 +52,7 @@ const HeroSection = () => {
             <div className="flex gap-4">
               <Link 
                 to="/register" 
-                className="btn-gradient px-8 py-4 rounded-2xl font-semibold text-lg flex items-center gap-2"
+                className="gradient-dark-orange-blue text-white px-8 py-4 rounded-2xl font-semibold text-lg flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
               >
                 {settings?.heroSection?.ctaText || t('landing.hero_cta')}
                 <ArrowRight size={20} />
@@ -75,10 +86,10 @@ const HeroSection = () => {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: Building2, title: 'Properties', color: 'bg-blue-500' },
-                  { icon: Users, title: 'Tenants', color: 'bg-green-500' },
-                  { icon: CreditCard, title: 'Payments', color: 'bg-purple-500' },
-                  { icon: BarChart3, title: 'Analytics', color: 'bg-orange-500' }
+                  { icon: Building2, title: 'Properties', color: 'gradient-dark-orange-blue' },
+                  { icon: Users, title: 'Tenants', color: 'gradient-orange-blue' },
+                  { icon: CreditCard, title: 'Payments', color: 'gradient-dark-orange-blue' },
+                  { icon: BarChart3, title: 'Analytics', color: 'gradient-orange-blue' }
                 ].map((item, index) => (
                   <motion.div
                     key={item.title}
@@ -106,6 +117,18 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Logo for Mobile */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <img 
+                src="/logo-min.png" 
+                alt="HNV Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <div className="text-xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
+                {settings?.logos?.companyName || 'HNV'}
+              </div>
+            </div>
+            
             {/* Custom Image for Mobile */}
             {settings?.heroSection?.customImageUrl && (
               <div className="mb-8 mx-auto w-64 h-64 rounded-3xl overflow-hidden shadow-2xl">
@@ -128,7 +151,7 @@ const HeroSection = () => {
             <div className="space-y-4 px-6">
               <Link 
                 to="/register" 
-                className="w-full btn-gradient py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2"
+                className="w-full gradient-dark-orange-blue text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
               >
                 {settings?.heroSection?.ctaText || t('landing.hero_cta')}
                 <ArrowRight size={20} />
@@ -162,7 +185,7 @@ const HeroSection = () => {
                   transition={{ delay: 0.6 + index * 0.1 }}
                   className="app-surface p-4 rounded-2xl border border-app-border text-center"
                 >
-                  <item.icon size={24} className="text-brand-blue mx-auto mb-2" />
+                  <item.icon size={24} className="text-brand-orange mx-auto mb-2" />
                   <p className="text-sm font-semibold text-text-primary">{item.count}</p>
                   <p className="text-xs text-text-secondary">{item.title}</p>
                 </motion.div>
@@ -190,7 +213,7 @@ const HeroSection = () => {
                   </p>
                   <Link 
                     to="/register" 
-                    className="btn-gradient px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2"
+                    className="gradient-dark-orange-blue text-white px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
                   >
                     Get Started Today
                     <ArrowRight size={16} />
