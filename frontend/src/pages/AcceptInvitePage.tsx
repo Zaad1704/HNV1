@@ -1,94 +1,88 @@
-import React, { useEffect, useState } from "react";
-import apiClient from "../api/client"; // Corrected: Import the default export
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore"; // Corrected: Import as named export
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import apiClient from '../api/client';
+import { useMutation } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { UserPlus, Lock } from 'lucide-react';
 
-const AcceptInvitePage: React.FC = () => {
+const AcceptInvitePage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
-  const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const { login } = useAuthStore();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      try {
-        const response = await apiClient.get(`/auth/verify-invite/${token}`);
-        setEmail(response.data.email);
-      } catch (err) {
-        setError("Invalid or expired invitation token.");
-      }
-    };
-    verifyToken();
-  }, [token]);
+  const acceptInviteMutation = useMutation({
+    mutationFn: async (data: { token: string; password: string }) => {
+      const response = await apiClient.post('/auth/accept-invite', data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      login(data.token, data.user);
+      navigate('/dashboard');
+    },
+    onError: (error: any) => {
+      setError(error.response?.data?.message || 'Failed to accept invitation');
+    }
+  });
 
-  const handleAccept = async (password: string) => {
-    try {
-      const response = await apiClient.post(`/auth/accept-invite/${token}`, { password });
-      login(response.data.token);
-      navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to accept invite.");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (token && password) {
+      acceptInviteMutation.mutate({ token, password });
     }
   };
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
-  if (!email) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4">Accept Invitation</h1>
-        <p className="mb-4">
-          You have been invited to join the organization with the email:{" "}
-          <strong>{email}</strong>
-        </p>
-        <p className="mb-4">
-          Please set a password to complete your registration.
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const password = (e.target as any).password.value;
-            handleAccept(password);
-          }}
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <UserPlus size={32} className="text-white" />
           </div>
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Accept & Create Account
-          </button>
-        </form>
-      </div>
+          <h1 className="text-4xl font-bold text-text-primary mb-2">Join Organization</h1>
+          <p className="text-text-secondary">Set your password to complete registration</p>
+        </div>
+
+        <div className="app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-center text-sm mb-6">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Create Password</label>
+              <div className="relative">
+                <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={acceptInviteMutation.isLoading}
+              className="w-full btn-gradient py-4 text-lg font-semibold rounded-2xl disabled:opacity-50"
+            >
+              {acceptInviteMutation.isLoading ? 'Joining...' : 'Join Organization'}
+            </button>
+          </form>
+        </div>
+      </motion.div>
     </div>
   );
 };
