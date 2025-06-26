@@ -1,18 +1,18 @@
-// frontend/src/components/layout/PublicLayout.tsx
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Navbar from '../layout/Navbar'; // Corrected path
+import Navbar from './Navbar';
+import PublicBottomNavBar from './PublicBottomNavBar';
 import Footer from './Footer';
 
 const PublicLayout = () => {
   return (
-    <div className="bg-light-bg dark:bg-dark-bg transition-colors duration-300">
+    <div className="min-h-screen bg-app-bg">
       <Navbar />
-      <main>
+      <main className="pb-24 md:pb-0">
         <Outlet />
       </main>
       <Footer />
+      <PublicBottomNavBar />
     </div>
   );
 };
