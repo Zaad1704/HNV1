@@ -66,20 +66,21 @@ const Navbar = () => {
     { key: 'header.features', href: '#featuresPage' },
     { key: 'header.about', href: '#about' },
     { key: 'header.pricing', href: '#pricing' }, // Updated to #pricing as per new LandingPage.tsx
+    { key: 'header.services', href: '#services' }, // Added services
+    { key: 'header.leadership', href: '#leadership' }, // Added leadership
     { key: 'header.contact', href: '#contact' },
+    { key: 'install_app.cta', href: '#install-app' }, // Added install app section link
   ];
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
     e.preventDefault();
     const targetId = href.substring(1);
 
-    if (location.pathname !== '/') {
-        navigate(`/${href}`);
-    } else {
-        const targetElement = document.getElementById(targetId);
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    // Always navigate to the root path first if not already there, then scroll
+    if (location.pathname !== '/') { navigate('/'); }
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
