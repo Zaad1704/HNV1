@@ -1,32 +1,207 @@
-import React from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-
-// ...UI icons...
+import { useTranslation } from 'react-i18next';
+import { useLang } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { 
+  Home, Building, Users, CreditCard, Shield, Settings, LogOut, 
+  Wrench, FileText, DollarSign, Repeat, CheckSquare, Bell, 
+  Globe, Sun, Moon, Menu, X 
+} from 'lucide-react';
+import RoleGuard from '../RoleGuard';
+import BottomNavBar from './BottomNavBar';
+import NotificationsPanel from '../dashboard/NotificationsPanel';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const DashboardLayout = () => {
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const { lang, setLang, getNextToggleLanguage } = useLang();
+  const { theme, toggleTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
-  // ...sidebar and header code...
+  const getLinkClass = (path: string) => {
+    const base = 'flex items-center space-x-3 px-4 py-3 font-medium rounded-2xl transition-all duration-300';
+    const isActive = location.pathname.startsWith(path);
+    return isActive 
+      ? `${base} app-gradient text-white shadow-app` 
+      : `${base} text-text-secondary hover:text-text-primary hover:bg-app-surface`;
+  };
+
+  const mainNavLinks = [
+    { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
+    { href: "/dashboard/tenant", icon: Users, label: 'My Portal', roles: ['Tenant'] },
+    { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/expenses", icon: DollarSign, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/reminders", icon: Repeat, label: t('dashboard.reminders'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/approvals", icon: CheckSquare, label: t('dashboard.approvals'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/users", icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/billing", icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/audit-log", icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
+  ];
+  
+  const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
+
+  const Sidebar = ({ isMobile = false }) => (
+    <aside className={`${isMobile ? 'w-full' : 'w-72'} flex-shrink-0 app-surface border-r border-app-border flex flex-col`}>
+      <div className="h-20 flex items-center justify-between px-6 border-b border-app-border">
+        <Link to="/dashboard" className="flex items-center space-x-3 text-xl font-bold text-text-primary">
+          <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
+            <Building size={20} className="text-white" />
+          </div>
+          <span className="truncate">
+            {user?.organizationId?.branding?.companyName || 'HNV Dashboard'}
+          </span>
+        </Link>
+        {isMobile && (
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 rounded-full text-text-secondary hover:text-text-primary"
+          >
+            <X size={20} />
+          </button>
+        )}
+      </div>
+      
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        {mainNavLinks.map(link => (
+          <RoleGuard key={link.href} allowed={link.roles}>
+            <Link 
+              to={link.href} 
+              className={getLinkClass(link.href)}
+              onClick={() => isMobile && setSidebarOpen(false)}
+            >
+              <link.icon size={20} />
+              <span>{link.label}</span>
+            </Link>
+          </RoleGuard>
+        ))}
+        <RoleGuard allowed={adminLink.roles}>
+          <hr className="my-4 border-app-border" />
+          <Link 
+            to={adminLink.href} 
+            className={getLinkClass(adminLink.href)}
+            onClick={() => isMobile && setSidebarOpen(false)}
+          >
+            <adminLink.icon size={20} />
+            <span>{adminLink.label}</span>
+          </Link>
+        </RoleGuard>
+      </nav>
+      
+      <div className="p-4 border-t border-app-border space-y-2">
+        <Link 
+          to="/dashboard/settings" 
+          className={getLinkClass('/dashboard/settings')}
+          onClick={() => isMobile && setSidebarOpen(false)}
+        >
+          <Settings size={20} />
+          <span>{t('dashboard.settings')}</span>
+        </Link>
+        <button 
+          onClick={handleLogout} 
+          className="w-full flex items-center space-x-3 px-4 py-3 font-medium rounded-2xl text-text-secondary hover:text-text-primary hover:bg-app-surface transition-all duration-300"
+        >
+          <LogOut size={20} />
+          <span>{t('dashboard.logout')}</span>
+        </button>
+      </div>
+    </aside>
+  );
 
   return (
-    <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark min-h-screen transition-colors duration-300">
-      {/* Sidebar and header */}
-      <main>
-        <header className="bg-light-card dark:bg-dark-card shadow-sm p-4 border-b border-border-color dark:border-border-color-dark flex justify-between items-center">
-          <div>{user.name} ({user.role})</div>
+    <div className="flex h-screen bg-app-bg">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed left-0 top-0 bottom-0 z-50"
+            >
+              <Sidebar isMobile />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <main className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="h-20 app-surface/80 backdrop-blur-md border-b border-app-border flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-app">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-full text-text-secondary hover:text-text-primary"
+            >
+              <Menu size={20} />
+            </button>
+            <h1 className="text-xl font-semibold text-text-primary hidden sm:block">
+              Dashboard
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setLang(getNextToggleLanguage().code)} 
+              className="p-2 rounded-full text-text-secondary hover:text-text-primary transition-colors"
+            >
+              <Globe size={20} />
+            </button>
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-full text-text-secondary hover:text-text-primary transition-colors"
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+            <NotificationsPanel />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 app-gradient rounded-full flex items-center justify-center font-semibold text-white">
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-semibold text-text-primary">{user?.name}</p>
+                <p className="text-xs text-text-secondary">{user?.role}</p>
+              </div>
+            </div>
+          </div>
         </header>
-        <div>
-          <Outlet />
+        
+        {/* Main Content */}
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-24 lg:pb-8">
+          <AnimatePresence mode="wait">
+            <Outlet />
+          </AnimatePresence>
         </div>
       </main>
+
+      <BottomNavBar />
     </div>
   );
 };
