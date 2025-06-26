@@ -1,16 +1,30 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Info, DollarSign, Phone, LogIn, MoreHorizontal } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Info, DollarSign, Phone, LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const PublicBottomNavBar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    // If we're not on the landing page, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Wait for navigation to complete, then scroll
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      // We're already on the landing page, just scroll
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -19,7 +33,13 @@ const PublicBottomNavBar = () => {
       id: 'home', 
       icon: Home, 
       label: t('nav.home'), 
-      action: () => scrollToSection('hero') 
+      action: () => {
+        if (location.pathname === '/') {
+          scrollToSection('hero');
+        } else {
+          navigate('/');
+        }
+      }
     },
     { 
       id: 'about', 
@@ -49,7 +69,7 @@ const PublicBottomNavBar = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border backdrop-blur-md">
       <div className="grid grid-cols-5 h-20">
         {navItems.map((item) => {
           const IconComponent = item.icon;
@@ -62,7 +82,7 @@ const PublicBottomNavBar = () => {
                 className={`flex flex-col items-center justify-center transition-all duration-300 ${
                   item.isHighlighted 
                     ? 'app-gradient text-white rounded-t-3xl mx-2 mt-2 shadow-app-lg' 
-                    : 'text-text-secondary hover:text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary active:scale-95'
                 }`}
               >
                 <IconComponent size={20} />
@@ -75,7 +95,7 @@ const PublicBottomNavBar = () => {
             <button
               key={item.id}
               onClick={item.action}
-              className="flex flex-col items-center justify-center text-text-secondary hover:text-text-primary transition-colors duration-300"
+              className="flex flex-col items-center justify-center text-text-secondary hover:text-text-primary transition-all duration-300 active:scale-95"
             >
               <IconComponent size={20} />
               <span className="text-xs font-medium mt-1">{item.label}</span>

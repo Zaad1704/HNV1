@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
 
 interface Plan {
   _id: string;
@@ -10,13 +12,20 @@ interface Plan {
   duration: string;
   features: string[];
   isPopular?: boolean;
+  isPublic: boolean;
 }
 
-interface PricingSectionProps {
-  plans?: Plan[];
-}
+const fetchPlans = async (): Promise<Plan[]> => {
+  const { data } = await apiClient.get('/plans/public');
+  return data.data;
+};
 
-const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
+const PricingSection = () => {
+  const { data: plans = [], isLoading } = useQuery({
+    queryKey: ['publicPlans'],
+    queryFn: fetchPlans
+  });
+
   const defaultPlans: Plan[] = [
     {
       _id: '1',
@@ -24,6 +33,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
       price: 29,
       duration: 'monthly',
       features: ['Up to 5 properties', 'Basic tenant management', 'Email support'],
+      isPublic: true
     },
     {
       _id: '2',
@@ -32,6 +42,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
       duration: 'monthly',
       features: ['Up to 25 properties', 'Advanced analytics', 'Priority support', 'Custom branding'],
       isPopular: true,
+      isPublic: true
     },
     {
       _id: '3',
@@ -39,13 +50,27 @@ const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
       price: 199,
       duration: 'monthly',
       features: ['Unlimited properties', 'White-label solution', '24/7 phone support', 'Custom integrations'],
+      isPublic: true
     },
   ];
 
-  const pricingPlans = plans || defaultPlans;
+  const pricingPlans = plans.length > 0 ? plans : defaultPlans;
+
+  if (isLoading) {
+    return (
+      <section id="pricing" className="py-20 bg-app-bg">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="w-8 h-8 app-gradient rounded-full animate-pulse mx-auto mb-4"></div>
+            <p className="text-text-secondary">Loading pricing plans...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-20 bg-app-bg">
+    <section id="pricing" className="py-20 bg-app-bg">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -108,7 +133,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
               </ul>
 
               <Link
-                to={`/payment-summary/${plan._id}`}
+                to={`/register?plan=${plan._id}`}
                 className={`w-full block text-center py-3 px-6 rounded-2xl font-semibold transition-all ${
                   plan.isPopular
                     ? 'btn-gradient text-white'

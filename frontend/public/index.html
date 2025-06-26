@@ -3,8 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     
-    <!-- SOLUTION: Updated Content-Security-Policy to allow Google's domains -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com;">
+    <!-- FIXED: Updated CSP to allow backend API calls -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self'; 
+      script-src 'self' 'unsafe-inline' https://accounts.google.com; 
+      style-src 'self' 'unsafe-inline' https://accounts.google.com https://fonts.googleapis.com; 
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: http:;
+      connect-src 'self' https://hnv-saas-backend.onrender.com https://accounts.google.com http://localhost:5001;
+    ">
 
     <link rel="icon" type="image/png" href="/logo-min.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

@@ -17,11 +17,16 @@ export interface ISiteSettings {
     companyName?: string;
     faviconUrl?: string;
     footerLogoUrl?: string;
+    navbarLogoUrl?: string;
   };
   heroSection?: {
     title?: string;
     subtitle?: string;
     ctaText?: string;
+    customImageUrl?: string;
+    additionalImageUrl?: string;
+    additionalTitle?: string;
+    additionalDescription?: string;
   };
   footer?: {
     description?: string;
