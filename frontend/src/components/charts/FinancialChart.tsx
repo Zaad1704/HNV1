@@ -34,8 +34,3 @@ const FinancialChart: React.FC<FinancialChartProps> = ({ data }) => {
 };
 
 export default FinancialChart;
-        </ResponsiveContainer>
-    );
-};
-
-export default FinancialChart;
