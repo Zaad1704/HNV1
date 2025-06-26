@@ -1,58 +1,54 @@
 // frontend/src/pages/LandingPage.tsx
 import React from 'react';
-import { motion } from 'framer-motion';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+import { usePublicPlans } from '../hooks/usePublicPlans'; // Assuming this hook exists to fetch plans
+import PublicHeader from '../components/layout/PublicHeader';
+import Footer from '../components/layout/Footer';
+import PublicBottomNavBar from '../components/layout/PublicBottomNavBar';
+import Spinner from '../components/uikit/Spinner';
 
-// Import all the section components
+// Import Section Components
 import HeroSection from '../components/landing/HeroSection';
+import FeaturesSection from '../components/landing/FeaturesSection';
 import AboutSection from '../components/landing/AboutSection';
 import ServicesSection from '../components/landing/ServicesSection';
-import LeadershipSection from '../components/landing/LeadershipSection';
 import PricingSection from '../components/landing/PricingSection';
-import ContactSection from '../components/landing/ContactSection';
 import InstallAppSection from '../components/landing/InstallAppSection';
+import ContactSection from '../components/landing/ContactSection';
 
 const LandingPage = () => {
-    const pageVariants = {
-        initial: { opacity: 0 },
-        in: { opacity: 1 },
-        out: { opacity: 0 },
-    };
+    const { data: settings, isLoading: isLoadingSettings } = useSiteSettings();
+    // NOTE: I've assumed a `usePublicPlans` hook exists to fetch pricing plans for the landing page.
+    const { data: plans, isLoading: isLoadingPlans } = usePublicPlans(); 
 
-    const pageTransition = {
-        type: "tween",
-        ease: "anticipate",
-        duration: 0.5,
-    };
+    if (isLoadingSettings || isLoadingPlans) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-light-bg dark:bg-dark-bg">
+                <Spinner />
+            </div>
+        );
+    }
 
-  return (
-    <motion.div
-        initial="initial"
-        animate="in"
-        exit="out"
-        variants={pageVariants}
-        transition={pageTransition}
-        className="bg-light-bg dark:bg-dark-bg transition-colors duration-300"
-    >
-      <HeroSection />
+    if (!settings) {
+        return <div className="text-center p-8 text-red-500">Error: Could not load site configuration.</div>;
+    }
 
-      {/* Each section can be further customized to match the Yartee glassmorphism style */}
-      <div id="features" className="py-20 md:py-28">
-        {/* Placeholder for a features section if needed */}
-      </div>
-
-      <div id="about" className="py-20 md:py-28">
-        <AboutSection />
-      </div>
-      
-      <div id="pricing" className="py-20 md:py-28">
-        <PricingSection />
-      </div>
-
-      <div id="contact" className="py-20 md:py-28">
-        <ContactSection />
-      </div>
-    </motion.div>
-  );
+    return (
+        <div className="bg-light-bg dark:bg-dark-bg">
+            <PublicHeader />
+            <main>
+                <HeroSection settings={settings.heroSection} />
+                <FeaturesSection settings={settings.featuresPage} />
+                <AboutSection settings={settings.aboutSection} />
+                <ServicesSection settings={settings.servicesSection} />
+                <PricingSection plans={plans || []} settings={settings.pricingSection} />
+                <InstallAppSection settings={settings.installAppSection} />
+                <ContactSection settings={settings.contactSection} />
+            </main>
+            <Footer />
+            <PublicBottomNavBar />
+        </div>
+    );
 };
 
 export default LandingPage;
