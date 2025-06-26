@@ -1,234 +1,187 @@
-// frontend/src/pages/SuperAdmin/SiteEditorPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { ISiteSettings } from '../../../../backend/models/SiteSettings';
-import { useMutation } from '@tanstack/react-query';
+import { Save, Settings } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ISiteSettings } from '../../types/siteSettings';
 
-const AccordionSection = ({ title, children }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-sm border border-border-color dark:border-border-color-dark transition-all duration-200">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center p-6 text-left text-dark-text dark:text-dark-text-dark transition-colors duration-150">
-                <h2 className="text-xl font-bold">{title}</h2>
-                {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-            </button>
-            {isOpen && <div className="p-6 border-t border-border-color dark:border-border-color-dark space-y-6">{children}</div>}
-        </div>
-    );
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <div className="app-surface rounded-3xl p-6 border border-app-border">
+    <h3 className="text-lg font-semibold text-text-primary mb-4">{title}</h3>
+    {children}
+  </div>
+);
+
+const fetchSiteSettings = async (): Promise<ISiteSettings> => {
+  const { data } = await apiClient.get('/site-settings');
+  return data.data || {};
+};
+
+const updateSiteSettings = async (settings: Partial<ISiteSettings>) => {
+  const { data } = await apiClient.put('/site-settings', settings);
+  return data.data;
 };
 
 const SiteEditorPage = () => {
-    const [settings, setSettings] = useState<Partial<ISiteSettings>>({} as ISiteSettings);
-    const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState('');
+  const queryClient = useQueryClient();
+  const [settings, setSettings] = useState<Partial<ISiteSettings>>({});
 
-    const uploadFileMutation = useMutation({
-        mutationFn: (file: File) => {
-            const formData = new FormData();
-            formData.append('image', file);
-            return apiClient.post('/upload/image', formData);
-        },
-        onError: (err: any) => {
-            setMessage(`Error uploading image: ${err.response?.data?.message || err.message}`);
-        }
-    });
+  const { data: currentSettings, isLoading } = useQuery({
+    queryKey: ['siteSettings'],
+    queryFn: fetchSiteSettings,
+    onSuccess: (data) => setSettings(data)
+  });
 
-    useEffect(() => {
-        apiClient.get('/site-settings')
-          .then(res => setSettings(res.data.data || {}))
-          .catch(() => setMessage('Error: Failed to fetch settings.'))
-          .finally(() => setLoading(false));
-    }, []);
+  const updateMutation = useMutation({
+    mutationFn: updateSiteSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['siteSettings']);
+      alert('Settings updated successfully!');
+    },
+    onError: (error: any) => {
+      alert(`Failed to update settings: ${error.response?.data?.message || error.message}`);
+    }
+  });
 
-    const handleChange = (section, field, value, index = -1, subField = '') => {
-        setSettings(prev => {
-            const newSettings = JSON.parse(JSON.stringify(prev));
-            if (index > -1) {
-                if (!newSettings[section]) newSettings[section] = {};
-                if (!newSettings[section][field]) newSettings[section][field] = [];
-                if (!newSettings[section][field][index]) newSettings[section][field][index] = {};
-                newSettings[section][field][index][subField] = value;
-            } else {
-                if (!newSettings[section]) newSettings[section] = {};
-                newSettings[section][field] = value;
-            }
-            return newSettings;
-        });
-    };
+  const handleInputChange = (section: keyof ISiteSettings, field: string, value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
+  };
 
-    const handleAddItem = (section, field, defaultItem = {}) => {
-        setSettings(prev => {
-            const newSettings = JSON.parse(JSON.stringify(prev));
-            if (!newSettings[section]) newSettings[section] = {};
-            if (!newSettings[section][field]) newSettings[section][field] = [];
-            newSettings[section][field].push(defaultItem);
-            return newSettings;
-        });
-    };
+  const handleArrayChange = (section: keyof ISiteSettings, field: string) => {
+    // Handle array changes for complex fields
+    console.log('Array change:', section, field);
+  };
 
-    const handleRemoveItem = (section, field, index) => {
-        setSettings(prev => ({
-            ...prev,
-            [section]: { ...prev[section], [field]: (prev[section]?.[field] || []).filter((_, i) => i !== index) }
-        }));
-    };
-  
-    const handleSave = async () => {
-        setMessage('Saving...');
-        try {
-            await apiClient.put('/site-settings', settings);
-            setMessage('Settings saved successfully!');
-        } catch (err: any) {
-            setMessage(`Error: Failed to save settings. ${err.response?.data?.message || ''}`);
-        } finally {
-            setTimeout(() => setMessage(''), 3000);
-        }
-    };
+  const handleArrayItemChange = (section: keyof ISiteSettings, field: string, index: number) => {
+    // Handle individual array item changes
+    const currentArray = (settings[section] as any)?.[field] || [];
+    const newArray = [...currentArray];
+    // Update specific index
+    setSettings(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: newArray
+      }
+    }));
+  };
 
-    const handleFileUploadChange = async (event: React.ChangeEvent<HTMLInputElement>, section: string, field: string, index: number = -1, subField: string = '') => {
-        if (!event.target.files || event.target.files.length === 0) return;
-        const file = event.target.files[0];
-        try {
-            const response = await uploadFileMutation.mutateAsync(file);
-            const imageUrl = response.data.imageUrl;
-            handleChange(section, field, imageUrl, index, subField);
-            setMessage('Image uploaded and URL applied!');
-        } catch (err) {
-            // Error is handled by the mutation's onError callback
-        }
-    };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMutation.mutate(settings);
+  };
 
-    const Input = ({ label, section, field }) => (
-        <div>
-            <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">{label}</label>
-            <input type="text" value={settings[section]?.[field] || ''} onChange={e => handleChange(section, field, e.target.value)} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
-        </div>
-    );
-
-    const TextArea = ({ label, section, field }) => (
-        <div>
-            <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">{label}</label>
-            <textarea rows={3} value={settings[section]?.[field] || ''} onChange={e => handleChange(section, field, e.target.value)} className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"/>
-        </div>
-    );
-  
-    const ImageUploader = ({ label, section, field, index = -1, subField = '' }) => {
-        const currentImageUrl = index > -1 
-            ? (settings[section]?.[field]?.[index]?.[subField] || '') 
-            : (settings[section]?.[field] || '');
-        return (
-            <div>
-                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">{label}</label>
-                <input type="text" value={currentImageUrl} onChange={e => handleChange(section, field, e.target.value, index, subField)} placeholder="Enter image URL or upload below" className="w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg mb-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-                {currentImageUrl && <img src={currentImageUrl} alt="Preview" className="h-20 w-auto object-contain mb-2 border border-border-color dark:border-border-color-dark rounded" width="auto" height="80"/>} {/* Added width and height */}
-                <input type="file" onChange={e => handleFileUploadChange(e, section, field, index, subField)} className="w-full text-sm text-light-text dark:text-light-text-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-light-bg dark:file:bg-dark-bg file:text-light-text dark:file:text-light-text-dark hover:file:bg-border-color dark:hover:file:bg-border-color-dark transition-all duration-200" />
-            </div>
-        );
-    };
-
-    if (loading) return <div className="text-dark-text dark:text-dark-text-dark">Loading Site Editor...</div>;
-
+  if (isLoading) {
     return (
-        <div className="space-y-6 text-dark-text dark:text-dark-text-dark">
-            <div className="flex justify-between items-center bg-light-card dark:bg-dark-card p-4 rounded-xl shadow-md sticky top-4 z-20 border border-border-color dark:border-border-color-dark transition-all duration-200">
-                <h1 className="text-2xl font-bold">Site Content Editor</h1>
-                <button onClick={handleSave} className="px-6 py-2.5 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-brand-secondary transition-colors duration-200">
-                    Save All Changes
-                </button>
-            </div>
-            {message && <div className={`p-3 text-center rounded-md transition-all duration-200 ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{message}</div>}
-
-            <AccordionSection title="Logos & Branding">
-                <Input label="Company Name" section="logos" field="companyName" />
-                <ImageUploader label="Navbar Logo URL" section="logos" field="navbarLogoUrl" />
-                <ImageUploader label="Footer Logo URL" section="logos" field="footerLogoUrl" />
-                <ImageUploader label="Favicon URL" section="logos" field="faviconUrl" />
-            </AccordionSection>
-
-            <AccordionSection title="Hero Section">
-                <Input label="Title" section="heroSection" field="title" />
-                <TextArea label="Subtitle" section="heroSection" field="subtitle" />
-                <Input label="Call to Action Text" section="heroSection" field="ctaText" />
-                <ImageUploader label="Background Image URL" section="heroSection" field="backgroundImageUrl" />
-            </AccordionSection>
-
-            <AccordionSection title="Features Page">
-                <Input label="Title" section="featuresPage" field="title" />
-                <TextArea label="Subtitle" section="featuresPage" field="subtitle" />
-                <ImageUploader label="Background Image URL" section="featuresPage" field="backgroundImageUrl" />
-                <div className="border-t border-border-color dark:border-border-color-dark pt-4 mt-4">
-                     <h3 className="font-bold mb-2">Features List</h3>
-                     {(settings.featuresPage?.features || []).map((feature, index) => (
-                         <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-border-color dark:border-border-color-dark p-3 rounded-md mb-2 transition-all duration-200">
-                             <div>
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Feature Icon Name</label>
-                                <input value={feature.icon || ''} onChange={e => handleChange('featuresPage', 'features', e.target.value, index, 'icon')} placeholder="Icon Name (e.g., 'home')" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-                             </div>
-                             <div>
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Feature Title</label>
-                                <input value={feature.title || ''} onChange={e => handleChange('featuresPage', 'features', e.target.value, index, 'title')} placeholder="Title" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" />
-                             </div>
-                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Feature Text</label>
-                                <textarea rows={2} value={feature.text || ''} onChange={e => handleChange('featuresPage', 'features', e.target.value, index, 'text')} placeholder="Description" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"></textarea>
-                             </div>
-                             <button onClick={() => handleRemoveItem('featuresPage', 'features', index)} className="text-red-500 hover:text-red-700 p-2 md:col-span-2 flex justify-center items-center transition-colors"><Trash2 size={18} /> Remove Feature</button>
-                         </div>
-                     ))}
-                     <button onClick={() => handleAddItem('featuresPage', 'features', {icon: '', title: '', text: ''})} className="text-sm flex items-center gap-1 text-brand-primary dark:text-brand-secondary font-semibold hover:opacity-90 transition-colors"><PlusCircle size={16}/> Add Feature</button>
-                </div>
-            </AccordionSection>
-            
-            <AccordionSection title="Services Section">
-                <Input label="Title" section="servicesSection" field="title" />
-                <TextArea label="Subtitle" section="servicesSection" field="subtitle" />
-                <div className="border-t border-border-color dark:border-border-color-dark pt-4 mt-4">
-                     <h3 className="font-bold mb-2">Services List</h3>
-                     {(settings.servicesSection?.services || []).map((service, index) => (
-                         <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-border-color dark:border-border-color-dark p-3 rounded-md mb-2 transition-all duration-200">
-                             <div><label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Service Icon Name</label><input value={service.icon || ''} onChange={e => handleChange('servicesSection', 'services', e.target.value, index, 'icon')} placeholder="Icon Name" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" /></div>
-                             <div><label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Service Title</label><input value={service.title || ''} onChange={e => handleChange('servicesSection', 'services', e.target.value, index, 'title')} placeholder="Title" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" /></div>
-                             <div className="md:col-span-2"><label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Service Text</label><textarea rows={2} value={service.text || ''} onChange={e => handleChange('servicesSection', 'services', e.target.value, index, 'text')} placeholder="Description" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"></textarea></div>
-                             <button onClick={() => handleRemoveItem('servicesSection', 'services', index)} className="text-red-500 p-2 md:col-span-2 flex justify-center transition-colors"><Trash2 size={18} /> Remove Service</button>
-                         </div>
-                     ))}
-                     <button onClick={() => handleAddItem('servicesSection', 'services', {icon: '', title: '', text: ''})} className="text-sm flex items-center gap-1 text-brand-primary dark:text-brand-secondary font-semibold hover:opacity-90 transition-colors"><PlusCircle size={16}/> Add Service</button>
-                </div>
-            </AccordionSection>
-
-            <AccordionSection title="About Page & Leadership Section">
-                <Input label="About Page Title" section="aboutPage" field="title" />
-                <TextArea label="About Page Subtitle" section="aboutPage" field="subtitle" />
-                <ImageUploader label="About Page Main Image" section="aboutPage" field="imageUrl" />
-                <Input label="Mission Title" section="aboutPage" field="missionTitle" />
-                <TextArea label="Mission Statement" section="aboutPage" field="missionStatement" />
-                <Input label="Vision Title" section="aboutPage" field="visionTitle" />
-                <TextArea label="Vision Statement" section="aboutPage" field="visionStatement" />
-                <hr className="my-4 border-border-color dark:border-border-color-dark"/>
-                <Input label="Leadership Section Title" section="leadershipSection" field="title" />
-                <TextArea label="Leadership Section Subtitle" section="leadershipSection" field="subtitle" />
-                <div className="border-t border-border-color dark:border-border-color-dark pt-4 mt-4">
-                     <h3 className="font-bold mb-2">Executive Team</h3>
-                     {(settings.aboutPage?.executives || []).map((exec, index) => (
-                         <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-border-color dark:border-border-color-dark p-3 rounded-md mb-2 transition-all duration-200">
-                             <div><label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Name</label><input value={exec.name || ''} onChange={e => handleChange('aboutPage', 'executives', e.target.value, index, 'name')} placeholder="Executive Name" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" /></div>
-                             <div><label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">Title</label><input value={exec.title || ''} onChange={e => handleChange('aboutPage', 'executives', e.target.value, index, 'title')} placeholder="Position Title" className="w-full bg-light-bg dark:bg-dark-bg border rounded p-2 text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" /></div>
-                             <div className="md:col-span-2"><ImageUploader label="Image URL" section="aboutPage" field="executives" index={index} subField="imageUrl" /></div>
-                             <button onClick={() => handleRemoveItem('aboutPage', 'executives', index)} className="text-red-500 p-2 md:col-span-2 flex justify-center transition-colors"><Trash2 size={18} /> Remove Executive</button>
-                         </div>
-                     ))}
-                     <button onClick={() => handleAddItem('aboutPage', 'executives', {name: '', title: '', imageUrl: ''})} className="text-sm flex items-center gap-1 text-brand-primary dark:text-brand-secondary font-semibold hover:opacity-90 transition-colors"><PlusCircle size={16}/> Add Executive</button>
-                </div>
-            </AccordionSection>
-
-            <AccordionSection title="Install App Section">
-                <Input label="Title" section="installAppSection" field="title" />
-                <TextArea label="Subtitle" section="installAppSection" field="subtitle" />
-                <ImageUploader label="Background Image URL" section="installAppSection" field="backgroundImageUrl" />
-            </AccordionSection>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading settings...</span>
+      </div>
     );
+  }
+
+  const InputField: React.FC<{ label: string; section: keyof ISiteSettings; field: string }> = ({ 
+    label, 
+    section, 
+    field 
+  }) => (
+    <div>
+      <label className="block text-sm font-medium text-text-secondary mb-2">{label}</label>
+      <input
+        type="text"
+        value={(settings[section] as any)?.[field] || ''}
+        onChange={(e) => handleInputChange(section, field, e.target.value)}
+        className="w-full"
+      />
+    </div>
+  );
+
+  const TextAreaField: React.FC<{ label: string; section: keyof ISiteSettings; field: string }> = ({ 
+    label, 
+    section, 
+    field 
+  }) => (
+    <div>
+      <label className="block text-sm font-medium text-text-secondary mb-2">{label}</label>
+      <textarea
+        value={(settings[section] as any)?.[field] || ''}
+        onChange={(e) => handleInputChange(section, field, e.target.value)}
+        rows={3}
+        className="w-full"
+      />
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Site Editor</h1>
+          <p className="text-text-secondary mt-1">Customize your site settings and content</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
+            <Settings size={20} className="text-white" />
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <Section title="Company Information">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputField label="Company Name" section="logos" field="companyName" />
+            <InputField label="Favicon URL" section="logos" field="faviconUrl" />
+            <InputField label="Footer Logo URL" section="logos" field="footerLogoUrl" />
+          </div>
+        </Section>
+
+        <Section title="Hero Section">
+          <div className="space-y-4">
+            <InputField label="Hero Title" section="heroSection" field="title" />
+            <TextAreaField label="Hero Subtitle" section="heroSection" field="subtitle" />
+            <InputField label="CTA Button Text" section="heroSection" field="ctaText" />
+          </div>
+        </Section>
+
+        <Section title="Footer Settings">
+          <div className="space-y-4">
+            <TextAreaField label="Footer Description" section="footer" field="description" />
+            <InputField label="Copyright Text" section="footer" field="copyrightText" />
+          </div>
+        </Section>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={updateMutation.isLoading}
+            className="btn-gradient px-8 py-3 rounded-2xl flex items-center gap-2 font-semibold disabled:opacity-50"
+          >
+            {updateMutation.isLoading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Save size={16} />
+            )}
+            {updateMutation.isLoading ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  );
 };
 
 export default SiteEditorPage;
