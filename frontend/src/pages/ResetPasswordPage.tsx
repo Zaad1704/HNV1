@@ -1,89 +1,172 @@
 import React, { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../api/client';
+import { Lock, CheckCircle, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const ResetPasswordPage: React.FC = () => {
-  const { token } = useParams<{ token: string }>(); // Get the reset token from the URL
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    password: '',
+    confirmPassword: ''
+  });
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    if (password !== confirmPassword) {
-      setError('New passwords do not match.');
-      setLoading(false);
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
-    if (!token) {
-        setError('Invalid or missing reset token.');
-        setLoading(false);
-        return;
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
     }
 
+    setLoading(true);
+    setError('');
+
     try {
-      const response = await apiClient.put(`/password-reset/reset/${token}`, { password });
-      setMessage(response.data.message + ' Redirecting to login...');
-      // Redirect to login page after a short delay
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      await apiClient.put(`/password-reset/reset/${token}`, {
+        password: formData.password
+      });
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred. The token may be invalid or expired.');
+      setError(err.response?.data?.message || 'Failed to reset password. The link may be expired.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark flex items-center justify-center p-4 transition-colors duration-300">
-      <div className="w-full max-w-md bg-light-card dark:bg-dark-card shadow-2xl rounded-2xl p-8 sm:p-12 border border-border-color dark:border-border-color-dark transition-all duration-200">
-        <h1 className="text-3xl font-bold mb-8 text-center">Choose a New Password</h1>
-        
-        {message && <div className="bg-green-500/20 text-green-300 p-3 rounded-lg text-center mb-6">{message}</div>}
-        {error && <div className="bg-red-500/20 text-red-300 p-3 rounded-lg text-center mb-6">{error}</div>}
+  if (success) {
+    return (
+      <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md text-center"
+        >
+          <div className="w-20 h-20 bg-green-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={32} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">Password Reset!</h1>
+          <p className="text-text-secondary mb-8">
+            Your password has been successfully reset. You'll be redirected to login shortly.
+          </p>
+          <Link 
+            to="/login" 
+            className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2"
+          >
+            Go to Login
+            <ArrowRight size={16} />
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
-        {!message && ( // Hide the form after a success message is shown
+  return (
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <Lock size={32} className="text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-text-primary mb-2">Reset Password</h1>
+          <p className="text-text-secondary">Enter your new password below</p>
+        </div>
+
+        <div className="app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-center text-sm mb-6"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-                <label htmlFor="password" className="block text-sm font-medium text-light-text dark:text-light-text-dark">New Password</label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                  className="mt-1 block w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                New Password
+              </label>
+              <div className="relative">
+                <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Enter new password"
+                  minLength={6}
                 />
+              </div>
             </div>
-             <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Confirm New Password</label>
-                <input 
-                  type="password" 
-                  id="confirmPassword" 
-                  value={confirmPassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  required 
-                  className="mt-1 block w-full px-4 py-3 bg-light-bg border border-border-color rounded-lg focus:ring-2 focus:ring-brand-primary focus:outline-none text-dark-text dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark"
-                />
-            </div>
+
             <div>
-                <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg shadow-md font-bold text-white bg-brand-primary hover:bg-brand-secondary disabled:opacity-50">
-                  {loading ? 'Resetting...' : 'Reset Password'}
-                </button>
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Confirm new password"
+                  minLength={6}
+                />
+              </div>
             </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-gradient py-4 text-lg font-semibold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Reset Password
+                  <ArrowRight size={20} />
+                </>
+              )}
+            </button>
           </form>
-        )}
-      </div>
+
+          <div className="mt-8 text-center">
+            <Link 
+              to="/login" 
+              className="text-text-secondary hover:text-text-primary transition-colors"
+            >
+              Back to Login
+            </Link>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
