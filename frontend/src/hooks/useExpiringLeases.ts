@@ -5,16 +5,17 @@ export interface IExpiringLease {
   _id: string;
   name: string;
   leaseEndDate: string;
+  propertyId: {
+    name: string;
+  };
 }
 
-const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => {
-    const { data } = await apiClient.get('/dashboard/expiring-leases');
-    return data.data;
-};
-
-export function useExpiringLeases() {
-  return useQuery<IExpiringLease[], Error>({
+export const useExpiringLeases = () => {
+  return useQuery({
     queryKey: ['expiringLeases'],
-    queryFn: fetchExpiringLeases,
+    queryFn: async (): Promise<IExpiringLease[]> => {
+      const { data } = await apiClient.get('/dashboard/expiring-leases');
+      return data.data;
+    },
   });
-}
+};
