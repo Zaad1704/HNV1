@@ -55,7 +55,7 @@ const InstallAppSection = () => {
     if (!showInstallButton) return null;
 
     return (
-        <div className="text-center bg-light-card dark:bg-dark-card py-20 rounded-xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
+        <section id="install-app" className="text-center bg-light-card dark:bg-dark-card py-20 rounded-xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
             <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.installAppSection?.title || t('install_app.title')}</h2>
             <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.installAppSection?.subtitle || t('install_app.subtitle')}</p>
             <button
@@ -65,7 +65,7 @@ const InstallAppSection = () => {
                 <DownloadCloud />
                 {t('install_app.cta', 'Install App on Your Device')}
             </button>
-        </div>
+        </section>
     );
 };
 
