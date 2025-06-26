@@ -217,34 +217,3 @@ input:focus, textarea:focus, select:focus {
     padding: 24px;
   }
 }
-/* Adjustments for smaller screens */
-@media (max-width: 1024px) {
-  .hero-card-container {
-    height: 700px; /* Allow more vertical space */
-    flex-direction: column; /* Stack cards vertically */
-  }
-  .card-main {
-    width: 80%;
-    max-width: 400px;
-    position: relative; /* Reset positioning */
-    transform: none !important; /* Remove rotations */
-    margin-bottom: 1rem;
-    left: auto;
-    top: auto;
-    right: auto;
-    bottom: auto;
-  }
-  .hero-card:not(.card-main) {
-    width: 90%;
-    height: auto;
-    position: relative; /* Reset positioning */
-    transform: none !important; /* Remove rotations */
-    margin-bottom: 1rem;
-    left: auto;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    padding: 1.5rem;
-    align-self: center;
-  }
-}

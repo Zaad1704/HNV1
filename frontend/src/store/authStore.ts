@@ -1,41 +1,33 @@
-import create from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-// Define your user type
-type User = {
+interface User {
   _id: string;
   name: string;
   email: string;
   role: string;
-};
+  organizationId?: any;
+}
 
-type AuthState = {
-  user: User | null;
+interface AuthState {
   token: string | null;
-  isAuthenticated: boolean;
-  setUser: (user: User | null) => void;
-  setToken: (token: string | null) => void;
+  user: User | null;
+  setToken: (token: string) => void;
+  setUser: (user: User) => void;
   logout: () => void;
-};
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
       token: null,
-      isAuthenticated: false,
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      user: null,
       setToken: (token) => set({ token }),
-      logout: () => {
-        // On logout, clear everything from state and storage
-        set({ user: null, token: null, isAuthenticated: false });
-      },
+      setUser: (user) => set({ user }),
+      logout: () => set({ token: null, user: null }),
     }),
     {
-      name: "auth-storage", // The key in localStorage
-      // FIX: Only persist the 'token'. The user object will be fetched on load.
-      // This prevents issues with stale user data causing crashes.
-      partialize: (state) => ({ token: state.token }),
+      name: 'auth-storage',
     }
   )
 );

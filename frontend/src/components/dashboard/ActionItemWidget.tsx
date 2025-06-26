@@ -1,56 +1,76 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Link } from 'react-router-dom';
+import { ExternalLink, AlertCircle } from 'lucide-react';
 
-interface RentStatusChartProps {
-  data: Array<{
-    name: string;
-    value: number;
+interface ActionItemWidgetProps {
+  title: string;
+  items: Array<{
+    id: string;
+    primaryText: string;
+    secondaryText: string;
   }>;
+  actionText: string;
+  emptyText: string;
+  linkTo: string;
+  onActionClick?: (itemId: string) => void;
+  isActionLoading?: boolean;
+  loadingItemId?: string | null;
 }
 
-const COLORS = ['#22c55e', '#ef4444'];
-
-const RentStatusChart: React.FC<RentStatusChartProps> = ({ data }) => {
+const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
+  title,
+  items,
+  actionText,
+  emptyText,
+  linkTo,
+  onActionClick,
+  isActionLoading,
+  loadingItemId
+}) => {
   return (
-    <div className="h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={40}
-            outerRadius={80}
-            paddingAngle={5}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip 
-            contentStyle={{
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)',
-              borderRadius: '12px',
-              color: 'var(--text-primary)'
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="mt-4 flex justify-center gap-4">
-        {data.map((entry, index) => (
-          <div key={entry.name} className="flex items-center gap-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-            ></div>
-            <span className="text-sm text-text-secondary">{entry.name}</span>
-          </div>
-        ))}
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+        <Link 
+          to={linkTo}
+          className="text-brand-blue hover:text-brand-blue/80 text-sm font-medium flex items-center gap-1"
+        >
+          View All <ExternalLink size={14} />
+        </Link>
       </div>
+
+      {items.length > 0 ? (
+        <div className="space-y-3">
+          {items.slice(0, 3).map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-4 bg-app-bg rounded-2xl">
+              <div className="flex-1">
+                <p className="font-medium text-text-primary text-sm">{item.primaryText}</p>
+                <p className="text-text-secondary text-xs mt-1">{item.secondaryText}</p>
+              </div>
+              {onActionClick && (
+                <button
+                  onClick={() => onActionClick(item.id)}
+                  disabled={isActionLoading && loadingItemId === item.id}
+                  className="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
+                >
+                  {isActionLoading && loadingItemId === item.id ? (
+                    <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    actionText
+                  )}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <AlertCircle size={32} className="mx-auto text-text-muted mb-3" />
+          <p className="text-text-secondary text-sm">{emptyText}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default RentStatusChart;
+export default ActionItemWidget;

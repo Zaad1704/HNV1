@@ -88,24 +88,3 @@ const PublicBottomNavBar = () => {
 };
 
 export default PublicBottomNavBar;
-                    </a>
-                ))}
-                
-                {/* Central Login Button - prominent position */}
-                <div className="relative flex justify-center">
-                    <Link to="/login" className="absolute -top-4 flex flex-col items-center justify-center w-16 h-16 bg-brand-primary text-white rounded-full shadow-lg border-4 border-light-bg dark:border-dark-bg transition-all duration-200 hover:scale-105">
-                        <span className="text-sm font-bold">{t('header.login', 'Login')}</span>
-                    </Link>
-                </div>
-                
-                {/* More button to show hidden items and utilities */}
-                <button onClick={() => setMoreMenuOpen(!isMoreMenuOpen)} className="flex flex-col items-center justify-center w-full h-full text-xs text-light-text dark:text-light-text-dark transition-colors duration-150">
-                    <MoreHorizontal size={20} />
-                    <span className="font-medium mt-1">More</span>
-                </button>
-            </div>
-        </nav>
-    );
-};
-
-export default PublicBottomNavBar;
