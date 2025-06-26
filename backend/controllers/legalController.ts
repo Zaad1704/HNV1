@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs/promises';
 import asyncHandler from 'express-async-handler';
-import marked from 'marked'; // Corrected import statement to use default export
+import marked from 'marked'; // Corrected import to use the default export
 
 const getLegalContentAsHtml = async (fileName: string) => {
     // Assuming the text files are in the project root. Adjust path if necessary.
