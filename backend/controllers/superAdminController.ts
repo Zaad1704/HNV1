@@ -19,7 +19,7 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
         throw new Error('Organization not found.');
     }
 
-    // Perform a soft cascade delete
+    // Perform a hard cascade delete
     // 1. Delete all users belonging to the organization
     await User.deleteMany({ organizationId: orgId });
     // 2. Delete the subscription associated with the organization
