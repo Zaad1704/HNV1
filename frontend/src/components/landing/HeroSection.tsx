@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { Building2, Users, CreditCard, BarChart3, Settings, Phone } from 'lucide-react';
+import { Building2, Users, CreditCard, BarChart3, Settings, ArrowRight, Play } from 'lucide-react';
 
 const HeroSection = () => {
   const { t } = useTranslation();
@@ -16,137 +16,160 @@ const HeroSection = () => {
     }
   };
 
-  const heroCards = [
-    {
-      id: 'main',
-      title: settings?.heroSection?.title || t('landing.hero_title'),
-      subtitle: settings?.heroSection?.subtitle || t('landing.hero_subtitle'),
-      isMain: true,
-      cta: settings?.heroSection?.ctaText || t('landing.hero_cta'),
-      icon: Building2
-    },
-    {
-      id: 'properties',
-      title: 'Properties',
-      subtitle: 'Manage all your properties in one place',
-      icon: Building2,
-      action: () => scrollToSection('about')
-    },
-    {
-      id: 'tenants',
-      title: 'Tenants',
-      subtitle: 'Keep track of tenant information and leases',
-      icon: Users,
-      action: () => scrollToSection('services')
-    },
-    {
-      id: 'payments',
-      title: 'Payments',
-      subtitle: 'Process rent and track financial records',
-      icon: CreditCard,
-      action: () => scrollToSection('pricing')
-    },
-    {
-      id: 'analytics',
-      title: 'Analytics',
-      subtitle: 'Get insights with detailed reports',
-      icon: BarChart3,
-      action: () => scrollToSection('leadership')
-    },
-    {
-      id: 'settings',
-      title: 'Settings',
-      subtitle: 'Customize your experience',
-      icon: Settings,
-      action: () => scrollToSection('contact')
-    }
-  ];
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.6,
-        ease: "easeOut",
-      },
-    }),
-  };
-
   return (
-    <section id="hero" className="py-20 md:py-32 bg-app-bg">
-      <div className="container mx-auto px-4">
-        <motion.div 
-          className="hero-cards-grid"
-          initial="hidden"
-          animate="visible"
-        >
-          {heroCards.map((card, index) => {
-            const IconComponent = card.icon;
-            
-            if (card.isMain) {
-              return (
-                <motion.div
-                  key={card.id}
-                  className="hero-card gradient-card md:col-span-2 md:row-span-2 flex flex-col justify-between min-h-[300px] relative overflow-hidden"
-                  variants={cardVariants}
-                  custom={index}
-                >
-                  {/* Custom Image Section - Admin Uploadable */}
-                  {settings?.heroSection?.customImageUrl && (
-                    <div className="absolute inset-0 opacity-20">
-                      <img
-                        src={settings.heroSection.customImageUrl}
-                        alt="Hero Background"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="relative z-10">
-                    <div className="w-16 h-16 glass-effect rounded-2xl flex items-center justify-center mb-6">
-                      <IconComponent size={32} />
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-                      {card.title}
-                    </h1>
-                    <p className="text-white/80 text-lg mb-8 max-w-md">
-                      {card.subtitle}
-                    </p>
-                  </div>
-                  <Link 
-                    to="/register" 
-                    className="btn-glass self-start font-semibold px-8 py-4 text-lg relative z-10"
-                  >
-                    {card.cta}
-                  </Link>
-                </motion.div>
-              );
-            }
+    <section id="hero" className="relative min-h-screen flex items-center bg-app-bg overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-purple/5"></div>
+      <div className="absolute top-20 right-10 w-72 h-72 bg-brand-blue/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-brand-purple/10 rounded-full blur-3xl"></div>
 
-            return (
-              <motion.div
-                key={card.id}
-                className="hero-card app-card cursor-pointer"
-                variants={cardVariants}
-                custom={index}
-                onClick={card.action}
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Desktop Layout */}
+        <div className="hidden md:grid md:grid-cols-2 gap-16 items-center">
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h1 className="text-6xl font-bold text-text-primary mb-6 leading-tight">
+              {settings?.heroSection?.title || t('landing.hero_title')}
+            </h1>
+            <p className="text-xl text-text-secondary mb-8 leading-relaxed">
+              {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
+            </p>
+            <div className="flex gap-4">
+              <Link 
+                to="/register" 
+                className="btn-gradient px-8 py-4 rounded-2xl font-semibold text-lg flex items-center gap-2"
               >
-                <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center mb-4">
-                  <IconComponent size={24} className="text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-text-primary mb-2">
-                  {card.title}
-                </h3>
-                <p className="text-text-secondary text-sm">
-                  {card.subtitle}
-                </p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
+                <ArrowRight size={20} />
+              </Link>
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-app-border text-text-primary hover:bg-app-surface transition-all"
+              >
+                <Play size={20} />
+                Learn More
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Right Content - Custom Image or Feature Cards */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="relative"
+          >
+            {settings?.heroSection?.customImageUrl ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src={settings.heroSection.customImageUrl}
+                  alt="Property Management Platform"
+                  className="w-full h-auto object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: Building2, title: 'Properties', color: 'bg-blue-500' },
+                  { icon: Users, title: 'Tenants', color: 'bg-green-500' },
+                  { icon: CreditCard, title: 'Payments', color: 'bg-purple-500' },
+                  { icon: BarChart3, title: 'Analytics', color: 'bg-orange-500' }
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                    className="app-surface p-6 rounded-2xl border border-app-border hover:shadow-app-lg transition-all cursor-pointer"
+                    onClick={() => scrollToSection('about')}
+                  >
+                    <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center mb-4`}>
+                      <item.icon size={24} className="text-white" />
+                    </div>
+                    <h3 className="font-semibold text-text-primary">{item.title}</h3>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Mobile Layout - Native App Style */}
+        <div className="md:hidden text-center py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Custom Image for Mobile */}
+            {settings?.heroSection?.customImageUrl && (
+              <div className="mb-8 mx-auto w-64 h-64 rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src={settings.heroSection.customImageUrl}
+                  alt="Property Management"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <h1 className="text-4xl font-bold text-text-primary mb-4 leading-tight px-4">
+              {settings?.heroSection?.title || t('landing.hero_title')}
+            </h1>
+            <p className="text-lg text-text-secondary mb-8 px-6 leading-relaxed">
+              {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
+            </p>
+
+            {/* Mobile CTA Buttons */}
+            <div className="space-y-4 px-6">
+              <Link 
+                to="/register" 
+                className="w-full btn-gradient py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2"
+              >
+                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
+                <ArrowRight size={20} />
+              </Link>
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-app-border text-text-primary bg-app-surface/50 backdrop-blur-sm"
+              >
+                <Play size={20} />
+                Learn More
+              </button>
+            </div>
+
+            {/* Mobile Feature Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-12 grid grid-cols-2 gap-4 px-6"
+            >
+              {[
+                { icon: Building2, title: 'Properties', count: '500+' },
+                { icon: Users, title: 'Tenants', count: '2K+' },
+                { icon: CreditCard, title: 'Payments', count: '$1M+' },
+                { icon: BarChart3, title: 'Reports', count: '24/7' }
+              ].map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  className="app-surface p-4 rounded-2xl border border-app-border text-center"
+                >
+                  <item.icon size={24} className="text-brand-blue mx-auto mb-2" />
+                  <p className="text-sm font-semibold text-text-primary">{item.count}</p>
+                  <p className="text-xs text-text-secondary">{item.title}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
 
         {/* Additional Custom Image Section */}
         {settings?.heroSection?.additionalImageUrl && (
@@ -154,32 +177,32 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-16"
+            className="mt-20"
           >
             <div className="app-surface rounded-3xl p-8 border border-app-border overflow-hidden">
               <div className="flex flex-col lg:flex-row items-center gap-8">
-                <div className="flex-1">
+                <div className="flex-1 text-center lg:text-left">
                   <h2 className="text-3xl font-bold text-text-primary mb-4">
                     {settings.heroSection.additionalTitle || 'Transform Your Property Management'}
                   </h2>
                   <p className="text-text-secondary text-lg mb-6">
-                    {settings.heroSection.additionalDescription || 'Experience the future of property management with our comprehensive platform designed for modern landlords and property managers.'}
+                    {settings.heroSection.additionalDescription || 'Experience the future of property management with our comprehensive platform.'}
                   </p>
                   <Link 
                     to="/register" 
                     className="btn-gradient px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2"
                   >
                     Get Started Today
+                    <ArrowRight size={16} />
                   </Link>
                 </div>
                 <div className="flex-1 max-w-md">
-                  <div className="relative rounded-3xl overflow-hidden shadow-app-xl">
+                  <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                     <img
                       src={settings.heroSection.additionalImageUrl}
-                      alt="Property Management Platform"
+                      alt="Property Management Features"
                       className="w-full h-auto object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   </div>
                 </div>
               </div>
