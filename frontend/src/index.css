@@ -5,7 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Define CSS variables for your Tailwind colors for broader use (e.g., in Recharts) */
+/* Define CSS variables for the entire application based on the new design */
 :root {
   /* Light Theme based on Yartee design */
   --brand-primary: #4A69E2;
@@ -13,36 +13,83 @@
   --brand-teal: #4AE2B6;
   --brand-blue-2: #4A90E2;
 
-  --light-bg: #E5E7EB;
-  --light-card: #FFFFFF;
-  --dark-text: #1a202c;
-  --light-text: #6B7280;
-  --border-color: #D1D5DB;
-
-  /* Dark Theme (can be customized further) */
-  --dark-bg': #111827';
-  --dark-card': #1F2937';
-  --dark-text-dark': #F9FAFB';
-  --light-text-dark': #9CA3AF';
-  --border-color-dark': #374151';
+  /* Semantic Colors for Light Theme (Default) */
+  --light-bg: #E5E7EB;         /* Main light background from design */
+  --light-card: #FFFFFF;       /* Pure white for cards and surfaces */
+  --dark-text: #1a202c;        /* Main text color */
+  --light-text: #6B7280;       /* Lighter gray for subtitles and secondary text */
+  --border-color: #D1D5DB;     /* Subtle border color */
 
   /* Gradients */
   --primary-card-gradient: linear-gradient(135deg, #4A69E2 0%, #FFA87A 100%);
   --secondary-card-gradient: linear-gradient(135deg, #4AE2B6 0%, #4A90E2 100%);
+
+  /* Specific colors for charts that directly use these values */
+  --green-500: #22c55e;
+  --yellow-500: #eab308;
+  --red-500: #ef4444;
+  --blue-500: #3b82f6;
+
+  /* These colors are now directly applied where needed in JS/TSX via inline style or mapped Tailwind classes,
+     or directly in Tailwind config's extended colors */
 }
+
+/* Dark Theme Specific Variables */
+html.dark {
+  --dark-bg: #111827;          /* Dark blue-gray background */
+  --dark-card: #1F2937;        /* Slightly lighter card background */
+  --dark-text-dark: #F9FAFB;   /* Off-white for text in dark mode */
+  --light-text-dark: #9CA3AF;  /* Lighter gray for subtitles in dark mode */
+  --border-color-dark: #374151; /* Subtle border for dark elements */
+
+  /* Apply dark mode colors directly to elements */
+  background-color: var(--dark-bg);
+  color: var(--dark-text-dark);
+}
+
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-light-bg text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300 font-sans;
+  /* These are now dynamic based on the html.dark class from ThemeContext */
+  @apply bg-light-bg text-dark-text transition-colors duration-300;
   font-family: 'Poppins', sans-serif;
+}
+
+/* Custom utility for gradient text like "Here Greant" */
+@layer utilities {
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-primary-card-gradient;
+  }
+}
+
+/* Card animation from Gold Standard design */
+.card {
+  transition: all 0.3s ease-in-out;
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Base styles for common elements to ensure consistency */
 h1, h2, h3, h4, h5, h6 {
-  @apply text-dark-text dark:text-dark-text-dark;
+  @apply text-dark-text; /* Use the main dark text variable */
 }
 
 /* Input field base styles */
@@ -55,16 +102,8 @@ input[type="date"],
 input[type="month"],
 textarea,
 select {
-  @apply bg-light-card border border-border-color rounded-lg text-dark-text focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
-  padding: 0.75rem 1rem; 
-  font-size: 0.95rem; 
-}
-
-/* Focus styles for inputs, ensuring brand primary ring */
-input:focus,
-textarea:focus,
-select:focus {
-  @apply ring-2 ring-brand-primary/50 outline-none;
+  /* These will pick up dark mode styles via Tailwind's dark: prefix or specific dark mode classes */
+  @apply w-full mt-1 p-3 bg-light-bg border border-border-color rounded-lg text-dark-text focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all duration-200;
 }
 
 /* Buttons with primary brand styling */
@@ -94,18 +133,118 @@ select:focus {
   border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
-/* --- ADDED FOR TRANSITIONS --- */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Styles for scattered cards in LandingPage */
+.hero-card-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 600px; /* Adjust height as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.animate-fadeInUp {
-    animation: fadeInUp 0.5s ease-out forwards;
+.hero-card {
+    position: absolute;
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    background-color: var(--light-card); /* Default background */
+    border: 1px solid var(--border-color); /* Default border */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.hero-card.gradient-primary {
+    background: var(--primary-card-gradient);
+    color: white;
+}
+
+.hero-card.gradient-secondary {
+    background: var(--secondary-card-gradient);
+    color: white;
+}
+
+/* Specific positioning and styling for each card */
+.card-main {
+    width: 500px;
+    height: 400px;
+    z-index: 5;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.card-small-1 {
+    width: 200px;
+    height: 150px;
+    top: 10%;
+    left: 15%;
+    transform: rotate(-8deg);
+    z-index: 3;
+}
+
+.card-small-2 {
+    width: 220px;
+    height: 180px;
+    bottom: 5%;
+    right: 10%;
+    transform: rotate(12deg);
+    z-index: 4;
+}
+
+.card-medium-1 {
+    width: 300px;
+    height: 250px;
+    top: 15%;
+    right: 5%;
+    transform: rotate(5deg);
+    z-index: 2;
+}
+
+.card-medium-2 {
+    width: 320px;
+    height: 200px;
+    bottom: 10%;
+    left: 8%;
+    transform: rotate(-10deg);
+    z-index: 3;
+}
+
+/* Adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .hero-card-container {
+    height: 700px; /* Allow more vertical space */
+    flex-direction: column; /* Stack cards vertically */
+  }
+  .card-main {
+    width: 80%;
+    max-width: 400px;
+    position: relative; /* Reset positioning */
+    transform: none !important; /* Remove rotations */
+    margin-bottom: 1rem;
+    left: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+  }
+  .hero-card:not(.card-main) {
+    width: 90%;
+    height: auto;
+    position: relative; /* Reset positioning */
+    transform: none !important; /* Remove rotations */
+    margin-bottom: 1rem;
+    left: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    padding: 1.5rem;
+    align-self: center;
+  }
 }
