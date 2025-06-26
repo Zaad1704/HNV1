@@ -13,7 +13,6 @@
     "paths": {
       "*": ["node_modules/*"]
     },
-    "types": ["node", "jest", "marked"],
     "typeRoots": ["node_modules/@types"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
