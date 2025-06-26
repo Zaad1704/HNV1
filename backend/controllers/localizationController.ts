@@ -36,7 +36,7 @@ export const detectLocale = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("IP detection failed:", error);
         res.status(500).json({
-            success: true,
+            success: false,
             lang: 'en',
             currency: 'USD',
             name: '$',
