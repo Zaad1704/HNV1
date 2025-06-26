@@ -1,242 +1,247 @@
-// frontend/src/pages/TenantDashboardPage.tsx
-
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { HandCoins, MessageSquareWarning, Wrench, CreditCard, Home, Calendar, Phone, MapPin, CheckCircle } from 'lucide-react';
-import MaintenanceRequestModal from '../components/common/MaintenanceRequestModal';
-import { useAuthStore } from '../store/authStore';
+import { motion } from 'framer-motion';
+import { 
+  Home, 
+  CreditCard, 
+  Calendar, 
+  User, 
+  MapPin, 
+  Phone, 
+  Mail,
+  DollarSign,
+  Clock,
+  FileText
+} from 'lucide-react';
 
-// Define interfaces for type safety
-interface PropertyInfo {
-    name: string;
-    street: string;
-    city: string;
-}
-
-interface LandlordInfo {
-    name: string;
-    email: string;
-}
-
-interface LeaseInfo {
-    property?: PropertyInfo;
-    unit: string;
-    status: string;
-    landlord?: LandlordInfo;
-    rentAmount?: number;
-    leaseEndDate?: string;
-}
-
-interface DueLineItem {
-    description: string;
-    amount: number;
-}
-
-// NEW: Updated UpcomingDues interface to match backend Invoice structure
-interface UpcomingDues {
-    invoiceId: string; // NEW: ID of the outstanding invoice
-    invoiceNumber: string; // NEW: Invoice number
-    totalAmount: number;
-    lineItems: DueLineItem[];
-    dueDate: string;
-}
-
-interface Payment {
-    _id: string;
-    amount: number;
-    paymentDate: string;
-    status: string;
-}
-
-interface TenantDashboardData {
-    leaseInfo?: LeaseInfo;
-    paymentHistory: Payment[];
-    upcomingDues?: UpcomingDues; // Now represents a real outstanding invoice
-}
-
-// Fetch Tenant Dashboard Data
-const fetchTenantDashboardData = async (): Promise<TenantDashboardData> => {
-    const { data } = await apiClient.get('/tenant-portal/dashboard');
-    return data.data;
-};
-
-// Mutation function for initiating rent payment
-// Now accepts invoiceId and lineItems
-const createRentSession = async ({ invoiceId, lineItems }: { invoiceId: string; lineItems: DueLineItem[]; }) => {
-    const { data } = await apiClient.post('/billing/create-rent-payment', { invoiceId, lineItems });
-    return data;
+const fetchTenantDashboard = async () => {
+  const { data } = await apiClient.get('/tenant-portal/dashboard');
+  return data.data;
 };
 
 const TenantDashboardPage = () => {
-    const { user } = useAuthStore();
-    const { data, isLoading, isError, error } = useQuery<TenantDashboardData, Error>({
-        queryKey: ['tenantDashboardData'],
-        queryFn: fetchTenantDashboardData,
-    });
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const { data: dashboardData, isLoading, error } = useQuery({
+    queryKey: ['tenantDashboard'],
+    queryFn: fetchTenantDashboard
+  });
 
-    const mutation = useMutation(createRentSession, {
-        onSuccess: (data) => {
-            if (data.redirectUrl) {
-                window.location.href = data.redirectUrl;
-            }
-        },
-        onError: (err: any) => {
-            alert(`Error initiating payment: ${err.response?.data?.message || 'Could not initiate payment.'}`);
-        }
-    });
-
-    const handlePayRent = () => {
-        if (!data?.upcomingDues?.invoiceId) {
-            alert('No outstanding invoice found to pay.');
-            return;
-        }
-        // Pass the invoiceId and lineItems to the mutation
-        mutation.mutate({
-            invoiceId: data.upcomingDues.invoiceId,
-            lineItems: data.upcomingDues.lineItems
-        });
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    };
-
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading Your Dashboard...</div>;
-    if (isError) return (
-        <div className="text-red-400 text-center p-8 dark:text-red-400">
-            Error: {error?.message || 'Failed to load dashboard data.'}
-            <p className="mt-4">Ensure your backend has active invoices for tenants, or try generating some from the admin panel.</p>
-        </div>
-    );
-
-    if (!data?.leaseInfo && !data?.paymentHistory && !data?.upcomingDues) {
-        return (
-            <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">
-                <h1 className="text-4xl font-bold mb-4">Welcome, {user?.name}!</h1>
-                <p className="text-light-text dark:text-light-text-dark mb-4">Your tenant dashboard is loading. If you do not see your lease information, please contact your landlord or administrator.</p>
-                <button onClick={() => setIsModalOpen(true)} className="mt-4 px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
-                    Submit a Maintenance Request
-                </button>
-            </div>
-        );
-    }
-
-    const leaseInfo = data.leaseInfo || {};
-    const paymentHistory = data.paymentHistory || [];
-    const upcomingDues = data.upcomingDues;
-    
-    const nextPaymentDueDateDisplay = upcomingDues?.dueDate ? formatDate(upcomingDues.dueDate) : 'N/A';
-    const nextPaymentAmountDisplay = upcomingDues?.totalAmount !== undefined ? `$${upcomingDues.totalAmount.toFixed(2)}` : '$0.00';
-
-
+  if (isLoading) {
     return (
-        <div className="text-dark-text dark:text-dark-text-dark space-y-8">
-            <MaintenanceRequestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-            <h1 className="text-4xl font-bold">My Tenant Dashboard</h1>
-
-            {/* Payment Hub Card */}
-            <div className="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark text-dark-text dark:text-dark-text-dark transition-all duration-200">
-                <h2 className="text-xl font-bold mb-2">Payment Hub</h2>
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <p className="text-light-text dark:text-light-text-dark">Next Payment Due:</p>
-                        <p className="text-3xl font-bold">{nextPaymentDueDateDisplay}</p>
-                        <p className="text-lg font-mono opacity-80">{nextPaymentAmountDisplay}</p>
-                        {upcomingDues && <p className="text-light-text dark:text-light-text-dark text-sm">Invoice: {upcomingDues.invoiceNumber}</p>}
-                    </div>
-                    <button
-                        onClick={handlePayRent}
-                        // Disable if no outstanding invoice is found or amount is 0
-                        disabled={mutation.isLoading || !upcomingDues?.invoiceId || upcomingDues.totalAmount === 0}
-                        className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-brand-primary text-white font-bold rounded-lg shadow-xl hover:bg-brand-secondary transition-all transform hover:scale-105 disabled:opacity-50 disabled:scale-100"
-                    >
-                        <CreditCard />
-                        {mutation.isLoading ? 'Redirecting...' : 'Pay Rent Now'}
-                    </button>
-                </div>
-                {/* Display upcoming dues breakdown */}
-                {upcomingDues && upcomingDues.lineItems.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-border-color dark:border-border-color-dark">
-                        <p className="text-light-text dark:text-light-text-dark text-sm font-semibold mb-2">Breakdown of Next Payment:</p>
-                        <ul className="text-sm space-y-1">
-                            {upcomingDues.lineItems.map((item, index) => (
-                                <li key={index} className="flex justify-between text-dark-text dark:text-dark-text-dark">
-                                    <span>{item.description}</span>
-                                    <span>${item.amount.toFixed(2)}</span>
-                                </li>
-                            ))}
-                            <li className="flex justify-between font-bold pt-1 border-t border-border-color dark:border-border-color-dark">
-                                <span>Total</span>
-                                <span>${upcomingDues.totalAmount.toFixed(2)}</span>
-                            </li>
-                        </ul>
-                    </div>
-                )}
-            </div>
-
-            {/* Lease Info Card */}
-            <div className="bg-light-card dark:bg-dark-card/70 p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
-                <h2 className="text-xl font-bold mb-3">My Lease Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-light-text dark:text-light-text-dark">
-                    <p className="flex items-center gap-2"><Home size={18} className="text-brand-primary dark:text-brand-secondary" /> <strong>Property:</strong> {leaseInfo.property?.name || 'N/A'}, Unit {leaseInfo.unit || 'N/A'}</p>
-                    <p className="flex items-center gap-2"><MapPin size={18} className="text-brand-primary dark:text-brand-secondary" /> <strong>Address:</strong> {leaseInfo.property?.street || 'N/A'}, {leaseInfo.property?.city || 'N/A'}</p>
-                    <p className="flex items-center gap-2"><Calendar size={18} className="text-brand-primary dark:text-brand-secondary" /> <strong>Lease Status:</strong> {leaseInfo.status || 'N/A'}</p>
-                    {leaseInfo.leaseEndDate && <p className="flex items-center gap-2"><Calendar size={18} className="text-brand-primary dark:text-brand-secondary" /> <strong>Lease End:</strong> {new Date(leaseInfo.leaseEndDate).toLocaleDateString()}</p>}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Payment History Card */}
-                <div className="bg-light-card dark:bg-dark-card/70 p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
-                    <h2 className="text-xl font-bold mb-4">Payment History</h2>
-                    {paymentHistory.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full text-left text-light-text dark:text-light-text-dark">
-                                <thead className="text-dark-text dark:text-dark-text-dark uppercase border-b border-border-color dark:border-border-color-dark">
-                                    <tr>
-                                        <th className="py-2 px-3">Date</th>
-                                        <th className="py-2 px-3 text-right">Amount</th>
-                                        <th className="py-2 px-3">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {paymentHistory.map((payment) => (
-                                        <tr key={payment._id} className="border-b border-border-color dark:border-border-color-dark last:border-b-0 hover:bg-light-bg dark:hover:bg-dark-bg/40 transition-colors duration-150">
-                                            <td className="py-2 px-3">{new Date(payment.paymentDate).toLocaleDateString()}</td>
-                                            <td className="py-2 px-3 text-right font-mono text-dark-text dark:text-dark-text-dark">${payment.amount.toFixed(2)}</td>
-                                            <td className="py-2 px-3"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${payment.status === 'Paid' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>{payment.status}</span></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <p className="text-light-text dark:text-light-text-dark text-center py-8">No past payments recorded.</p>
-                    )}
-                </div>
-
-                {/* Maintenance & Emergency Section */}
-                <div className="space-y-6">
-                    <div className="bg-light-card dark:bg-dark-card/70 p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
-                         <h2 className="text-xl font-bold text-brand-primary dark:text-brand-secondary mb-3 flex items-center"><Wrench className="mr-2" />Submit a Maintenance Request</h2>
-                         <p className="text-light-text dark:text-light-text-dark mb-4">Have an issue in your unit? Let us know.</p>
-                         <button onClick={() => setIsModalOpen(true)} className="w-full px-5 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200">
-                            Create Request
-                         </button>
-                    </div>
-                    <div className="bg-light-card dark:bg-dark-card/70 p-6 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
-                        <h2 className="text-xl font-bold text-brand-accent-dark mb-3 flex items-center"><MessageSquareWarning className="mr-2" />Emergency Contact</h2>
-                        <p className="text-light-text dark:text-light-text-dark mb-4">For urgent issues, please contact your landlord directly:</p>
-                        <p className="text-dark-text dark:text-dark-text-dark font-semibold flex items-center gap-2 mb-1"><Users size={18} className="text-brand-primary dark:text-brand-secondary"/> {leaseInfo.landlord?.name || 'Your Landlord'}</p>
-                        <p className="text-dark-text dark:text-dark-text-dark font-semibold flex items-center gap-2"><Phone size={18} className="text-brand-primary dark:text-brand-secondary"/> {leaseInfo.landlord?.email || 'N/A'}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading your dashboard...</span>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+          <FileText size={24} className="text-red-500" />
+        </div>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">Unable to Load Dashboard</h3>
+        <p className="text-text-secondary">Please contact your landlord to set up your tenant profile.</p>
+      </div>
+    );
+  }
+
+  const { leaseInfo, paymentHistory, upcomingDues } = dashboardData || {};
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      {/* Welcome Header */}
+      <div className="app-gradient rounded-3xl p-8 text-white">
+        <h1 className="text-3xl font-bold mb-2">Welcome to Your Portal</h1>
+        <p className="text-white/80">
+          Manage your lease, payments, and communicate with your landlord.
+        </p>
+      </div>
+
+      {/* Property & Lease Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+              <Home size={20} className="text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Your Property</h2>
+          </div>
+          
+          {leaseInfo && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <MapPin size={16} className="text-text-muted mt-1" />
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    {leaseInfo.property?.name}
+                  </p>
+                  <p className="text-text-secondary text-sm">
+                    Unit {leaseInfo.unit} • {leaseInfo.property?.street}, {leaseInfo.property?.city}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <DollarSign size={16} className="text-text-muted" />
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    ${leaseInfo.rentAmount?.toLocaleString()}/month
+                  </p>
+                  <p className="text-text-secondary text-sm">Monthly Rent</p>
+                </div>
+              </div>
+              
+              {leaseInfo.leaseEndDate && (
+                <div className="flex items-center gap-3">
+                  <Calendar size={16} className="text-text-muted" />
+                  <div>
+                    <p className="font-semibold text-text-primary">
+                      {new Date(leaseInfo.leaseEndDate).toLocaleDateString()}
+                    </p>
+                    <p className="text-text-secondary text-sm">Lease Expires</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+              <User size={20} className="text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Landlord Contact</h2>
+          </div>
+          
+          {leaseInfo?.landlord && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <User size={16} className="text-text-muted" />
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    {leaseInfo.landlord.name}
+                  </p>
+                  <p className="text-text-secondary text-sm">Property Manager</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Mail size={16} className="text-text-muted" />
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    {leaseInfo.landlord.email}
+                  </p>
+                  <p className="text-text-secondary text-sm">Email</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+
+      {/* Upcoming Payments */}
+      {upcomingDues && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+              <Clock size={20} className="text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Upcoming Payment</h2>
+          </div>
+          
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-lg font-bold text-orange-800">
+                  ${upcomingDues.totalAmount?.toLocaleString()}
+                </p>
+                <p className="text-orange-600 text-sm">
+                  Due: {new Date(upcomingDues.dueDate).toLocaleDateString()}
+                </p>
+              </div>
+              <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+                Pending
+              </span>
+            </div>
+            
+            {upcomingDues.lineItems && upcomingDues.lineItems.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-orange-800">Payment Details:</p>
+                {upcomingDues.lineItems.map((item: any, index: number) => (
+                  <div key={index} className="flex justify-between text-sm text-orange-700">
+                    <span>{item.description}</span>
+                    <span>${item.amount?.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Payment History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="app-surface rounded-3xl p-8 border border-app-border"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+            <CreditCard size={20} className="text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-text-primary">Recent Payments</h2>
+        </div>
+        
+        {paymentHistory && paymentHistory.length > 0 ? (
+          <div className="space-y-4">
+            {paymentHistory.slice(0, 5).map((payment: any) => (
+              <div key={payment._id} className="flex justify-between items-center p-4 bg-app-bg rounded-2xl">
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    ${payment.amount?.toLocaleString()}
+                  </p>
+                  <p className="text-text-secondary text-sm">
+                    {new Date(payment.paymentDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {payment.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <CreditCard size={48} className="mx-auto text-text-muted mb-4" />
+            <p className="text-text-secondary">No payment history available</p>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
 };
 
 export default TenantDashboardPage;
