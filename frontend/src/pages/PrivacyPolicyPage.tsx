@@ -5,9 +5,10 @@ import { useSiteSettings } from '../hooks/useSiteSettings';
 import apiClient from '../api/client';
 import Spinner from '../components/uikit/Spinner';
 import Footer from '../components/layout/Footer';
+import PublicHeader from '../components/layout/PublicHeader';
 
 const PrivacyPolicyPage = () => {
-    const { data: settings, isLoading: isLoadingSettings, isError: isErrorSettings } = useSiteSettings();
+    const { isLoading: isLoadingSettings, isError: isErrorSettings } = useSiteSettings();
     const [content, setContent] = useState('');
     const [isContentLoading, setIsContentLoading] = useState(true);
 
@@ -35,24 +36,12 @@ const PrivacyPolicyPage = () => {
     }
 
     if (isErrorSettings) {
-        return (
-            <div className="text-center p-8 text-red-500">Error loading page configuration. Please try again later.</div>
-        );
+        return <div className="text-center p-8 text-red-500">Error loading page configuration. Please try again later.</div>;
     }
 
     return (
-        <div className="bg-light-bg min-h-screen text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300">
-            <header className="bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color dark:border-border-color-dark transition-colors duration-300">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-3">
-                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" />
-                        <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.logos?.companyName || "HNV Property Management"}</span>
-                    </Link>
-                    <Link to="/login" className="font-semibold text-dark-text dark:text-dark-text-dark hover:text-brand-primary transition-colors duration-150">
-                        Portal Log In
-                    </Link>
-                </div>
-            </header>
+        <div className="flex flex-col min-h-screen bg-light-bg dark:bg-dark-bg">
+            <PublicHeader />
 
             <main className="container mx-auto px-6 py-16">
                 <div className="bg-light-card max-w-4xl mx-auto p-8 md:p-12 rounded-xl border border-border-color shadow-sm dark:bg-dark-card dark:border-border-color-dark">
