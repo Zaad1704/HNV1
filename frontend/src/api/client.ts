@@ -8,7 +8,8 @@ const getApiUrl = () => {
     return 'http://localhost:5001/api';
   }
   // Use environment variable or fallback to production
-  return import.meta.env.VITE_API_URL || 'https://hnv-saas-backend.onrender.com/api';
+  const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
+  return viteApiUrl || 'https://hnv-saas-backend.onrender.com/api';
 };
 
 const apiClient = axios.create({
