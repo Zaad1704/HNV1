@@ -13,7 +13,7 @@ services:
       # IMPORTANT: Your secret variables like MONGO_URI, JWT_SECRET, etc.
       # should be set in the Render Dashboard, not committed here.
       - key: CORS_ALLOWED_ORIGINS 
-        value: "http://localhost:3000,https://hnv-1-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com"
+        value: "http://localhost:3000,https://hnv-saas-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com"
 
   - type: static
     name: hnv-saas-frontend
@@ -27,5 +27,5 @@ services:
     staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_URL
-        # This should be your actual live backend URL
-        value: https://hnv.onrender.com/api
+        # This value is derived from your backend service name in this file.
+        value: https://hnv-saas-backend.onrender.com/api
