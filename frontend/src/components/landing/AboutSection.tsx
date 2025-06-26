@@ -7,7 +7,7 @@ export default function AboutSection() {
   const { data: settings } = useSiteSettings();
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28"> {/* Added padding for consistency */}
+    <section id="about" className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28"> {/* Added padding for consistency */}
       <div className="text-center mb-12 md:mb-16">
         <h2 className="text-3xl sm:text-4xl font-bold text-dark-text dark:text-dark-text-dark">
           {t('about.title')}
