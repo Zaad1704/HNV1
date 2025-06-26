@@ -1,143 +1,239 @@
-// frontend/src/pages/SettingsPage.tsx
 import React, { useState } from 'react';
-import { useAuthStore } from 'store/authStore';
-import apiClient from 'api/client';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Lock, AlertTriangle, User as UserIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const SettingsCard = ({ title, icon: Icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => (
-    <motion.div 
-        className="bg-light-card dark:bg-dark-card p-6 sm:p-8 rounded-3xl border border-border-color dark:border-border-color-dark shadow-lg"
-        variants={{
-            hidden: { opacity: 0, y: 20 },
-            visible: { opacity: 1, y: 0 }
-        }}
-    >
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-3 text-dark-text dark:text-dark-text-dark">
-            <Icon className="text-brand-primary" size={22} />
-            {title}
-        </h2>
-        <div className="space-y-4">
-            {children}
-        </div>
-    </motion.div>
-);
-
-const FormInput = ({ label, ...props }: { label: string, [key: string]: any }) => (
-    <div>
-        <label className="block text-sm font-medium text-light-text dark:text-light-text-dark mb-1">{label}</label>
-        <input {...props} />
-    </div>
-);
+import { useAuthStore } from '../store/authStore';
+import apiClient from '../api/client';
+import { User, Mail, Lock, Save, Bell, Globe, Palette } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { useLang } from '../contexts/LanguageContext';
 
 const SettingsPage = () => {
-    const { user, logout } = useAuthStore();
-    const navigate = useNavigate();
-    const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    const [message, setMessage] = useState({ type: '', text: '' });
+  const { user, setUser } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
+  const { lang, setLang, getNextToggleLanguage } = useLang();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
-    const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    const passwordMutation = useMutation({
-        mutationFn: (passData: any) => apiClient.put('/users/update-password', passData),
-        onSuccess: () => {
-            setMessage({ type: 'success', text: 'Password updated successfully!' });
-            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        },
-        onError: (err: any) => {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update password.' });
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const updateData: any = {
+        name: formData.name,
+        email: formData.email
+      };
+
+      if (formData.newPassword) {
+        if (formData.newPassword !== formData.confirmPassword) {
+          setMessage('New passwords do not match');
+          setLoading(false);
+          return;
         }
-    });
+        updateData.currentPassword = formData.currentPassword;
+        updateData.newPassword = formData.newPassword;
+      }
 
-    const handleUpdatePassword = (e: React.FormEvent) => {
-        e.preventDefault();
-        setMessage({ type: '', text: '' });
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setMessage({ type: 'error', text: 'New passwords do not match.' });
-            return;
-        }
-        passwordMutation.mutate({ currentPassword: passwordData.currentPassword, newPassword: passwordData.newPassword });
-    };
+      const { data } = await apiClient.put('/auth/profile', updateData);
+      setUser(data.data);
+      setMessage('Profile updated successfully!');
+      
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const deleteAccountMutation = useMutation({
-        mutationFn: () => apiClient.post('/users/request-deletion'),
-        onSuccess: () => {
-            setMessage({ type: 'success', text: 'Deletion request successful. You will be logged out.' });
-            setTimeout(() => {
-                logout();
-                navigate('/login', { replace: true });
-            }, 3000);
-        },
-        onError: (err: any) => {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to request account deletion.' });
-        }
-    });
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      <div>
+        <h1 className="text-3xl font-bold text-text-primary">Settings</h1>
+        <p className="text-text-secondary mt-1">Manage your account and preferences</p>
+      </div>
 
-    const handleDeleteAccount = () => {
-        if (window.confirm('Are you absolutely sure? This action is irreversible and will permanently erase all your data after a grace period.')) {
-            deleteAccountMutation.mutate();
-        }
-    };
-    
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1 }
-        }
-    };
-
-    return (
-        <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-            className="max-w-4xl mx-auto p-4 md:p-0"
-        >
-            <h1 className="text-3xl font-bold mb-8 text-dark-text dark:text-dark-text-dark">Settings</h1>
-            {message.text && (
-                <div className={`p-3 rounded-lg mb-6 text-center text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
-                    {message.text}
-                </div>
-            )}
-            <div className="space-y-8">
-                <SettingsCard title="Your Profile" icon={UserIcon}>
-                    <p><strong className="text-light-text dark:text-light-text-dark">Name:</strong> <span className="font-semibold">{user?.name}</span></p>
-                    <p><strong className="text-light-text dark:text-light-text-dark">Email:</strong> <span className="font-semibold">{user?.email}</span></p>
-                    <p><strong className="text-light-text dark:text-light-text-dark">Role:</strong> <span className="font-semibold">{user?.role}</span></p>
-                </SettingsCard>
-                
-                <SettingsCard title="Change Password" icon={Lock}>
-                    <form onSubmit={handleUpdatePassword} className="space-y-4">
-                        <FormInput label="Current Password" type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} required />
-                        <FormInput label="New Password" type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} required />
-                        <FormInput label="Confirm New Password" type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} required />
-                        <div className="text-right pt-2">
-                            <button type="submit" disabled={passwordMutation.isLoading} className="btn-primary">
-                                {passwordMutation.isLoading ? 'Updating...' : 'Update Password'}
-                            </button>
-                        </div>
-                    </form>
-                </SettingsCard>
-
-                 <div className="bg-red-500/10 p-6 sm:p-8 rounded-3xl border-2 border-red-500/30">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-3 text-red-500"><AlertTriangle /> Danger Zone</h2>
-                    <p className="text-red-300 mb-4">
-                        Requesting account deletion is a permanent action. All your data will be erased after a grace period.
-                    </p>
-                    <div className="text-right">
-                        <button onClick={handleDeleteAccount} disabled={deleteAccountMutation.isLoading} className="px-5 py-2 bg-red-600 rounded-lg text-white font-semibold shadow-md hover:bg-red-700 disabled:opacity-50">
-                            {deleteAccountMutation.isLoading ? 'Processing...' : 'Request Account Deletion'}
-                        </button>
-                    </div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Settings */}
+        <div className="lg:col-span-2 app-surface rounded-3xl p-6 border border-app-border">
+          <h2 className="text-xl font-semibold text-text-primary mb-6">Profile Information</h2>
+          
+          {message && (
+            <div className={`p-4 rounded-2xl mb-6 ${
+              message.includes('success') 
+                ? 'bg-green-50 text-green-600 border border-green-200' 
+                : 'bg-red-50 text-red-600 border border-red-200'
+            }`}>
+              {message}
             </div>
-        </motion.div>
-    );
+          )}
+
+          <form onSubmit={handleUpdateProfile} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  <User size={16} className="inline mr-2" />
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  <Mail size={16} className="inline mr-2" />
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            <hr className="border-app-border" />
+
+            <div>
+              <h3 className="font-medium text-text-primary mb-4">Change Password (Optional)</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    name="currentPassword"
+                    value={formData.currentPassword}
+                    onChange={handleChange}
+                    className="w-full"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      name="newPassword"
+                      value={formData.newPassword}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-gradient px-8 py-3 rounded-2xl flex items-center gap-2 font-semibold disabled:opacity-50"
+              >
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Save size={16} />
+                )}
+                {loading ? 'Updating...' : 'Update Profile'}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Preferences */}
+        <div className="space-y-6">
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
+              <Palette size={20} />
+              Appearance
+            </h3>
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between p-4 bg-app-bg rounded-2xl hover:bg-app-border transition-colors"
+            >
+              <span className="text-text-primary">Theme</span>
+              <span className="text-text-secondary capitalize">{theme}</span>
+            </button>
+          </div>
+
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
+              <Globe size={20} />
+              Language
+            </h3>
+            <button
+              onClick={() => setLang(getNextToggleLanguage().code)}
+              className="w-full flex items-center justify-between p-4 bg-app-bg rounded-2xl hover:bg-app-border transition-colors"
+            >
+              <span className="text-text-primary">Language</span>
+              <span className="text-text-secondary">{getNextToggleLanguage().name}</span>
+            </button>
+          </div>
+
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
+              <Bell size={20} />
+              Notifications
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center justify-between">
+                <span className="text-text-primary">Email Notifications</span>
+                <input type="checkbox" className="rounded" defaultChecked />
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-text-primary">Push Notifications</span>
+                <input type="checkbox" className="rounded" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 };
 
 export default SettingsPage;

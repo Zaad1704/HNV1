@@ -1,69 +1,101 @@
-// frontend/src/components/layout/MobileLandingLayout.tsx
-import React from 'react';
-import { ISiteSettings } from '../../types/siteSettings'; // Using local types
-import AboutSection from '../landing/AboutSection';
-import ServicesSection from '../landing/ServicesSection';
-import PricingSection from '../landing/PricingSection';
-import InstallAppSection from '../landing/InstallAppSection';
-import LandingHeroContent from '../landing/LandingHeroContent'; // Import the new hero content component
-import LeadershipSection from '../landing/LeadershipSection'; // Added LeadershipSection
-import ContactSection from '../landing/ContactSection';
-import { Home, ShieldCheck, Briefcase, Star, Wrench, CreditCard, Users, Mail, Bolt, MapPin, Layers, Settings, Globe, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useTranslation } from 'react-i18next';
+import { 
+  Menu, X, Home, Info, DollarSign, Phone, Users, 
+  Shield, TrendingUp, Clock, Zap
+} from 'lucide-react';
 
-// Icon mapping for features, ensuring it's consistent with the desktop layout
-const FeatureIconMap: { [key: string]: React.ElementType } = {
-    "briefcase": Briefcase, "lock": Lock, "shield-check": ShieldCheck, "home": Home,
-    "users": Users, "credit-card": CreditCard, "wrench": Wrench, "mail": Mail,
-    "bolt": Bolt, "map-pin": MapPin, "layers": Layers, "settings": Settings, "globe": Globe,
-};
+const MobileLandingLayout = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: settings } = useSiteSettings();
+  const { t } = useTranslation();
 
-const getFeatureIconComponent = (iconName: string): React.ElementType => {
-    return FeatureIconMap[iconName.toLowerCase()] || Star;
-};
+  const features = settings?.featuresPage?.features || [
+    { icon: 'Shield', title: 'Secure', text: 'Bank-level security', sectionId: 'security' },
+    { icon: 'Users', title: 'Management', text: 'Tenant management', sectionId: 'tenants' },
+    { icon: 'TrendingUp', title: 'Analytics', text: 'Financial insights', sectionId: 'analytics' },
+    { icon: 'Zap', title: 'Fast', text: 'Lightning fast', sectionId: 'performance' }
+  ];
 
-const MobileLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> = ({ settings, plans }) => {
-    const { t } = useTranslation();
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Shield': return Shield;
+      case 'Users': return Users;
+      case 'TrendingUp': return TrendingUp;
+      case 'Zap': return Zap;
+      default: return Shield;
+    }
+  };
 
-    return (
-        <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark pb-16 transition-colors duration-300">
-            {/* Hero Section - Now renders the detailed LandingHeroContent component */}
-            <section id="hero">
-                <LandingHeroContent />
-            </section>
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
 
-            {/* Features Section */}
-            <section id="featuresPage" className="grid grid-cols-2 gap-4 p-4 text-center text-xs">
-                {settings.featuresPage?.features?.map((feature, index) => {
-                    const IconComponent = getFeatureIconComponent(feature.icon);
-                    const isLinkable = !!feature.sectionId;
-
-                    return (
-                        <a
-                            key={index}
-                            href={isLinkable ? `#${feature.sectionId}` : undefined}
-                            onClick={isLinkable ? (e) => { e.preventDefault(); document.getElementById(feature.sectionId)?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
-                            className={`flex flex-col items-center gap-1 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200 ${isLinkable ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`} // Kept hover effects for features
-                        >
-                            <div className="w-12 h-12 flex items-center justify-center bg-brand-primary/10 dark:bg-brand-secondary/20 text-brand-primary dark:text-brand-secondary rounded-full mb-2 transition-colors">
-                                <IconComponent className="w-6 h-6" />
-                            </div>
-                            <span className="font-bold text-dark-text dark:text-dark-text-dark">{feature.title}</span>
-                            <span className="text-light-text dark:text-light-text-dark text-xs line-clamp-2">{feature.text}</span>
-                        </a>
-                    );
-                })}
-            </section>
-            
-            {/* Other Sections */}
-            <AboutSection />
-            <ServicesSection />
-            <LeadershipSection /> {/* Added LeadershipSection */}
-            <PricingSection plans={plans} />
-            <InstallAppSection />
-            <ContactSection />
+  return (
+    <div className="lg:hidden">
+      {/* Mobile Header */}
+      <header className="app-gradient sticky top-0 z-50">
+        <div className="flex items-center justify-between p-4">
+          <Link to="/" className="text-xl font-bold text-white">
+            {settings?.logos?.companyName || 'HNV Solutions'}
+          </Link>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 text-white"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
-    );
+      </header>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 bg-app-bg z-40 pt-20">
+          <nav className="p-4 space-y-4">
+            {features.map((feature: any) => {
+              const IconComponent = getIcon(feature.icon);
+              return (
+                <button
+                  key={feature.sectionId}
+                  onClick={() => scrollToSection(feature.sectionId)}
+                  className="w-full flex items-center gap-3 p-4 bg-app-surface rounded-2xl border border-app-border"
+                >
+                  <IconComponent size={20} className="text-brand-blue" />
+                  <div className="text-left">
+                    <p className="font-semibold text-text-primary">{feature.title}</p>
+                    <p className="text-sm text-text-secondary">{feature.text}</p>
+                  </div>
+                </button>
+              );
+            })}
+            
+            <div className="pt-4 space-y-2">
+              <Link
+                to="/login"
+                className="block w-full text-center py-3 px-6 rounded-2xl border border-app-border text-text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t('header.login')}
+              </Link>
+              <Link
+                to="/register"
+                className="block w-full text-center py-3 px-6 rounded-2xl btn-gradient text-white font-semibold"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t('header.get_started')}
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default MobileLandingLayout;
