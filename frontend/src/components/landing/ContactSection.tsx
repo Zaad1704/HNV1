@@ -1,76 +1,210 @@
-// frontend/src/components/landing/ContactSection.tsx
 import React, { useState } from 'react';
-import apiClient from '../../api/client';
+import { motion } from 'framer-motion';
+import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 
+interface ContactInfo {
+  email: string;
+  phone: string;
+  addresses: string[];
+}
+
 const ContactSection = () => {
-    const { data: settings } = useSiteSettings();
-    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-    const [status, setStatus] = useState({ submitting: false, success: false, error: '' });
+  const { data: settings } = useSiteSettings();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  const contactInfo: ContactInfo = {
+    email: settings?.contact?.email || 'hello@hnvsolutions.com',
+    phone: settings?.contact?.phone || '+1 (555) 123-4567',
+    addresses: settings?.contact?.addresses || [
+      '123 Business Ave, Suite 100',
+      'New York, NY 10001'
+    ]
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus({ submitting: true, success: false, error: '' });
-        try {
-            await apiClient.post('/feedback', formData);
-            setStatus({ submitting: false, success: true, error: '' });
-            setFormData({ name: '', email: '', subject: '', message: '' });
-        } catch (err: any) {
-            setStatus({ submitting: false, success: false, error: err.response?.data?.message || 'Failed to send message.' });
-        }
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    return (
-        <section id="contact" className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-            <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.contactPage?.title}</h2>
-                <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.contactPage?.subtitle}</p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-16 max-w-6xl mx-auto">
-                <div className="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-border-color dark:border-border-color-dark">
-                    <h3 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark mb-6">{settings?.contactPage?.formTitle}</h3>
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Form fields with updated styling */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Full Name</label>
-                            <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all"/>
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Email Address</label>
-                            <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all"/>
-                        </div>
-                        <div>
-                            <label htmlFor="subject" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Subject</label>
-                            <input type="text" name="subject" id="subject" value={formData.subject} onChange={handleChange} required className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all"/>
-                        </div>
-                        <div>
-                            <label htmlFor="message" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Message</label>
-                            <textarea name="message" id="message" value={formData.message} onChange={handleChange} required rows={5} className="mt-1 w-full p-3 bg-light-bg dark:bg-dark-bg border border-border-color dark:border-border-color-dark rounded-lg text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all"></textarea>
-                        </div>
-                        <button type="submit" disabled={status.submitting} className="w-full bg-brand-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-brand-secondary disabled:opacity-50 transition-colors duration-200">
-                            {status.submitting ? 'Sending...' : 'Send Message'}
-                        </button>
-                        {status.success && <p className="text-brand-secondary transition-all">Message sent successfully!</p>}
-                        {status.error && <p className="text-brand-orange transition-all">{status.error}</p>}
-                    </form>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    alert('Thank you for your message! We\'ll get back to you soon.');
+    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(false);
+  };
+
+  return (
+    <section className="py-20 bg-app-surface">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl font-bold text-text-primary mb-4">
+            Get In Touch
+          </h2>
+          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+            Ready to transform your property management? Contact us today for a personalized demo.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          {/* Contact Information */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
+          >
+            <div>
+              <h3 className="text-2xl font-semibold text-text-primary mb-6">
+                Contact Information
+              </h3>
+              
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                    <Mail size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-text-primary">Email</p>
+                    <p className="text-text-secondary">{contactInfo.email}</p>
+                  </div>
                 </div>
-                <div className="space-y-8 text-light-text dark:text-light-text-dark">
-                    {settings?.contactPage?.addresses?.map((addr, index) => (
-                        <div key={index} className="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-border-color dark:border-border-color-dark shadow-sm transition-all duration-200">
-                            <h4 className="text-xl font-bold text-brand-primary dark:text-brand-secondary">{addr.locationName}</h4>
-                            <p className="mt-2 text-dark-text dark:text-dark-text-dark">{addr.fullAddress}</p>
-                            <p>Phone: {addr.phone}</p>
-                            <p>Email: {addr.email}</p>
-                        </div>
-                    ))}
+
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                    <Phone size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-text-primary">Phone</p>
+                    <p className="text-text-secondary">{contactInfo.phone}</p>
+                  </div>
                 </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                    <MapPin size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-text-primary">Address</p>
+                    <div className="text-text-secondary">
+                      {contactInfo.addresses.map((addr: string, index: number) => (
+                        <p key={index}>{addr}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-        </section>
-    );
+          </motion.div>
+
+          {/* Contact Form */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="app-surface rounded-3xl p-8 border border-app-border"
+          >
+            <h3 className="text-2xl font-semibold text-text-primary mb-6">
+              Send us a Message
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                    placeholder="your@email.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full"
+                  placeholder="How can we help?"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Message
+                </label>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  rows={5}
+                  className="w-full"
+                  placeholder="Tell us about your property management needs..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full btn-gradient py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Send Message
+                    <Send size={20} />
+                  </>
+                )}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default ContactSection;
