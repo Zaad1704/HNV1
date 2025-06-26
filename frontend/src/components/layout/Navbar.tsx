@@ -101,56 +101,48 @@ const Navbar = () => {
 
   return (
     <header className="bg-gradient-to-r from-brand-secondary to-brand-primary backdrop-blur-md sticky top-0 z-50 border-b border-white/20">
-      <div className="container mx-auto px-4 sm:px-6 py-2 flex justify-between items-center">
-        {/* Left-aligned utility buttons for desktop */}
-        <div className="hidden lg:flex items-center gap-2">
-            <button 
-                onClick={() => setLang(getNextToggleLanguage().code)}
-                className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
-                title={`Switch to ${getNextToggleLanguage().name}`}
-            >
-                <Globe size={20} />
-            </button>
-            <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
-                title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-            >
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-            {showInstallButton && (
-                <button onClick={handleInstallClick} className="inline-flex cursor-pointer items-center gap-2 bg-white text-brand-primary font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-100 transition-colors">
-                    <Download size={16} /> {t('install_app.cta', 'Install App')}
+      <div className="container mx-auto px-4 sm:px-6 py-2">
+        {/* Desktop Navbar: Grid layout for robust centering */}
+        <div className="hidden lg:grid grid-cols-3 items-center">
+            {/* Left Items */}
+            <div className="flex items-center gap-2 justify-self-start">
+                <button onClick={() => setLang(getNextToggleLanguage().code)} className="p-2 rounded-full text-white hover:bg-white/20 transition-colors" title={`Switch to ${getNextToggleLanguage().name}`}>
+                    <Globe size={20} />
                 </button>
-            )}
+                <button onClick={toggleTheme} className="p-2 rounded-full text-white hover:bg-white/20 transition-colors" title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
+                    {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                </button>
+                {showInstallButton && (
+                    <button onClick={handleInstallClick} className="inline-flex cursor-pointer items-center gap-2 bg-white text-brand-primary font-semibold py-2 px-4 rounded-lg text-sm hover:bg-gray-100 transition-colors">
+                        <Download size={16} /> {t('install_app.cta', 'Install App')}
+                    </button>
+                )}
+            </div>
+            {/* Centered Brand */}
+            <div className="justify-self-center">
+                <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white whitespace-nowrap">
+                    {settings?.logos?.faviconUrl && <img src={settings.logos.faviconUrl} alt="Logo" className="h-8 w-8 rounded-md" />}
+                    <span>{settings?.logos?.companyName || 'HNV Solutions'}</span>
+                </Link>
+            </div>
+            {/* Right Items */}
+            <div className="flex items-center gap-2 justify-self-end">
+                <nav className="flex items-center gap-1"><NavLinksContent /></nav>
+                <div className="w-px h-6 bg-white/50 mx-2"></div>
+                <Link to="/login" className="font-semibold text-white hover:bg-white/20 px-4 py-2 rounded-md">{t('header.login')}</Link>
+                <Link to="/register" className="flex items-center gap-2 font-bold text-brand-primary bg-white hover:bg-gray-100 py-2 px-5 rounded-lg transition-all">{t('header.get_started')} <ArrowRight size={16} /></Link>
+            </div>
         </div>
-        
-        {/* Centered Website Name */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+
+        {/* Mobile Navbar: Flex layout */}
+        <div className="lg:hidden flex justify-between items-center">
+            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white whitespace-nowrap">
+                {settings?.logos?.faviconUrl && <img src={settings.logos.faviconUrl} alt="Logo" className="h-8 w-8 rounded-md" />}
+            </Link>
             <Link to="/" className="text-xl font-bold text-white whitespace-nowrap">
                 {settings?.logos?.companyName || 'HNV Solutions'}
             </Link>
-        </div>
-
-        {/* Right-aligned navigation and login for desktop */}
-        <div className="hidden lg:flex items-center gap-2">
-            <nav className="flex items-center gap-1">
-                <NavLinksContent />
-            </nav>
-
-            <div className="w-px h-6 bg-white/50 mx-2"></div>
-            
-            <Link to="/login" className="font-semibold text-white hover:bg-white/20 px-4 py-2 rounded-md">
-                {t('header.login')}
-            </Link>
-            <Link to="/register" className="flex items-center gap-2 font-bold text-brand-primary bg-white hover:bg-gray-100 py-2 px-5 rounded-lg transition-all">
-                {t('header.get_started')} <ArrowRight size={16} />
-            </Link>
-        </div>
-
-        {/* Mobile-specific buttons (login only, utilities are in PublicBottomNavBar) */}
-        <div className="lg:hidden flex items-center space-x-3">
-             <Link to="/login" className="font-semibold text-white hover:text-gray-200">
+            <Link to="/login" className="font-semibold text-white hover:text-gray-200">
                 {t('header.login')}
             </Link>
         </div>
