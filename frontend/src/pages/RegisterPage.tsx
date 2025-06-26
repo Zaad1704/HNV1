@@ -1,115 +1,227 @@
-// frontend/src/pages/RegisterPage.tsx
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-// REMOVED: import Navbar from "../components/layout/Navbar"; // No longer needed here
-import { UserPlus, Chrome } from "lucide-react"; // Added Chrome icon
+import { Chrome, Mail, Lock, User, UserCheck, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const RegisterPage: React.FC = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', role: '' });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'Landlord'
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
 
-    const handleRoleSelect = (role: string) => {
-        setFormData({ ...formData, role });
-        if (error === 'Please select a role.') setError('');
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleRegister = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        if (!formData.role) {
-            setError('Please select a role.');
-            setLoading(false);
-            return;
-        }
-        try {
-            const response = await apiClient.post('/auth/register', formData);
-            alert(response.data.message);
-            navigate('/login');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleGoogleSignup = () => {
-        if (!formData.role) {
-            setError('Please select a role before signing up with Google.');
-            return;
-        }
-        // Encode the role into the 'state' parameter for Google OAuth
-        const state = btoa(JSON.stringify({ role: formData.role }));
-        window.location.href = `${apiClient.defaults.baseURL}/auth/google?role=${formData.role}&state=${state}`;
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
     
-    const roleCardClasses = "role-card p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 text-center";
-    const selectedRoleClasses = "border-brand-primary ring-2 ring-brand-primary/50 shadow-md bg-brand-primary/10";
-    const isRoleSelected = !!formData.role;
+    setLoading(true);
+    setError('');
+    
+    try {
+      await apiClient.post('/auth/register', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      });
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed.');
+      setLoading(false);
+    }
+  };
 
+  const handleGoogleSignup = () => {
+    window.location.href = `${apiClient.defaults.baseURL}/auth/google?role=${formData.role}`;
+  };
+
+  if (success) {
     return (
-        // REMOVED: <Navbar /> // No longer needed here as PublicLayout already provides it
-        <div className="min-h-screen bg-light-bg flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-light-card rounded-3xl shadow-2xl border border-border-color p-8 md:p-12">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-dark-text">Create Your Account</h1>
-                    <p className="text-light-text mt-2">Start your free trial today.</p>
-                </div>
-
-                {error && <div className="bg-red-500/10 text-red-500 px-4 py-3 rounded-lg text-center text-sm mb-6">{error}</div>}
-
-                <form onSubmit={handleRegister} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-light-text mb-2">First, choose your role</label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div onClick={() => handleRoleSelect('Landlord')} className={`${roleCardClasses} ${formData.role === 'Landlord' ? selectedRoleClasses : 'border-border-color bg-light-bg hover:bg-gray-100'}`}><h3 className="font-bold text-dark-text">Landlord</h3></div>
-                            <div onClick={() => handleRoleSelect('Agent')} className={`${roleCardClasses} ${formData.role === 'Agent' ? selectedRoleClasses : 'border-border-color bg-light-bg hover:bg-gray-100'}`}><h3 className="font-bold text-dark-text">Agent</h3></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-light-text mb-1">Full Name</label>
-                        <input type="text" name="name" required onChange={handleChange} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-light-text mb-1">Email Address</label>
-                        <input type="email" name="email" required onChange={handleChange} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-light-text mb-1">Create Password</label>
-                        <input type="password" name="password" required onChange={handleChange} />
-                    </div>
-
-                    <button type="submit" disabled={loading || !isRoleSelected} className="w-full btn-primary py-3 flex items-center justify-center gap-2">
-                       <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Create Account'}
-                    </button>
-                </form>
-
-                <div className="relative flex items-center justify-center my-6">
-                    <div className="flex-grow border-t border-border-color"></div>
-                    <span className="flex-shrink mx-4 text-light-text text-sm">OR</span>
-                    <div className="flex-grow border-t border-border-color"></div>
-                </div>
-
-                <button onClick={handleGoogleSignup} disabled={!isRoleSelected} className="w-full flex justify-center items-center gap-2 py-3 border border-border-color rounded-lg shadow-sm font-semibold text-dark-text bg-light-bg hover:bg-gray-100 transition-colors">
-                    <Chrome size={20} /> Sign Up with Google
-                </button>
-                
-                 <div className="mt-8 text-center text-sm">
-                    <p className="text-light-text">
-                        Already have an account? <Link to="/login" className="font-bold text-brand-primary hover:underline">Sign In</Link>
-                    </p>
-                </div>
-            </div>
-        </div>
+      <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md text-center"
+        >
+          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <UserCheck size={32} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">Check Your Email!</h1>
+          <p className="text-text-secondary mb-8">
+            We've sent a verification link to <strong>{formData.email}</strong>. 
+            Please check your email and click the link to activate your account.
+          </p>
+          <Link to="/login" className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2">
+            Go to Login <ArrowRight size={16} />
+          </Link>
+        </motion.div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <UserCheck size={32} className="text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-text-primary mb-2">Create Account</h1>
+          <p className="text-text-secondary">Join thousands of property managers</p>
+        </div>
+
+        <div className="app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-center text-sm mb-6"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Full Name</label>
+              <div className="relative">
+                <User size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Enter your full name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Email Address</label>
+              <div className="relative">
+                <Mail size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Enter your email"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Role</label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+              >
+                <option value="Landlord">Landlord</option>
+                <option value="Agent">Agent</option>
+                <option value="Tenant">Tenant</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Password</label>
+              <div className="relative">
+                <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Create a password"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Confirm Password</label>
+              <div className="relative">
+                <Lock size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-muted" />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-gradient py-4 text-lg font-semibold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>Create Account <ArrowRight size={20} /></>
+              )}
+            </button>
+          </form>
+
+          <div className="relative flex items-center justify-center my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-app-border"></div>
+            </div>
+            <div className="relative bg-app-surface px-4">
+              <span className="text-text-muted text-sm font-medium">OR</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleGoogleSignup}
+            className="w-full flex justify-center items-center gap-3 py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app"
+          >
+            <Chrome size={20} />
+            Continue with Google
+          </button>
+
+          <div className="mt-8 text-center">
+            <p className="text-text-secondary">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-brand-blue hover:text-brand-blue/80 transition-colors">
+                Sign In
+              </Link>
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
 };
 
 export default RegisterPage;
