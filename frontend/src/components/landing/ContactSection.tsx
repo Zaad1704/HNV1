@@ -25,7 +25,7 @@ const ContactSection = () => {
     };
 
     return (
-        <>
+        <section id="contact" className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
             <div className="text-center mb-16">
                 <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.contactPage?.title}</h2>
                 <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings?.contactPage?.subtitle}</p>
@@ -69,7 +69,7 @@ const ContactSection = () => {
                     ))}
                 </div>
             </div>
-        </>
+        </section>
     );
 };
 
