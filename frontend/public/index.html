@@ -3,23 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     
-    <!-- FIXED: Updated CSP to allow backend API calls -->
+    <!-- FIXED: Comprehensive CSP that allows all necessary connections -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self'; 
-      script-src 'self' 'unsafe-inline' https://accounts.google.com; 
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com; 
       style-src 'self' 'unsafe-inline' https://accounts.google.com https://fonts.googleapis.com; 
       font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https: http:;
-      connect-src 'self' https://hnv-saas-backend.onrender.com https://accounts.google.com http://localhost:5001;
+      img-src 'self' data: https: http: blob:;
+      connect-src 'self' 
+        https://hnv-saas-backend.onrender.com 
+        http://localhost:5001 
+        https://accounts.google.com 
+        https://www.googleapis.com
+        wss: ws:;
+      frame-src 'self' https://accounts.google.com;
+      object-src 'none';
+      base-uri 'self';
     ">
 
     <link rel="icon" type="image/png" href="/logo-min.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>HNV Property Management Solutions</title>
     <meta name="description" content="HNV Property Management Solutions" />
-    <meta name="theme-color" content="#212A31" />
+    <meta name="theme-color" content="#4A69E2" />
     <link rel="apple-touch-icon" href="/logo-min.png" sizes="180x180">
     <link rel="manifest" href="/manifest.webmanifest" />
+    
+    <!-- Prevent zoom on input focus -->
+    <style>
+      @media screen and (max-width: 768px) {
+        input, select, textarea {
+          font-size: 16px !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

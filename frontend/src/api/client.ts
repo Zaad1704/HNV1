@@ -1,11 +1,22 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+// Get the API URL from environment or use production URL
+const getApiUrl = () => {
+  // Check if we're in development
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return 'http://localhost:5001/api';
+  }
+  // Use environment variable or fallback to production
+  return import.meta.env.VITE_API_URL || 'https://hnv-saas-backend.onrender.com/api';
+};
+
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
 // Request interceptor to add auth token
