@@ -22,6 +22,6 @@
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist", "coverage", "**/*.test.ts"],
   "files": [
-    "src/types/express.d.ts" // Explicitly include the global declaration file
+    "src/types/express.d.ts"
   ]
 }
