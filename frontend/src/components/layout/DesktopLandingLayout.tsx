@@ -31,11 +31,12 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
 
     return (
         <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark transition-colors duration-300">
-            {/* Hero Section - Using brand colors for gradient */}
-            <section id="hero" className="text-center py-40" style={{ background: `linear-gradient(135deg, var(--brand-dark), var(--brand-secondary)), url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}> {/* Adjusted gradient and text color */}
-                <div className="container mx-auto px-6">
-                    <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">{t('hero.title')}</h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-light-text dark:text-light-text-dark">{t('hero.subtitle')}</p>
+            {/* Hero Section - Restored immersive design */}
+            <section id="hero" className="relative text-center min-h-[90vh] flex items-center justify-center text-white" style={{ background: `url(${settings.heroSection?.backgroundImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="relative container mx-auto px-6 z-10">
+                    <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight drop-shadow-lg">{t('hero.title')}</h1>
+                    <p className="mt-6 max-w-3xl mx-auto text-lg text-white/90 drop-shadow-md">{t('hero.subtitle')}</p>
                     <Link to="/register" className="mt-10 inline-block bg-brand-primary text-white font-bold py-4 px-8 rounded-lg text-lg hover:bg-brand-secondary shadow-xl transition-all transform hover:scale-105">
                         {t('hero.cta')}
                     </Link>
@@ -47,17 +48,19 @@ const DesktopLandingLayout: React.FC<{ settings: ISiteSettings; plans: any[] }> 
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl font-bold text-dark-text dark:text-dark-text-dark">{settings.featuresPage?.title}</h2>
                     <p className="mt-4 text-light-text dark:text-light-text-dark max-w-2xl mx-auto">{settings.featuresPage?.subtitle}</p>
-                    <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                    <div className="mt-16 flex flex-wrap justify-center items-center gap-8">
                         {settings.featuresPage?.features?.map((feature, index) => {
                             const IconComponent = getFeatureIconComponent(feature.icon);
-                            // Assuming feature.sectionId exists for linking
-                            const isLinkable = feature.sectionId && document.getElementById(feature.sectionId);
+                            const rotations = ['-rotate-2', 'rotate-1', 'rotate-2', '-rotate-1', 'rotate-3', '-rotate-3'];
+                            const transformClass = rotations[index % rotations.length];
+                            const isLinkable = !!feature.sectionId;
+
                             return (
                                 <a
                                     key={index}
                                     href={isLinkable ? `#${feature.sectionId}` : undefined}
                                     onClick={isLinkable ? (e) => { e.preventDefault(); document.getElementById(feature.sectionId)?.scrollIntoView({ behavior: 'smooth' }); } : undefined}
-                                    className={`block bg-light-card dark:bg-dark-card p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-lg transition-all duration-300 ${isLinkable ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''}`}
+                                    className={`block bg-light-card dark:bg-dark-card p-8 rounded-2xl border border-border-color dark:border-border-color-dark shadow-lg transition-all duration-300 w-full md:w-1/3 lg:w-1/4 ${transformClass} ${isLinkable ? 'hover:shadow-xl hover:!rotate-0 hover:scale-110 cursor-pointer' : 'hover:scale-105'}`}
                                 >
                                     <div className="text-brand-primary dark:text-brand-secondary mb-4 transition-colors">
                                         <IconComponent className="w-12 h-12" />
