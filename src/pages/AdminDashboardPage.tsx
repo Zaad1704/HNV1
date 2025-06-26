@@ -1,0 +1,232 @@
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../api/client';
+import { motion } from 'framer-motion';
+import { 
+  Users, 
+  Building, 
+  CreditCard, 
+  TrendingUp, 
+  Shield, 
+  AlertTriangle,
+  Activity,
+  BarChart3
+} from 'lucide-react';
+import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart';
+import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
+
+const fetchAdminStats = async () => {
+  const { data } = await apiClient.get('/super-admin/dashboard-stats');
+  return data.data;
+};
+
+const fetchPlatformGrowth = async () => {
+  const { data } = await apiClient.get('/super-admin/platform-growth');
+  return data.data;
+};
+
+const fetchPlanDistribution = async () => {
+  const { data } = await apiClient.get('/super-admin/plan-distribution');
+  return data.data;
+};
+
+const StatCard = ({ 
+  title, 
+  value, 
+  icon, 
+  delay = 0,
+  color = 'app-gradient'
+}: { 
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  delay?: number;
+  color?: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.5 }}
+    className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-text-secondary text-sm font-medium mb-2">{title}</p>
+        <p className="text-4xl font-bold text-text-primary">{value}</p>
+      </div>
+      <div className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center text-white`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
+const AdminDashboardPage = () => {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['adminStats'],
+    queryFn: fetchAdminStats
+  });
+
+  const { data: growthData } = useQuery({
+    queryKey: ['platformGrowth'],
+    queryFn: fetchPlatformGrowth
+  });
+
+  const { data: planData } = useQuery({
+    queryKey: ['planDistribution'],
+    queryFn: fetchPlanDistribution
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading admin dashboard...</span>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
+      {/* Admin Header */}
+      <div className="app-gradient rounded-3xl p-8 text-white">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+            <Shield size={32} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
+            <p className="text-white/80">Platform overview and management</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatCard
+          delay={0.1}
+          title="Total Users"
+          value={stats?.totalUsers?.toLocaleString() || '0'}
+          icon={<Users size={24} />}
+        />
+        <StatCard
+          delay={0.2}
+          title="Organizations"
+          value={stats?.totalOrgs?.toLocaleString() || '0'}
+          icon={<Building size={24} />}
+          color="bg-blue-500"
+        />
+        <StatCard
+          delay={0.3}
+          title="Active Subscriptions"
+          value={stats?.activeSubscriptions?.toLocaleString() || '0'}
+          icon={<CreditCard size={24} />}
+          color="bg-green-500"
+        />
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+              <TrendingUp size={20} className="text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Platform Growth</h2>
+          </div>
+          <PlatformGrowthChart data={growthData || []} />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+              <BarChart3 size={20} className="text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">Plan Distribution</h2>
+          </div>
+          <PlanDistributionChart data={planData || []} />
+        </motion.div>
+      </div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="app-surface rounded-3xl p-8 border border-app-border"
+      >
+        <h2 className="text-xl font-bold text-text-primary mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { title: 'Manage Organizations', icon: Building, href: '/admin/organizations' },
+            { title: 'User Management', icon: Users, href: '/admin/users' },
+            { title: 'Billing Overview', icon: CreditCard, href: '/admin/billing' },
+            { title: 'Site Settings', icon: Activity, href: '/admin/site-editor' }
+          ].map((action, index) => (
+            <a
+              key={action.title}
+              href={action.href}
+              className="flex flex-col items-center p-6 bg-app-bg rounded-2xl hover:bg-app-surface hover:shadow-app transition-all duration-300 group"
+            >
+              <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <action.icon size={20} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-text-primary text-center">
+                {action.title}
+              </span>
+            </a>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* System Status */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="app-surface rounded-3xl p-8 border border-app-border"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+            <Activity size={20} className="text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-text-primary">System Status</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center">
+            <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium text-text-primary">API Status</p>
+            <p className="text-xs text-text-secondary">Operational</p>
+          </div>
+          <div className="text-center">
+            <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium text-text-primary">Database</p>
+            <p className="text-xs text-text-secondary">Healthy</p>
+          </div>
+          <div className="text-center">
+            <div className="w-4 h-4 bg-yellow-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-sm font-medium text-text-primary">Email Service</p>
+            <p className="text-xs text-text-secondary">Degraded</p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default AdminDashboardPage;
