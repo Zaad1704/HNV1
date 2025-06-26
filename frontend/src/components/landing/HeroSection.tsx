@@ -19,10 +19,10 @@ const HeroSection = () => {
   const heroCards = [
     {
       id: 'main',
-      title: settings?.heroSection?.title || 'Modern Property Management',
-      subtitle: settings?.heroSection?.subtitle || 'Streamline your property management with our all-in-one platform',
+      title: settings?.heroSection?.title || t('landing.hero_title'),
+      subtitle: settings?.heroSection?.subtitle || t('landing.hero_subtitle'),
       isMain: true,
-      cta: settings?.heroSection?.ctaText || 'Get Started',
+      cta: settings?.heroSection?.ctaText || t('landing.hero_cta'),
       icon: Building2
     },
     {
@@ -90,11 +90,22 @@ const HeroSection = () => {
               return (
                 <motion.div
                   key={card.id}
-                  className="hero-card gradient-card md:col-span-2 md:row-span-2 flex flex-col justify-between min-h-[300px]"
+                  className="hero-card gradient-card md:col-span-2 md:row-span-2 flex flex-col justify-between min-h-[300px] relative overflow-hidden"
                   variants={cardVariants}
                   custom={index}
                 >
-                  <div>
+                  {/* Custom Image Section - Admin Uploadable */}
+                  {settings?.heroSection?.customImageUrl && (
+                    <div className="absolute inset-0 opacity-20">
+                      <img
+                        src={settings.heroSection.customImageUrl}
+                        alt="Hero Background"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="relative z-10">
                     <div className="w-16 h-16 glass-effect rounded-2xl flex items-center justify-center mb-6">
                       <IconComponent size={32} />
                     </div>
@@ -107,7 +118,7 @@ const HeroSection = () => {
                   </div>
                   <Link 
                     to="/register" 
-                    className="btn-glass self-start font-semibold px-8 py-4 text-lg"
+                    className="btn-glass self-start font-semibold px-8 py-4 text-lg relative z-10"
                   >
                     {card.cta}
                   </Link>
@@ -136,6 +147,45 @@ const HeroSection = () => {
             );
           })}
         </motion.div>
+
+        {/* Additional Custom Image Section */}
+        {settings?.heroSection?.additionalImageUrl && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="mt-16"
+          >
+            <div className="app-surface rounded-3xl p-8 border border-app-border overflow-hidden">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-text-primary mb-4">
+                    {settings.heroSection.additionalTitle || 'Transform Your Property Management'}
+                  </h2>
+                  <p className="text-text-secondary text-lg mb-6">
+                    {settings.heroSection.additionalDescription || 'Experience the future of property management with our comprehensive platform designed for modern landlords and property managers.'}
+                  </p>
+                  <Link 
+                    to="/register" 
+                    className="btn-gradient px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2"
+                  >
+                    Get Started Today
+                  </Link>
+                </div>
+                <div className="flex-1 max-w-md">
+                  <div className="relative rounded-3xl overflow-hidden shadow-app-xl">
+                    <img
+                      src={settings.heroSection.additionalImageUrl}
+                      alt="Property Management Platform"
+                      className="w-full h-auto object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
