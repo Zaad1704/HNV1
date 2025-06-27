@@ -9,6 +9,7 @@ interface LanguageContextType {
   availableLanguages: { code: string; name: string; currency: string; currencyCode: string }[];
   getNextToggleLanguage: () => { code: string; name: string; currency: string; currencyCode: string };
   detectAndSetLanguage: () => void;
+  convertPrice: (price: number) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -16,50 +17,60 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const allLanguages = [
   { code: 'en', name: 'English', currency: '$', currencyCode: 'USD' },
   { code: 'bn', name: 'বাংলা', currency: '৳', currencyCode: 'BDT' },
-  { code: 'es', name: 'Español', currency: '$', currencyCode: 'USD' },
+  { code: 'es', name: 'Español', currency: '€', currencyCode: 'EUR' },
   { code: 'fr', name: 'Français', currency: '€', currencyCode: 'EUR' },
+  { code: 'hi', name: 'हिन्दी', currency: '₹', currencyCode: 'INR' },
+  { code: 'ar', name: 'العربية', currency: 'ر.س', currencyCode: 'SAR' },
+  { code: 'zh', name: '中文', currency: '¥', currencyCode: 'CNY' },
+  { code: 'ja', name: '日本語', currency: '¥', currencyCode: 'JPY' },
+  { code: 'ko', name: '한국어', currency: '₩', currencyCode: 'KRW' },
+  { code: 'ru', name: 'Русский', currency: '₽', currencyCode: 'RUB' },
+  { code: 'de', name: 'Deutsch', currency: '€', currencyCode: 'EUR' },
+  { code: 'pt', name: 'Português', currency: 'R$', currencyCode: 'BRL' },
+  { code: 'it', name: 'Italiano', currency: '€', currencyCode: 'EUR' },
+  { code: 'tr', name: 'Türkçe', currency: '₺', currencyCode: 'TRY' },
+  { code: 'ms', name: 'Bahasa Melayu', currency: 'RM', currencyCode: 'MYR' },
+  { code: 'th', name: 'ไทย', currency: '฿', currencyCode: 'THB' },
+  { code: 'id', name: 'Bahasa Indonesia', currency: 'Rp', currencyCode: 'IDR' },
+  { code: 'vi', name: 'Tiếng Việt', currency: '₫', currencyCode: 'VND' },
+  { code: 'ta', name: 'தமிழ்', currency: '₹', currencyCode: 'INR' }
 ];
 
-// IP-based language detection mapping
+const exchangeRates: { [key: string]: number } = {
+  'USD': 1, 'BDT': 110, 'EUR': 0.85, 'INR': 83, 'SAR': 3.75, 'CNY': 7.2, 'JPY': 150,
+  'KRW': 1300, 'RUB': 75, 'BRL': 5.2, 'TRY': 30, 'MYR': 4.5, 'THB': 35, 'IDR': 15000, 'VND': 24000
+};
+
 const countryLanguageMap: { [key: string]: string } = {
-  'BD': 'bn', // Bangladesh
-  'ES': 'es', // Spain
-  'MX': 'es', // Mexico
-  'AR': 'es', // Argentina
-  'FR': 'fr', // France
-  'CA': 'fr', // Canada (French regions)
-  'BE': 'fr', // Belgium
-  'US': 'en', // United States
-  'GB': 'en', // United Kingdom
-  'AU': 'en', // Australia
+  'BD': 'bn', 'ES': 'es', 'MX': 'es', 'AR': 'es', 'FR': 'fr', 'CA': 'en', 'BE': 'fr',
+  'IN': 'hi', 'MY': 'ms', 'TH': 'th', 'ID': 'id', 'CN': 'zh', 'TW': 'zh', 'HK': 'zh',
+  'JP': 'ja', 'KR': 'ko', 'VN': 'vi', 'US': 'en', 'GB': 'en', 'AU': 'en', 'SA': 'ar',
+  'AE': 'ar', 'EG': 'ar', 'RU': 'ru', 'DE': 'de', 'BR': 'pt', 'IT': 'it', 'TR': 'tr'
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const [lang, setLang] = useState(localStorage.getItem('language') || 'en');
-  const [detectedCountry, setDetectedCountry] = useState<string>('');
   const [availableLanguages, setAvailableLanguages] = useState(allLanguages);
 
-  // Detect user's location and set available languages
   const detectAndSetLanguage = async () => {
     try {
       const response = await fetch('/api/localization/detect');
       const data = await response.json();
       
       if (data.success && data.countryCode) {
-        setDetectedCountry(data.countryCode);
         const localLang = countryLanguageMap[data.countryCode];
         
         if (localLang && localLang !== 'en') {
-          // Show only English and local language for the detected country
           const localLanguage = allLanguages.find(l => l.code === localLang);
           const englishLanguage = allLanguages.find(l => l.code === 'en');
           
           if (localLanguage && englishLanguage) {
+            localLanguage.currency = data.name;
+            localLanguage.currencyCode = data.currency;
             setAvailableLanguages([englishLanguage, localLanguage]);
           }
           
-          // Auto-set to local language if no preference is stored
           if (!localStorage.getItem('language')) {
             setLang(localLang);
           }
@@ -67,8 +78,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (error) {
       console.error('Language detection failed:', error);
-      // Fallback to all languages if detection fails
-      setAvailableLanguages(allLanguages);
     }
   };
 
@@ -83,8 +92,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const currentLang = availableLanguages.find(l => l.code === lang) || availableLanguages[0];
 
-  const handleSetLang = (newLang: string) => {
-    setLang(newLang);
+  const convertPrice = (priceInCents: number): string => {
+    const priceInUSD = priceInCents / 100;
+    const rate = exchangeRates[currentLang.currencyCode] || 1;
+    const convertedPrice = priceInUSD * rate;
+    
+    if (['IDR', 'VND', 'KRW'].includes(currentLang.currencyCode)) {
+      return `${currentLang.currency}${Math.round(convertedPrice).toLocaleString()}`;
+    }
+    
+    return `${currentLang.currency}${convertedPrice.toFixed(2)}`;
   };
 
   const getNextToggleLanguage = () => {
@@ -96,12 +113,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <LanguageContext.Provider value={{
       lang,
-      setLang: handleSetLang,
+      setLang,
       currencyName: currentLang.currency,
       currencyCode: currentLang.currencyCode,
       availableLanguages,
       getNextToggleLanguage,
-      detectAndSetLanguage
+      detectAndSetLanguage,
+      convertPrice
     }}>
       {children}
     </LanguageContext.Provider>
@@ -115,5 +133,3 @@ export const useLang = () => {
   }
   return context;
 };
-
-export { allLanguages };
