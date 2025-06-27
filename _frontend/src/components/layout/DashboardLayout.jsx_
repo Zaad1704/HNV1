@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 
 // ...UI icons...
 
@@ -17,10 +17,10 @@ const DashboardLayout = () => {
   // ...sidebar and header code...
 
   return (
-    <div>
+    <div className="bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark min-h-screen transition-colors duration-300">
       {/* Sidebar and header */}
       <main>
-        <header>
+        <header className="bg-light-card dark:bg-dark-card shadow-sm p-4 border-b border-border-color dark:border-border-color-dark flex justify-between items-center">
           <div>{user.name} ({user.role})</div>
         </header>
         <div>
