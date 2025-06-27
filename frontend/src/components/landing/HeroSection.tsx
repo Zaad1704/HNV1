@@ -48,10 +48,10 @@ const HeroSection = () => {
                 {settings?.logos?.companyName || 'HNV Property Management'}
               </h1>
               <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
-                {t('landing.hero_subtitle_main')}
+                Modern Property Management
               </h2>
               <p className="text-xl text-white/80 leading-relaxed drop-shadow-sm">
-                {t('landing.hero_description')}
+                Streamline your property management with our all-in-one platform
               </p>
             </div>
             <div className="flex gap-4">

@@ -69,7 +69,7 @@ const PublicBottomNavBar = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border backdrop-blur-md">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border backdrop-blur-md shadow-app-xl safe-area-bottom">
       <div className="grid grid-cols-5 h-20">
         {navItems.map((item) => {
           const IconComponent = item.icon;
