@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import PWAInstallModal from '../common/PWAInstallModal';
+import SmartLanguageSwitcher from '../common/SmartLanguageSwitcher';
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
@@ -38,8 +39,9 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 py-3">
         {/* Desktop Layout */}
         <div className="hidden md:grid md:grid-cols-3 items-center w-full">
-          {/* Left: Theme & PWA Install */}
+          {/* Left: Smart Language, Theme & PWA Install */}
           <div className="flex items-center gap-3 justify-start">
+            <SmartLanguageSwitcher />
             <button 
               onClick={toggleTheme} 
               className="btn-glass p-3 rounded-full hover:scale-110 transition-transform"
@@ -152,19 +154,9 @@ const Navbar = () => {
 
             {/* Menu Items */}
             <div className="p-6 space-y-4">
-              <button 
-                onClick={() => {
-                  setLang(getNextToggleLanguage().code);
-                  setShowMobileMenu(false);
-                }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
-              >
-                <Globe size={24} className="text-brand-orange" />
-                <div className="text-left">
-                  <p className="font-semibold text-text-primary">Language</p>
-                  <p className="text-sm text-text-secondary">Switch to {getNextToggleLanguage().name}</p>
-                </div>
-              </button>
+              <div className="w-full p-4">
+                <SmartLanguageSwitcher />
+              </div>
 
               <button 
                 onClick={() => {
@@ -180,33 +172,33 @@ const Navbar = () => {
                 </div>
               </button>
 
-              <Link 
-                to="/login"
-                onClick={() => setShowMobileMenu(false)}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
-              >
-                <div className="w-6 h-6 bg-brand-orange rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm">→</span>
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-text-primary">{t('header.login')}</p>
-                  <p className="text-sm text-text-secondary">Access your account</p>
-                </div>
-              </Link>
-
-              <Link 
-                to="/login"
+              <a 
+                href="/#about"
                 onClick={() => setShowMobileMenu(false)}
                 className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
               >
                 <div className="w-6 h-6 bg-brand-blue rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm">→</span>
+                  <span className="text-white text-sm">i</span>
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-text-primary">{t('header.login')}</p>
-                  <p className="text-sm text-text-secondary">Access your account</p>
+                  <p className="font-semibold text-text-primary">About</p>
+                  <p className="text-sm text-text-secondary">Learn more about us</p>
                 </div>
-              </Link>
+              </a>
+
+              <a 
+                href="/#contact"
+                onClick={() => setShowMobileMenu(false)}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
+              >
+                <div className="w-6 h-6 bg-brand-orange rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">@</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-text-primary">Contact</p>
+                  <p className="text-sm text-text-secondary">Get in touch</p>
+                </div>
+              </a>
 
               {isInstallable && !isInstalled && (
                 <button

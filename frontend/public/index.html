@@ -26,18 +26,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HNV">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title>HNV Property Management Solutions</title>
     <meta name="description" content="HNV Property Management Solutions" />
     <meta name="theme-color" content="#4A69E2" />
-    <link rel="apple-touch-icon" href="/logo-min.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="apple-touch-startup-image" href="/pwa-512x512.png">
     <link rel="manifest" href="/manifest.webmanifest" />
     
-    <!-- Prevent zoom on input focus -->
+    <!-- iOS PWA optimizations -->
     <style>
       @media screen and (max-width: 768px) {
         input, select, textarea {
           font-size: 16px !important;
+        }
+        /* iOS native app feel */
+        body {
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        /* Prevent bounce scrolling */
+        html, body {
+          overscroll-behavior: none;
         }
       }
     </style>
