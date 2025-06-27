@@ -1,40 +1,45 @@
 {
-  "name": "hnv-frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "hnv-property-management",
+  "version": "1.0.0",
+  "description": "Modern property management platform with TWA support",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:twa": "./build-twa.sh",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "test": "cd backend && npm test",
+    "lint": "cd frontend && npm run lint",
+    "deploy": "npm run build && echo 'Ready for deployment'",
+    "start": "cd backend && npm start"
   },
-  "dependencies": {
-    "@tanstack/react-query": "^4.32.6",
-    "axios": "^1.5.0",
-    "framer-motion": "^10.16.4",
-    "i18next": "^23.5.1",
-    "lucide-react": "^0.279.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-i18next": "^13.2.2",
-    "react-router-dom": "^6.15.0",
-    "recharts": "^2.8.0",
-    "zustand": "^4.4.1"
-  },
+  "keywords": [
+    "property-management",
+    "real-estate",
+    "landlord",
+    "tenant",
+    "pwa",
+    "twa",
+    "mobile-app"
+  ],
+  "author": "HNV Solutions",
+  "license": "MIT",
   "devDependencies": {
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-react": "^4.0.3",
-    "autoprefixer": "^10.4.15",
-    "eslint": "^8.45.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
-    "postcss": "^8.4.29",
-    "tailwindcss": "^3.3.3",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
-  }
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/hnv-property-management.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/hnv-property-management/issues"
+  },
+  "homepage": "https://your-domain.com"
 }
