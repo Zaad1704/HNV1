@@ -42,7 +42,7 @@ export const usePerformanceMonitor = (componentName: string) => {
       };
       
       // Send to analytics (replace with your analytics service)
-      if (process.env.NODE_ENV === 'production') {
+      if (import.meta.env.PROD) {
         // analytics.track('component_performance', {
         //   component: componentName,
         //   ...metrics
@@ -63,15 +63,14 @@ export const usePerformanceMonitor = (componentName: string) => {
   
   // Web Vitals monitoring
   useEffect(() => {
-    if ('web-vital' in window) {
-      // Monitor Core Web Vitals
-      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-        getCLS(console.log);
-        getFID(console.log);
-        getFCP(console.log);
-        getLCP(console.log);
-        getTTFB(console.log);
-      });
-    }
+    // Web Vitals monitoring (optional)
+    // Uncomment if web-vitals package is installed
+    // import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+    //   getCLS(console.log);
+    //   getFID(console.log);
+    //   getFCP(console.log);
+    //   getLCP(console.log);
+    //   getTTFB(console.log);
+    // });
   }, []);
 };

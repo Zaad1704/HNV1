@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorId: this.state.errorId
     };
     
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.PROD) {
       console.log('Error reported:', errorReport);
     }
   };
