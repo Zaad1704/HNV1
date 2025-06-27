@@ -109,8 +109,9 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // This property now exists on the user object
-    if (!user.isEmailVerified) {
+    // FIX: Bypass email verification for Super Admins and Super Moderators
+    const adminRoles = ['Super Admin', 'Super Moderator'];
+    if (!user.isEmailVerified && !adminRoles.includes(user.role)) {
         return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
     }
 
@@ -122,7 +123,6 @@ export const loginUser = async (req: Request, res: Response) => {
     );
     await sendTokenResponse(user, 200, res);
 };
-
 export const verifyEmail = async (req: Request, res: Response) => {
     const { token } = req.params;
 
