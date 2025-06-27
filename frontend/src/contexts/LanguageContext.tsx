@@ -14,7 +14,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const allLanguages = [
+export const allLanguages = [
   { code: 'en', name: 'English', currency: '$', currencyCode: 'USD' },
   { code: 'bn', name: 'বাংলা', currency: '৳', currencyCode: 'BDT' },
   { code: 'es', name: 'Español', currency: '€', currencyCode: 'EUR' },
