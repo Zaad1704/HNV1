@@ -123,6 +123,7 @@ export const loginUser = async (req: Request, res: Response) => {
     );
     await sendTokenResponse(user, 200, res);
 };
+
 export const verifyEmail = async (req: Request, res: Response) => {
     const { token } = req.params;
 
