@@ -51,6 +51,7 @@ export interface ISiteSettings extends Document {
     subtitle: string;
     ctaText: string;
     backgroundImageUrl: string;
+    visionImageUrl?: string;
   };
   featuresPage: {
     title: string;
@@ -123,6 +124,7 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
     subtitle: { type: String, default: 'Automate tasks, track finances, and manage tenants with ease.' },
     ctaText: { type: String, default: 'Start Your Free Trial' },
     backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop' },
+    visionImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop' },
   },
   featuresPage: {
     title: { type: String, default: 'Powerful Tools for Every Role' },

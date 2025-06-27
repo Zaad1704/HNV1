@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { getPlans, createPlan, updatePlan, deletePlan } from '../controllers/planController';
+import { getPlans, createPlan, updatePlan, deletePlan, getPublicPlans } from '../controllers/planController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac'; 
 
 const router = Router();
 
+// Public route for fetching plans on landing page
+router.get('/public', asyncHandler(getPublicPlans));
+
 router.route('/')
-    .get(asyncHandler(getPlans)) 
+    .get(protect, authorize(['Super Admin']), asyncHandler(getPlans))
     .post(protect, authorize(['Super Admin']), asyncHandler(createPlan));
 
 router.route('/:id')
