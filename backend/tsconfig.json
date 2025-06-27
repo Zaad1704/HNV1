@@ -13,6 +13,7 @@
     "paths": {
       "*": ["node_modules/*"]
     },
+    "types": ["node", "jest"],
     "typeRoots": ["node_modules/@types"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -22,6 +23,6 @@
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist", "coverage", "**/*.test.ts"],
   "files": [
-    "src/types/express.d.ts"
+    "src/types/express.d.ts" // Explicitly include the global declaration file
   ]
 }
