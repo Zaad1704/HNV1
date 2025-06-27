@@ -54,8 +54,12 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+      // Only redirect if user was authenticated before
+      const { token } = useAuthStore.getState();
+      if (token) {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
     } else if (error.response?.status === 403) {
       console.error('Access forbidden');
     } else if (error.response?.status === 429) {
