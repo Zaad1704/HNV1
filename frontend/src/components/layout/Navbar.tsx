@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { Globe, Sun, Moon, ArrowRight, Menu, X } from 'lucide-react';
+import { Globe, Sun, Moon, ArrowRight, Menu, X, Download } from 'lucide-react';
 import { useLang } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
+import PWAInstallModal from '../common/PWAInstallModal';
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
@@ -12,47 +14,73 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  
+  const { 
+    isInstallable, 
+    isInstalled, 
+    platform, 
+    installPWA, 
+    getInstallInstructions, 
+    canDirectInstall 
+  } = usePWAInstall();
+
+  const handleInstallClick = () => {
+    if (canDirectInstall) {
+      installPWA();
+    } else {
+      setShowInstallModal(true);
+    }
+  };
 
   return (
-    <header className="gradient-dark-orange-blue sticky top-0 z-50 backdrop-blur-md">
+    <header className="gradient-dark-orange-blue sticky top-0 z-50 backdrop-blur-md rounded-b-3xl shadow-app-xl border-b-4 border-white/20">
       <div className="container mx-auto px-4 sm:px-6 py-3">
         {/* Desktop Layout */}
         <div className="hidden md:grid md:grid-cols-3 items-center w-full">
-          {/* Left: Theme & Language */}
+          {/* Left: Theme & PWA Install */}
           <div className="flex items-center gap-3 justify-start">
             <button 
-              onClick={() => setLang(getNextToggleLanguage().code)} 
-              className="btn-glass p-3 rounded-full"
-              title={`Switch to ${getNextToggleLanguage().name}`}
-            >
-              <Globe size={20} />
-            </button>
-            <button 
               onClick={toggleTheme} 
-              className="btn-glass p-3 rounded-full"
+              className="btn-glass p-3 rounded-full hover:scale-110 transition-transform"
               title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
+            {isInstallable && !isInstalled && (
+              <button 
+                onClick={handleInstallClick}
+                className="btn-glass p-3 rounded-full hover:scale-110 transition-transform"
+                title={`Install App - ${platform}`}
+              >
+                <Download size={20} />
+              </button>
+            )}
           </div>
 
           {/* Center: Brand */}
-          <Link to="/" className="flex items-center justify-center gap-3 text-xl font-bold text-white">
+          <Link to="/" className="flex items-center justify-center gap-3 text-xl font-bold text-white hover:scale-105 transition-transform">
             <img 
               src={settings?.logos?.faviconUrl || '/logo-min.png'} 
               alt="Logo" 
-              className="h-8 w-8 rounded-lg object-contain" 
+              className="h-10 w-10 rounded-xl object-contain shadow-lg" 
             />
-            <span className="text-center">
+            <span className="text-center drop-shadow-lg">
               {settings?.logos?.companyName || 'HNV Solutions'}
             </span>
           </Link>
 
-          {/* Right: Get Started */}
-          <div className="flex justify-end">
+          {/* Right: Login & Get Started */}
+          <div className="flex justify-end items-center gap-4">
+            <Link 
+              to="/login" 
+              className="text-white hover:text-white/80 font-semibold px-4 py-2 rounded-full hover:bg-white/10 transition-all"
+            >
+              {t('header.login')}
+            </Link>
             <Link 
               to="/register" 
-              className="btn-glass flex items-center gap-2 font-semibold px-6 py-3"
+              className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 flex items-center gap-2 font-semibold px-6 py-3 rounded-full border border-white/30 hover:scale-105 transition-all shadow-lg"
             >
               {t('header.get_started')} 
               <ArrowRight size={16} />
@@ -167,9 +195,39 @@ const Navbar = () => {
               </Link>
 
               <Link 
+                to="/login"
+                onClick={() => setShowMobileMenu(false)}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
+              >
+                <div className="w-6 h-6 bg-brand-blue rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm">→</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-text-primary">{t('header.login')}</p>
+                  <p className="text-sm text-text-secondary">Access your account</p>
+                </div>
+              </Link>
+
+              {isInstallable && !isInstalled && (
+                <button
+                  onClick={() => {
+                    handleInstallClick();
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl bg-app-bg hover:bg-app-border transition-colors"
+                >
+                  <Download size={24} className="text-brand-orange" />
+                  <div className="text-left">
+                    <p className="font-semibold text-text-primary">Install App</p>
+                    <p className="text-sm text-text-secondary">Native experience for {platform}</p>
+                  </div>
+                </button>
+              )}
+
+              <Link 
                 to="/register"
                 onClick={() => setShowMobileMenu(false)}
-                className="w-full gradient-dark-orange-blue p-4 rounded-2xl text-center font-semibold text-white"
+                className="w-full gradient-dark-orange-blue p-4 rounded-full text-center font-semibold text-white"
               >
                 {t('header.get_started')}
               </Link>
@@ -177,6 +235,18 @@ const Navbar = () => {
           </div>
         </div>
       )}
+      
+      <PWAInstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        platform={platform}
+        canDirectInstall={canDirectInstall}
+        onInstall={() => {
+          installPWA();
+          setShowInstallModal(false);
+        }}
+        instructions={getInstallInstructions()}
+      />
     </header>
   );
 };

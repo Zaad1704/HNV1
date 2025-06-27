@@ -1,46 +1,118 @@
-const CACHE_NAME = 'hnv-pwa-v1';
+const CACHE_NAME = 'hnv-pwa-v2';
+const STATIC_CACHE = 'hnv-static-v2';
+const DYNAMIC_CACHE = 'hnv-dynamic-v2';
+
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.webmanifest',
   '/pwa-192x192.png',
   '/pwa-512x512.png',
-  '/logo-min.png'
+  '/logo-min.png',
+  '/apple-touch-icon.png'
 ];
 
-// Install event
+const SECURE_ORIGINS = [
+  'https://hnv.onrender.com',
+  'https://api.hnv.com',
+  'https://fonts.googleapis.com',
+  'https://fonts.gstatic.com'
+];
+
+// Install event with enhanced caching
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    Promise.all([
+      caches.open(STATIC_CACHE).then((cache) => cache.addAll(urlsToCache)),
+      self.skipWaiting()
+    ])
   );
 });
 
-// Fetch event
+// Fetch event with security checks
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      }
-    )
-  );
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Security check - only cache secure origins
+  if (!SECURE_ORIGINS.some(origin => request.url.startsWith(origin)) && 
+      !request.url.startsWith(self.location.origin)) {
+    return;
+  }
+  
+  // Handle different types of requests
+  if (request.destination === 'document') {
+    event.respondWith(handleDocumentRequest(request));
+  } else if (request.destination === 'image') {
+    event.respondWith(handleImageRequest(request));
+  } else {
+    event.respondWith(handleOtherRequest(request));
+  }
 });
 
-// Activate event
+// Handle document requests (HTML pages)
+async function handleDocumentRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || caches.match('/');
+  }
+}
+
+// Handle image requests
+async function handleImageRequest(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) return cachedResponse;
+  
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    // Return placeholder image for failed requests
+    return new Response('', { status: 404 });
+  }
+}
+
+// Handle other requests
+async function handleOtherRequest(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) return cachedResponse;
+  
+  try {
+    const networkResponse = await fetch(request);
+    // Only cache successful responses
+    if (networkResponse.status === 200) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    return new Response('Network error', { status: 503 });
+  }
+}
+
+// Activate event with cleanup
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (![STATIC_CACHE, DYNAMIC_CACHE].includes(cacheName)) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients
+      self.clients.claim()
+    ])
   );
 });
 
