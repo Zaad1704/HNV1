@@ -35,12 +35,12 @@ const NotificationsPanel = () => {
   const markReadMutation = useMutation({
     mutationFn: markAsRead,
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
   useEffect(() => {
-    requestPermission();
+    requestPermission().catch(console.error);
   }, []);
 
   const allNotifications = [...notifications, ...serverNotifications];
