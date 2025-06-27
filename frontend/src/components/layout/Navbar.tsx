@@ -17,9 +17,9 @@ const Navbar = () => {
     <header className="gradient-dark-orange-blue sticky top-0 z-50 backdrop-blur-md">
       <div className="container mx-auto px-4 sm:px-6 py-3">
         {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between">
+        <div className="hidden md:grid md:grid-cols-3 items-center w-full">
           {/* Left: Theme & Language */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 justify-start">
             <button 
               onClick={() => setLang(getNextToggleLanguage().code)} 
               className="btn-glass p-3 rounded-full"
@@ -37,25 +37,27 @@ const Navbar = () => {
           </div>
 
           {/* Center: Brand */}
-          <Link to="/" className="flex items-center gap-3 text-xl font-bold text-white">
+          <Link to="/" className="flex items-center justify-center gap-3 text-xl font-bold text-white">
             <img 
               src={settings?.logos?.faviconUrl || '/logo-min.png'} 
               alt="Logo" 
               className="h-8 w-8 rounded-lg object-contain" 
             />
-            <span>
+            <span className="text-center">
               {settings?.logos?.companyName || 'HNV Solutions'}
             </span>
           </Link>
 
           {/* Right: Get Started */}
-          <Link 
-            to="/register" 
-            className="btn-glass flex items-center gap-2 font-semibold px-6 py-3"
-          >
-            {t('header.get_started')} 
-            <ArrowRight size={16} />
-          </Link>
+          <div className="flex justify-end">
+            <Link 
+              to="/register" 
+              className="btn-glass flex items-center gap-2 font-semibold px-6 py-3"
+            >
+              {t('header.get_started')} 
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
 
         {/* Mobile Layout - Native App Style */}

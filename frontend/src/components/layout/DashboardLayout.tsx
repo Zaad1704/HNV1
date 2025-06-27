@@ -154,20 +154,27 @@ const DashboardLayout = () => {
 
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-20 app-surface/80 backdrop-blur-md border-b border-app-border flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-app">
-          <div className="flex items-center gap-4">
+        <header className="h-20 app-surface/80 backdrop-blur-md border-b border-app-border flex-shrink-0 grid grid-cols-3 items-center px-4 lg:px-8 shadow-app">
+          <div className="flex items-center gap-4 justify-start">
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-full text-text-secondary hover:text-text-primary"
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-xl font-semibold text-text-primary hidden sm:block">
+            <h1 className="text-xl font-semibold text-text-primary hidden lg:block">
               Dashboard
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Center: Company Name */}
+          <div className="flex items-center justify-center">
+            <span className="text-lg font-bold text-text-primary text-center">
+              {user?.organizationId?.branding?.companyName || 'HNV Solutions'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 justify-end">
             <button 
               onClick={() => setLang(getNextToggleLanguage().code)} 
               className="p-2 rounded-full text-text-secondary hover:text-text-primary transition-colors"

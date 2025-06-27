@@ -1,124 +1,130 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/components/landing/HeroSection.tsx
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useLang } from '../../contexts/LanguageContext';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
 
-interface LandingHeroContentProps {
-  onGetStarted: () => void;
-}
-
-const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted }) => {
+const LandingHeroContent = () => {
   const { t } = useTranslation();
-  const { currencyName } = useLang();
-  const [visionImage, setVisionImage] = useState<string>('');
+  const navigate = useNavigate();
+  const { data: settings } = useSiteSettings();
 
-  useEffect(() => {
-    fetch('/api/site-settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data?.heroSection?.visionImageUrl) {
-          setVisionImage(data.data.heroSection.visionImageUrl);
-        }
-      })
-      .catch(console.error);
-  }, []);
-
-  const features = [
-    {
-      icon: '🏠',
-      title: t('dashboard.properties'),
-      description: t('landing.properties_desc'),
-      link: '#properties',
-      position: 'top-20 left-10'
-    },
-    {
-      icon: '👥',
-      title: t('dashboard.tenants'),
-      description: t('landing.tenants_desc'),
-      link: '#tenants',
-      position: 'top-32 right-16'
-    },
-    {
-      icon: '💰',
-      title: t('dashboard.cash_flow'),
-      description: t('landing.cashflow_desc'),
-      link: '#cashflow',
-      position: 'bottom-40 left-20'
-    },
-    {
-      icon: '🔧',
-      title: t('dashboard.maintenance'),
-      description: t('landing.maintenance_desc'),
-      link: '#maintenance',
-      position: 'bottom-20 right-10'
+  const handleCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, sectionId: string) => {
+    e.preventDefault();
+    // Ensure we are on the root path before attempting to scroll
+    if (window.location.pathname !== '/') {
+      navigate('/', { replace: true }); // Navigate to home, then scroll
     }
-  ];
+    const targetElement = document.getElementById(sectionId);
+    if (targetElement) targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.querySelector(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    }),
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 via-blue-600 to-purple-700 overflow-hidden">
-      <div className="absolute inset-0 bg-black/20"></div>
-      
-      {/* Scattered Feature Cards */}
-      {features.map((feature, index) => (
-        <div
-          key={index}
-          onClick={() => scrollToSection(feature.link)}
-          className={`absolute ${feature.position} bg-white/10 backdrop-blur-sm rounded-xl p-4 cursor-pointer hover:bg-white/20 transition-all duration-300 transform hover:scale-110 hover:rotate-3 z-10 max-w-48`}
+    <section className="relative py-20 md:py-32 flex items-center justify-center text-center overflow-hidden bg-light-bg dark:bg-dark-bg transition-colors duration-300">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            initial="hidden"
+            animate="visible"
         >
-          <div className="text-3xl mb-2 text-center">{feature.icon}</div>
-          <h3 className="text-white font-bold text-sm mb-1 text-center">{feature.title}</h3>
-          <p className="text-gray-200 text-xs text-center">{feature.description}</p>
-        </div>
-      ))}
-
-      <div className="relative z-20 text-center px-4">
-        <div className="mb-8">
-          <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-tight">
-            HNV
-          </h1>
-          <p className="text-2xl md:text-3xl text-orange-200 font-light mb-2">
-            {t('landing.hero_subtitle')}
-          </p>
-          <p className="text-lg text-blue-200">
-            {t('landing.hero_description')}
-          </p>
-        </div>
-        
-        <button
-          onClick={onGetStarted}
-          className="inline-flex items-center px-12 py-4 bg-gradient-to-r from-orange-500 to-blue-600 hover:from-orange-600 hover:to-blue-700 text-white font-bold text-xl rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300"
-        >
-          {t('landing.hero_cta')}
-          <svg className="ml-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Vision Image Section */}
-      {visionImage && (
-        <div className="absolute bottom-10 right-10 z-10">
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl w-80 h-48">
-            <img
-              src={visionImage}
-              alt="Property Management Vision"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div className="absolute bottom-4 left-4 text-white">
-              <h3 className="text-lg font-bold mb-1">{t('landing.vision_title')}</h3>
-              <p className="text-sm text-gray-200">{t('landing.vision_subtitle')}</p>
+          {/* Main Hero Card */}
+          <motion.div 
+            className="card primary-card-gradient rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between"
+            variants={cardVariants}
+            custom={0}
+          >
+            <div>
+              <div className="w-12 h-12 bg-white/25 rounded-full mb-4"></div>
+              <h1 className="text-5xl font-bold text-white leading-tight">
+                {settings?.heroSection?.title || t('landing.hero_title')}
+              </h1>
+              <p className="text-white/80 mt-4 max-w-sm">
+                {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
+              </p>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+            <Link to="/register" className="btn-light font-bold py-3 px-6 rounded-lg mt-8 self-start text-sm">
+                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
+            </Link>
+          </motion.div>
+
+          {/* Other cards from the Yartee design */}
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={1}
+            onClick={(e) => handleCardClick(e, 'about')}
+          >
+            <div className="w-full h-24 bg-brand-primary/10 rounded-xl mb-4 flex items-center justify-center text-brand-primary text-4xl font-bold">About</div>
+            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">About Us</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Learn more about our mission and vision.</p>
+          </motion.div>
+
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={2}
+            onClick={(e) => handleCardClick(e, 'services')}
+          >
+            <div className="w-full h-24 bg-brand-secondary/10 rounded-xl mb-4 flex items-center justify-center text-brand-secondary text-4xl font-bold">Services</div>
+            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">Our Services</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Discover how we can help you manage properties.</p>
+            <button className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">Explore</button>
+          </motion.div>
+          
+          <motion.div 
+            className="card secondary-card-gradient rounded-3xl p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={3}
+            onClick={(e) => handleCardClick(e, 'pricing')}
+          >
+            <div className="w-10 h-10 bg-white/25 rounded-full mb-3 flex items-center justify-center text-white text-2xl font-bold">$$</div>
+            <h2 className="text-xl font-bold text-white">Pricing Plans</h2>
+            <p className="text-white/80 text-sm mt-1">Find the perfect plan for your needs.</p>
+          </motion.div>
+
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={4}
+            onClick={(e) => handleCardClick(e, 'leadership')}
+          >
+            <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-primary-card-gradient">Our Leadership</h2>
+            <p className="text-light-text dark:text-light-text-dark text-sm mt-2">Meet the team driving our success.</p>
+          </motion.div>
+          
+          <motion.div 
+            className="card neutral-glass rounded-3xl p-6 sm:col-span-2 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300" 
+            variants={cardVariants} 
+            custom={5}
+            onClick={(e) => handleCardClick(e, 'contact')}
+          >
+            <h3 className="text-light-text dark:text-light-text-dark font-semibold text-sm">Get in Touch</h3>
+            <h2 className="text-2xl font-bold mt-1 text-dark-text dark:text-dark-text-dark">Contact Us</h2>
+            <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
+                <img src="https://images.unsplash.com/photo-1587560699334-cc4ff6349d04?auto=format&fit=crop&q=80&w=400&h=300&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Contact image"/>
+                <div className="flex-1">
+                    <p className="text-light-text dark:text-light-text-dark text-sm">Have questions or need support? Reach out to our team.</p>
+                    <span className="text-brand-primary dark:text-brand-secondary font-semibold mt-2 inline-block text-sm">Send a Message &rarr;</span>
+                </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
   );
 };
 
