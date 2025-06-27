@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 import { Bell, X, Check, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,7 @@ const fetchNotifications = async () => {
   return data.data;
 };
 
-const markAsRead = async () => {
+const markAsReadAPI = async () => {
   await apiClient.post('/notifications/mark-as-read');
 };
 
@@ -32,13 +32,6 @@ const NotificationsPanel = () => {
     queryFn: fetchNotifications
   });
 
-  const markReadMutation = useMutation({
-    mutationFn: markAsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    }
-  });
-
   useEffect(() => {
     requestPermission().catch(console.error);
   }, []);
@@ -49,7 +42,9 @@ const NotificationsPanel = () => {
   const handleOpen = () => {
     setIsOpen(true);
     if (totalUnread > 0) {
-      markReadMutation.mutate();
+      markAsReadAPI().then(() => {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      });
     }
   };
 
