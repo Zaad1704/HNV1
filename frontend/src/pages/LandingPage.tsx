@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import HeroSection from '../components/landing/HeroSection';
 import AboutSection from '../components/landing/AboutSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
@@ -20,6 +21,7 @@ const fetchLandingStats = async () => {
 const LandingPage = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { data: settings } = useSiteSettings();
   
   const { data: stats } = useQuery({
     queryKey: ['landingStats'],
@@ -43,6 +45,31 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
+      
+      {/* Banner Section - Editable by Super Admin */}
+      {settings?.bannerSection?.imageUrl && (
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src={settings.bannerSection.imageUrl}
+                alt={settings.bannerSection.altText || 'Platform Banner'}
+                className="w-full h-64 md:h-96 object-cover"
+              />
+              {settings.bannerSection.overlayText && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <h2 className="text-4xl font-bold mb-4">{settings.bannerSection.overlayText}</h2>
+                    {settings.bannerSection.overlaySubtext && (
+                      <p className="text-xl text-white/90">{settings.bannerSection.overlaySubtext}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
       
       {/* Real Stats Section */}
       {stats && (

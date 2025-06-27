@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, Globe } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 import { useCurrencyRates, convertPrice, formatCurrency } from '../../services/currencyService';
+import { useLang } from '../../contexts/LanguageContext';
 
 interface Plan {
   _id: string;
@@ -22,7 +23,7 @@ const fetchPlans = async (): Promise<Plan[]> => {
 };
 
 const PricingSection = () => {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const { currencyCode } = useLang();
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['publicPlans'],
     queryFn: fetchPlans
@@ -95,25 +96,9 @@ const PricingSection = () => {
           <h2 className="text-4xl font-bold text-text-primary mb-4">
             Simple, Transparent Pricing
           </h2>
-          <p className="text-text-secondary text-lg max-w-2xl mx-auto mb-8">
+          <p className="text-text-secondary text-lg max-w-2xl mx-auto">
             Choose the plan that fits your portfolio size and needs.
           </p>
-          
-          {/* Currency Selector */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <Globe size={20} className="text-text-secondary" />
-            <select
-              value={selectedCurrency}
-              onChange={(e) => setSelectedCurrency(e.target.value)}
-              className="bg-app-surface border border-app-border rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-orange"
-            >
-              {currencies.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.symbol} {currency.code} - {currency.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -147,11 +132,11 @@ const PricingSection = () => {
                   <span className={`text-4xl font-bold ${
                     plan.isPopular ? 'text-white' : 'text-text-primary'
                   }`}>
-                    {selectedCurrency === 'USD' 
+                    {currencyCode === 'USD' 
                       ? `$${plan.price}` 
                       : formatCurrency(
-                          convertPrice(plan.price, 'USD', selectedCurrency, exchangeRates),
-                          selectedCurrency
+                          convertPrice(plan.price, 'USD', currencyCode, exchangeRates),
+                          currencyCode
                         )
                     }
                   </span>
@@ -160,7 +145,7 @@ const PricingSection = () => {
                   }`}>
                     /{plan.duration}
                   </span>
-                  {selectedCurrency !== 'USD' && !ratesLoading && (
+                  {currencyCode !== 'USD' && !ratesLoading && (
                     <div className={`text-sm mt-1 ${
                       plan.isPopular ? 'text-gray-300' : 'text-text-muted'
                     }`}>

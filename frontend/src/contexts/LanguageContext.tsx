@@ -12,16 +12,16 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const languages = [
-  { code: 'en', name: 'English', currency: '$', currencyCode: 'USD' },
-  { code: 'bn', name: 'বাংলা', currency: '৳', currencyCode: 'BDT' },
-  { code: 'es', name: 'Español', currency: '€', currencyCode: 'EUR' },
-  { code: 'fr', name: 'Français', currency: '€', currencyCode: 'EUR' },
-  { code: 'de', name: 'Deutsch', currency: '€', currencyCode: 'EUR' },
-  { code: 'ja', name: '日本語', currency: '¥', currencyCode: 'JPY' },
-  { code: 'zh', name: '中文', currency: '¥', currencyCode: 'CNY' },
-  { code: 'hi', name: 'हिन्दी', currency: '₹', currencyCode: 'INR' },
-  { code: 'ar', name: 'العربية', currency: '$', currencyCode: 'USD' },
-  { code: 'pt', name: 'Português', currency: 'R$', currencyCode: 'BRL' }
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', currency: '$', currencyCode: 'USD' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩', currency: '৳', currencyCode: 'BDT' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', currency: '€', currencyCode: 'EUR' },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', currency: '€', currencyCode: 'EUR' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', currency: '€', currencyCode: 'EUR' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵', currency: '¥', currencyCode: 'JPY' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', currency: '¥', currencyCode: 'CNY' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', currency: '₹', currencyCode: 'INR' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', currency: '$', currencyCode: 'USD' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷', currency: 'R$', currencyCode: 'BRL' }
 ];
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
