@@ -4,7 +4,6 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      // Header & Navigation
       'header.login': 'Login',
       'header.get_started': 'Get Started',
       'nav.home': 'Home',
@@ -12,8 +11,6 @@ const resources = {
       'nav.login': 'Login',
       'nav.pricing': 'Pricing',
       'nav.contact': 'Contact',
-      
-      // Authentication Pages
       'auth.welcome_back': 'Welcome Back!',
       'auth.sign_in_subtitle': 'Sign in to continue to your dashboard',
       'auth.email_address': 'Email Address',
@@ -26,8 +23,6 @@ const resources = {
       'auth.or': 'OR',
       'auth.enter_email': 'Enter your email',
       'auth.enter_password': 'Enter your password',
-      
-      // Registration
       'auth.create_account': 'Create Account',
       'auth.join_thousands': 'Join thousands of property managers',
       'auth.full_name': 'Full Name',
@@ -39,8 +34,6 @@ const resources = {
       'auth.landlord': 'Landlord',
       'auth.agent': 'Agent',
       'auth.tenant': 'Tenant',
-      
-      // Dashboard
       'dashboard.overview': 'Overview',
       'dashboard.properties': 'Properties',
       'dashboard.tenants': 'Tenants',
@@ -59,21 +52,10 @@ const resources = {
       'dashboard.total_properties': 'Total Properties',
       'dashboard.active_tenants': 'Active Tenants',
       'dashboard.occupancy_rate': 'Occupancy Rate',
-      'dashboard.financials_chart_title': 'Financial Overview',
-      'dashboard.rent_status_chart_title': 'Rent Status',
-      'dashboard.overdue_rent_reminders': 'Overdue Rent Reminders',
-      'dashboard.send_reminder': 'Send Reminder',
-      'dashboard.no_overdue_rent': 'No overdue rent payments',
-      'dashboard.upcoming_lease_expirations': 'Upcoming Lease Expirations',
-      'dashboard.renew_lease': 'Renew Lease',
-      'dashboard.no_expiring_leases': 'No expiring leases',
-      
-      // Landing Page
+      'dashboard.welcome_back': 'Welcome back',
       'landing.hero_title': 'Modern Property Management',
       'landing.hero_subtitle': 'Streamline your property management with our all-in-one platform',
       'landing.hero_cta': 'Get Started',
-      
-      // Common
       'common.loading': 'Loading...',
       'common.error': 'Error',
       'common.success': 'Success',
@@ -82,12 +64,14 @@ const resources = {
       'common.edit': 'Edit',
       'common.delete': 'Delete',
       'common.view': 'View',
-      'common.back': 'Back'
+      'common.back': 'Back',
+      'common.search': 'Search',
+      'common.filter': 'Filter',
+      'common.export': 'Export'
     }
   },
   bn: {
     translation: {
-      // Header & Navigation
       'header.login': 'লগইন',
       'header.get_started': 'শুরু করুন',
       'nav.home': 'হোম',
@@ -95,8 +79,6 @@ const resources = {
       'nav.login': 'লগইন',
       'nav.pricing': 'মূল্য',
       'nav.contact': 'যোগাযোগ',
-      
-      // Authentication Pages
       'auth.welcome_back': 'স্বাগতম!',
       'auth.sign_in_subtitle': 'আপনার ড্যাশবোর্ডে যেতে সাইন ইন করুন',
       'auth.email_address': 'ইমেইল ঠিকানা',
@@ -107,65 +89,95 @@ const resources = {
       'auth.no_account': 'কোন অ্যাকাউন্ট নেই?',
       'auth.sign_up': 'সাইন আপ',
       'auth.or': 'অথবা',
-      'auth.enter_email': 'আপনার ইমেইল লিখুন',
-      'auth.enter_password': 'আপনার পাসওয়ার্ড লিখুন',
-      
-      // Registration
-      'auth.create_account': 'অ্যাকাউন্ট তৈরি করুন',
-      'auth.join_thousands': 'হাজারো প্রপার্টি ম্যানেজারদের সাথে যোগ দিন',
-      'auth.full_name': 'পূর্ণ নাম',
-      'auth.enter_full_name': 'আপনার পূর্ণ নাম লিখুন',
-      'auth.role': 'ভূমিকা',
-      'auth.create_password': 'একটি পাসওয়ার্ড তৈরি করুন',
-      'auth.confirm_password': 'আপনার পাসওয়ার্ড নিশ্চিত করুন',
-      'auth.have_account': 'ইতিমধ্যে একটি অ্যাকাউন্ট আছে?',
-      'auth.landlord': 'বাড়িওয়ালা',
-      'auth.agent': 'এজেন্ট',
-      'auth.tenant': 'ভাড়াটিয়া',
-      
-      // Dashboard
       'dashboard.overview': 'সংক্ষিপ্ত বিবরণ',
       'dashboard.properties': 'সম্পত্তি',
       'dashboard.tenants': 'ভাড়াটিয়া',
       'dashboard.expenses': 'খরচ',
       'dashboard.maintenance': 'রক্ষণাবেক্ষণ',
       'dashboard.cash_flow': 'নগদ প্রবাহ',
-      'dashboard.reminders': 'অনুস্মারক',
-      'dashboard.approvals': 'অনুমোদন',
-      'dashboard.users_invites': 'ব্যবহারকারী ও আমন্ত্রণ',
-      'dashboard.billing': 'বিলিং',
-      'dashboard.audit_log': 'অডিট লগ',
-      'dashboard.admin_panel': 'অ্যাডমিন প্যানেল',
-      'dashboard.settings': 'সেটিংস',
-      'dashboard.logout': 'লগআউট',
-      'dashboard.monthly_revenue': 'মাসিক আয়',
-      'dashboard.total_properties': 'মোট সম্পত্তি',
-      'dashboard.active_tenants': 'সক্রিয় ভাড়াটিয়া',
-      'dashboard.occupancy_rate': 'দখলের হার',
-      'dashboard.financials_chart_title': 'আর্থিক সংক্ষিপ্ত বিবরণ',
-      'dashboard.rent_status_chart_title': 'ভাড়ার অবস্থা',
-      'dashboard.overdue_rent_reminders': 'বকেয়া ভাড়ার অনুস্মারক',
-      'dashboard.send_reminder': 'অনুস্মারক পাঠান',
-      'dashboard.no_overdue_rent': 'কোন বকেয়া ভাড়া নেই',
-      'dashboard.upcoming_lease_expirations': 'আসন্ন লিজ মেয়াদ শেষ',
-      'dashboard.renew_lease': 'লিজ নবায়ন',
-      'dashboard.no_expiring_leases': 'কোন মেয়াদ শেষ হওয়া লিজ নেই',
-      
-      // Landing Page
+      'dashboard.welcome_back': 'স্বাগতম',
       'landing.hero_title': 'আধুনিক সম্পত্তি ব্যবস্থাপনা',
       'landing.hero_subtitle': 'আমাদের সব-এক-এক প্ল্যাটফর্মের সাথে আপনার সম্পত্তি ব্যবস্থাপনা সহজ করুন',
       'landing.hero_cta': 'শুরু করুন',
-      
-      // Common
       'common.loading': 'লোড হচ্ছে...',
-      'common.error': 'ত্রুটি',
-      'common.success': 'সফল',
-      'common.cancel': 'বাতিল',
-      'common.save': 'সংরক্ষণ',
-      'common.edit': 'সম্পাদনা',
-      'common.delete': 'মুছুন',
-      'common.view': 'দেখুন',
-      'common.back': 'পিছনে'
+      'common.search': 'খুঁজুন',
+      'common.filter': 'ফিল্টার',
+      'common.export': 'রপ্তানি'
+    }
+  },
+  hi: {
+    translation: {
+      'header.login': 'लॉगिन',
+      'header.get_started': 'शुरू करें',
+      'nav.home': 'होम',
+      'nav.about': 'के बारे में',
+      'nav.login': 'लॉगिन',
+      'nav.pricing': 'मूल्य निर्धारण',
+      'nav.contact': 'संपर्क',
+      'dashboard.overview': 'अवलोकन',
+      'dashboard.properties': 'संपत्तियां',
+      'dashboard.tenants': 'किरायेदार',
+      'dashboard.expenses': 'खर्च',
+      'dashboard.maintenance': 'रखरखाव',
+      'dashboard.cash_flow': 'नकदी प्रवाह',
+      'dashboard.welcome_back': 'वापसी पर स्वागत है',
+      'landing.hero_title': 'आधुनिक संपत्ति प्रबंधन',
+      'landing.hero_subtitle': 'हमारे ऑल-इन-वन प्लेटफॉर्म के साथ अपने संपत्ति प्रबंधन को सुव्यवस्थित करें',
+      'landing.hero_cta': 'शुरू करें',
+      'common.loading': 'लोड हो रहा है...',
+      'common.search': 'खोजें',
+      'common.filter': 'फिल्टर',
+      'common.export': 'निर्यात'
+    }
+  },
+  zh: {
+    translation: {
+      'header.login': '登录',
+      'header.get_started': '开始使用',
+      'nav.home': '首页',
+      'nav.about': '关于',
+      'nav.login': '登录',
+      'nav.pricing': '价格',
+      'nav.contact': '联系',
+      'dashboard.overview': '概览',
+      'dashboard.properties': '房产',
+      'dashboard.tenants': '租户',
+      'dashboard.expenses': '支出',
+      'dashboard.maintenance': '维护',
+      'dashboard.cash_flow': '现金流',
+      'dashboard.welcome_back': '欢迎回来',
+      'landing.hero_title': '现代房产管理',
+      'landing.hero_subtitle': '使用我们的一体化平台简化您的房产管理',
+      'landing.hero_cta': '开始使用',
+      'common.loading': '加载中...',
+      'common.search': '搜索',
+      'common.filter': '筛选',
+      'common.export': '导出'
+    }
+  },
+  ar: {
+    translation: {
+      'header.login': 'تسجيل الدخول',
+      'header.get_started': 'ابدأ',
+      'nav.home': 'الرئيسية',
+      'nav.about': 'حول',
+      'nav.login': 'تسجيل الدخول',
+      'nav.pricing': 'التسعير',
+      'nav.contact': 'اتصل',
+      'dashboard.overview': 'نظرة عامة',
+      'dashboard.properties': 'العقارات',
+      'dashboard.tenants': 'المستأجرين',
+      'dashboard.expenses': 'المصروفات',
+      'dashboard.maintenance': 'الصيانة',
+      'dashboard.cash_flow': 'التدفق النقدي',
+      'dashboard.welcome_back': 'مرحباً بعودتك',
+      'landing.hero_title': 'إدارة العقارات الحديثة',
+      'landing.hero_subtitle': 'قم بتبسيط إدارة العقارات باستخدام منصتنا الشاملة',
+      'landing.hero_cta': 'ابدأ',
+      'common.loading': 'جاري التحميل...',
+      'common.search': 'بحث',
+      'common.filter': 'تصفية',
+      'common.export': 'تصدير'
     }
   }
 };

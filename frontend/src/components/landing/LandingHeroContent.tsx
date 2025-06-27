@@ -13,7 +13,6 @@ const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted })
   const [visionImage, setVisionImage] = useState<string>('');
 
   useEffect(() => {
-    // Fetch vision image from site settings
     fetch('/api/site-settings')
       .then(res => res.json())
       .then(data => {
@@ -60,12 +59,10 @@ const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted })
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%239C92AC\" fill-opacity=\"0.1\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
           <div className="text-center lg:text-left">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
               {t('landing.hero_title')}
@@ -74,7 +71,6 @@ const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted })
               {t('landing.hero_subtitle')}
             </p>
             
-            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
               <button
                 onClick={onGetStarted}
@@ -90,7 +86,6 @@ const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted })
               </button>
             </div>
 
-            {/* Interactive Feature Cards */}
             <div className="grid grid-cols-2 gap-4">
               {features.map((feature, index) => (
                 <div
@@ -106,7 +101,6 @@ const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted })
             </div>
           </div>
 
-          {/* Right Content - Vision Image */}
           <div className="relative">
             {visionImage && (
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
