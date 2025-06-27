@@ -6,12 +6,13 @@ import FeaturesSection from '../components/landing/FeaturesSection';
 import PricingSection from '../components/landing/PricingSection';
 import LeadershipSection from '../components/landing/LeadershipSection';
 import ContactSection from '../components/landing/ContactSection';
+import ServicesSection from '../components/landing/ServicesSection';
+import InstallAppSection from '../components/landing/InstallAppSection';
 
 const LandingPage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Handle hash navigation from URL
     if (location.hash) {
       const sectionId = location.hash.substring(1);
       setTimeout(() => {
@@ -24,12 +25,14 @@ const LandingPage = () => {
   }, [location.hash]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-app-bg dark:bg-dark-bg">
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
+      <ServicesSection />
       <PricingSection />
       <LeadershipSection />
+      <InstallAppSection />
       <ContactSection />
     </div>
   );

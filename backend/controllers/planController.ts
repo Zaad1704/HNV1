@@ -12,6 +12,15 @@ export const getPlans = async (req: Request, res: Response) => {
     }
 };
 
+export const getPublicPlans = async (req: Request, res: Response) => {
+    try {
+        const plans = await Plan.find({ isPublic: true }).sort({ price: 1 });
+        res.status(200).json({ success: true, data: plans });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 export const createPlan = async (req: Request, res: Response) => { 
     try {
         if (!req.user || !req.user.organizationId) {
