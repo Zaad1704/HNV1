@@ -6,7 +6,7 @@ const Footer = () => {
   const { data: settings } = useSiteSettings();
 
   return (
-    <footer className="bg-text-primary text-white py-12">
+    <footer className="gradient-dark-orange-blue text-white py-12 rounded-t-3xl shadow-app-xl border-t-4 border-white/20 mt-20">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-2">

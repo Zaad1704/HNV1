@@ -4,9 +4,15 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { useSecurityHeaders } from './hooks/useSecurityHeaders';
 import App from './App';
 import './index.css';
 import './i18n';
+
+const SecureApp = () => {
+  useSecurityHeaders();
+  return <App />;
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,7 +29,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <LanguageProvider>
-            <App />
+            <SecureApp />
           </LanguageProvider>
         </ThemeProvider>
       </QueryClientProvider>

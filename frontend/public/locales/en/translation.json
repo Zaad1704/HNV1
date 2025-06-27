@@ -178,6 +178,22 @@
     "sort": "Sort",
     "loading_app": "Loading Application...",
     "welcome_back_user": "Welcome back, {{name}}!",
-    "happening_today": "Here's what's happening with your properties today."
+    "happening_today": "Here's what's happening with your properties today.",
+    "analytics": "Analytics",
+    "learn_more": "Learn More"
+  },
+  "landing": {
+    "hero_title": "The All-in-One Platform for Modern Property Management",
+    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.",
+    "hero_cta": "Start Your Free Trial",
+    "hero_subtitle_main": "Modern Property Management",
+    "hero_description": "Streamline your property management with our all-in-one platform",
+    "why_choose_title": "Why Choose Our Platform?",
+    "why_choose_subtitle": "Built for modern property managers who demand efficiency, security, and growth.",
+    "real_stats_title": "Trusted by Property Managers Worldwide",
+    "properties_managed": "Properties Managed",
+    "active_users": "Active Users",
+    "countries_served": "Countries Served",
+    "uptime_guarantee": "Uptime Guarantee"
   }
 }

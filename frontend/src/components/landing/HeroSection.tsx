@@ -43,26 +43,31 @@ const HeroSection = () => {
                 {settings?.logos?.companyName || 'HNV Property Management'}
               </div>
             </div>
-            <h1 className="text-6xl font-bold text-text-primary mb-6 leading-tight">
-              {settings?.heroSection?.title || t('landing.hero_title')}
-            </h1>
-            <p className="text-xl text-text-secondary mb-8 leading-relaxed">
-              {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
-            </p>
+            <div className="gradient-dark-orange-blue rounded-3xl p-8 mb-8 shadow-app-xl border border-white/20">
+              <h1 className="text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                {settings?.logos?.companyName || 'HNV Property Management'}
+              </h1>
+              <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
+                {t('landing.hero_subtitle_main')}
+              </h2>
+              <p className="text-xl text-white/80 leading-relaxed drop-shadow-sm">
+                {t('landing.hero_description')}
+              </p>
+            </div>
             <div className="flex gap-4">
               <Link 
                 to="/register" 
-                className="gradient-dark-orange-blue text-white px-8 py-4 rounded-2xl font-semibold text-lg flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
+                className="gradient-dark-orange-blue text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-xl hover:scale-105 transition-all shadow-lg"
               >
-                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
+                {t('landing.hero_cta')}
                 <ArrowRight size={20} />
               </Link>
               <button 
                 onClick={() => scrollToSection('about')}
-                className="flex items-center gap-2 px-8 py-4 rounded-2xl border border-app-border text-text-primary hover:bg-app-surface transition-all"
+                className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-app-border text-text-primary hover:bg-app-surface hover:scale-105 transition-all shadow-md"
               >
                 <Play size={20} />
-                Learn More
+                {t('common.learn_more')}
               </button>
             </div>
           </motion.div>
@@ -86,20 +91,20 @@ const HeroSection = () => {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: Building2, title: 'Properties', color: 'gradient-dark-orange-blue' },
-                  { icon: Users, title: 'Tenants', color: 'gradient-orange-blue' },
-                  { icon: CreditCard, title: 'Payments', color: 'gradient-dark-orange-blue' },
-                  { icon: BarChart3, title: 'Analytics', color: 'gradient-orange-blue' }
+                  { icon: Building2, title: t('dashboard.properties'), color: 'gradient-dark-orange-blue', section: 'features' },
+                  { icon: Users, title: t('dashboard.tenants'), color: 'gradient-orange-blue', section: 'services' },
+                  { icon: CreditCard, title: t('dashboard.payments'), color: 'gradient-dark-orange-blue', section: 'pricing' },
+                  { icon: BarChart3, title: t('common.analytics'), color: 'gradient-orange-blue', section: 'about' }
                 ].map((item, index) => (
                   <motion.div
                     key={item.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 + index * 0.1 }}
-                    className="app-surface p-6 rounded-2xl border border-app-border hover:shadow-app-lg transition-all cursor-pointer"
-                    onClick={() => scrollToSection('about')}
+                    className="app-surface p-6 rounded-3xl border border-app-border hover:shadow-app-lg transition-all cursor-pointer hover:scale-105"
+                    onClick={() => scrollToSection(item.section)}
                   >
-                    <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center mb-4`}>
+                    <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
                       <item.icon size={24} className="text-white" />
                     </div>
                     <h3 className="font-semibold text-text-primary">{item.title}</h3>
@@ -151,14 +156,14 @@ const HeroSection = () => {
             <div className="space-y-4 px-6">
               <Link 
                 to="/register" 
-                className="w-full gradient-dark-orange-blue text-white py-4 rounded-2xl font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                className="w-full gradient-dark-orange-blue text-white py-4 rounded-full font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
               >
-                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
+                {t('landing.hero_cta')}
                 <ArrowRight size={20} />
               </Link>
               <button 
                 onClick={() => scrollToSection('about')}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-app-border text-text-primary bg-app-surface/50 backdrop-blur-sm"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-full border border-app-border text-text-primary bg-app-surface/50 backdrop-blur-sm"
               >
                 <Play size={20} />
                 Learn More
@@ -194,41 +199,30 @@ const HeroSection = () => {
           </motion.div>
         </div>
 
-        {/* Additional Custom Image Section */}
-        {settings?.heroSection?.additionalImageUrl && (
+        {/* Banner Section - Editable by Super Admin */}
+        {settings?.bannerSection?.imageUrl && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
             className="mt-20"
           >
-            <div className="app-surface rounded-3xl p-8 border border-app-border overflow-hidden">
-              <div className="flex flex-col lg:flex-row items-center gap-8">
-                <div className="flex-1 text-center lg:text-left">
-                  <h2 className="text-3xl font-bold text-text-primary mb-4">
-                    {settings.heroSection.additionalTitle || 'Transform Your Property Management'}
-                  </h2>
-                  <p className="text-text-secondary text-lg mb-6">
-                    {settings.heroSection.additionalDescription || 'Experience the future of property management with our comprehensive platform.'}
-                  </p>
-                  <Link 
-                    to="/register" 
-                    className="gradient-dark-orange-blue text-white px-8 py-4 rounded-2xl font-semibold inline-flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all"
-                  >
-                    Get Started Today
-                    <ArrowRight size={16} />
-                  </Link>
-                </div>
-                <div className="flex-1 max-w-md">
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                    <img
-                      src={settings.heroSection.additionalImageUrl}
-                      alt="Property Management Features"
-                      className="w-full h-auto object-cover"
-                    />
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              <img
+                src={settings.bannerSection.imageUrl}
+                alt={settings.bannerSection.altText || 'Platform Banner'}
+                className="w-full h-64 md:h-96 object-cover"
+              />
+              {settings.bannerSection.overlayText && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <h2 className="text-4xl font-bold mb-4">{settings.bannerSection.overlayText}</h2>
+                    {settings.bannerSection.overlaySubtext && (
+                      <p className="text-xl text-white/90">{settings.bannerSection.overlaySubtext}</p>
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
         )}
