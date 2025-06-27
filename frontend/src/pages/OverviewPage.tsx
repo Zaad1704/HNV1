@@ -5,11 +5,13 @@ import { Link } from 'react-router-dom';
 import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
-import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle } from 'lucide-react';
+import QuickActions from '../components/dashboard/QuickActions';
+import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
 import { IExpiringLease } from '../hooks/useExpiringLeases';
 import { motion } from 'framer-motion';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 const fetchOverviewStats = async () => {
   const { data } = await apiClient.get('/dashboard/overview-stats');
@@ -63,7 +65,7 @@ const StatCard = ({
   >
     <Link 
       to={to} 
-      className="app-card app-surface rounded-3xl p-6 flex items-center justify-between hover:shadow-app-lg transition-all duration-300 group"
+      className="app-card app-surface rounded-3xl p-6 flex items-center justify-between hover:shadow-app-lg transition-all duration-300 group touch-feedback"
     >
       <div className="flex-1">
         <p className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">
@@ -93,6 +95,19 @@ const OverviewPage = () => {
   const { currencyName } = useLang();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
+  
+  const refreshData = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['overviewStats'] });
+    await queryClient.invalidateQueries({ queryKey: ['lateTenants'] });
+    await queryClient.invalidateQueries({ queryKey: ['expiringLeases'] });
+    await queryClient.invalidateQueries({ queryKey: ['financialSummary'] });
+    await queryClient.invalidateQueries({ queryKey: ['rentStatus'] });
+  };
+  
+  const { isRefreshing, pullDistance, isPulling } = usePullToRefresh({
+    onRefresh: refreshData,
+    threshold: 80
+  });
 
   const { data: stats, isLoading: isLoadingStats } = useQuery({ 
     queryKey: ['overviewStats'], 
@@ -137,7 +152,7 @@ const OverviewPage = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading Dashboard...</span>
+        <span className="ml-3 text-text-secondary">{t('dashboard.loading_data')}</span>
       </div>
     );
   }
@@ -155,19 +170,39 @@ const OverviewPage = () => {
   })) || [];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-8"
-    >
+    <div className="relative">
+      {/* Pull to refresh indicator */}
+      {(isPulling || isRefreshing) && (
+        <div 
+          className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4"
+          style={{ transform: `translateY(${Math.min(pullDistance, 60)}px)` }}
+        >
+          <div className="bg-app-surface rounded-full p-3 shadow-app-lg border border-app-border">
+            <RefreshCw 
+              size={20} 
+              className={`text-brand-blue ${isRefreshing ? 'animate-spin' : ''}`} 
+            />
+          </div>
+        </div>
+      )}
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="space-y-8 pull-to-refresh"
+        style={{ 
+          transform: isPulling ? `translateY(${Math.min(pullDistance * 0.5, 30)}px)` : 'none',
+          transition: isPulling ? 'none' : 'transform 0.3s ease'
+        }}
+      >
       {/* Welcome Section */}
       <div className="app-gradient rounded-3xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">
-          Welcome back, {stats?.userName || 'User'}!
+          {t('common.welcome_back_user', { name: stats?.userName || 'User' })}
         </h1>
         <p className="text-white/80">
-          Here's what's happening with your properties today.
+          {t('common.happening_today')}
         </p>
       </div>
 
@@ -213,7 +248,7 @@ const OverviewPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="lg:col-span-2 app-surface rounded-3xl p-8 border border-app-border"
+          className="lg:col-span-2 app-surface rounded-3xl p-8 border border-app-border touch-feedback"
         >
           <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-3">
             <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
@@ -228,7 +263,7 @@ const OverviewPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="app-surface rounded-3xl p-8 border border-app-border"
+          className="app-surface rounded-3xl p-8 border border-app-border touch-feedback"
         >
           <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-3">
             <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
@@ -239,6 +274,9 @@ const OverviewPage = () => {
           <RentStatusChart data={rentStatusData || []} />
         </motion.div>
       </div>
+
+      {/* Quick Actions */}
+      <QuickActions />
 
       {/* Action Items */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -276,7 +314,8 @@ const OverviewPage = () => {
           />
         </motion.div>
       </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

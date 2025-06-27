@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useDataExport } from '../hooks/useDataExport';
 
 const fetchProperties = async () => {
   const { data } = await apiClient.get('/properties');
@@ -12,13 +16,88 @@ const fetchProperties = async () => {
 };
 
 const PropertiesPage = () => {
+  const { t } = useTranslation();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<any>({});
   const queryClient = useQueryClient();
+  const { exportProperties, isExporting } = useDataExport();
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ['properties'],
     queryFn: fetchProperties
   });
+
+  const filteredProperties = useMemo(() => {
+    if (!properties) return [];
+    
+    return properties.filter((property: any) => {
+      const matchesSearch = !searchQuery || 
+        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.address?.city?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = !filters.status || property.status === filters.status;
+      const matchesUnits = !filters.units || 
+        (filters.units === 'single' && property.numberOfUnits === 1) ||
+        (filters.units === 'multiple' && property.numberOfUnits > 1);
+      
+      return matchesSearch && matchesStatus && matchesUnits;
+    });
+  }, [properties, searchQuery, filters]);
+
+  const filterOptions = [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select' as const,
+      options: [
+        { value: 'Active', label: t('property.active') },
+        { value: 'Inactive', label: t('property.inactive') }
+      ]
+    },
+    {
+      key: 'units',
+      label: 'Unit Type',
+      type: 'select' as const,
+      options: [
+        { value: 'single', label: 'Single Unit' },
+        { value: 'multiple', label: 'Multiple Units' }
+      ]
+    }
+  ];
+
+  const bulkActions = [
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      color: 'bg-blue-500 hover:bg-blue-600 text-white',
+      action: async (ids: string[]) => {
+        await exportProperties({ format: 'xlsx', filters: { ids } });
+      }
+    },
+    {
+      key: 'contact',
+      label: 'Contact Tenants',
+      icon: Mail,
+      color: 'bg-green-500 hover:bg-green-600 text-white',
+      action: (ids: string[]) => {
+        console.log('Contact tenants for properties:', ids);
+      }
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      color: 'bg-red-500 hover:bg-red-600 text-white',
+      action: (ids: string[]) => {
+        if (confirm('Delete selected properties?')) {
+          console.log('Delete properties:', ids);
+        }
+      }
+    }
+  ];
 
   const handlePropertyAdded = (newProperty: any) => {
     queryClient.setQueryData(['properties'], (old: any) => [...(old || []), newProperty]);
@@ -28,7 +107,7 @@ const PropertiesPage = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading properties...</span>
+        <span className="ml-3 text-text-secondary">{t('property.loading_properties')}</span>
       </div>
     );
   }
@@ -40,31 +119,55 @@ const PropertiesPage = () => {
       className="space-y-8"
     >
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Properties</h1>
-          <p className="text-text-secondary mt-1">Manage your property portfolio</p>
+          <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.properties')}</h1>
+          <p className="text-text-secondary mt-1">{t('property.manage_portfolio')}</p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold touch-feedback"
         >
           <Plus size={20} />
-          Add Property
+          {t('property.add_property')}
         </button>
       </div>
 
+      {/* Search & Filter */}
+      <SearchFilter
+        onSearch={setSearchQuery}
+        onFilter={setFilters}
+        filters={filters}
+        placeholder="Search properties..."
+        filterOptions={filterOptions}
+      />
+
       {/* Properties Grid */}
-      {properties && properties.length > 0 ? (
+      {filteredProperties && filteredProperties.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property: any, index: number) => (
+          {filteredProperties.map((property: any, index: number) => (
             <motion.div
               key={property._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-app-lg transition-all duration-300 group"
+              className="app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-app-lg transition-all duration-300 group relative"
             >
+              {/* Selection Checkbox */}
+              <div className="absolute top-4 left-4 z-10">
+                <input
+                  type="checkbox"
+                  checked={selectedProperties.includes(property._id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedProperties(prev => [...prev, property._id]);
+                    } else {
+                      setSelectedProperties(prev => prev.filter(id => id !== property._id));
+                    }
+                  }}
+                  className="w-5 h-5 rounded border-2 border-white bg-white/90 backdrop-blur-sm"
+                />
+              </div>
               {/* Property Image */}
               <div className="h-48 bg-gradient-to-br from-brand-blue to-brand-orange relative overflow-hidden">
                 {property.imageUrl ? (
@@ -102,7 +205,7 @@ const PropertiesPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-text-secondary text-sm">
                     <Users size={14} />
-                    <span>{property.numberOfUnits} {property.numberOfUnits === 1 ? 'Unit' : 'Units'}</span>
+                    <span>{property.numberOfUnits} {property.numberOfUnits === 1 ? t('property.unit') : t('property.units')}</span>
                   </div>
                 </div>
 
@@ -113,11 +216,11 @@ const PropertiesPage = () => {
                     className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <Eye size={14} />
-                    View
+                    {t('property.view')}
                   </Link>
                   <button className="flex-1 app-gradient text-white py-2 px-4 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center justify-center gap-2">
                     <Edit size={14} />
-                    Edit
+                    {t('property.edit')}
                   </button>
                 </div>
               </div>
@@ -133,16 +236,16 @@ const PropertiesPage = () => {
           <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
             <Building2 size={48} className="text-white" />
           </div>
-          <h3 className="text-2xl font-bold text-text-primary mb-2">No Properties Yet</h3>
+          <h3 className="text-2xl font-bold text-text-primary mb-2">{t('property.no_properties_yet')}</h3>
           <p className="text-text-secondary mb-8 max-w-md mx-auto">
-            Start building your property portfolio by adding your first property.
+            {t('property.manage_portfolio')}
           </p>
           <button
             onClick={() => setShowAddModal(true)}
             className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto"
           >
             <Plus size={20} />
-            Add Your First Property
+            {t('property.add_first_property')}
           </button>
         </motion.div>
       )}
@@ -152,6 +255,14 @@ const PropertiesPage = () => {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onPropertyAdded={handlePropertyAdded}
+      />
+
+      <BulkActions
+        selectedItems={selectedProperties}
+        totalItems={filteredProperties?.length || 0}
+        onSelectAll={() => setSelectedProperties(filteredProperties?.map((p: any) => p._id) || [])}
+        onClearSelection={() => setSelectedProperties([])}
+        actions={bulkActions}
       />
     </motion.div>
   );
