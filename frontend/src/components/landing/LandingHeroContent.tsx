@@ -1,145 +1,131 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSiteSettings } from '../../hooks/useSiteSettings';
+import { useLang } from '../../contexts/LanguageContext';
+import { ChevronRightIcon, PlayIcon } from '@heroicons/react/24/outline';
 
-const LandingHeroContent = () => {
+interface LandingHeroContentProps {
+  onGetStarted: () => void;
+}
+
+const LandingHeroContent: React.FC<LandingHeroContentProps> = ({ onGetStarted }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data: settings } = useSiteSettings();
+  const { currencyName } = useLang();
+  const [visionImage, setVisionImage] = useState<string>('');
 
-  const handleCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, sectionId: string) => {
-    e.preventDefault();
-    const targetElement = document.getElementById(sectionId);
-    if (targetElement) targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  useEffect(() => {
+    // Fetch vision image from site settings
+    fetch('/api/site-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.heroSection?.visionImageUrl) {
+          setVisionImage(data.data.heroSection.visionImageUrl);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-        ease: "easeOut",
-      },
-    }),
+  const features = [
+    {
+      icon: '🏠',
+      title: t('dashboard.properties'),
+      description: 'Manage all your properties in one place',
+      link: '#properties'
+    },
+    {
+      icon: '👥',
+      title: t('dashboard.tenants'),
+      description: 'Track tenant information and communications',
+      link: '#tenants'
+    },
+    {
+      icon: '💰',
+      title: t('dashboard.cash_flow'),
+      description: 'Monitor income and expenses',
+      link: '#cashflow'
+    },
+    {
+      icon: '🔧',
+      title: t('dashboard.maintenance'),
+      description: 'Handle maintenance requests efficiently',
+      link: '#maintenance'
+    }
+  ];
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
-    <section className="relative py-20 md:py-32 flex items-center justify-center text-center overflow-hidden bg-light-bg dark:bg-dark-bg transition-colors duration-300">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-            initial="hidden"
-            animate="visible"
-        >
-          {/* Main Hero Card */}
-          <motion.div
-            className="card primary-card-gradient rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between"
-            variants={cardVariants}
-            custom={0}
-          >
-            <div>
-              <div className="w-12 h-12 bg-white/25 rounded-full mb-4"></div>
-              <h1 className="text-5xl font-bold text-white leading-tight">
-                {settings?.heroSection?.title || t('landing.hero_title')}
-              </h1>
-              <p className="text-white/80 mt-4 max-w-sm">
-                {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
-              </p>
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div className="text-center lg:text-left">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              {t('landing.hero_title')}
+            </h1>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl">
+              {t('landing.hero_subtitle')}
+            </p>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+              <button
+                onClick={onGetStarted}
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                {t('landing.hero_cta')}
+                <ChevronRightIcon className="ml-2 h-5 w-5" />
+              </button>
+              
+              <button className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold rounded-lg border border-white/20 transition-all duration-200">
+                <PlayIcon className="mr-2 h-5 w-5" />
+                Watch Demo
+              </button>
             </div>
-            <Link to="/register" className="btn-light font-bold py-3 px-6 rounded-lg mt-8 self-start text-sm">
-                {settings?.heroSection?.ctaText || t('landing.hero_cta')}
-            </Link>
-          </motion.div>
 
-          {/* About Us Card */}
-          <motion.div
-            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            variants={cardVariants}
-            custom={1}
-            onClick={(e) => handleCardClick(e, 'about')}
-          >
-            <div className="w-full h-24 bg-brand-primary/10 rounded-xl mb-4 flex items-center justify-center text-brand-primary text-4xl font-bold">About</div>
-            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">About Us</h2>
-            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Learn more about our mission and vision.</p>
-          </motion.div>
-
-          {/* Services Card */}
-          <motion.div
-            className="card neutral-glass rounded-3xl p-6 flex flex-col cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            variants={cardVariants}
-            custom={2}
-            onClick={(e) => handleCardClick(e, 'services')}
-          >
-            <div className="w-full h-24 bg-brand-secondary/10 rounded-xl mb-4 flex items-center justify-center text-brand-secondary text-4xl font-bold">Services</div>
-            <h2 className="text-2xl font-bold text-dark-text dark:text-dark-text-dark">Our Services</h2>
-            <p className="text-light-text dark:text-light-text-dark text-sm mt-2 flex-grow">Discover how we can help you manage properties.</p>
-            <button className="btn-dark font-semibold py-2 px-5 rounded-lg mt-4 self-start text-sm">Explore</button>
-          </motion.div>
-
-          {/* Pricing Card */}
-          <motion.div
-            className="card secondary-card-gradient rounded-3xl p-6 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            variants={cardVariants}
-            custom={3}
-            onClick={(e) => handleCardClick(e, 'pricing')}
-          >
-            <div className="w-10 h-10 bg-white/25 rounded-full mb-3 flex items-center justify-center text-white text-2xl font-bold">$$</div>
-            <h2 className="text-xl font-bold text-white">Pricing Plans</h2>
-            <p className="text-white/80 text-sm mt-1">Find the perfect plan for your needs.</p>
-          </motion.div>
-
-          {/* Leadership Card */}
-          <motion.div
-            className="card neutral-glass rounded-3xl p-6 flex flex-col justify-center items-center text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            variants={cardVariants}
-            custom={4}
-            onClick={(e) => handleCardClick(e, 'leadership')}
-          >
-            <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-primary-card-gradient">Our Leadership</h2>
-            <p className="text-light-text dark:text-light-text-dark text-sm mt-2">Meet the team driving our success.</p>
-          </motion.div>
-
-          {/* Contact Card */}
-          <motion.div
-            className="card neutral-glass rounded-3xl p-6 sm:col-span-2 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            variants={cardVariants}
-            custom={5}
-            onClick={(e) => handleCardClick(e, 'contact')}
-          >
-            <h3 className="text-light-text dark:text-light-text-dark font-semibold text-sm">Get in Touch</h3>
-            <h2 className="text-2xl font-bold mt-1 text-dark-text dark:text-dark-text-dark">Contact Us</h2>
-            <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
-                <img src="https://images.unsplash.com/photo-1587560699334-cc4ff6349d04?auto=format&fit=crop&q=80&w=400&h=300&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Contact"/>
-                <div className="flex-1">
-                    <p className="text-light-text dark:text-light-text-dark text-sm">Have questions or need support? Reach out to our team.</p>
-                    <span className="text-brand-primary dark:text-brand-secondary font-semibold mt-2 inline-block text-sm">Send a Message &rarr;</span>
+            {/* Interactive Feature Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  onClick={() => scrollToSection(feature.link)}
+                  className="bg-white/10 backdrop-blur-sm rounded-lg p-4 cursor-pointer hover:bg-white/20 transition-all duration-200 transform hover:scale-105"
+                >
+                  <div className="text-2xl mb-2">{feature.icon}</div>
+                  <h3 className="text-white font-semibold text-sm mb-1">{feature.title}</h3>
+                  <p className="text-gray-300 text-xs">{feature.description}</p>
                 </div>
+              ))}
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
 
-        {/* Vision Image Section */}
-        {settings?.heroSection?.visionImageUrl && (
-            <motion.div
-                className="mt-16"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-            >
+          {/* Right Content - Vision Image */}
+          <div className="relative">
+            {visionImage && (
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                    src={settings.heroSection.visionImageUrl}
-                    alt="Our Vision"
-                    className="w-full rounded-3xl shadow-lg"
+                  src={visionImage}
+                  alt="Property Management Vision"
+                  className="w-full h-96 object-cover"
                 />
-            </motion.div>
-        )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="absolute bottom-6 left-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2">Modern Management</h3>
+                  <p className="text-gray-200">Streamline your workflow with our intuitive platform</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 

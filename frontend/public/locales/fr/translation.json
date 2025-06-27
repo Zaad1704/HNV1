@@ -1,0 +1,78 @@
+{
+  "header": {
+    "login": "Se Connecter",
+    "get_started": "Commencer"
+  },
+  "nav": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "login": "Se Connecter",
+    "pricing": "Tarifs",
+    "contact": "Contact"
+  },
+  "auth": {
+    "welcome_back": "Bon Retour!",
+    "sign_in_subtitle": "Connectez-vous pour accéder à votre tableau de bord",
+    "email_address": "Adresse Email",
+    "password": "Mot de Passe",
+    "forgot_password": "Mot de passe oublié?",
+    "sign_in": "Se Connecter",
+    "continue_google": "Continuer avec Google",
+    "no_account": "Vous n'avez pas de compte?",
+    "sign_up": "S'inscrire",
+    "or": "OU",
+    "enter_email": "Entrez votre email",
+    "enter_password": "Entrez votre mot de passe",
+    "create_account": "Créer un Compte",
+    "join_thousands": "Rejoignez des milliers de gestionnaires immobiliers",
+    "full_name": "Nom Complet",
+    "enter_full_name": "Entrez votre nom complet",
+    "role": "Rôle",
+    "create_password": "Créer un mot de passe",
+    "confirm_password": "Confirmez votre mot de passe",
+    "have_account": "Vous avez déjà un compte?",
+    "landlord": "Propriétaire",
+    "agent": "Agent",
+    "tenant": "Locataire"
+  },
+  "dashboard": {
+    "overview": "Aperçu",
+    "properties": "Propriétés",
+    "tenants": "Locataires",
+    "expenses": "Dépenses",
+    "maintenance": "Maintenance",
+    "cash_flow": "Flux de Trésorerie",
+    "reminders": "Rappels",
+    "approvals": "Approbations",
+    "users_invites": "Utilisateurs et Invitations",
+    "billing": "Facturation",
+    "audit_log": "Journal d'Audit",
+    "admin_panel": "Panneau d'Administration",
+    "settings": "Paramètres",
+    "logout": "Se Déconnecter",
+    "monthly_revenue": "Revenus Mensuels",
+    "total_properties": "Total des Propriétés",
+    "active_tenants": "Locataires Actifs",
+    "occupancy_rate": "Taux d'Occupation",
+    "welcome_back": "Bon retour"
+  },
+  "landing": {
+    "hero_title": "Gestion Immobilière Moderne",
+    "hero_subtitle": "Rationalisez la gestion de vos propriétés avec notre plateforme tout-en-un",
+    "hero_cta": "Commencer"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "view": "Voir",
+    "back": "Retour",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter"
+  }
+}
