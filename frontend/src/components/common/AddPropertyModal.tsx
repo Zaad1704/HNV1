@@ -3,6 +3,7 @@ import apiClient from '../../api/client';
 import { useMutation } from '@tanstack/react-query';
 import { X, Upload, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const AddPropertyModal = ({ 
   isOpen, 
@@ -13,6 +14,7 @@ const AddPropertyModal = ({
   onClose: () => void;
   onPropertyAdded: (property: any) => void;
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '', 
     street: '', 
@@ -89,7 +91,7 @@ const AddPropertyModal = ({
                 <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
                   <Building2 size={20} className="text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-text-primary">Add New Property</h2>
+                <h2 className="text-xl font-bold text-text-primary">{t('property.add_new_property')}</h2>
               </div>
               <button
                 onClick={onClose}
@@ -113,7 +115,7 @@ const AddPropertyModal = ({
               
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">
-                  Property Name
+                  {t('property.property_name')}
                 </label>
                 <input
                   type="text"
@@ -123,37 +125,37 @@ const AddPropertyModal = ({
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full"
-                  placeholder="Enter property name"
+                  placeholder={t('property.enter_property_name')}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-2">
-                  Address
+                  {t('property.address')}
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="street"
-                    placeholder="Street Address"
+                    placeholder={t('property.street_address')}
                     value={formData.street}
                     onChange={handleChange}
                     className="sm:col-span-2"
                   />
                   <input
                     name="city"
-                    placeholder="City"
+                    placeholder={t('property.city')}
                     value={formData.city}
                     onChange={handleChange}
                   />
                   <input
                     name="state"
-                    placeholder="State"
+                    placeholder={t('property.state')}
                     value={formData.state}
                     onChange={handleChange}
                   />
                   <input
                     name="zipCode"
-                    placeholder="Zip Code"
+                    placeholder={t('property.zip_code')}
                     value={formData.zipCode}
                     onChange={handleChange}
                   />
@@ -162,7 +164,7 @@ const AddPropertyModal = ({
 
               <div>
                 <label htmlFor="numberOfUnits" className="block text-sm font-medium text-text-secondary mb-2">
-                  Number of Units
+                  {t('property.number_of_units')}
                 </label>
                 <input
                   type="number"
@@ -178,7 +180,7 @@ const AddPropertyModal = ({
 
               <div>
                 <label htmlFor="image" className="block text-sm font-medium text-text-secondary mb-2">
-                  Property Image
+                  {t('property.property_image')}
                 </label>
                 <div className="relative">
                   <input
@@ -196,7 +198,7 @@ const AddPropertyModal = ({
                     <div className="text-center">
                       <Upload size={24} className="mx-auto text-text-muted mb-2" />
                       <p className="text-sm text-text-secondary">
-                        {imageFile ? imageFile.name : 'Click to upload image'}
+                        {imageFile ? imageFile.name : t('property.click_to_upload')}
                       </p>
                     </div>
                   </label>
@@ -210,7 +212,7 @@ const AddPropertyModal = ({
                   onClick={onClose}
                   className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary hover:bg-app-bg transition-all"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -222,7 +224,7 @@ const AddPropertyModal = ({
                   ) : (
                     <Building2 size={16} />
                   )}
-                  {mutation.isLoading ? 'Saving...' : 'Save Property'}
+                  {mutation.isLoading ? t('property.saving') : t('property.save_property')}
                 </button>
               </div>
             </form>
