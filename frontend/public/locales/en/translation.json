@@ -1,62 +1,44 @@
 {
   "header": {
-    "features": "Features",
-    "about": "About Us",
-    "services": "Services",
-    "leadership": "Leadership",
+    "login": "Login",
+    "get_started": "Get Started"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "login": "Login",
     "pricing": "Pricing",
-    "contact": "Contact",
-    "login": "Portal Login",
-    "get_started": "Get Started",
-    "sign_up": "Sign Up"
-  },
-  "install_app": {
-    "cta": "Install App",
-    "manual_prompt": "To install, please use the 'Install' option in your browser's menu (usually found in the three-dot menu)."
-  },
-  "footer": {
-    "description": "HNV Solutions is the leading platform for streamlining property management tasks, from tenant communication to financial tracking.",
-    "copyright_text": "HNV Property Management Solutions. All Rights Reserved.",
-    "quick_links": "Quick Links",
-    "legal_links": "Legal",
-    "social_links": "Social"
-  },
-  "landing": {
-    "hero_title": "The All-in-One Platform for Modern Property Management",
-    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease. HNV provides the tools you need to scale your property business efficiently.",
-    "hero_cta": "Start Your Free Trial"
+    "contact": "Contact"
   },
   "auth": {
     "welcome_back": "Welcome Back!",
-    "login_prompt": "Log in to your account to continue.",
+    "sign_in_subtitle": "Sign in to continue to your dashboard",
     "email_address": "Email Address",
     "password": "Password",
-    "sign_in": "Sign In",
-    "or": "OR",
-    "sign_in_google": "Sign In with Google",
-    "no_account": "Don't have an account?",
-    "sign_up_here": "Sign Up Here",
     "forgot_password": "Forgot Password?",
-    "forgot_password_title": "Forgot Your Password?",
-    "forgot_password_prompt": "No problem. Enter your email address below, and we'll send you a link to reset it.",
-    "send_reset_link": "Send Reset Link",
-    "remembered_password": "Remembered your password?",
-    "create_account": "Create Your Account",
-    "smarter_management": "A smarter way to manage properties.",
-    "by_signing_in": "By signing in, you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
-    "you_are_invited": "You're Invited!",
-    "invited_by": "{{inviterName}} has invited you to join their team as an Agent/Manager.",
-    "set_password_new": "Since you're new, please set a password to create your account.",
-    "accept_invitation": "Accept Invitation & Continue",
-    "invalid_token": "This invitation is invalid or has expired.",
-    "return_to_login": "Return to Login",
-    "verifying_invitation": "Verifying Invitation..."
+    "sign_in": "Sign In",
+    "continue_google": "Continue with Google",
+    "no_account": "Don't have an account?",
+    "sign_up": "Sign Up",
+    "or": "OR",
+    "enter_email": "Enter your email",
+    "enter_password": "Enter your password",
+    "create_account": "Create Account",
+    "join_thousands": "Join thousands of property managers",
+    "full_name": "Full Name",
+    "enter_full_name": "Enter your full name",
+    "role": "Role",
+    "create_password": "Create a password",
+    "confirm_password": "Confirm your password",
+    "have_account": "Already have an account?",
+    "landlord": "Landlord",
+    "agent": "Agent",
+    "tenant": "Tenant"
   },
   "dashboard": {
     "overview": "Overview",
     "properties": "Properties",
     "tenants": "Tenants",
-    "payments": "Payments",
     "expenses": "Expenses",
     "maintenance": "Maintenance",
     "cash_flow": "Cash Flow",
@@ -68,56 +50,33 @@
     "admin_panel": "Admin Panel",
     "settings": "Settings",
     "logout": "Logout",
-    "more": "More",
     "monthly_revenue": "Monthly Revenue",
     "total_properties": "Total Properties",
     "active_tenants": "Active Tenants",
     "occupancy_rate": "Occupancy Rate",
-    "financials_chart_title": "Financials (Last 6 Months)",
-    "rent_status_chart_title": "Rent Payment Status",
+    "financials_chart_title": "Financial Overview",
+    "rent_status_chart_title": "Rent Status",
     "overdue_rent_reminders": "Overdue Rent Reminders",
-    "upcoming_lease_expirations": "Upcoming Lease Expirations",
     "send_reminder": "Send Reminder",
+    "no_overdue_rent": "No overdue rent payments",
+    "upcoming_lease_expirations": "Upcoming Lease Expirations",
     "renew_lease": "Renew Lease",
-    "no_overdue_rent": "No tenants with overdue rent.",
-    "no_expiring_leases": "No leases expiring soon.",
-    "loading_data": "Loading Dashboard Data...",
-    "financial_chart": {
-      "revenue": "Revenue",
-      "expenses": "Expenses"
-    }
+    "no_expiring_leases": "No expiring leases"
   },
-  "about": {
-    "title": "About HNV Solutions",
-    "subtitle": "We are dedicated to simplifying property management through innovative technology.",
-    "mission_title": "Our Mission",
-    "mission_statement": "To provide user-friendly tools that empower property managers to achieve operational excellence, enhance tenant satisfaction, and maximize profitability.",
-    "vision_title": "Our Vision",
-    "vision_statement": "To be the leading global platform for property management, recognized for our commitment to customer success and continuous innovation."
+  "landing": {
+    "hero_title": "Modern Property Management",
+    "hero_subtitle": "Streamline your property management with our all-in-one platform",
+    "hero_cta": "Get Started"
   },
-  "pricing": {
-    "title": "Choose The Plan That's Right For You",
-    "subtitle": "Simple, transparent pricing to help you grow. No hidden fees, cancel anytime.",
-    "free": "Free",
-    "choose_plan": "Choose Plan",
-    "disclaimer": "Subscription and billing are managed securely through our payment partner."
-  },
-  "services": {
-    "tenant_management_title": "Tenant Management",
-    "tenant_management_desc": "Efficiently track tenant information, lease agreements, and communication logs.",
-    "property_tracking_title": "Property Tracking",
-    "property_tracking_desc": "Manage property details, maintenance schedules, and unit availability.",
-    "rent_collection_title": "Rent Collection",
-    "rent_collection_desc": "Automate rent reminders, process online payments, and track financial records.",
-    "title": "Our Services",
-    "subtitle": "Comprehensive solutions tailored for your property management needs."
-  },
-  "leadership": {
-    "title": "Meet Our Leadership",
-    "subtitle": "The driving force behind our commitment to excellence and innovation.",
-    "founder_visionary": "Founder & Visionary",
-    "founder_1_quote": "Our vision is to empower property managers with tools that make a real difference.",
-    "founder_2_quote": "Innovation and user experience are at the heart of everything we build.",
-    "coo_quote": "We ensure operational excellence to deliver seamless service to our customers."
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "back": "Back"
   }
 }
