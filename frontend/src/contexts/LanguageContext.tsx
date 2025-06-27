@@ -41,38 +41,29 @@ const exchangeRates: { [key: string]: number } = {
   'KRW': 1300, 'RUB': 75, 'BRL': 5.2, 'TRY': 30, 'MYR': 4.5, 'THB': 35, 'IDR': 15000, 'VND': 24000
 };
 
-const countryLanguageMap: { [key: string]: string } = {
-  'BD': 'bn', 'ES': 'es', 'MX': 'es', 'AR': 'es', 'FR': 'fr', 'CA': 'en', 'BE': 'fr',
-  'IN': 'hi', 'MY': 'ms', 'TH': 'th', 'ID': 'id', 'CN': 'zh', 'TW': 'zh', 'HK': 'zh',
-  'JP': 'ja', 'KR': 'ko', 'VN': 'vi', 'US': 'en', 'GB': 'en', 'AU': 'en', 'SA': 'ar',
-  'AE': 'ar', 'EG': 'ar', 'RU': 'ru', 'DE': 'de', 'BR': 'pt', 'IT': 'it', 'TR': 'tr'
-};
-
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const [lang, setLang] = useState(localStorage.getItem('language') || 'en');
-  const [availableLanguages, setAvailableLanguages] = useState(allLanguages);
+  const [availableLanguages, setAvailableLanguages] = useState([
+    { code: 'en', name: 'English', currency: '$', currencyCode: 'USD' }
+  ]);
 
   const detectAndSetLanguage = async () => {
     try {
       const response = await fetch('/api/localization/detect');
       const data = await response.json();
       
-      if (data.success && data.countryCode) {
-        const localLang = countryLanguageMap[data.countryCode];
+      if (data.success && data.lang && data.lang !== 'en') {
+        const localLanguage = allLanguages.find(l => l.code === data.lang);
+        const englishLanguage = allLanguages.find(l => l.code === 'en');
         
-        if (localLang && localLang !== 'en') {
-          const localLanguage = allLanguages.find(l => l.code === localLang);
-          const englishLanguage = allLanguages.find(l => l.code === 'en');
-          
-          if (localLanguage && englishLanguage) {
-            localLanguage.currency = data.name;
-            localLanguage.currencyCode = data.currency;
-            setAvailableLanguages([englishLanguage, localLanguage]);
-          }
+        if (localLanguage && englishLanguage) {
+          localLanguage.currency = data.name;
+          localLanguage.currencyCode = data.currency;
+          setAvailableLanguages([englishLanguage, localLanguage]);
           
           if (!localStorage.getItem('language')) {
-            setLang(localLang);
+            setLang(data.lang);
           }
         }
       }
