@@ -21,20 +21,6 @@ const AdminOrganizationsPage = () => {
     const { data: organizations = [], isLoading, isError } = useQuery<IOrganization[], Error>({ queryKey:['allOrganizations'], queryFn: fetchOrganizations });
     const { data: availablePlans = [] } = useQuery<IPlan[], Error>({ queryKey:['availablePlans'], queryFn: fetchPlans });
 
-    const getStatusChip = (status?: string) => {
-        if (!status) return null;
-        const baseClasses = 'px-3 py-1 text-sm font-semibold rounded-full capitalize';
-        const statusMap = {
-            active: `${baseClasses} bg-green-500/20 text-green-300`,
-            trialing: `${baseClasses} bg-blue-500/20 text-blue-300`,
-            canceled: `${baseClasses} bg-red-500/20 text-red-400`,
-            past_due: `${baseClasses} bg-yellow-500/20 text-yellow-300`,
-            inactive: `${baseClasses} bg-gray-500/20 text-gray-300`,
-        };
-        const statusClass = statusMap[status as keyof typeof statusMap] || statusMap.inactive;
-        return <span className={statusClass}>{status.replace('_', ' ')}</span>;
-    };
-
     const deleteOrgMutation = useMutation({
         mutationFn: (orgId: string) => apiClient.delete(`/super-admin/organizations/${orgId}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
@@ -77,7 +63,9 @@ const AdminOrganizationsPage = () => {
                                     }
                                 </td>
                                 <td className="p-4">
-                                    {getStatusChip(org.subscription?.status)}
+                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-500/20 text-green-300' : 'bg-brand-orange/20 text-brand-orange'}`}> {/* Adjusted inactive/canceled to brand-orange */}
+                                        {org.subscription?.status || 'inactive'}
+                                    </span>
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex items-center justify-end gap-1">

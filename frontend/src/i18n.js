@@ -4,15 +4,16 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
+      // Header & Navigation
       'header.login': 'Login',
       'header.get_started': 'Get Started',
       'nav.home': 'Home',
       'nav.about': 'About',
-      'nav.features': 'Features',
+      'nav.login': 'Login',
       'nav.pricing': 'Pricing',
       'nav.contact': 'Contact',
-      'nav.login': 'Login',
-      'nav.register': 'Register',
+      
+      // Authentication Pages
       'auth.welcome_back': 'Welcome Back!',
       'auth.sign_in_subtitle': 'Sign in to continue to your dashboard',
       'auth.email_address': 'Email Address',
@@ -25,6 +26,8 @@ const resources = {
       'auth.or': 'OR',
       'auth.enter_email': 'Enter your email',
       'auth.enter_password': 'Enter your password',
+      
+      // Registration
       'auth.create_account': 'Create Account',
       'auth.join_thousands': 'Join thousands of property managers',
       'auth.full_name': 'Full Name',
@@ -36,6 +39,8 @@ const resources = {
       'auth.landlord': 'Landlord',
       'auth.agent': 'Agent',
       'auth.tenant': 'Tenant',
+      
+      // Dashboard
       'dashboard.overview': 'Overview',
       'dashboard.properties': 'Properties',
       'dashboard.tenants': 'Tenants',
@@ -54,17 +59,21 @@ const resources = {
       'dashboard.total_properties': 'Total Properties',
       'dashboard.active_tenants': 'Active Tenants',
       'dashboard.occupancy_rate': 'Occupancy Rate',
-      'dashboard.welcome_back': 'Welcome back',
+      'dashboard.financials_chart_title': 'Financial Overview',
+      'dashboard.rent_status_chart_title': 'Rent Status',
+      'dashboard.overdue_rent_reminders': 'Overdue Rent Reminders',
+      'dashboard.send_reminder': 'Send Reminder',
+      'dashboard.no_overdue_rent': 'No overdue rent payments',
+      'dashboard.upcoming_lease_expirations': 'Upcoming Lease Expirations',
+      'dashboard.renew_lease': 'Renew Lease',
+      'dashboard.no_expiring_leases': 'No expiring leases',
+      
+      // Landing Page
       'landing.hero_title': 'Modern Property Management',
-      'landing.hero_subtitle': 'Property Management Made Simple',
-      'landing.hero_description': 'Streamline your property management with our all-in-one platform',
+      'landing.hero_subtitle': 'Streamline your property management with our all-in-one platform',
       'landing.hero_cta': 'Get Started',
-      'landing.properties_desc': 'Manage all your properties in one place',
-      'landing.tenants_desc': 'Track tenant information and communications',
-      'landing.cashflow_desc': 'Monitor income and expenses',
-      'landing.maintenance_desc': 'Handle maintenance requests efficiently',
-      'landing.vision_title': 'Modern Management',
-      'landing.vision_subtitle': 'Streamline your workflow',
+      
+      // Common
       'common.loading': 'Loading...',
       'common.error': 'Error',
       'common.success': 'Success',
@@ -73,31 +82,21 @@ const resources = {
       'common.edit': 'Edit',
       'common.delete': 'Delete',
       'common.view': 'View',
-      'common.back': 'Back',
-      'common.search': 'Search',
-      'common.filter': 'Filter',
-      'common.export': 'Export',
-      'common.add': 'Add',
-      'common.remove': 'Remove',
-      'common.update': 'Update',
-      'common.submit': 'Submit',
-      'common.close': 'Close',
-      'common.open': 'Open',
-      'common.yes': 'Yes',
-      'common.no': 'No'
+      'common.back': 'Back'
     }
   },
   bn: {
     translation: {
+      // Header & Navigation
       'header.login': 'লগইন',
       'header.get_started': 'শুরু করুন',
       'nav.home': 'হোম',
       'nav.about': 'সম্পর্কে',
-      'nav.features': 'বৈশিষ্ট্য',
+      'nav.login': 'লগইন',
       'nav.pricing': 'মূল্য',
       'nav.contact': 'যোগাযোগ',
-      'nav.login': 'লগইন',
-      'nav.register': 'নিবন্ধন',
+      
+      // Authentication Pages
       'auth.welcome_back': 'স্বাগতম!',
       'auth.sign_in_subtitle': 'আপনার ড্যাশবোর্ডে যেতে সাইন ইন করুন',
       'auth.email_address': 'ইমেইল ঠিকানা',
@@ -110,8 +109,10 @@ const resources = {
       'auth.or': 'অথবা',
       'auth.enter_email': 'আপনার ইমেইল লিখুন',
       'auth.enter_password': 'আপনার পাসওয়ার্ড লিখুন',
+      
+      // Registration
       'auth.create_account': 'অ্যাকাউন্ট তৈরি করুন',
-      'auth.join_thousands': 'হাজারো সম্পত্তি ব্যবস্থাপকদের সাথে যোগ দিন',
+      'auth.join_thousands': 'হাজারো প্রপার্টি ম্যানেজারদের সাথে যোগ দিন',
       'auth.full_name': 'পূর্ণ নাম',
       'auth.enter_full_name': 'আপনার পূর্ণ নাম লিখুন',
       'auth.role': 'ভূমিকা',
@@ -121,35 +122,22 @@ const resources = {
       'auth.landlord': 'বাড়িওয়ালা',
       'auth.agent': 'এজেন্ট',
       'auth.tenant': 'ভাড়াটিয়া',
+      
+      // Dashboard
       'dashboard.overview': 'সংক্ষিপ্ত বিবরণ',
       'dashboard.properties': 'সম্পত্তি',
       'dashboard.tenants': 'ভাড়াটিয়া',
-      'dashboard.expenses': 'খরচ',
-      'dashboard.maintenance': 'রক্ষণাবেক্ষণ',
-      'dashboard.cash_flow': 'নগদ প্রবাহ',
-      'dashboard.reminders': 'অনুস্মারক',
-      'dashboard.approvals': 'অনুমোদন',
-      'dashboard.users_invites': 'ব্যবহারকারী ও আমন্ত্রণ',
-      'dashboard.billing': 'বিলিং',
-      'dashboard.audit_log': 'অডিট লগ',
-      'dashboard.admin_panel': 'অ্যাডমিন প্যানেল',
-      'dashboard.settings': 'সেটিংস',
-      'dashboard.logout': 'লগআউট',
       'dashboard.monthly_revenue': 'মাসিক আয়',
       'dashboard.total_properties': 'মোট সম্পত্তি',
       'dashboard.active_tenants': 'সক্রিয় ভাড়াটিয়া',
       'dashboard.occupancy_rate': 'দখলের হার',
-      'dashboard.welcome_back': 'স্বাগতম',
+      
+      // Landing Page
       'landing.hero_title': 'আধুনিক সম্পত্তি ব্যবস্থাপনা',
-      'landing.hero_subtitle': 'সম্পত্তি ব্যবস্থাপনা সহজ করা হয়েছে',
-      'landing.hero_description': 'আমাদের সব-এক-এক প্ল্যাটফর্মের সাথে আপনার সম্পত্তি ব্যবস্থাপনা সহজ করুন',
+      'landing.hero_subtitle': 'আমাদের সব-এক-এক প্ল্যাটফর্মের সাথে আপনার সম্পত্তি ব্যবস্থাপনা সহজ করুন',
       'landing.hero_cta': 'শুরু করুন',
-      'landing.properties_desc': 'একটি জায়গায় আপনার সমস্ত সম্পত্তি পরিচালনা করুন',
-      'landing.tenants_desc': 'ভাড়াটিয়াদের তথ্য এবং যোগাযোগ ট্র্যাক করুন',
-      'landing.cashflow_desc': 'আয় এবং খরচ নিরীক্ষণ করুন',
-      'landing.maintenance_desc': 'রক্ষণাবেক্ষণের অনুরোধগুলি দক্ষতার সাথে পরিচালনা করুন',
-      'landing.vision_title': 'আধুনিক ব্যবস্থাপনা',
-      'landing.vision_subtitle': 'আপনার কর্মপ্রবাহ সহজ করুন',
+      
+      // Common
       'common.loading': 'লোড হচ্ছে...',
       'common.error': 'ত্রুটি',
       'common.success': 'সফল',
@@ -158,62 +146,7 @@ const resources = {
       'common.edit': 'সম্পাদনা',
       'common.delete': 'মুছুন',
       'common.view': 'দেখুন',
-      'common.back': 'পিছনে',
-      'common.search': 'খুঁজুন',
-      'common.filter': 'ফিল্টার',
-      'common.export': 'রপ্তানি',
-      'common.add': 'যোগ করুন',
-      'common.remove': 'সরান',
-      'common.update': 'আপডেট',
-      'common.submit': 'জমা দিন',
-      'common.close': 'বন্ধ',
-      'common.open': 'খুলুন',
-      'common.yes': 'হ্যাঁ',
-      'common.no': 'না'
-    }
-  },
-  hi: {
-    translation: {
-      'header.login': 'लॉगिन',
-      'header.get_started': 'शुरू करें',
-      'nav.home': 'होम',
-      'nav.about': 'के बारे में',
-      'nav.features': 'विशेषताएं',
-      'nav.pricing': 'मूल्य निर्धारण',
-      'nav.contact': 'संपर्क',
-      'nav.login': 'लॉगिन',
-      'nav.register': 'पंजीकरण',
-      'auth.welcome_back': 'वापसी पर स्वागत है!',
-      'auth.sign_in_subtitle': 'अपने डैशबोर्ड पर जाने के लिए साइन इन करें',
-      'auth.email_address': 'ईमेल पता',
-      'auth.password': 'पासवर्ड',
-      'auth.forgot_password': 'पासवर्ड भूल गए?',
-      'auth.sign_in': 'साइन इन',
-      'auth.continue_google': 'Google के साथ जारी रखें',
-      'auth.no_account': 'कोई खाता नहीं है?',
-      'auth.sign_up': 'साइन अप',
-      'auth.or': 'या',
-      'dashboard.overview': 'अवलोकन',
-      'dashboard.properties': 'संपत्तियां',
-      'dashboard.tenants': 'किरायेदार',
-      'dashboard.expenses': 'खर्च',
-      'dashboard.maintenance': 'रखरखाव',
-      'dashboard.cash_flow': 'नकदी प्रवाह',
-      'dashboard.welcome_back': 'वापसी पर स्वागत है',
-      'landing.hero_title': 'आधुनिक संपत्ति प्रबंधन',
-      'landing.hero_subtitle': 'संपत्ति प्रबंधन सरल बनाया गया',
-      'landing.hero_description': 'हमारे ऑल-इन-वन प्लेटफॉर्म के साथ अपने संपत्ति प्रबंधन को सुव्यवस्थित करें',
-      'landing.hero_cta': 'शुरू करें',
-      'landing.properties_desc': 'अपनी सभी संपत्तियों को एक स्थान पर प्रबंधित करें',
-      'landing.tenants_desc': 'किरायेदार की जानकारी और संचार को ट्रैक करें',
-      'landing.cashflow_desc': 'आय और व्यय की निगरानी करें',
-      'landing.maintenance_desc': 'रखरखाव अनुरोधों को कुशलता से संभालें',
-      'landing.vision_title': 'आधुनिक प्रबंधन',
-      'landing.vision_subtitle': 'अपने वर्कफ़्लो को सुव्यवस्थित करें',
-      'common.loading': 'लोड हो रहा है...',
-      'common.search': 'खोजें',
-      'common.filter': 'फिल्टर',
-      'common.export': 'निर्यात'
+      'common.back': 'পিছনে'
     }
   }
 };
@@ -222,7 +155,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem('language') || 'en',
+    lng: 'en',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

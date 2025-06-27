@@ -63,13 +63,12 @@ const RegisterPage: React.FC = () => {
           <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
             <UserCheck size={32} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-4">Check Your Email!</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">{t('auth.check_email')}</h1>
           <p className="text-text-secondary mb-8">
-            We've sent a verification link to <strong>{formData.email}</strong>. 
-            Please check your email and click the link to activate your account.
+            {t('auth.verification_sent')}
           </p>
           <Link to="/login" className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2">
-            Go to Login <ArrowRight size={16} />
+            {t('auth.go_to_login')} <ArrowRight size={16} />
           </Link>
         </motion.div>
       </div>

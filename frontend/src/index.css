@@ -66,12 +66,31 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    overscroll-behavior: contain;
   }
   
   input, textarea, select {
     font-size: 16px !important; /* Prevent zoom on focus */
     -webkit-appearance: none;
     border-radius: 0;
+  }
+  
+  /* Pull to refresh */
+  .pull-to-refresh {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Native app-like scroll */
+  .native-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Touch feedback */
+  .touch-feedback:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
   }
 }
 
@@ -187,13 +206,32 @@ input::placeholder, textarea::placeholder {
   }
   
   /* Native app-like interactions */
-  button, .btn-gradient, .btn-glass, a[class*="btn"] {
+  button, .btn-gradient, .btn-glass, a[class*="btn"], .touch-feedback {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    user-select: none;
   }
   
-  button:active, .btn-gradient:active, .btn-glass:active {
+  button:active, .btn-gradient:active, .btn-glass:active, .touch-feedback:active {
     transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  /* Swipe gestures */
+  .swipeable {
+    touch-action: pan-x;
+  }
+  
+  /* Haptic feedback simulation */
+  @keyframes haptic {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+  }
+  
+  .haptic-feedback {
+    animation: haptic 0.1s ease-in-out;
   }
   
   /* Smooth scrolling for mobile */
