@@ -1,31 +1,54 @@
-# render.yaml
 services:
   - type: web
-    name: hnv-saas-backend
-    env: docker
-    plan: standard
-    repo: https://github.com/Zaad1704/HNV1
-    branch: main
-    rootDir: backend
-    envVars:
-      - key: PORT
-        value: 5001
-      # IMPORTANT: Your secret variables like MONGO_URI, JWT_SECRET, etc.
-      # should be set in the Render Dashboard, not committed here.
-      - key: CORS_ALLOWED_ORIGINS 
-        value: "http://localhost:3000,https://hnv-saas-frontend.onrender.com,https://www.hnvpm.com,https://hnvpm.com,https://app.hnvpm.com"
-
-  - type: static
-    name: hnv-saas-frontend
-    repo: https://github.com/Zaad1704/HNV1
-    branch: main
-    # Build commands are now run from the project root
-    buildCommand: |
-      npm install
-      npm run build --workspace=frontend
-    # The publish path is now explicitly set from the root
+    name: hnv-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: hnv-backend
+    env: node
+    plan: starter
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
     envVars:
-      - key: VITE_API_URL
-        # This value is derived from your backend service name in this file.
-        value: https://hnv-saas-backend.onrender.com/api
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromService:
+          type: pserv
+          name: hnv-mongodb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+
+  - type: pserv
+    name: hnv-mongodb
+    env: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile.mongo
+    disk:
+      name: mongodb-data
+      mountPath: /data/db
+      sizeGB: 1
