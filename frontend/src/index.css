@@ -76,6 +76,8 @@ body {
     -webkit-overflow-scrolling: touch;
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
+    /* Space for bottom nav bar */
+    padding-bottom: 5rem;
   }
   
   /* iOS Safari specific - prevent bounce */
@@ -288,6 +290,18 @@ input::placeholder, textarea::placeholder {
   
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Bottom nav bar always visible */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
   }
 }
 
