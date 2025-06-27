@@ -1,49 +1,3 @@
-import axios from 'axios';
-import { useAuthStore } from '../store/authStore';
-import { rateLimiter } from '../utils/security';
-
-// Get the API URL from environment or use production URL
-const getApiUrl = () => {
-  // Check if we're in development
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:5001/api';
-  }
-  // Use environment variable or fallback to production
-  const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-  return viteApiUrl || 'https://hnv.onrender.com/api';
-};
-
-const apiClient = axios.create({
-  baseURL: getApiUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    'X-Client-Version': '1.0.0',
-  },
-  timeout: 30000,
-  withCredentials: true,
-});
-
-// Request interceptor with security enhancements
-apiClient.interceptors.request.use((config) => {
-  // Rate limiting check
-  const url = config.url || '';
-  if (!rateLimiter.isAllowed(url, 30, 60000)) {
-    return Promise.reject(new Error('Rate limit exceeded'));
-  }
-
-  // Add auth token
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  // Add security headers
-  config.headers['X-Request-Time'] = Date.now().toString();
-  
-  return config;
-});
-
 // Response interceptor with enhanced error handling
 apiClient.interceptors.response.use(
   (response) => {
@@ -54,8 +8,14 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+      // FIX: Only redirect if the user is on a protected page
+      if (window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/admin')) {
+          useAuthStore.getState().logout();
+          window.location.href = '/login'; 
+      } else {
+          // For public pages, just clear the token to prevent repeated failed requests
+          useAuthStore.getState().logout();
+      }
     } else if (error.response?.status === 403) {
       console.error('Access forbidden');
     } else if (error.response?.status === 429) {
@@ -69,5 +29,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-export default apiClient;
