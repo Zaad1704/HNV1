@@ -23,7 +23,14 @@ const localeMap: { [key: string]: { lang: string; currency: string; name: string
     'PH': { lang: 'en', currency: 'PHP', name: '₱' },
     'VN': { lang: 'vi', currency: 'VND', name: '₫' },
     'KR': { lang: 'ko', currency: 'KRW', name: '₩' },
-    'JP': { lang: 'ja', currency: 'JPY', name: '¥' }
+    'JP': { lang: 'ja', currency: 'JPY', name: '¥' },
+    'SA': { lang: 'ar', currency: 'SAR', name: 'ر.س' },
+    'AE': { lang: 'ar', currency: 'AED', name: 'د.إ' },
+    'RU': { lang: 'ru', currency: 'RUB', name: '₽' },
+    'DE': { lang: 'de', currency: 'EUR', name: '€' },
+    'BR': { lang: 'pt', currency: 'BRL', name: 'R$' },
+    'IT': { lang: 'it', currency: 'EUR', name: '€' },
+    'TR': { lang: 'tr', currency: 'TRY', name: '₺' }
 };
 
 export const detectLocale = async (req: Request, res: Response) => {
@@ -32,16 +39,31 @@ export const detectLocale = async (req: Request, res: Response) => {
         const testIp = ip === '::1' ? '8.8.8.8' : ip;
 
         const geoResponse = await axios.get(`http://ip-api.com/json/${testIp}`);
-        const detectedCountry = geoResponse.data.countryCode;
+        const data = geoResponse.data;
 
-        if (detectedCountry && localeMap[detectedCountry]) {
-            res.status(200).json({
-                success: true,
-                countryCode: detectedCountry,
-                ...localeMap[detectedCountry]
-            });
+        if (data && data.status === 'success' && data.countryCode) {
+            const countryCode = data.countryCode;
+            const locale = localeMap[countryCode];
+            
+            if (locale) {
+                res.json({
+                    success: true,
+                    countryCode,
+                    lang: locale.lang,
+                    currency: locale.currency,
+                    name: locale.name
+                });
+            } else {
+                res.json({
+                    success: true,
+                    countryCode: 'US',
+                    lang: 'en',
+                    currency: 'USD',
+                    name: '$'
+                });
+            }
         } else {
-            res.status(200).json({
+            res.json({
                 success: true,
                 countryCode: 'US',
                 lang: 'en',
@@ -51,13 +73,12 @@ export const detectLocale = async (req: Request, res: Response) => {
         }
     } catch (error) {
         console.error("IP detection failed:", error);
-        res.status(500).json({
-            success: false,
+        res.json({
+            success: true,
             countryCode: 'US',
             lang: 'en',
             currency: 'USD',
-            name: '$',
-            message: 'IP detection failed, defaulting to English.'
+            name: '$'
         });
     }
 };
