@@ -1,4 +1,3 @@
-// backend/controllers/authController.ts
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
@@ -43,65 +42,54 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       }
       return res.status(400).json({ success: false, message: 'User with that email already exists' });
     }
-
+    
     const trialPlan = await Plan.findOne({ name: 'Free Trial' });
     if (!trialPlan) {
         return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
     }
+    
+    const organization = new Organization({ name: `${name}'s Organization`, members: [] });
+    
+    const user = new User({ 
+        name, 
+        email, 
+        password, 
+        role, 
+        organizationId: organization._id,
+        isEmailVerified: false // User starts as unverified
+    });
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
+    // This method now exists on the user object
+    const verificationToken = user.getEmailVerificationToken();
+    
+    organization.owner = user._id as Types.ObjectId; 
+    organization.members.push(user._id as Types.ObjectId); 
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 7);
+    const subscription = new Subscription({
+        organizationId: organization._id as Types.ObjectId, 
+        planId: trialPlan._id as Types.ObjectId, 
+        status: 'trialing',
+        trialExpiresAt: trialEndDate,
+    });
+    organization.subscription = subscription._id as Types.ObjectId; 
+    
+    await organization.save();
+    await user.save({ validateBeforeSave: false }); // Save user with verification token
+    await subscription.save();
+    
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
     try {
-        const organization = new Organization({ name: `${name}'s Organization`, members: [] });
-
-        const user = new User({
-            name,
-            email,
-            password,
-            role,
-            organizationId: organization._id,
-            isEmailVerified: false // User starts as unverified
-        });
-
-        const verificationToken = user.getEmailVerificationToken();
-
-        organization.owner = user._id as Types.ObjectId;
-        organization.members.push(user._id as Types.ObjectId);
-        const trialEndDate = new Date();
-        trialEndDate.setDate(trialEndDate.getDate() + 7);
-        const subscription = new Subscription({
-            organizationId: organization._id as Types.ObjectId,
-            planId: trialPlan._id as Types.ObjectId,
-            status: 'trialing',
-            trialExpiresAt: trialEndDate,
-        });
-        organization.subscription = subscription._id as Types.ObjectId;
-
-        await organization.save({ session });
-        await user.save({ validateBeforeSave: false, session }); // Save user with verification token
-        await subscription.save({ session });
-
-        await session.commitTransaction();
-
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
         await emailService.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', {
             userName: user.name,
             verificationUrl: verificationUrl
         });
         res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
-    } catch (error: unknown) {
-        await session.abortTransaction();
-        console.error("Registration failed:", error);
-        // Check if it was an email error after the transaction
-        if (error instanceof Error && error.message.includes('Failed to send')) { 
-            return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
-        }
-        res.status(500).json({ success: false, message: 'Server Error during registration.' });
-    } finally {
-        session.endSession();
+    } catch (emailError) {
+        console.error("Failed to send verification email:", emailError);
+        return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
     }
-  } catch (error: unknown) {
+  } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
