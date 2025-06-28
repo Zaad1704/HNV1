@@ -40,12 +40,12 @@ const HeroSection = () => {
                 className="w-16 h-16 object-contain"
               />
               <div className="text-2xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
-                {settings?.logos?.companyName || 'HNV Property Management'}
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
               </div>
             </div>
             <div className="gradient-dark-orange-blue rounded-3xl p-8 mb-8 shadow-app-xl border border-white/20">
               <h1 className="text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-                {settings?.logos?.companyName || 'HNV Property Management'}
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
               </h1>
               <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
                 Modern Property Management
@@ -130,7 +130,7 @@ const HeroSection = () => {
                 className="w-12 h-12 object-contain"
               />
               <div className="text-xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
-                {settings?.logos?.companyName || 'HNV'}
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
               </div>
             </div>
             
