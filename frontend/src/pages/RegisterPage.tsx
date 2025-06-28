@@ -35,21 +35,25 @@ const RegisterPage: React.FC = () => {
     setError('');
     
     try {
-      await apiClient.post('/auth/register', {
+      const response = await apiClient.post('/auth/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role
       });
+      console.log('Registration response:', response.data);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed.');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = `${apiClient.defaults.baseURL}/auth/google?role=${formData.role}`;
+    const baseURL = apiClient.defaults.baseURL;
+    window.location.href = `${baseURL}/auth/google?signup=true&role=${formData.role}`;
   };
 
   if (success) {

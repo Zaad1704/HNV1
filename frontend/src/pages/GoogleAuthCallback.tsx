@@ -26,13 +26,24 @@ const GoogleAuthCallback = () => {
 
       if (token) {
         try {
-          // Fetch user data with the token
+          // Store token temporarily and fetch user data
           const response = await apiClient.get('/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
           
+          console.log('Google auth user data:', response.data);
+          
+          let userData;
+          if (response.data.success && response.data.data) {
+            userData = response.data.data;
+          } else if (response.data.user) {
+            userData = response.data.user;
+          } else {
+            userData = response.data;
+          }
+          
           // Use the login method from auth store
-          login(token, response.data.data);
+          login(token, userData);
           
           setStatus('success');
           setMessage('Login successful! Redirecting to dashboard...');

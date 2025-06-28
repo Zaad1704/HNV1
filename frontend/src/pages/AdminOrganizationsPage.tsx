@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import apiClient from '../api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShieldCheck, ShieldOff, CheckCircle, XCircle, Settings, Trash2 } from 'lucide-react';
+import { ShieldCheck, ShieldOff, CheckCircle, XCircle, Settings, Trash2, Crown, CrownIcon, Shield } from 'lucide-react';
 
 interface IOrganization { _id: string; name: string; owner: { name: string; email: string; }; status: 'active' | 'inactive' | 'pending_deletion'; subscription?: { _id: string; planId?: { name: string; _id: string; price: number; duration: string; }; status: 'trialing' | 'active' | 'inactive' | 'canceled' | 'past_due'; isLifetime: boolean; currentPeriodEndsAt?: string; }; allowSelfDeletion?: boolean; }
 interface IPlan { _id: string; name: string; price: number; duration: 'daily' | 'weekly' | 'monthly' | 'yearly'; }
@@ -25,6 +25,20 @@ const AdminOrganizationsPage = () => {
         mutationFn: (orgId: string) => apiClient.delete(`/super-admin/organizations/${orgId}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to delete organization.'),
+    });
+
+    const toggleStatusMutation = useMutation({
+        mutationFn: ({ orgId, action }: { orgId: string; action: 'activate' | 'deactivate' }) => 
+            apiClient.patch(`/super-admin/organizations/${orgId}/${action}`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
+        onError: (err: any) => alert(err.response?.data?.message || 'Failed to update organization status.'),
+    });
+
+    const lifetimeMutation = useMutation({
+        mutationFn: ({ orgId, action }: { orgId: string; action: 'grant-lifetime' | 'revoke-lifetime' }) => 
+            apiClient.patch(`/super-admin/organizations/${orgId}/${action}`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
+        onError: (err: any) => alert(err.response?.data?.message || 'Failed to update lifetime access.'),
     });
 
     const handleDeleteOrg = (orgId: string, orgName: string) => {
@@ -69,7 +83,50 @@ const AdminOrganizationsPage = () => {
                                 </td>
                                 <td className="p-4 text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                        <button onClick={() => handleDeleteOrg(org._id, org.name)} className="p-2 rounded-md text-brand-orange hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/50" title="Delete Organization Permanently"><Trash2 size={16}/></button>
+                                        {org.subscription?.status === 'active' ? (
+                                            <button 
+                                                onClick={() => toggleStatusMutation.mutate({ orgId: org._id, action: 'deactivate' })}
+                                                className="p-2 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" 
+                                                title="Deactivate"
+                                            >
+                                                <XCircle size={16}/>
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => toggleStatusMutation.mutate({ orgId: org._id, action: 'activate' })}
+                                                className="p-2 rounded-md text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" 
+                                                title="Activate"
+                                            >
+                                                <CheckCircle size={16}/>
+                                            </button>
+                                        )}
+                                        {org.subscription?.isLifetime ? (
+                                            <button 
+                                                onClick={() => lifetimeMutation.mutate({ orgId: org._id, action: 'revoke-lifetime' })}
+                                                className="p-2 rounded-md text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" 
+                                                title="Revoke Lifetime"
+                                            >
+                                                <ShieldOff size={16}/>
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => lifetimeMutation.mutate({ orgId: org._id, action: 'grant-lifetime' })}
+                                                className="p-2 rounded-md text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors" 
+                                                title="Grant Lifetime"
+                                            >
+                                                <Crown size={16}/>
+                                            </button>
+                                        )}
+                                        <button className="p-2 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Manage Subscription">
+                                            <Settings size={16}/>
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteOrg(org._id, org.name)} 
+                                            className="p-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" 
+                                            title="Delete Organization Permanently"
+                                        >
+                                            <Trash2 size={16}/>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

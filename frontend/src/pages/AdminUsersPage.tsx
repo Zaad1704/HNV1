@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from "react";
 import apiClient from "../api/client";
-import { useQuery } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2, Eye, X } from 'lucide-react';
 
-type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; }; };
+type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; };
 
 const AdminUsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: users = [], isLoading, isError } = useQuery({
     queryKey: ['allAdminUsers'],
@@ -15,6 +17,21 @@ const AdminUsersPage: React.FC = () => {
         return response.data.data;
     }
   });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: string) => apiClient.delete(`/super-admin/users/${userId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
+      setSelectedUser(null);
+    },
+    onError: (err: any) => alert(err.response?.data?.message || 'Failed to delete user.'),
+  });
+
+  const handleDeleteUser = (user: User) => {
+    if (window.confirm(`Are you sure you want to delete user "${user.name}" (${user.email})? This action cannot be undone.`)) {
+      deleteUserMutation.mutate(user._id);
+    }
+  };
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
@@ -45,6 +62,7 @@ const AdminUsersPage: React.FC = () => {
               <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Email</th>
               <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Role</th>
               <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Organization</th>
+              <th className="text-right p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
@@ -54,11 +72,94 @@ const AdminUsersPage: React.FC = () => {
                 <td className="p-4 text-light-text dark:text-light-text-dark">{user.email}</td>
                 <td className="p-4 text-light-text dark:text-light-text-dark">{user.role}</td>
                 <td className="p-4 text-light-text dark:text-light-text-dark">{user.organizationId?.name || 'N/A'}</td>
+                <td className="p-4 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button 
+                      onClick={() => setSelectedUser(user)}
+                      className="p-2 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" 
+                      title="View Details"
+                    >
+                      <Eye size={16}/>
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteUser(user)}
+                      className="p-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" 
+                      title="Delete User"
+                    >
+                      <Trash2 size={16}/>
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">User Details</h3>
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
+                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.name}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
+                <p className="text-gray-900 dark:text-white">{selectedUser.email}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</label>
+                <p className="text-gray-900 dark:text-white">{selectedUser.role}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</label>
+                <p className="text-gray-900 dark:text-white">{selectedUser.organizationId?.name || 'No Organization'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email Verified</label>
+                <p className="text-gray-900 dark:text-white">{selectedUser.isEmailVerified ? 'Yes' : 'No'}</p>
+              </div>
+              {selectedUser.createdAt && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</label>
+                  <p className="text-gray-900 dark:text-white">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                </div>
+              )}
+              {selectedUser.lastLogin && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Login</label>
+                  <p className="text-gray-900 dark:text-white">{new Date(selectedUser.lastLogin).toLocaleDateString()}</p>
+                </div>
+              )}
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button 
+                onClick={() => handleDeleteUser(selectedUser)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete User
+              </button>
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

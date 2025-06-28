@@ -9,6 +9,7 @@ import QuickActions from '../components/dashboard/QuickActions';
 import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
+import { useAuthStore } from '../store/authStore';
 import { IExpiringLease } from '../hooks/useExpiringLeases';
 import { motion } from 'framer-motion';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -93,6 +94,7 @@ const StatCard = ({
 const OverviewPage = () => {
   const { t } = useTranslation();
   const { currencyName } = useLang();
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
   
@@ -197,13 +199,22 @@ const OverviewPage = () => {
         }}
       >
       {/* Welcome Section */}
-      <div className="app-gradient rounded-3xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">
-          {t('common.welcome_back_user', { name: stats?.userName || 'User' })}
-        </h1>
-        <p className="text-white/80">
-          {t('common.happening_today')}
-        </p>
+      <div className="app-gradient rounded-3xl p-8 text-white relative overflow-hidden">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome back, {user?.name}!
+            {user?.organizationId?.name && (
+              <span className="block text-xl font-normal text-white/90 mt-1">
+                to {user.organizationId.name}
+              </span>
+            )}
+          </h1>
+          <p className="text-white/80">
+            Here's what's happening with your properties today.
+          </p>
+        </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
       </div>
 
       {/* Stats Grid */}

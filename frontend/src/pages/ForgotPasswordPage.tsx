@@ -16,10 +16,12 @@ const ForgotPasswordPage: React.FC = () => {
     setError('');
 
     try {
-      await apiClient.post('/password-reset/forgot', { email });
+      const response = await apiClient.post('/auth/forgot-password', { email });
+      console.log('Forgot password response:', response.data);
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to send reset email.');
+      console.error('Forgot password error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }

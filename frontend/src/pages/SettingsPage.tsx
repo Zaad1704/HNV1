@@ -2,24 +2,28 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import { User, Mail, Lock, Save, Bell, Globe, Palette } from 'lucide-react';
+import { User, Mail, Lock, Save, Bell, Globe, Palette, Trash2, Download } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLang } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const SettingsPage = () => {
   const { user, setUser } = useAuthStore();
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, getNextToggleLanguage } = useLang();
+  const { currency, currencyCode } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
+    organizationName: user?.organizationId?.name || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,10 +35,15 @@ const SettingsPage = () => {
     setMessage('');
 
     try {
-      const updateData: any = {
-        name: formData.name,
-        email: formData.email
-      };
+      const updateData = new FormData();
+      updateData.append('name', formData.name);
+      updateData.append('email', formData.email);
+      if (formData.organizationName) {
+        updateData.append('organizationName', formData.organizationName);
+      }
+      if (profileImage) {
+        updateData.append('profileImage', profileImage);
+      }
 
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
@@ -42,11 +51,11 @@ const SettingsPage = () => {
           setLoading(false);
           return;
         }
-        updateData.currentPassword = formData.currentPassword;
-        updateData.newPassword = formData.newPassword;
+        updateData.append('currentPassword', formData.currentPassword);
+        updateData.append('newPassword', formData.newPassword);
       }
 
-      const { data } = await apiClient.put('/auth/profile', updateData);
+      const { data } = await apiClient.patch('/auth/profile', updateData);
       setUser(data.data);
       setMessage('Profile updated successfully!');
       
@@ -119,6 +128,32 @@ const SettingsPage = () => {
                   className="w-full"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Organization Name
+              </label>
+              <input
+                type="text"
+                name="organizationName"
+                value={formData.organizationName}
+                onChange={handleChange}
+                placeholder="Enter organization name"
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Profile Picture / Logo
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
+                className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+              />
             </div>
 
             <hr className="border-app-border" />
@@ -229,6 +264,26 @@ const SettingsPage = () => {
                 <input type="checkbox" className="rounded" />
               </label>
             </div>
+          </div>
+
+          <div className="app-surface rounded-3xl p-6 border border-red-200 dark:border-red-800">
+            <h3 className="font-semibold text-red-600 mb-4 flex items-center gap-2">
+              <Trash2 size={20} />
+              Danger Zone
+            </h3>
+            <div className="space-y-3">
+              <button className="w-full flex items-center justify-center gap-2 p-3 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 rounded-xl hover:bg-yellow-200 dark:hover:bg-yellow-900/40 transition-colors">
+                <Download size={16} />
+                Download All Data
+              </button>
+              <button className="w-full flex items-center justify-center gap-2 p-3 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors">
+                <Trash2 size={16} />
+                Delete Account
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Account deletion is permanent and cannot be undone. Download your data first.
+            </p>
           </div>
         </div>
       </div>
