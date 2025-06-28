@@ -8,11 +8,10 @@ const PublicLayout = () => {
   return (
     <div className="min-h-screen bg-app-bg">
       <Navbar />
-      <main className="pb-24 md:pb-0">
+      <main>
         <Outlet />
       </main>
       <Footer />
-      <PublicBottomNavBar />
     </div>
   );
 };
