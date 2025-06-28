@@ -55,7 +55,7 @@ const SettingsPage = () => {
         updateData.append('newPassword', formData.newPassword);
       }
 
-      const { data } = await apiClient.patch('/auth/profile', updateData);
+      const { data } = await apiClient.put('/auth/profile', updateData);
       setUser(data.data);
       setMessage('Profile updated successfully!');
       
