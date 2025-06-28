@@ -7,7 +7,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { useSecurityHeaders } from './hooks/useSecurityHeaders';
 import App from './App';
-import './i18n';
+import './i18n-simple.ts';
 import './index.css';
 
 const SecureApp = () => {
