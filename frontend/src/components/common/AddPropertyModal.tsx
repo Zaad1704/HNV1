@@ -30,7 +30,7 @@ const AddPropertyModal = ({
     mutationFn: (propertyData: FormData) => apiClient.post('/properties', propertyData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       onPropertyAdded(response.data.data);
       onClose();
       // Reset form

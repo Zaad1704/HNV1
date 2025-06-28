@@ -69,39 +69,41 @@ const PublicBottomNavBar = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 app-surface border-t border-app-border backdrop-blur-md shadow-app-xl safe-area-bottom">
-      <div className="grid grid-cols-5 h-20">
-        {navItems.map((item) => {
-          const IconComponent = item.icon;
-          
-          if (item.link) {
-            return (
-              <Link
-                key={item.id}
-                to={item.link}
-                className={`flex flex-col items-center justify-center transition-all duration-300 ${
-                  item.isHighlighted 
-                    ? 'app-gradient text-white rounded-t-3xl mx-2 mt-2 shadow-app-lg' 
-                    : 'text-text-secondary hover:text-text-primary active:scale-95'
-                }`}
-              >
-                <IconComponent size={20} />
-                <span className="text-xs font-medium mt-1">{item.label}</span>
-              </Link>
-            );
-          }
+    <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-2">
+        <div className="grid grid-cols-5 gap-1">
+          {navItems.map((item) => {
+            const IconComponent = item.icon;
+            
+            if (item.link) {
+              return (
+                <Link
+                  key={item.id}
+                  to={item.link}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 ${
+                    item.isHighlighted 
+                      ? 'bg-gradient-to-r from-orange-500 to-blue-600 text-white shadow-lg transform scale-105' 
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95'
+                  }`}
+                >
+                  <IconComponent size={18} />
+                  <span className="text-xs font-medium mt-1">{item.label}</span>
+                </Link>
+              );
+            }
 
-          return (
-            <button
-              key={item.id}
-              onClick={item.action}
-              className="flex flex-col items-center justify-center text-text-secondary hover:text-text-primary transition-all duration-300 active:scale-95"
-            >
-              <IconComponent size={20} />
-              <span className="text-xs font-medium mt-1">{item.label}</span>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={item.id}
+                onClick={item.action}
+                className="flex flex-col items-center justify-center p-3 rounded-xl text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 active:scale-95"
+              >
+                <IconComponent size={18} />
+                <span className="text-xs font-medium mt-1">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

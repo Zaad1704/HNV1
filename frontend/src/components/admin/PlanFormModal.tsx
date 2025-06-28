@@ -120,8 +120,14 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({ isOpen, onClose, onSave, 
                     onChange={handleChange}
                     className="w-full"
                   >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
+                    <option value="2-years">2 Years</option>
+                    <option value="3-years">3 Years</option>
+                    <option value="5-years">5 Years</option>
+                    <option value="lifetime">Lifetime</option>
                   </select>
                 </div>
               </div>
