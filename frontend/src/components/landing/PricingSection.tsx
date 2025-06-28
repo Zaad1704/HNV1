@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 import { useCurrencyRates, convertPrice, formatCurrency } from '../../services/currencyService';
-import { useLang } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
 interface Plan {
   _id: string;
@@ -23,7 +23,7 @@ const fetchPlans = async (): Promise<Plan[]> => {
 };
 
 const PricingSection = () => {
-  const { currencyCode } = useLang();
+  const { currencyCode } = useCurrency();
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['publicPlans'],
     queryFn: fetchPlans

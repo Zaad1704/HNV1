@@ -75,7 +75,6 @@ const CashFlowPage: React.FC = () => {
             <RecordCashFlowModal
                 isOpen={isRecordModalOpen}
                 onClose={() => setIsRecordModalOpen(false)}
-                onRecordCreated={() => refetch()}
             />
             {itemToRequest && (
                  <RequestEditModal

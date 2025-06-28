@@ -42,4 +42,10 @@ export interface ISiteSettings {
     addresses?: string[];
   };
   featuresPage?: IFeaturesPage;
+  bannerSection?: {
+    imageUrl?: string;
+    altText?: string;
+    overlayText?: string;
+    overlaySubtext?: string;
+  };
 }

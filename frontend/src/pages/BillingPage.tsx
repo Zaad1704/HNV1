@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { CheckCircle, CreditCard } from 'lucide-react';
+import { CheckCircle, CreditCard, Settings, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const fetchBillingInfo = async () => {
