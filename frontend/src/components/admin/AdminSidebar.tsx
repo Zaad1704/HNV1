@@ -16,8 +16,8 @@ const AdminSidebar: React.FC = () => {
     const getLinkClass = (path: string) => {
         const base = 'flex items-center gap-3 px-4 py-2.5 rounded-lg font-semibold transition-colors duration-150';
         return location.pathname.startsWith(path)
-          ? `${base} bg-brand-primary text-white`
-          : `${base} text-light-text dark:text-light-text-dark hover:bg-light-bg dark:hover:bg-dark-bg/20`; // Adjusted hover color
+          ? `${base} bg-gradient-to-r from-orange-500 to-blue-600 text-white`
+          : `${base} text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700`;
     };
 
     return (

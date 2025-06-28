@@ -1,36 +1,83 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+const getLanguageFromCountry = (countryCode: string): string => {
+  const countryLanguageMap: Record<string, string> = {
+    'BD': 'bn',
+    'IN': 'hi', 
+    'CN': 'zh',
+    'JP': 'ja',
+    'ES': 'es',
+    'MX': 'es',
+    'AR': 'es',
+    'FR': 'fr',
+    'DE': 'de',
+    'BR': 'pt',
+    'SA': 'ar',
+    'AE': 'ar',
+    'EG': 'ar'
+  };
+  
+  return countryLanguageMap[countryCode] || 'en';
+};
+
 interface LanguageContextType {
   lang: string;
+  detectedLang: string;
   setLang: (lang: string) => void;
-  currencyName: string;
-  currencyCode: string;
-  getNextToggleLanguage: () => { code: string; name: string; currency: string; currencyCode: string };
+  toggleLanguage: () => void;
+  getNextToggleLanguage: () => { code: string; name: string };
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const languages = [
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', currency: '$', currencyCode: 'USD' },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩', currency: '৳', currencyCode: 'BDT' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', currency: '€', currencyCode: 'EUR' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', currency: '€', currencyCode: 'EUR' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', currency: '€', currencyCode: 'EUR' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵', currency: '¥', currencyCode: 'JPY' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳', currency: '¥', currencyCode: 'CNY' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', currency: '₹', currencyCode: 'INR' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', currency: '$', currencyCode: 'USD' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷', currency: 'R$', currencyCode: 'BRL' }
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' }
 ];
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState(() => {
-    return localStorage.getItem('language') || 'en';
-  });
+  const [lang, setLang] = useState('en');
+  const [detectedLang, setDetectedLang] = useState('en');
   const { i18n } = useTranslation();
   
-  const currentLang = languages.find(l => l.code === lang) || languages[0];
+  useEffect(() => {
+    const initLanguage = async () => {
+      try {
+        const savedLang = localStorage.getItem('language');
+        if (savedLang) {
+          setLang(savedLang);
+          i18n.changeLanguage(savedLang);
+          return;
+        }
+
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        const countryCode = data.country_code || 'US';
+        const detected = getLanguageFromCountry(countryCode);
+        setDetectedLang(detected);
+        
+        const initialLang = detected === 'en' ? 'en' : detected;
+        setLang(initialLang);
+        i18n.changeLanguage(initialLang);
+        localStorage.setItem('language', initialLang);
+      } catch {
+        setLang('en');
+        setDetectedLang('en');
+        i18n.changeLanguage('en');
+        localStorage.setItem('language', 'en');
+      }
+    };
+    initLanguage();
+  }, [i18n]);
   
   const handleSetLang = (newLang: string) => {
     setLang(newLang);
@@ -38,10 +85,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     i18n.changeLanguage(newLang);
   };
   
+  const toggleLanguage = () => {
+    const newLang = lang === 'en' ? detectedLang : 'en';
+    handleSetLang(newLang);
+  };
+  
   const getNextToggleLanguage = () => {
-    const currentIndex = languages.findIndex(l => l.code === lang);
-    const nextIndex = (currentIndex + 1) % languages.length;
-    return languages[nextIndex];
+    return lang === 'en' 
+      ? languages.find(l => l.code === detectedLang) || languages[0]
+      : languages[0];
   };
 
   useEffect(() => {
@@ -51,9 +103,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <LanguageContext.Provider value={{
       lang,
+      detectedLang,
       setLang: handleSetLang,
-      currencyName: currentLang.currency,
-      currencyCode: currentLang.currencyCode,
+      toggleLanguage,
       getNextToggleLanguage
     }}>
       {children}

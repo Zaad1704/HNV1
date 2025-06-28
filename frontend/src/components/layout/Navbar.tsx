@@ -68,7 +68,7 @@ const Navbar = () => {
               className="h-10 w-10 rounded-xl object-contain shadow-lg" 
             />
             <span className="text-center drop-shadow-lg">
-              {settings?.logos?.companyName || 'HNV Solutions'}
+              {settings?.logos?.companyName || 'HNV Property Management Solutions'}
             </span>
           </Link>
 
@@ -139,7 +139,7 @@ const Navbar = () => {
                 />
                 <div>
                   <h2 className="text-lg font-bold text-text-primary">
-                    {settings?.logos?.companyName || 'HNV Solutions'}
+                    {settings?.logos?.companyName || 'HNV Property Management Solutions'}
                   </h2>
                   <p className="text-sm text-text-secondary">Property Management</p>
                 </div>

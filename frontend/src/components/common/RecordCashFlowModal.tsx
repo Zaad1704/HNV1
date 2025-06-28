@@ -1,193 +1,269 @@
-// frontend/src/components/common/RecordCashFlowModal.tsx
-
 import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, UploadCloud } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore'; // To get user info (e.g., if needed to filter recipients)
+import { DollarSign, Upload, X } from 'lucide-react';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
-// Define interfaces for data
-interface UserOption {
-    _id: string;
-    name: string;
-    email: string;
-    role: string;
+interface CashFlowData {
+  type: 'handover' | 'deposit';
+  amount: number;
+  description: string;
+  date: string;
+  bankName?: string;
+  accountNumber?: string;
+  transactionId?: string;
+  handedOverTo?: string;
+  receivedBy?: string;
+  documentation?: File;
 }
 
-interface CashFlowFormData {
-    toUser: string;
-    amount: string;
-    type: 'cash_handover' | 'bank_deposit';
-    transactionDate: string;
-    description: string;
-    status: 'pending' | 'completed';
-}
+const RecordCashFlowModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const queryClient = useQueryClient();
+  const { currency } = useCurrency();
+  const [formData, setFormData] = useState<CashFlowData>({
+    type: 'handover',
+    amount: 0,
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+  });
+  const [documentation, setDocumentation] = useState<File | null>(null);
 
-interface RecordCashFlowModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onRecordCreated: () => void; // Callback to refetch list after creation
-}
-
-const fetchLandlords = async (): Promise<UserOption[]> => {
-    // Assuming an endpoint to fetch landlords within the organization
-    // This might be /users/organization and then filter by role, or a specific endpoint
-    const { data } = await apiClient.get('/users/organization'); // Or a more specific endpoint for landlords
-    return data.data.filter((user: UserOption) => user.role === 'Landlord');
-};
-
-const createCashFlowRecord = async (formData: FormData) => {
-    const { data } = await apiClient.post('/cashflow', formData);
-    return data.data;
-};
-
-const RecordCashFlowModal: React.FC<RecordCashFlowModalProps> = ({ isOpen, onClose, onRecordCreated }) => {
-    const { user } = useAuthStore();
-    const queryClient = useQueryClient();
-    const [formData, setFormData] = useState<CashFlowFormData>({
-        toUser: '', // Recipient user ID (Landlord)
-        amount: '',
-        type: 'cash_handover', // Default to cash handover
-        transactionDate: new Date().toISOString().split('T')[0], //YYYY-MM-DD
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await apiClient.post('/cashflow/record', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cashflow'] });
+      queryClient.invalidateQueries({ queryKey: ['auditLog'] });
+      onClose();
+      setFormData({
+        type: 'handover',
+        amount: 0,
         description: '',
-        status: 'pending',
+        date: new Date().toISOString().split('T')[0],
+      });
+      setDocumentation(null);
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const submitData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        submitData.append(key, value.toString());
+      }
     });
-    const [documentFile, setDocumentFile] = useState<File | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    
+    if (documentation) {
+      submitData.append('documentation', documentation);
+    }
+    
+    mutation.mutate(submitData);
+  };
 
-    // Fetch landlords for the 'toUser' dropdown if type is cash_handover
-    const { data: landlords, isLoading: isLoadingLandlords } = useQuery({
-        queryKey: ['landlordsForCashFlow'],
-        queryFn: fetchLandlords,
-        enabled: isOpen && formData.type === 'cash_handover', // Only fetch if modal open and type is handover
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    const mutation = useMutation({
-        mutationFn: createCashFlowRecord,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['cashFlowRecords'] }); // Invalidate the records query
-            onRecordCreated(); // Trigger parent's callback
-            onClose();
-        },
-        onError: (err: any) => {
-            setError(err.response?.data?.message || 'Failed to record cash flow.');
-        }
-    });
+  if (!isOpen) return null;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setDocumentFile(e.target.files[0]);
-        } else {
-            setDocumentFile(null);
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        const submissionForm = new FormData();
-        submissionForm.append('amount', formData.amount);
-        submissionForm.append('type', formData.type);
-        submissionForm.append('transactionDate', formData.transactionDate);
-        submissionForm.append('description', formData.description);
-        submissionForm.append('status', formData.status);
-
-        if (formData.type === 'cash_handover' && formData.toUser) {
-            submissionForm.append('toUser', formData.toUser);
-        } else if (formData.type === 'cash_handover' && !formData.toUser) {
-            setError('Please select a recipient for cash handover.');
-            return;
-        }
-
-        if (documentFile) {
-            submissionForm.append('document', documentFile); // 'document' must match Multer field name in backend route
-        }
-
-        mutation.mutate(submissionForm);
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4 transition-opacity duration-300">
-            <div className="bg-light-card dark:bg-dark-card rounded-xl shadow-xl w-full max-w-lg border border-border-color dark:border-border-color-dark transition-all duration-200">
-                <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
-                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">Record Cash Flow</h2>
-                    <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark transition-colors"><X size={24} /></button>
-                </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
-                    {error && <div className="bg-red-500/20 text-red-700 p-3 rounded-lg transition-all duration-200">{error}</div>}
-
-                    {/* Type of Transaction */}
-                    <div>
-                        <label htmlFor="type" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Transaction Type</label>
-                        <select name="type" id="type" value={formData.type} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" required>
-                            <option value="cash_handover">Cash Handover to Landlord</option>
-                            <option value="bank_deposit">Bank Deposit</option>
-                        </select>
-                    </div>
-
-                    {/* Recipient for Cash Handover */}
-                    {formData.type === 'cash_handover' && (
-                        <div>
-                            <label htmlFor="toUser" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Recipient (Landlord)</label>
-                            <select name="toUser" id="toUser" value={formData.toUser} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" required={formData.type === 'cash_handover'}>
-                                <option value="">{isLoadingLandlords ? 'Loading Landlords...' : 'Select Landlord'}</option>
-                                {landlords?.map((landlord) => (
-                                    <option key={landlord._id} value={landlord._id}>{landlord.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
-                    {/* Amount */}
-                    <div>
-                        <label htmlFor="amount" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Amount ($)</label>
-                        <input type="number" step="0.01" name="amount" id="amount" value={formData.amount} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" required/>
-                    </div>
-
-                    {/* Transaction Date */}
-                    <div>
-                        <label htmlFor="transactionDate" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Transaction Date</label>
-                        <input type="date" name="transactionDate" id="transactionDate" value={formData.transactionDate} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" required/>
-                    </div>
-
-                    {/* Description (Optional) */}
-                    <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Description (Optional)</label>
-                        <textarea name="description" id="description" rows={3} value={formData.description} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200"></textarea>
-                    </div>
-
-                    {/* Status */}
-                    <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Status</label>
-                        <select name="status" id="status" value={formData.status} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-light-bg dark:bg-dark-bg border-border-color dark:border-border-color-dark rounded-md text-dark-text dark:text-dark-text-dark focus:ring-brand-primary focus:border-brand-primary transition-all duration-200" required>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                    </div>
-
-                    {/* Document Upload */}
-                    <div>
-                        <label htmlFor="document" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Attach Document/Proof (Optional)</label>
-                        <input type="file" name="document" id="document" onChange={handleFileChange} className="mt-1 block w-full text-sm text-light-text dark:text-light-text-dark file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-light-bg dark:file:bg-dark-bg file:text-light-text dark:file:text-light-text-dark hover:file:bg-border-color dark:hover:file:bg-border-color-dark transition-all duration-200"/>
-                    </div>
-
-                    <div className="flex justify-end space-x-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-5 py-2 bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">Cancel</button>
-                        <button type="submit" disabled={mutation.isLoading} className="px-5 py-2 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary disabled:opacity-50 flex items-center justify-center gap-2 transition-colors duration-200">
-                            <UploadCloud size={16} /> {mutation.isLoading ? 'Recording...' : 'Record Transaction'}
-                        </button>
-                    </div>
-                </form>
-            </div>
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <DollarSign size={24} />
+              Record Cash Flow
+            </h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X size={24} />
+            </button>
+          </div>
         </div>
-    );
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Transaction Type
+              </label>
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="handover">Cash Handover</option>
+                <option value="deposit">Bank Deposit</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Amount ({currency})
+              </label>
+              <input
+                type="number"
+                name="amount"
+                value={formData.amount}
+                onChange={handleChange}
+                step="0.01"
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Date
+            </label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="Describe the transaction..."
+              required
+            />
+          </div>
+
+          {formData.type === 'deposit' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Account Number
+                </label>
+                <input
+                  type="text"
+                  name="accountNumber"
+                  value={formData.accountNumber || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Transaction ID
+                </label>
+                <input
+                  type="text"
+                  name="transactionId"
+                  value={formData.transactionId || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {formData.type === 'handover' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Handed Over To
+                </label>
+                <input
+                  type="text"
+                  name="handedOverTo"
+                  value={formData.handedOverTo || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Received By
+                </label>
+                <input
+                  type="text"
+                  name="receivedBy"
+                  value={formData.receivedBy || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Documentation (Receipt/Image)
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                onChange={(e) => setDocumentation(e.target.files?.[0] || null)}
+                accept="image/*,.pdf"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+              <Upload size={20} className="text-gray-400" />
+            </div>
+          </div>
+        </form>
+        
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={mutation.isLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {mutation.isLoading ? 'Recording...' : 'Record Transaction'}
+          </button>
+        </div>
+        
+        <div className="px-6 pb-4 text-xs text-gray-500 text-center">
+          Powered by HNV Property Management Solutions
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default RecordCashFlowModal;
