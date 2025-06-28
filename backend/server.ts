@@ -41,6 +41,12 @@ import siteSettingsRoutes from './routes/siteSettingsRoutes';
 import sharingRoutes from './routes/sharingRoutes'; 
 import tenantPortalRoutes from './routes/tenantPortalRoutes'; 
 import uploadRoutes from './routes/uploadRoutes';
+import expenseRoutes from './routes/expenseRoutes';
+import translationRoutes from './routes/translationRoutes';
+import healthRoutes from './routes/healthRoutes';
+import { errorHandler, notFound } from './middleware/errorHandler';
+import { logger } from './services/logger';
+import compression from 'compression';
 
 dotenv.config();
 
@@ -81,8 +87,26 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
-// app.use(helmet()); // <--- COMMENT OUT THIS LINE AGAIN
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request logging
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url} - ${req.ip}`);
+  next();
+});
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+    },
+  },
+}));
 app.use(passport.initialize());
 
 // --- Mount API Routes ---
@@ -117,24 +141,19 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/site-settings', siteSettingsRoutes); 
 app.use('/api/sharing', sharingRoutes); 
 app.use('/api/tenant-portal', tenantPortalRoutes); 
-app.use('/api/upload', uploadRoutes); 
+app.use('/api/upload', uploadRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/translations', translationRoutes);
+app.use('/api/health', healthRoutes); 
 
 // A simple health-check route
 app.get('/', ((req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 }) as RequestHandler);
 
-// Custom 404 handler (MUST be placed AFTER all other routes)
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(404).json({
-    success: false,
-    message: `API endpoint not found for ${req.method} ${req.originalUrl}`,
-    code: 'ROUTE_NOT_FOUND'
-  });
-});
-
-// Global error handler (assuming you have one, e.g., in errorHandler.ts)
-// app.use(errorHandler); // Uncomment if you have a global error handler
+// Error handling middleware
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
