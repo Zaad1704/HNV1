@@ -10,67 +10,33 @@ export const usePerformanceMonitor = (componentName: string) => {
   useEffect(() => {
     const startTime = performance.now();
     
-    // Monitor component mount time
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       entries.forEach((entry) => {
-        if (entry.entryType === 'measure') {
-          console.log(`${componentName} - ${entry.name}: ${entry.duration}ms`);
+        if (entry.entryType === 'navigation') {
+          const navEntry = entry as PerformanceNavigationTiming;
+          const metrics: PerformanceMetrics = {
+            loadTime: navEntry.loadEventEnd - navEntry.loadEventStart,
+            renderTime: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+            memoryUsage: (performance as any).memory?.usedJSHeapSize
+          };
+          
+          console.log(`Performance metrics for ${componentName}:`, metrics);
+          
+          // Send to analytics service in production
+          if (import.meta.env.PROD) {
+            // sendToAnalytics(componentName, metrics);
+          }
         }
       });
     });
     
-    observer.observe({ entryTypes: ['measure'] });
-    
-    // Measure render time
-    const measureRender = () => {
-      const endTime = performance.now();
-      const renderTime = endTime - startTime;
-      
-      performance.mark(`${componentName}-render-end`);
-      performance.measure(
-        `${componentName}-render-time`,
-        `${componentName}-render-start`,
-        `${componentName}-render-end`
-      );
-      
-      // Log performance metrics
-      const metrics: PerformanceMetrics = {
-        loadTime: renderTime,
-        renderTime,
-        memoryUsage: (performance as any).memory?.usedJSHeapSize
-      };
-      
-      // Send to analytics (replace with your analytics service)
-      if (import.meta.env.PROD) {
-        // analytics.track('component_performance', {
-        //   component: componentName,
-        //   ...metrics
-        // });
-      }
-    };
-    
-    performance.mark(`${componentName}-render-start`);
-    
-    // Measure after component is fully rendered
-    const timeoutId = setTimeout(measureRender, 0);
+    observer.observe({ entryTypes: ['navigation', 'measure'] });
     
     return () => {
-      clearTimeout(timeoutId);
+      const endTime = performance.now();
+      console.log(`${componentName} render time: ${endTime - startTime}ms`);
       observer.disconnect();
     };
   }, [componentName]);
-  
-  // Web Vitals monitoring
-  useEffect(() => {
-    // Web Vitals monitoring (optional)
-    // Uncomment if web-vitals package is installed
-    // import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-    //   getCLS(console.log);
-    //   getFID(console.log);
-    //   getFCP(console.log);
-    //   getLCP(console.log);
-    //   getTTFB(console.log);
-    // });
-  }, []);
 };
