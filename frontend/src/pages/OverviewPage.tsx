@@ -9,6 +9,7 @@ import QuickActions from '../components/dashboard/QuickActions';
 import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import { useAuthStore } from '../store/authStore';
 import { IExpiringLease } from '../hooks/useExpiringLeases';
 import { motion } from 'framer-motion';
@@ -93,7 +94,7 @@ const StatCard = ({
 
 const OverviewPage = () => {
   const { t } = useTranslation();
-  const { currencyName } = useLang();
+  const { currency } = useCurrency();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
@@ -222,7 +223,7 @@ const OverviewPage = () => {
         <StatCard 
           delay={0.1} 
           title={t('dashboard.monthly_revenue')} 
-          value={`${currencyName}${stats?.monthlyRevenue?.toLocaleString() || 0}`} 
+          value={`${currency}${stats?.monthlyRevenue?.toLocaleString() || 0}`} 
           icon={<DollarSign size={24} />} 
           to="/dashboard/cashflow"
           trend={{ value: 12, isPositive: true }}

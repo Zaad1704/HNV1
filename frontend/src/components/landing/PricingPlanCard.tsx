@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
-import { useLang } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTranslation } from 'react-i18next';
 
 interface IPlan {
@@ -19,7 +19,7 @@ interface PricingPlanCardProps {
 }
 
 const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
-  const { currencyName } = useLang();
+  const { currency } = useCurrency();
   const { t } = useTranslation();
 
   const getPrice = (priceInCents: number) => {

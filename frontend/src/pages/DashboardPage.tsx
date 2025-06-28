@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useLang } from '../contexts/LanguageContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import { convertPrice, formatCurrency } from '../services/currencyService';
 import { useCurrencyRates } from '../services/currencyService';
 
@@ -36,7 +37,7 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 };
 
 const DashboardPage = () => {
-  const { currencyCode } = useLang();
+  const { currencyCode } = useCurrency();
   const { data: exchangeRates = {} } = useCurrencyRates();
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboardStats'],
