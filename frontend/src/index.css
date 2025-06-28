@@ -2,9 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area support for mobile */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Custom hexagon shape */
+.hexagon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  position: relative;
+  transform: rotate(45deg);
+  border-radius: 12px;
+}
+
+.hexagon::before,
+.hexagon::after {
+  content: '';
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  background: inherit;
+  border-radius: inherit;
+}
+
+.hexagon::before {
+  transform: rotate(30deg);
+}
+
+.hexagon::after {
+  transform: rotate(-30deg);
+}
+
+.hexagon-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  z-index: 1;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    font-size: 16px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  button, .btn, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  
+  input, textarea, select {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
 /* Root Variables */
 :root {
-  /* Brand Colors - Darker Orange-Blue Theme */
   --brand-blue: #1E3A8A;
   --brand-purple: #5B21B6;
   --brand-green: #059669;
@@ -12,13 +88,9 @@
   --brand-red: #DC2626;
   --brand-light-blue: #3B82F6;
   --brand-light-orange: #EA580C;
-
-  /* App Colors */
   --app-bg: #FAFBFC;
   --app-surface: #FFFFFF;
   --app-border: #E5E7EB;
-  
-  /* Text Colors */
   --text-primary: #111827;
   --text-secondary: #6B7280;
   --text-muted: #9CA3AF;
@@ -40,80 +112,17 @@
 
 html {
   scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--app-bg);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-/* Mobile Optimizations */
-@media (max-width: 768px) {
-  html {
-    height: 100%;
-    -webkit-text-size-adjust: 100%;
-  }
-  
-  body {
-    font-size: 16px; /* Prevent zoom on iOS */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    overscroll-behavior: contain;
-    /* iOS native app feel */
-    -webkit-overflow-scrolling: touch;
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    /* Space for bottom nav bar */
-    padding-bottom: 5rem;
-  }
-  
-  /* iOS Safari specific - prevent bounce */
-  #root {
-    position: relative;
-    min-height: 100vh;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  input, textarea, select {
-    font-size: 16px !important; /* Prevent zoom on focus */
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 12px;
-    /* iOS native input styling */
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-  }
-  
-  /* Pull to refresh */
-  .pull-to-refresh {
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Native app-like scroll */
-  .native-scroll {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-  
-  /* Touch feedback */
-  .touch-feedback:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
 }
 
 /* App Components */
@@ -141,7 +150,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Gradients - Orange-Blue Theme */
+/* Gradients */
 .app-gradient {
   background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-blue) 100%);
 }
@@ -166,23 +175,6 @@ body {
   box-shadow: 0 10px 25px rgba(74, 105, 226, 0.3);
 }
 
-.btn-gradient:active {
-  transform: translateY(0);
-}
-
-.btn-glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
 /* Shadows */
 .shadow-app {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -190,10 +182,6 @@ body {
 
 .shadow-app-lg {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.shadow-app-xl {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Form Elements */
@@ -214,142 +202,6 @@ input:focus, textarea:focus, select:focus {
 
 input::placeholder, textarea::placeholder {
   color: var(--text-muted);
-}
-
-/* Mobile Native App Styles */
-@media (max-width: 768px) {
-  .hero-cards-grid {
-    display: block;
-    space-y: 1rem;
-  }
-  
-  .hero-card {
-    margin-bottom: 1rem;
-  }
-  
-  /* Native app-like interactions */
-  button, .btn-gradient, .btn-glass, a[class*="btn"], .touch-feedback {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    user-select: none;
-    /* iOS native button feel */
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 12px;
-  }
-  
-  /* iOS Safari address bar handling */
-  .ios-safe-area {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  /* Prevent iOS zoom on double tap */
-  * {
-    touch-action: manipulation;
-  }
-  
-  button:active, .btn-gradient:active, .btn-glass:active, .touch-feedback:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
-  
-  /* Swipe gestures */
-  .swipeable {
-    touch-action: pan-x;
-  }
-  
-  /* Haptic feedback simulation */
-  @keyframes haptic {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    75% { transform: translateX(2px); }
-    100% { transform: translateX(0); }
-  }
-  
-  .haptic-feedback {
-    animation: haptic 0.1s ease-in-out;
-  }
-  
-  /* Smooth scrolling for mobile */
-  .overflow-y-auto {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Hide scrollbars on mobile */
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* Safe area handling for iPhone */
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  /* Bottom nav bar always visible */
-  .mobile-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Hero Section Grid */
-.hero-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .hero-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 200px);
-  }
-  
-  .hero-card:first-child {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-}
-
-.hero-card {
-  padding: 2rem;
-  border-radius: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.gradient-card {
-  background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-blue) 100%);
-  color: white;
-}
-
-.app-card {
-  background-color: var(--app-surface);
-  border: 1px solid var(--app-border);
-}
-
-.app-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-/* Glass Effect */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Loading Animations */
@@ -385,7 +237,6 @@ input::placeholder, textarea::placeholder {
   }
 }
 
-/* Focus styles for accessibility */
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -393,11 +244,4 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid var(--brand-blue);
   outline-offset: 2px;
-}
-
-/* Print styles */
-@media print {
-  .no-print {
-    display: none !important;
-  }
 }
