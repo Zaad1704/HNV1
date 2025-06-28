@@ -25,8 +25,8 @@ const PricingPlanCard: React.FC<PricingPlanCardProps> = ({ plan }) => {
   const getPrice = (priceInCents: number) => {
     if (priceInCents === 0) return t('pricing.free');
     // Convert USD cents to BDT (mock rate for now, needs real API for accuracy)
-    const exchangeRate = currencyName === '৳' ? 110 : 1;
-    return `${currencyName}${(priceInCents / 100 * exchangeRate).toFixed(2)}`;
+    const exchangeRate = currency === '৳' ? 110 : 1;
+    return `${currency}${(priceInCents / 100 * exchangeRate).toFixed(2)}`;
   };
 
   return (
