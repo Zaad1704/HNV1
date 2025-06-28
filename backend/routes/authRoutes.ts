@@ -6,7 +6,8 @@ import {
     loginUser,
     getMe,
     googleAuthCallback,
-    verifyEmail
+    verifyEmail,
+    updateProfile
 } from '../controllers/authController';
 import { protect } from "../middleware/authMiddleware";
 import { validate } from "../middleware/validateMiddleware";
@@ -19,6 +20,7 @@ router.post('/register', validate(registerSchema), asyncHandler(registerUser as 
 router.post('/login', asyncHandler(loginUser as any));
 router.get('/me', protect, asyncHandler(getMe as any));
 router.get('/verify-email/:token', asyncHandler(verifyEmail as any));
+router.put('/profile', protect, asyncHandler(updateProfile as any));
 
 // Google OAuth
 router.get(

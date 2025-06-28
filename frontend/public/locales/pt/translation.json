@@ -1,0 +1,8 @@
+{
+  "header": {"login": "Entrar", "get_started": "Começar"},
+  "nav": {"home": "Início", "about": "Sobre", "pricing": "Preços", "contact": "Contato", "login": "Entrar"},
+  "auth": {"welcome_back": "Bem-vindo de volta!", "sign_in_subtitle": "Entre para continuar", "email_address": "Endereço de email", "password": "Senha", "sign_in": "Entrar", "continue_google": "Continuar com Google", "no_account": "Não tem conta?", "sign_up": "Cadastrar", "or": "OU", "forgot_password": "Esqueceu a senha?"},
+  "common": {"loading": "Carregando...", "error": "Erro", "success": "Sucesso", "cancel": "Cancelar", "save": "Salvar"},
+  "dashboard": {"overview": "Visão Geral", "properties": "Propriedades", "tenants": "Inquilinos", "settings": "Configurações", "logout": "Sair", "maintenance": "Manutenção"},
+  "landing": {"hero_title": "Plataforma Tudo-em-Um para Gestão Imobiliária Moderna", "hero_subtitle": "Automatize tarefas e gerencie inquilinos com facilidade.", "hero_cta": "Teste Grátis"}
+}

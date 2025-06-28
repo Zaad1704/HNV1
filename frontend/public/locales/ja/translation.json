@@ -1,0 +1,8 @@
+{
+  "header": {"login": "ログイン", "get_started": "始める"},
+  "nav": {"home": "ホーム", "about": "について", "pricing": "料金", "contact": "お問い合わせ", "login": "ログイン"},
+  "auth": {"welcome_back": "おかえりなさい！", "sign_in_subtitle": "続行するにはサインインしてください", "email_address": "メールアドレス", "password": "パスワード", "sign_in": "サインイン", "continue_google": "Googleで続行", "no_account": "アカウントをお持ちでない方", "sign_up": "サインアップ", "or": "または", "forgot_password": "パスワードを忘れた方"},
+  "common": {"loading": "読み込み中...", "error": "エラー", "success": "成功", "cancel": "キャンセル", "save": "保存"},
+  "dashboard": {"overview": "概要", "properties": "物件", "tenants": "テナント", "settings": "設定", "logout": "ログアウト", "maintenance": "メンテナンス"},
+  "landing": {"hero_title": "現代的な不動産管理のためのオールインワンプラットフォーム", "hero_subtitle": "タスクを自動化し、テナントを簡単に管理。", "hero_cta": "無料トライアル"}
+}
