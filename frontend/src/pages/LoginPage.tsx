@@ -15,24 +15,48 @@ const LoginPage: React.FC = () => {
   const { login } = useAuthStore();
   const { t } = useTranslation();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      if (response.data.token && response.data.user) {
+      console.log('Login response:', response.data);
+      
+      if (response.data.success && response.data.data) {
+        const { token, user } = response.data.data;
+        login(token, user);
+        navigate('/dashboard');
+      } else if (response.data.token && response.data.user) {
         login(response.data.token, response.data.user);
         navigate('/dashboard');
+      } else {
+        setError('Invalid response from server');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed.');
-      setLoading(false);
+      console.error('Login error:', err);
+      
+      // Retry logic for server wake-up (Render free tier)
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.response?.status >= 500) {
+        if (retryCount < 2) {
+          setError(`Server starting up... Retrying (${retryCount + 1}/3)`);
+          setTimeout(() => {
+            handleLogin(e, retryCount + 1);
+          }, 3000);
+          return;
+        }
+      }
+      
+      setError(err.response?.data?.message || err.message || 'Login failed. Server may be starting up, please try again.');
+    } finally {
+      if (retryCount === 0) setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${apiClient.defaults.baseURL}/auth/google`;
+    const baseURL = apiClient.defaults.baseURL;
+    window.location.href = `${baseURL}/auth/google`;
   };
 
   return (

@@ -89,6 +89,33 @@ const BillingPage: React.FC = () => {
               {formatDate(billingInfo.status === 'trialing' ? billingInfo.trialExpiresAt : billingInfo.currentPeriodEndsAt)}
             </p>
           </div>
+          
+          <div className="bg-light-card p-6 rounded-xl border border-border-color">
+            <h3 className="font-semibold text-dark-text mb-4 flex items-center gap-2">
+              <Settings size={20} />
+              Manage Subscription
+            </h3>
+            <div className="space-y-3">
+              <Link 
+                to="/pricing" 
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <CreditCard size={16} />
+                Change Plan
+              </Link>
+              
+              {billingInfo.status === 'active' && (
+                <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                  Pause Subscription
+                </button>
+              )}
+              
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <Trash2 size={16} />
+                Cancel Subscription
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

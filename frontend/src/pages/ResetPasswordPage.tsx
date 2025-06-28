@@ -36,13 +36,15 @@ const ResetPasswordPage: React.FC = () => {
     setError('');
 
     try {
-      await apiClient.put(`/password-reset/reset/${token}`, {
+      const response = await apiClient.post(`/auth/reset-password/${token}`, {
         password: formData.password
       });
+      console.log('Reset password response:', response.data);
       setSuccess(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to reset password. The link may be expired.');
+      console.error('Reset password error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to reset password. The link may be expired.');
     } finally {
       setLoading(false);
     }

@@ -43,12 +43,14 @@ const LandingPage = () => {
   }, [location.hash]);
 
   return (
-    <div className="min-h-screen">
-      <HeroSection />
+    <div className="min-h-screen pb-24 md:pb-0">
+      <section id="hero">
+        <HeroSection />
+      </section>
       
       {/* Banner Section - Editable by Super Admin */}
       {settings?.bannerSection?.imageUrl && (
-        <section className="py-12">
+        <section id="banner" className="py-12">
           <div className="container mx-auto px-4">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl">
               <img
@@ -73,7 +75,7 @@ const LandingPage = () => {
       
       {/* Real Stats Section */}
       {stats && (
-        <section className="py-20 bg-app-bg">
+        <section id="stats" className="py-20 bg-app-bg">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-4xl font-bold text-text-primary mb-4">
               {t('landing.real_stats_title')}
@@ -108,13 +110,33 @@ const LandingPage = () => {
         </section>
       )}
       
-      <AboutSection />
-      <FeaturesSection />
-      <ServicesSection />
-      <PricingSection />
-      <LeadershipSection />
-      <InstallAppSection />
-      <ContactSection />
+      <section id="about">
+        <AboutSection />
+      </section>
+      
+      <section id="features">
+        <FeaturesSection />
+      </section>
+      
+      <section id="services">
+        <ServicesSection />
+      </section>
+      
+      <section id="pricing">
+        <PricingSection />
+      </section>
+      
+      <section id="leadership">
+        <LeadershipSection />
+      </section>
+      
+      <section id="install">
+        <InstallAppSection />
+      </section>
+      
+      <section id="contact">
+        <ContactSection />
+      </section>
     </div>
   );
 };

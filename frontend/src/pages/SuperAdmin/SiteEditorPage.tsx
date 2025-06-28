@@ -158,6 +158,42 @@ const SiteEditorPage = () => {
           </div>
         </Section>
 
+        <Section title="Banner Section">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Banner Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const formData = new FormData();
+                    formData.append('bannerImage', file);
+                    // Upload image and get URL
+                    apiClient.post('/upload/banner', formData)
+                      .then(response => {
+                        handleInputChange('bannerSection', 'imageUrl', response.data.url);
+                      })
+                      .catch(err => alert('Failed to upload image'));
+                  }
+                }}
+                className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+              />
+              {(settings.bannerSection as any)?.imageUrl && (
+                <img 
+                  src={(settings.bannerSection as any).imageUrl} 
+                  alt="Banner Preview" 
+                  className="mt-2 w-full h-32 object-cover rounded-lg"
+                />
+              )}
+            </div>
+            <InputField label="Alt Text" section="bannerSection" field="altText" />
+            <InputField label="Overlay Title" section="bannerSection" field="overlayText" />
+            <TextAreaField label="Overlay Subtitle" section="bannerSection" field="overlaySubtext" />
+          </div>
+        </Section>
+
         <Section title="Footer Settings">
           <div className="space-y-4">
             <TextAreaField label="Footer Description" section="footer" field="description" />

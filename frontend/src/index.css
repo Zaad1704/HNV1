@@ -24,7 +24,7 @@
   --text-muted: #9CA3AF;
 }
 
-[data-theme="dark"] {
+.dark {
   --app-bg: #0F172A;
   --app-surface: #1E293B;
   --app-border: #334155;
