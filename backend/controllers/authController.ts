@@ -109,9 +109,8 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // FIX: Bypass email verification for Super Admins and Super Moderators
-    const adminRoles = ['Super Admin', 'Super Moderator'];
-    if (!user.isEmailVerified && !adminRoles.includes(user.role)) {
+    // This property now exists on the user object
+    if (!user.isEmailVerified) {
         return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
     }
 
@@ -174,4 +173,52 @@ export const googleAuthCallback = (req: Request, res: Response) => {
     }
     const token = (req.user as IUser).getSignedJwtToken();
     res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const { name, email, phone, profilePicture } = req.body;
+        
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Update fields if provided
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (phone) user.phone = phone;
+        if (profilePicture) user.profilePicture = profilePicture;
+
+        await user.save();
+
+        auditService.recordAction(
+            user._id as Types.ObjectId,
+            user.organizationId as Types.ObjectId,
+            'PROFILE_UPDATE',
+            { updatedFields: Object.keys(req.body) }
+        );
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                profilePicture: user.profilePicture
+            }
+        });
+    } catch (error) {
+        console.error('Profile update error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to update profile' 
+        });
+    }
 };

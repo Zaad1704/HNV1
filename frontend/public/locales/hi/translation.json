@@ -1,0 +1,8 @@
+{
+  "header": {"login": "लॉगिन", "get_started": "शुरू करें"},
+  "nav": {"home": "होम", "about": "के बारे में", "pricing": "मूल्य निर्धारण", "contact": "संपर्क", "login": "लॉगिन"},
+  "auth": {"welcome_back": "वापस स्वागत है!", "sign_in_subtitle": "जारी रखने के लिए साइन इन करें", "email_address": "ईमेल पता", "password": "पासवर्ड", "sign_in": "साइन इन", "continue_google": "Google के साथ जारी रखें", "no_account": "कोई खाता नहीं है?", "sign_up": "साइन अप", "or": "या", "forgot_password": "पासवर्ड भूल गए?"},
+  "common": {"loading": "लोड हो रहा है...", "error": "त्रुटि", "success": "सफलता", "cancel": "रद्द करें", "save": "सहेजें"},
+  "dashboard": {"overview": "अवलोकन", "properties": "संपत्तियां", "tenants": "किरायेदार", "settings": "सेटिंग्स", "logout": "लॉग आउट", "maintenance": "रखरखाव"},
+  "landing": {"hero_title": "आधुनिक संपत्ति प्रबंधन के लिए ऑल-इन-वन प्लेटफॉर्म", "hero_subtitle": "कार्यों को स्वचालित करें और किरायेदारों को आसानी से प्रबंधित करें।", "hero_cta": "मुफ्त परीक्षण"}
+}

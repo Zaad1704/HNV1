@@ -1,78 +1,8 @@
 {
-  "header": {
-    "login": "Iniciar Sesión",
-    "get_started": "Comenzar"
-  },
-  "nav": {
-    "home": "Inicio",
-    "about": "Acerca de",
-    "login": "Iniciar Sesión",
-    "pricing": "Precios",
-    "contact": "Contacto"
-  },
-  "auth": {
-    "welcome_back": "¡Bienvenido de vuelta!",
-    "sign_in_subtitle": "Inicia sesión para continuar a tu panel",
-    "email_address": "Dirección de Email",
-    "password": "Contraseña",
-    "forgot_password": "¿Olvidaste tu contraseña?",
-    "sign_in": "Iniciar Sesión",
-    "continue_google": "Continuar con Google",
-    "no_account": "¿No tienes una cuenta?",
-    "sign_up": "Registrarse",
-    "or": "O",
-    "enter_email": "Ingresa tu email",
-    "enter_password": "Ingresa tu contraseña",
-    "create_account": "Crear Cuenta",
-    "join_thousands": "Únete a miles de administradores de propiedades",
-    "full_name": "Nombre Completo",
-    "enter_full_name": "Ingresa tu nombre completo",
-    "role": "Rol",
-    "create_password": "Crear una contraseña",
-    "confirm_password": "Confirma tu contraseña",
-    "have_account": "¿Ya tienes una cuenta?",
-    "landlord": "Propietario",
-    "agent": "Agente",
-    "tenant": "Inquilino"
-  },
-  "dashboard": {
-    "overview": "Resumen",
-    "properties": "Propiedades",
-    "tenants": "Inquilinos",
-    "expenses": "Gastos",
-    "maintenance": "Mantenimiento",
-    "cash_flow": "Flujo de Efectivo",
-    "reminders": "Recordatorios",
-    "approvals": "Aprobaciones",
-    "users_invites": "Usuarios e Invitaciones",
-    "billing": "Facturación",
-    "audit_log": "Registro de Auditoría",
-    "admin_panel": "Panel de Administración",
-    "settings": "Configuración",
-    "logout": "Cerrar Sesión",
-    "monthly_revenue": "Ingresos Mensuales",
-    "total_properties": "Total de Propiedades",
-    "active_tenants": "Inquilinos Activos",
-    "occupancy_rate": "Tasa de Ocupación",
-    "welcome_back": "Bienvenido de vuelta"
-  },
-  "landing": {
-    "hero_title": "Gestión Moderna de Propiedades",
-    "hero_subtitle": "Optimiza la gestión de tus propiedades con nuestra plataforma todo-en-uno",
-    "hero_cta": "Comenzar"
-  },
-  "common": {
-    "loading": "Cargando...",
-    "error": "Error",
-    "success": "Éxito",
-    "cancel": "Cancelar",
-    "save": "Guardar",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "view": "Ver",
-    "back": "Atrás",
-    "search": "Buscar",
-    "filter": "Filtrar",
-    "export": "Exportar"
-  }
+  "header": {"login": "Iniciar Sesión", "get_started": "Comenzar"},
+  "nav": {"home": "Inicio", "about": "Acerca de", "pricing": "Precios", "contact": "Contacto", "login": "Iniciar Sesión"},
+  "auth": {"welcome_back": "¡Bienvenido de nuevo!", "sign_in_subtitle": "Inicia sesión para continuar", "email_address": "Email", "password": "Contraseña", "sign_in": "Iniciar Sesión", "continue_google": "Continuar con Google", "no_account": "¿No tienes cuenta?", "sign_up": "Registrarse", "or": "O", "forgot_password": "¿Olvidaste tu contraseña?"},
+  "common": {"loading": "Cargando...", "error": "Error", "success": "Éxito", "cancel": "Cancelar", "save": "Guardar"},
+  "dashboard": {"overview": "Resumen", "properties": "Propiedades", "tenants": "Inquilinos", "settings": "Configuración", "logout": "Cerrar Sesión", "maintenance": "Mantenimiento"},
+  "landing": {"hero_title": "Plataforma Todo-en-Uno para Gestión de Propiedades", "hero_subtitle": "Automatiza tareas y gestiona inquilinos con facilidad.", "hero_cta": "Prueba Gratuita"}
 }

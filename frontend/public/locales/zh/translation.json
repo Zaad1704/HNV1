@@ -1,0 +1,8 @@
+{
+  "header": {"login": "登录", "get_started": "开始"},
+  "nav": {"home": "首页", "about": "关于", "pricing": "价格", "contact": "联系", "login": "登录"},
+  "auth": {"welcome_back": "欢迎回来！", "sign_in_subtitle": "登录以继续", "email_address": "邮箱地址", "password": "密码", "sign_in": "登录", "continue_google": "使用Google继续", "no_account": "没有账户？", "sign_up": "注册", "or": "或", "forgot_password": "忘记密码？"},
+  "common": {"loading": "加载中...", "error": "错误", "success": "成功", "cancel": "取消", "save": "保存"},
+  "dashboard": {"overview": "概览", "properties": "房产", "tenants": "租户", "settings": "设置", "logout": "退出", "maintenance": "维护"},
+  "landing": {"hero_title": "现代房产管理一体化平台", "hero_subtitle": "自动化任务，轻松管理租户。", "hero_cta": "免费试用"}
+}

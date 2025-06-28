@@ -1,0 +1,8 @@
+{
+  "header": {"login": "Anmelden", "get_started": "Loslegen"},
+  "nav": {"home": "Startseite", "about": "Über uns", "pricing": "Preise", "contact": "Kontakt", "login": "Anmelden"},
+  "auth": {"welcome_back": "Willkommen zurück!", "sign_in_subtitle": "Melden Sie sich an, um fortzufahren", "email_address": "E-Mail", "password": "Passwort", "sign_in": "Anmelden", "continue_google": "Mit Google fortfahren", "no_account": "Kein Konto?", "sign_up": "Registrieren", "or": "ODER", "forgot_password": "Passwort vergessen?"},
+  "common": {"loading": "Laden...", "error": "Fehler", "success": "Erfolg", "cancel": "Abbrechen", "save": "Speichern"},
+  "dashboard": {"overview": "Übersicht", "properties": "Immobilien", "tenants": "Mieter", "settings": "Einstellungen", "logout": "Abmelden", "maintenance": "Wartung"},
+  "landing": {"hero_title": "All-in-One-Plattform für modernes Immobilienmanagement", "hero_subtitle": "Automatisieren Sie Aufgaben und verwalten Sie Mieter einfach.", "hero_cta": "Kostenlose Testversion"}
+}
