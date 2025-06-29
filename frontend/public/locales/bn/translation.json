@@ -1,76 +1,13 @@
 {
-  "header": {
-    "login": "লগইন",
-    "get_started": "শুরু করুন"
-  },
-  "nav": {
-    "home": "হোম",
-    "about": "সম্পর্কে",
-    "pricing": "মূল্য তালিকা",
-    "contact": "যোগাযোগ"
-  },
-  "auth": {
-    "welcome_back": "আবার স্বাগতম!",
-    "sign_in_subtitle": "চালিয়ে যেতে আপনার অ্যাকাউন্টে লগ ইন করুন",
-    "email_address": "ইমেইল ঠিকানা",
-    "password": "পাসওয়ার্ড",
-    "sign_in": "সাইন ইন",
-    "continue_google": "Google দিয়ে চালিয়ে যান",
-    "no_account": "কোনো অ্যাকাউন্ট নেই?",
-    "sign_up": "নিবন্ধন করুন",
-    "or": "অথবা",
-    "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?"
-  },
-  "common": {
-    "loading": "লোড হচ্ছে...",
-    "error": "ত্রুটি",
-    "success": "সফল",
-    "cancel": "বাতিল করুন",
-    "save": "সংরক্ষণ করুন",
-    "welcome_back_user": "আবার স্বাগতম, {{name}}!",
-    "happening_today": "আজ আপনার সম্পত্তিগুলির সাথে যা ঘটছে।"
-  },
-  "dashboard": {
-    "overview": "একনজরে",
-    "properties": "সম্পত্তি",
-    "tenants": "ভাড়াটে",
-    "settings": "সেটিংস",
-    "logout": "লগ আউট",
-    "maintenance": "রক্ষণাবেক্ষণ",
-    "expenses": "খরচ",
-    "cash_flow": "নগদ প্রবাহ",
-    "reminders": "অনুস্মারক",
-    "approvals": "অনুমোদন",
-    "users_invites": "ব্যবহারকারী ও আমন্ত্রণ",
-    "billing": "বিলিং",
-    "audit_log": "অডিট লগ",
-    "admin_panel": "অ্যাডমিন প্যানেল",
-    "monthly_revenue": "মাসিক আয়",
-    "total_properties": "মোট সম্পত্তি",
-    "active_tenants": "সক্রিয় ভাড়াটে",
-    "occupancy_rate": "দখলের হার",
-    "loading_data": "ড্যাশবোর্ড ডেটা লোড হচ্ছে...",
-    "overdue_rent_reminders": "বকেয়া ভাড়া অনুস্মারক",
-    "send_reminder": "অনুস্মারক পাঠান",
-    "no_overdue_rent": "কোনো বকেয়া ভাড়া নেই",
-    "upcoming_lease_expirations": "আসন্ন লিজ মেয়াদ শেষ",
-    "renew_lease": "লিজ নবায়ন",
-    "no_expiring_leases": "কোনো মেয়াদ শেষ হওয়া লিজ নেই",
-    "financials_chart_title": "আর্থিক সংক্ষিপ্তসার",
-    "rent_status_chart_title": "ভাড়ার অবস্থা"
-  },
-  "landing": {
-    "hero_title": "আধুনিক সম্পত্তি ব্যবস্থাপনার জন্য অল-ইন-ওয়ান প্ল্যাটফর্ম",
-    "hero_subtitle": "স্বয়ংক্রিয়ভাবে কাজ করুন, অর্থ ট্র্যাক করুন এবং ভাড়াটেদের সহজে পরিচালনা করুন।",
-    "hero_cta": "আপনার বিনামূল্যে ট্রায়াল শুরু করুন",
-    "real_stats_title": "বিশ্বব্যাপী সম্পত্তি ব্যবস্থাপকদের দ্বারা বিশ্বস্ত",
-    "properties_managed": "পরিচালিত সম্পত্তি",
-    "active_users": "সক্রিয় ব্যবহারকারী",
-    "countries_served": "সেবা প্রদানকৃত দেশ",
-    "uptime_guarantee": "আপটাইম গ্যারান্টি"
-  },
-  "pricing": {
-    "free": "বিনামূল্যে",
-    "choose_plan": "প্ল্যান নির্বাচন করুন"
-  }
+  "header": {"login": "লগইন", "get_started": "শুরু করুন"},
+  "nav": {"home": "হোম", "about": "সম্পর্কে", "pricing": "মূল্য তালিকা", "contact": "যোগাযোগ", "login": "লগইন"},
+  "auth": {"welcome_back": "আবার স্বাগতম!", "sign_in_subtitle": "চালিয়ে যেতে লগ ইন করুন", "email_address": "ইমেইল ঠিকানা", "password": "পাসওয়ার্ড", "sign_in": "সাইন ইন", "continue_google": "Google দিয়ে চালিয়ে যান", "no_account": "কোনো অ্যাকাউন্ট নেই?", "sign_up": "নিবন্ধন করুন", "or": "অথবা", "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?"},
+  "common": {"loading": "লোড হচ্ছে...", "error": "ত্রুটি", "success": "সফল", "cancel": "বাতিল", "save": "সংরক্ষণ", "edit": "সম্পাদনা", "delete": "মুছুন", "add": "যোগ করুন", "view": "দেখুন", "close": "বন্ধ", "confirm": "নিশ্চিত", "yes": "হ্যাঁ", "no": "না", "learn_more": "আরো জানুন", "analytics": "বিশ্লেষণ", "payments": "পেমেন্ট", "actions": "কার্যক্রম", "status": "অবস্থা", "name": "নাম", "email": "ইমেইল", "phone": "ফোন", "address": "ঠিকানা", "city": "শহর", "state": "রাজ্য", "zip_code": "পোস্ট কোড", "country": "দেশ", "date": "তারিখ", "amount": "পরিমাণ", "description": "বিবরণ", "type": "ধরন", "active": "সক্রিয়", "inactive": "নিষ্ক্রিয়", "pending": "অপেক্ষমান", "approved": "অনুমোদিত", "rejected": "প্রত্যাখ্যাত", "all_languages": "সব ভাষা", "theme": "থিম", "language": "ভাষা", "notifications": "বিজ্ঞপ্তি", "profile": "প্রোফাইল", "settings": "সেটিংস"},
+  "dashboard": {"overview": "একনজরে", "properties": "সম্পত্তি", "tenants": "ভাড়াটে", "settings": "সেটিংস", "logout": "লগ আউট", "maintenance": "রক্ষণাবেক্ষণ", "expenses": "খরচ", "cash_flow": "নগদ প্রবাহ", "reminders": "অনুস্মারক", "approvals": "অনুমোদন", "users_invites": "ব্যবহারকারী ও আমন্ত্রণ", "billing": "বিলিং", "audit_log": "অডিট লগ", "admin_panel": "অ্যাডমিন প্যানেল", "monthly_revenue": "মাসিক আয়", "total_properties": "মোট সম্পত্তি", "active_tenants": "সক্রিয় ভাড়াটে", "occupancy_rate": "দখলের হার", "tenant_profile": "ভাড়াটে প্রোফাইল", "lease_information": "লিজ তথ্য", "pending_approval_requests": "অপেক্ষমান অনুমোদন", "no_pending_requests": "কোনো অপেক্ষমান অনুরোধ নেই", "manage_account_preferences": "অ্যাকাউন্ট পরিচালনা করুন", "profile_information": "প্রোফাইল তথ্য", "email_notifications": "ইমেইল বিজ্ঞপ্তি", "push_notifications": "পুশ বিজ্ঞপ্তি", "automated_reminders": "স্বয়ংক্রিয় অনুস্মারক", "add_new_reminder": "নতুন অনুস্মারক যোগ করুন", "no_automated_reminders": "কোনো স্বয়ংক্রিয় অনুস্মারক নেই", "tenant": "ভাড়াটে", "next_send": "পরবর্তী পাঠানো", "frequency": "ফ্রিকোয়েন্সি"},
+  "landing": {"hero_title": "আধুনিক সম্পত্তি ব্যবস্থাপনার জন্য অল-ইন-ওয়ান প্ল্যাটফর্ম", "hero_subtitle": "কাজ স্বয়ংক্রিয় করুন এবং ভাড়াটেদের সহজে পরিচালনা করুন।", "hero_cta": "বিনামূল্যে ট্রায়াল শুরু করুন", "real_stats_title": "বিশ্বব্যাপী সম্পত্তি ব্যবস্থাপকদের বিশ্বস্ত", "properties_managed": "পরিচালিত সম্পত্তি", "active_users": "সক্রিয় ব্যবহারকারী", "countries_served": "সেবা প্রদানকৃত দেশ", "uptime_guarantee": "আপটাইম গ্যারান্টি"},
+  "pricing": {"free": "বিনামূল্যে", "choose_plan": "প্ল্যান নির্বাচন করুন", "monthly": "মাসিক", "yearly": "বার্ষিক", "per_month": "প্রতি মাসে", "per_year": "প্রতি বছরে", "most_popular": "সবচেয়ে জনপ্রিয়", "get_started": "শুরু করুন", "contact_sales": "বিক্রয়ের সাথে যোগাযোগ"},
+  "forms": {"street_address": "রাস্তার ঠিকানা", "required_field": "এই ক্ষেত্রটি প্রয়োজনীয়", "invalid_email": "বৈধ ইমেইল ঠিকানা লিখুন", "password_too_short": "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে", "passwords_dont_match": "পাসওয়ার্ড মিলছে না"},
+  "property": {"add_property": "সম্পত্তি যোগ করুন", "edit_property": "সম্পত্তি সম্পাদনা", "property_name": "সম্পত্তির নাম", "property_type": "সম্পত্তির ধরন", "apartment": "অ্যাপার্টমেন্ট", "house": "বাড়ি", "commercial": "বাণিজ্যিক", "other": "অন্যান্য", "rent_amount": "ভাড়ার পরিমাণ", "security_deposit": "নিরাপত্তা জামানত", "available_units": "উপলব্ধ ইউনিট", "total_units": "মোট ইউনিট"},
+  "tenant": {"add_tenant": "ভাড়াটে যোগ করুন", "edit_tenant": "ভাড়াটে সম্পাদনা", "tenant_name": "ভাড়াটের নাম", "lease_start": "লিজ শুরু", "lease_end": "লিজ শেষ", "rent_due_date": "ভাড়া পরিশোধের তারিখ", "late": "দেরি", "id_front": "আইডি সামনে", "id_back": "আইডি পিছনে"},
+  "expense": {"add_expense": "খরচ যোগ করুন", "edit_expense": "খরচ সম্পাদনা", "expense_category": "খরচের বিভাগ", "insurance": "বীমা", "taxes": "কর", "salary": "বেতন", "maintenance_repair": "রক্ষণাবেক্ষণ ও মেরামত", "utilities": "ইউটিলিটি", "advertising": "বিজ্ঞাপন", "legal_professional": "আইনি ও পেশাদার", "travel": "ভ্রমণ", "office_supplies": "অফিস সরবরাহ"}
 }
