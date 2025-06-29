@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false
+  },
+  "include": [
+    "server.ts",
+    "app.ts",
+    "config/*.ts",
+    "models/*.ts",
+    "routes/*.ts",
+    "controllers/authController.ts",
+    "controllers/propertyController.ts",
+    "controllers/tenantsController.ts",
+    "controllers/userController.ts",
+    "controllers/dashboardController.ts",
+    "middleware/errorHandler.ts",
+    "middleware/authenticate.ts",
+    "middleware/authMiddleware.ts",
+    "services/logger.ts",
+    "services/emailService.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "**/*.test.ts",
+    "tests",
+    "services/backgroundJobs.ts",
+    "services/realTimeService.ts",
+    "services/monitoringService.ts",
+    "services/cacheService.ts",
+    "middleware/advancedSecurity.ts",
+    "middleware/twoFactorAuth.ts",
+    "middleware/uploadMiddleware.ts",
+    "controllers/cmsController.ts",
+    "controllers/invoiceController.ts",
+    "controllers/reportController.ts"
+  ]
+}
