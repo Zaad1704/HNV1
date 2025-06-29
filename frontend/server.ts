@@ -74,6 +74,8 @@ connectDB();
 // Dynamically configure CORS allowed origins from environment variable
 const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
 const allowedOrigins: string[] = allowedOriginsEnv ? allowedOriginsEnv.split(',') : [];
+// Add common domains
+allowedOrigins.push('https://www.hnvpm.com', 'https://hnvpm.com', 'https://hnv.onrender.com');
 
 const corsOptions: CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
@@ -106,7 +108,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       scriptSrc: ["'self'", "'unsafe-eval'"],
-      connectSrc: ["'self'", "https://api.stripe.com", "https://api.exchangerate-api.com", "https://hnv.onrender.com", "https://hnv-backend.onrender.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://api.exchangerate-api.com", "https://*.onrender.com", "https://www.hnvpm.com", "https://hnvpm.com", "https://hnv.onrender.com"],
       frameSrc: ["'self'", "https://js.stripe.com"],
     },
   },
