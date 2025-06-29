@@ -56,7 +56,7 @@ const LandingPage = () => {
               <img
                 src={settings.bannerSection.imageUrl}
                 alt={settings.bannerSection.altText || 'Platform Banner'}
-                className="w-full h-64 md:h-96 object-cover"
+                className="w-full h-32 md:h-40 object-cover"
               />
               {settings.bannerSection.overlayText && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

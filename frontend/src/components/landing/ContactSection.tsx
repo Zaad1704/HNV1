@@ -20,11 +20,11 @@ const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contactInfo: ContactInfo = {
-    email: settings?.contact?.email || 'hello@hnvsolutions.com',
-    phone: settings?.contact?.phone || '+1 (555) 123-4567',
+    email: settings?.contact?.email || 'contact@hnvpm.com',
+    phone: settings?.contact?.phone || '+1 (800) HNV-PROP',
     addresses: settings?.contact?.addresses || [
-      '123 Business Ave, Suite 100',
-      'New York, NY 10001'
+      'HNV Property Management Solutions',
+      'Professional Property Services Worldwide'
     ]
   };
 
@@ -54,10 +54,10 @@ const ContactSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            Get In Touch
+            {settings?.contact?.title || 'Get In Touch'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Ready to transform your property management? Contact us today for a personalized demo.
+            {settings?.contact?.subtitle || 'Ready to transform your property management? Contact us today for a personalized demo.'}
           </p>
         </motion.div>
 
