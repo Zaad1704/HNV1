@@ -20,7 +20,14 @@
     "no_account": "Don't have an account?",
     "sign_up": "Sign Up",
     "or": "OR",
-    "forgot_password": "Forgot Password?"
+    "forgot_password": "Forgot Password?",
+    "enter_email": "Enter your email address",
+    "enter_password": "Enter your password",
+    "remember_me": "Remember me",
+    "create_account": "Create Account",
+    "full_name": "Full Name",
+    "confirm_password": "Confirm Password",
+    "agree_terms": "I agree to the Terms of Service and Privacy Policy"
   },
   "common": {
     "loading": "Loading...",
@@ -77,7 +84,12 @@
     "features": "Features",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
-    "property_management": "Property Management"
+    "property_management": "Property Management",
+    "learn_more": "Learn More",
+    "get_in_touch": "Get in touch",
+    "install_app": "Install App",
+    "native_experience": "Native experience",
+    "switch_to_mode": "Switch to {{mode}} Mode"
   },
   "dashboard": {
     "overview": "Overview",

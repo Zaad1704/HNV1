@@ -108,10 +108,10 @@ const Navbar = () => {
               className="h-8 w-8 rounded-lg object-contain" 
             />
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold truncate max-w-[140px]">
-                {settings?.logos?.companyName || 'HNV Solutions'}
+              <span className="text-base font-bold truncate max-w-[180px]">
+                {settings?.logos?.companyName || 'HNV Property Management'}
               </span>
-              <span className="text-xs text-white/70">Property Management</span>
+              <span className="text-xs text-white/70">{t('common.property_management')}</span>
             </div>
           </Link>
 
@@ -141,7 +141,7 @@ const Navbar = () => {
                   <h2 className="text-lg font-bold text-text-primary">
                     {settings?.logos?.companyName || 'HNV Property Management Solutions'}
                   </h2>
-                  <p className="text-sm text-text-secondary">Property Management</p>
+                  <p className="text-sm text-text-secondary">{t('common.property_management')}</p>
                 </div>
               </div>
               <button 
@@ -167,7 +167,7 @@ const Navbar = () => {
               >
                 {theme === 'light' ? <Moon size={24} className="text-brand-orange" /> : <Sun size={24} className="text-brand-orange" />}
                 <div className="text-left">
-                  <p className="font-semibold text-text-primary">Theme</p>
+                  <p className="font-semibold text-text-primary">{t('common.theme')}</p>
                   <p className="text-sm text-text-secondary">Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</p>
                 </div>
               </button>
@@ -181,8 +181,8 @@ const Navbar = () => {
                   <span className="text-white text-sm">i</span>
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-text-primary">About</p>
-                  <p className="text-sm text-text-secondary">Learn more about us</p>
+                  <p className="font-semibold text-text-primary">{t('common.about')}</p>
+                  <p className="text-sm text-text-secondary">{t('common.learn_more')}</p>
                 </div>
               </a>
 
@@ -195,7 +195,7 @@ const Navbar = () => {
                   <span className="text-white text-sm">@</span>
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-text-primary">Contact</p>
+                  <p className="font-semibold text-text-primary">{t('nav.contact')}</p>
                   <p className="text-sm text-text-secondary">Get in touch</p>
                 </div>
               </a>
