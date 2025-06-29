@@ -1,17 +1,13 @@
-// backend/server.ts
-import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express';
+import express, { Express, Request, Response, RequestHandler } from 'express';
 import dotenv from 'dotenv';
-import cors, { CorsOptions } from 'cors';
+import cors from 'cors';
 import mongoose from 'mongoose';
-import helmet from 'helmet';
 import passport from 'passport';
 
-// This line executes the file and registers the Google strategy with Passport.
 import './config/passport-setup'; 
 
-// --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
-import billingRoutes from './routes/billingRoutes'; // <--- FIX: Import billingRoutes
+import billingRoutes from './routes/billingRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
@@ -44,10 +40,6 @@ import uploadRoutes from './routes/uploadRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import translationRoutes from './routes/translationRoutes';
 import healthRoutes from './routes/healthRoutes';
-import { errorHandler, notFound } from './middleware/errorHandler';
-import { logger } from './services/logger';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -71,73 +63,19 @@ const connectDB = async () => {
 };
 connectDB();
 
-// Dynamically configure CORS allowed origins from environment variable
-const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
-const allowedOrigins: string[] = allowedOriginsEnv ? allowedOriginsEnv.split(',') : [];
-// Add common domains
-allowedOrigins.push('https://www.hnvpm.com', 'https://hnvpm.com', 'https://hnv.onrender.com');
-
-const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Not allowed by CORS: ${origin}`)); // Improved error message
-    }
-  },
+// Simple CORS - allow all origins
+app.use(cors({
+  origin: true,
   credentials: true
-};
-
-app.use(cors(corsOptions));
-app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Request logging
-app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.url} - ${req.ip}`);
-  next();
-});
-// Enhanced security headers with proper CSP
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "*"],
-      frameSrc: ["'self'", "https://js.stripe.com"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
 }));
 
-// CSRF Protection
-const csrf = require('csurf');
-app.use(csrf({ cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'production' } }));
-
-// Rate limiting per user
-const userRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000,
-  keyGenerator: (req: any) => req.user?.id || req.ip,
-  message: 'Too many requests from this user'
-});
-app.use('/api', userRateLimit);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport.initialize());
 
-// --- Mount API Routes ---
-// (All app.use(...) calls for your routes go here)
+// Mount API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/billing', billingRoutes); // <--- FIX: Mount the billing routes
+app.use('/api/billing', billingRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
@@ -171,14 +109,9 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/translations', translationRoutes);
 app.use('/api/health', healthRoutes); 
 
-// A simple health-check route
 app.get('/', ((req: Request, res: Response) => {
   res.send('HNV SaaS API is running successfully!');
 }) as RequestHandler);
-
-// Error handling middleware
-app.use(notFound);
-app.use(errorHandler);
 
 const PORT: string | number = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
