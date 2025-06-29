@@ -99,7 +99,7 @@ app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url} - ${req.ip}`);
   next();
 });
-// Enhanced security headers
+// Enhanced security headers with proper CSP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -107,8 +107,8 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-eval'"],
-      connectSrc: ["'self'", "https://api.stripe.com", "https://api.exchangerate-api.com", "https://*.onrender.com", "https://www.hnvpm.com", "https://hnvpm.com", "https://hnv.onrender.com"],
+      scriptSrc: ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
+      connectSrc: ["'self'", "*"],
       frameSrc: ["'self'", "https://js.stripe.com"],
     },
   },
