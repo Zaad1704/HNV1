@@ -154,7 +154,7 @@ const BottomNavBar = () => {
         <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-end">
           <div className="w-full app-surface rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-text-primary">More Options</h3>
+              <h3 className="text-xl font-bold text-text-primary">{t('common.more_options')}</h3>
               <button
                 onClick={() => setShowMore(false)}
                 className="p-2 rounded-full text-text-secondary hover:text-text-primary"
