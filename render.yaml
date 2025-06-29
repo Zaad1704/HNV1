@@ -32,7 +32,7 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: REACT_APP_API_URL
-        value: https://hnv-backend.onrender.com
+        value: https://hnv.onrender.com
 
 databases:
   - name: hnv-mongodb
