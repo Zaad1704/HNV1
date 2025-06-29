@@ -63,10 +63,21 @@ export const formatCurrency = (amount: number, currency: string): string => {
     JPY: '¥',
     CNY: '¥',
     INR: '₹',
+    BDT: '৳',
     BRL: 'R$',
     CAD: 'C$',
     AUD: 'A$',
-    CHF: 'CHF '
+    CHF: 'CHF ',
+    AED: 'د.إ',
+    SAR: 'ر.س',
+    EGP: 'ج.م',
+    TRY: '₺',
+    PLN: 'zł',
+    THB: '฿',
+    MYR: 'RM',
+    IDR: 'Rp',
+    PHP: '₱',
+    VND: '₫'
   };
 
   const symbol = symbols[currency] || currency + ' ';
