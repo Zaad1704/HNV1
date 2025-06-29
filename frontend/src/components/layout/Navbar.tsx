@@ -92,33 +92,45 @@ const Navbar = () => {
 
         {/* Mobile Layout - Native App Style */}
         <div className="md:hidden flex items-center justify-between">
-          {/* Left: Menu Button */}
-          <button 
-            onClick={() => setShowMobileMenu(true)}
-            className="btn-glass p-3 rounded-full"
-          >
-            <Menu size={20} />
-          </button>
+          {/* Left: Menu Button + Language + Theme */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowMobileMenu(true)}
+              className="btn-glass p-3 rounded-full"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="scale-75">
+              <SmartLanguageSwitcher />
+            </div>
+            <button 
+              onClick={toggleTheme} 
+              className="btn-glass p-2 rounded-full"
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            >
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+          </div>
 
-          {/* Center: Brand - Optimized for mobile */}
-          <Link to="/" className="flex items-center gap-2 text-white">
+          {/* Center: Brand - Full Name */}
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2 text-white">
             <img 
               src={settings?.logos?.faviconUrl || '/logo-min.png'} 
               alt="Logo" 
-              className="h-8 w-8 rounded-lg object-contain" 
+              className="h-7 w-7 rounded-lg object-contain" 
             />
             <div className="flex flex-col leading-tight">
-              <span className="text-base font-bold truncate max-w-[180px]">
-                {settings?.logos?.companyName || 'HNV Property Management'}
+              <span className="text-sm font-bold truncate max-w-[200px]">
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
               </span>
               <span className="text-xs text-white/70">{t('common.property_management')}</span>
             </div>
           </Link>
 
-          {/* Right: Get Started - Compact */}
+          {/* Right: Get Started */}
           <Link 
             to="/register" 
-            className="btn-glass px-4 py-2 rounded-full text-sm font-semibold"
+            className="btn-glass px-3 py-2 rounded-full text-sm font-semibold"
           >
             {t('header.get_started')}
           </Link>
