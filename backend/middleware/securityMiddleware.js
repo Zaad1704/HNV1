@@ -20,16 +20,7 @@ const createRateLimit = (windowMs = 15 * 60 * 1000, max = 100) => {
 exports.createRateLimit = createRateLimit;
 // Security headers
 exports.securityHeaders = (0, helmet_1.default)({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            scriptSrc: ["'self'"],
-            connectSrc: ["'self'", "https://api.exchangerate-api.com", "https://hnv.onrender.com"],
-        },
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
 });
 // CORS configuration
