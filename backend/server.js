@@ -12,9 +12,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Security headers with CSP disabled
+// Security headers with permissive CSP for API connectivity
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.exchangerate-api.com", "https://hnv.onrender.com"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
 }));
 

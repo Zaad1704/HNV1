@@ -14,20 +14,40 @@ export const createRateLimit = (windowMs: number = 15 * 60 * 1000, max: number =
   });
 };
 
-// Security headers
+// Security headers with CSP
 export const securityHeaders = helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: [
+        "'self'", 
+        "https://hnv.onrender.com", 
+        "https://api.exchangerate-api.com",
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
+      ],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"]
+    }
+  },
   crossOriginEmbedderPolicy: false,
 });
 
 // CORS configuration
 export const corsConfig = cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://hnv.onrender.com', 'https://your-domain.com']
+    ? ['https://hnv.onrender.com', 'https://www.hnvpm.com', 'https://your-domain.com']
     : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
+  exposedHeaders: ['X-Total-Count', 'X-Rate-Limit-Remaining'],
 });
 
 // Input sanitization
