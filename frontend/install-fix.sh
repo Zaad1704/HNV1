@@ -1,10 +1,6 @@
 #!/bin/bash
-echo "Applying Tailwind CSS fix..."
+echo "Applying 503 error fix..."
 
-cp package.json frontend/
+cp server.ts backend/
 
-cd frontend
-rm -rf node_modules package-lock.json
-npm install
-
-echo "Tailwind CSS fix applied."
+echo "503 fix applied. Redeploy backend."
