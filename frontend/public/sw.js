@@ -13,7 +13,8 @@ const urlsToCache = [
 
 const SECURE_ORIGINS = [
   'https://hnv.onrender.com',
-  'https://api.hnv.com',
+  'https://www.hnvpm.com',
+  'https://api.exchangerate-api.com',
   'https://fonts.googleapis.com',
   'https://fonts.gstatic.com'
 ];

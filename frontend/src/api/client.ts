@@ -53,6 +53,11 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Handle CSP errors
+    if (error.message === 'Network Error' && error.code === 'ERR_NETWORK') {
+      console.error('Network error - possibly blocked by CSP. Check Content Security Policy configuration.');
+    }
+    
     if (error.response?.status === 401) {
       // Only redirect if user was authenticated before
       const { token } = useAuthStore.getState();
@@ -67,7 +72,7 @@ apiClient.interceptors.response.use(
     }
     
     if (import.meta.env.DEV) {
-      console.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+      console.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, error);
     }
     
     return Promise.reject(error);
