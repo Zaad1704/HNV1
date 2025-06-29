@@ -16,7 +16,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
 export const validateTenant = [
   body('name').trim().isLength({ min: 2, max: 100 }).escape(),
   body('email').isEmail().normalizeEmail(),
-  body('phone').optional().isMobilePhone('any'),
+  body('phone').optional().isMobilePhone(),
   body('rentAmount').isNumeric().isFloat({ min: 0 }),
   handleValidationErrors
 ];
