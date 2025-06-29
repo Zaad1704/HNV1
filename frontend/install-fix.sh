@@ -1,13 +1,10 @@
 #!/bin/bash
-echo "Applying deployment fixes..."
+echo "Applying Tailwind CSS fix..."
 
-# Apply fixes
-cp tsconfig.json frontend/
 cp package.json frontend/
 
-# Clean install
 cd frontend
 rm -rf node_modules package-lock.json
 npm install
 
-echo "Deployment fix applied."
+echo "Tailwind CSS fix applied."
