@@ -4,7 +4,7 @@ services:
     env: node
     plan: starter
     buildCommand: cd backend && npm install --production && echo 'Build complete - using existing JS files'
-    startCommand: cd backend && npm start
+    startCommand: node backend/server.js
     envVars:
       - key: NODE_ENV
         value: production

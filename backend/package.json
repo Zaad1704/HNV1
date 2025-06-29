@@ -4,7 +4,7 @@
   "description": "Backend for HNV SaaS",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node backend/server.js",
     "dev": "nodemon server.ts",
     "build": "echo 'Using existing compiled JS files'",
     "build:production": "rm -f server.js && node -e \"console.log('Using existing compiled JS files')\" && ls server.js || echo 'server.js ready'",
