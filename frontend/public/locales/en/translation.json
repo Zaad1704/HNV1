@@ -88,6 +88,7 @@
     "maintenance": "Maintenance",
     "expenses": "Expenses",
     "cash_flow": "Cash Flow",
+    "payments": "Payments",
     "reminders": "Reminders",
     "approvals": "Approvals",
     "users_invites": "Users & Invites",
@@ -162,7 +163,12 @@
     "rent_amount": "Rent Amount",
     "security_deposit": "Security Deposit",
     "available_units": "Available Units",
-    "total_units": "Total Units"
+    "total_units": "Total Units",
+    "loading_properties": "Loading properties...",
+    "manage_portfolio": "Manage your property portfolio",
+    "view": "View",
+    "edit": "Edit",
+    "no_properties_yet": "No Properties Yet"
   },
   "tenant": {
     "add_tenant": "Add Tenant",
