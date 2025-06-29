@@ -65,7 +65,19 @@
     "language": "Language",
     "notifications": "Notifications",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "search": "Search...",
+    "filter": "Filters",
+    "clear_all": "Clear All",
+    "all": "All",
+    "more_options": "More Options",
+    "quick_links": "Quick Links",
+    "legal": "Legal",
+    "about": "About",
+    "features": "Features",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "property_management": "Property Management"
   },
   "dashboard": {
     "overview": "Overview",

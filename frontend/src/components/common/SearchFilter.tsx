@@ -90,7 +90,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                   className="text-sm text-brand-blue hover:text-brand-blue/80 flex items-center gap-1"
                 >
                   <X size={14} />
-                  Clear All
+                  {t('common.clear_all')}
                 </button>
               )}
             </div>
@@ -107,7 +107,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                       onChange={(e) => handleFilterChange(option.key, e.target.value)}
                       className="w-full p-2 rounded-xl border border-app-border bg-app-surface"
                     >
-                      <option value="">All</option>
+                      <option value="">{t('common.all')}</option>
                       {option.options?.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
