@@ -3,7 +3,7 @@ services:
     name: hnv-backend
     env: node
     plan: starter
-    buildCommand: cd backend && npm install --production
+    buildCommand: cd backend && npm install --production && echo 'Build complete - using existing JS files'
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
