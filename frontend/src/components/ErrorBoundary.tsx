@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -8,94 +8,123 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error?: Error;
-  errorInfo?: ErrorInfo;
-  errorId?: string;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false
-  };
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
+    };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { 
-      hasError: true, 
+  static getDerivedStateFromError(error: Error): State {
+    return {
+      hasError: true,
       error,
-      errorId: Date.now().toString(36)
+      errorInfo: null
     };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
-    this.setState({ errorInfo });
-    this.reportError(error, errorInfo);
-  }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({
+      error,
+      errorInfo
+    });
 
-  private reportError = (error: Error, errorInfo: ErrorInfo) => {
-    const errorReport = {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      errorId: this.state.errorId
-    };
+    // Log error to monitoring service
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    if (import.meta.env.PROD) {
-      console.log('Error reported:', errorReport);
+    // Send error to logging service
+    if (process.env.NODE_ENV === 'production') {
+      this.logErrorToService(error, errorInfo);
     }
+  }
+
+  private logErrorToService = (error: Error, errorInfo: ErrorInfo) => {
+    // Send error to your logging service
+    fetch('/api/errors', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      })
+    }).catch(err => console.error('Failed to log error:', err));
   };
 
   private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
   };
 
-  public render() {
+  private handleGoHome = () => {
+    window.location.href = '/';
+  };
+
+  render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-app-bg p-4">
-          <div className="max-w-md w-full text-center app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle size={32} className="text-red-500" />
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+              <div className="text-center">
+                <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+                <h2 className="mt-4 text-lg font-medium text-gray-900">
+                  Something went wrong
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  We're sorry, but something unexpected happened. Please try again.
+                </p>
+                
+                {process.env.NODE_ENV === 'development' && this.state.error && (
+                  <details className="mt-4 text-left">
+                    <summary className="cursor-pointer text-sm font-medium text-gray-700">
+                      Error Details (Development)
+                    </summary>
+                    <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
+                      {this.state.error.toString()}
+                      {this.state.errorInfo?.componentStack}
+                    </pre>
+                  </details>
+                )}
+                
+                <div className="mt-6 flex flex-col space-y-3">
+                  <button
+                    onClick={this.handleRetry}
+                    className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Try Again
+                  </button>
+                  
+                  <button
+                    onClick={this.handleGoHome}
+                    className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <Home className="w-4 h-4 mr-2" />
+                    Go Home
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-2xl font-bold text-text-primary mb-2">
-              Oops! Something went wrong
-            </h1>
-            
-            <p className="text-text-secondary mb-6">
-              We're sorry for the inconvenience. The error has been reported.
-            </p>
-            
-            <div className="space-y-3">
-              <button 
-                onClick={this.handleRetry}
-                className="w-full btn-gradient py-3 rounded-2xl font-semibold flex items-center justify-center gap-2"
-              >
-                <RefreshCw size={16} />
-                Try Again
-              </button>
-              
-              <button 
-                onClick={() => window.location.href = '/'}
-                className="w-full bg-app-bg hover:bg-app-border text-text-primary py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-colors"
-              >
-                <Home size={16} />
-                Go Home
-              </button>
-            </div>
-            
-            {this.state.errorId && (
-              <p className="text-xs text-text-muted mt-4">
-                Error ID: {this.state.errorId}
-              </p>
-            )}
           </div>
         </div>
       );
@@ -104,3 +133,17 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+// Higher-order component for functional components
+export const withErrorBoundary = <P extends object>(
+  Component: React.ComponentType<P>,
+  fallback?: ReactNode
+) => {
+  return (props: P) => (
+    <ErrorBoundary fallback={fallback}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
+};
+
+export default ErrorBoundary;

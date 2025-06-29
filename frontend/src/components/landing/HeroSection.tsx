@@ -199,33 +199,7 @@ const HeroSection = () => {
           </motion.div>
         </div>
 
-        {/* Banner Section - Editable by Super Admin */}
-        {settings?.bannerSection?.imageUrl && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="mt-20"
-          >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-              <img
-                src={settings.bannerSection.imageUrl}
-                alt={settings.bannerSection.altText || 'Platform Banner'}
-                className="w-full h-64 md:h-96 object-cover"
-              />
-              {settings.bannerSection.overlayText && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <h2 className="text-4xl font-bold mb-4">{settings.bannerSection.overlayText}</h2>
-                    {settings.bannerSection.overlaySubtext && (
-                      <p className="text-xl text-white/90">{settings.bannerSection.overlaySubtext}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
+
       </div>
     </section>
   );
