@@ -27,7 +27,18 @@
     "create_account": "Create Account",
     "full_name": "Full Name",
     "confirm_password": "Confirm Password",
-    "agree_terms": "I agree to the Terms of Service and Privacy Policy"
+    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
+    "agent": "Agent",
+    "check_email": "Check your email for verification link",
+    "create_password": "Create a strong password",
+    "enter_full_name": "Enter your full name",
+    "go_to_login": "Go to Login",
+    "have_account": "Already have an account?",
+    "join_thousands": "Join thousands of property managers",
+    "landlord": "Landlord",
+    "role": "Role",
+    "tenant": "Tenant",
+    "verification_sent": "Verification email sent"
   },
   "common": {
     "loading": "Loading...",
@@ -84,12 +95,7 @@
     "features": "Features",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
-    "property_management": "Property Management",
-    "learn_more": "Learn More",
-    "get_in_touch": "Get in touch",
-    "install_app": "Install App",
-    "native_experience": "Native experience",
-    "switch_to_mode": "Switch to {{mode}} Mode"
+    "property_management": "Property Management"
   },
   "dashboard": {
     "overview": "Overview",
@@ -100,7 +106,6 @@
     "maintenance": "Maintenance",
     "expenses": "Expenses",
     "cash_flow": "Cash Flow",
-    "payments": "Payments",
     "reminders": "Reminders",
     "approvals": "Approvals",
     "users_invites": "Users & Invites",
@@ -133,7 +138,8 @@
     "no_automated_reminders": "No Automated Reminders Configured",
     "tenant": "Tenant",
     "next_send": "Next Send",
-    "frequency": "Frequency"
+    "frequency": "Frequency",
+    "payments": "Payments"
   },
   "landing": {
     "hero_title": "The All-in-One Platform for Modern Property Management",
@@ -155,6 +161,20 @@
     "most_popular": "Most Popular",
     "get_started": "Get Started",
     "contact_sales": "Contact Sales"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Comprehensive property management solutions",
+    "property_tracking_title": "Property Tracking",
+    "property_tracking_desc": "Track all your properties in one place",
+    "rent_collection_title": "Rent Collection",
+    "rent_collection_desc": "Automated rent collection and reminders",
+    "tenant_management_title": "Tenant Management",
+    "tenant_management_desc": "Manage tenants and lease agreements"
+  },
+  "install_app": {
+    "title": "Install Our App",
+    "subtitle": "Get the native mobile experience"
   },
   "forms": {
     "street_address": "Street Address",
@@ -180,7 +200,22 @@
     "manage_portfolio": "Manage your property portfolio",
     "view": "View",
     "edit": "Edit",
-    "no_properties_yet": "No Properties Yet"
+    "no_properties_yet": "No Properties Yet",
+    "add_first_property": "Add Your First Property",
+    "add_new_property": "Add New Property",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "zip_code": "Zip Code",
+    "click_to_upload": "Click to upload image",
+    "enter_property_name": "Enter property name",
+    "inactive": "Inactive",
+    "active": "Active",
+    "number_of_units": "Number of Units",
+    "property_image": "Property Image",
+    "save_property": "Save Property",
+    "street_address": "Street Address",
+    "units": "Units"
   },
   "tenant": {
     "add_tenant": "Add Tenant",
