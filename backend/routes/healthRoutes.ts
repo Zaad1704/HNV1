@@ -2,6 +2,15 @@ import { Router } from 'express';
 import mongoose from 'mongoose';
 import { cacheService } from '../services/cacheService';
 
+// Import redis check
+let redis: any = null;
+try {
+  const Redis = require('redis');
+  redis = Redis.createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
+} catch (error) {
+  // Redis not available
+}
+
 const router = Router();
 
 router.get('/health', async (req, res) => {
