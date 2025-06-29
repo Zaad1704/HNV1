@@ -1,5 +1,6 @@
 // backend/routes/superAdminRoutes.ts
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
+import User from '../models/User';
 import asyncHandler from 'express-async-handler';
 import { 
     getDashboardStats, 
@@ -40,6 +41,26 @@ router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelf
 
 router.get('/users', asyncHandler(getAllUsers));
 router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
+router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findByIdAndDelete(req.params.userId);
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+  res.json({ success: true, message: 'User deleted successfully' });
+}));
+
+router.post('/moderators', asyncHandler(async (req: Request, res: Response) => {
+  const { name, email, password } = req.body;
+  const user = await User.create({
+    name,
+    email, 
+    password,
+    role: 'Super Moderator',
+    organizationId: req.user?.organizationId,
+    isEmailVerified: true
+  });
+  res.status(201).json({ success: true, data: user });
+}));
 
 router.get('/moderators', asyncHandler(getModerators));
 router.get('/billing', asyncHandler(getGlobalBilling));

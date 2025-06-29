@@ -12,6 +12,24 @@ const fetchModerators = async () => {
 const AdminModeratorsPage = () => {
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+
+  const addModeratorMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/super-admin/moderators', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['moderators'] });
+      setShowAddModal(false);
+      setFormData({ name: '', email: '', password: '' });
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addModeratorMutation.mutate(formData);
+  };
 
   const { data: moderators, isLoading } = useQuery({
     queryKey: ['moderators'],
@@ -116,6 +134,68 @@ const AdminModeratorsPage = () => {
             Add First Moderator
           </button>
         </motion.div>
+      )}
+
+      {/* Add Moderator Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+          <div className="app-surface rounded-3xl shadow-app-xl w-full max-w-md border border-app-border">
+            <div className="flex justify-between items-center p-6 border-b border-app-border">
+              <h2 className="text-xl font-bold text-text-primary">Add Moderator</h2>
+              <button onClick={() => setShowAddModal(false)} className="text-text-secondary hover:text-text-primary">
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Email</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  required
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Password</label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  required
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                />
+              </div>
+              <div className="flex justify-end gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addModeratorMutation.isPending}
+                  className="btn-gradient px-6 py-3 rounded-2xl"
+                >
+                  {addModeratorMutation.isPending ? 'Adding...' : 'Add Moderator'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </motion.div>
   );
