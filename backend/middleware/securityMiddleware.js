@@ -27,7 +27,7 @@ exports.securityHeaders = (0, helmet_1.default)({
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:"],
             scriptSrc: ["'self'"],
-            connectSrc: ["'self'", "https://api.exchangerate-api.com"],
+            connectSrc: ["'self'", "https://api.exchangerate-api.com", "https://hnv.onrender.com"],
         },
     },
     crossOriginEmbedderPolicy: false,
