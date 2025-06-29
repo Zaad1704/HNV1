@@ -4,11 +4,13 @@ import { cacheService } from '../services/cacheService';
 
 // Import redis check
 let redis: any = null;
-try {
-  const Redis = require('redis');
-  redis = Redis.createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
-} catch (error) {
-  // Redis not available
+if (process.env.REDIS_URL) {
+  try {
+    const Redis = require('redis');
+    redis = Redis.createClient({ url: process.env.REDIS_URL });
+  } catch (error) {
+    redis = null;
+  }
 }
 
 const router = Router();
