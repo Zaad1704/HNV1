@@ -51,7 +51,7 @@ const AdminPlansPage = () => {
   const createMutation = useMutation({
     mutationFn: createPlan,
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminPlans']);
+      queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
       setShowModal(false);
     }
   });
@@ -59,7 +59,7 @@ const AdminPlansPage = () => {
   const updateMutation = useMutation({
     mutationFn: updatePlan,
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminPlans']);
+      queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
       setShowModal(false);
       setEditingPlan(null);
     }
@@ -68,7 +68,7 @@ const AdminPlansPage = () => {
   const deleteMutation = useMutation({
     mutationFn: deletePlan,
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminPlans']);
+      queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
     }
   });
 
