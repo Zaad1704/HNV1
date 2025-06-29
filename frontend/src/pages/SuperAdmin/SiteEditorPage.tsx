@@ -33,9 +33,14 @@ const SiteEditorPage = () => {
 
   const { data: currentSettings, isLoading } = useQuery({
     queryKey: ['siteSettings'],
-    queryFn: fetchSiteSettings,
-    onSuccess: (data) => setSettings(data)
+    queryFn: fetchSiteSettings
   });
+
+  React.useEffect(() => {
+    if (currentSettings) {
+      setSettings(currentSettings);
+    }
+  }, [currentSettings]);
 
   const updateMutation = useMutation({
     mutationFn: updateSiteSettings,
@@ -169,9 +174,13 @@ const SiteEditorPage = () => {
                   const file = e.target.files?.[0];
                   if (file) {
                     const formData = new FormData();
-                    formData.append('bannerImage', file);
+                    formData.append('image', file);
                     // Upload image and get URL
-                    apiClient.post('/upload/banner', formData)
+                    apiClient.post('/upload/image', formData, {
+                      headers: {
+                        'Content-Type': 'multipart/form-data'
+                      }
+                    })
                       .then(response => {
                         handleInputChange('bannerSection', 'imageUrl', response.data.url);
                       })
