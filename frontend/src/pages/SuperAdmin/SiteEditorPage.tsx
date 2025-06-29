@@ -45,7 +45,7 @@ const SiteEditorPage = () => {
   const updateMutation = useMutation({
     mutationFn: updateSiteSettings,
     onSuccess: () => {
-      queryClient.invalidateQueries(['siteSettings']);
+      queryClient.invalidateQueries({ queryKey: ['siteSettings'] });
       alert('Settings updated successfully!');
     },
     onError: (error: any) => {
@@ -182,7 +182,7 @@ const SiteEditorPage = () => {
                       }
                     })
                       .then(response => {
-                        handleInputChange('bannerSection', 'imageUrl', response.data.url);
+                        handleInputChange('bannerSection', 'imageUrl', response.data.imageUrl);
                       })
                       .catch(err => alert('Failed to upload image'));
                   }
