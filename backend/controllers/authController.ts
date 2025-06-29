@@ -56,12 +56,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         password, 
         role, 
         organizationId: organization._id,
-        isEmailVerified: false // User starts as unverified
+        isEmailVerified: role === 'super_admin' ? true : false // Super admin auto-verified
     });
 
-    // This method now exists on the user object
-    const verificationToken = user.getEmailVerificationToken();
-    
     organization.owner = user._id as Types.ObjectId; 
     organization.members.push(user._id as Types.ObjectId); 
     const trialEndDate = new Date();
@@ -75,19 +72,28 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     organization.subscription = subscription._id as Types.ObjectId; 
     
     await organization.save();
-    await user.save({ validateBeforeSave: false }); // Save user with verification token
     await subscription.save();
     
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    try {
-        await emailService.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', {
-            userName: user.name,
-            verificationUrl: verificationUrl
-        });
-        res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
-    } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
-        return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
+    // Skip email verification for super admin
+    if (role === 'super_admin') {
+        await user.save();
+        res.status(201).json({ success: true, message: 'Super admin registration successful! You can now log in.' });
+    } else {
+        // This method now exists on the user object
+        const verificationToken = user.getEmailVerificationToken();
+        await user.save({ validateBeforeSave: false }); // Save user with verification token
+        
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+        try {
+            await emailService.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', {
+                userName: user.name,
+                verificationUrl: verificationUrl
+            });
+            res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
+        } catch (emailError) {
+            console.error("Failed to send verification email:", emailError);
+            return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
+        }
     }
   } catch (error) {
     console.error(error);
@@ -109,8 +115,8 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // This property now exists on the user object
-    if (!user.isEmailVerified) {
+    // Skip email verification for super admin
+    if (!user.isEmailVerified && user.role !== 'super_admin') {
         return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
     }
 
