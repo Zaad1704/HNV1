@@ -115,7 +115,9 @@ const LandingHeroContent = () => {
             <h3 className="text-light-text dark:text-light-text-dark font-semibold text-sm">Get in Touch</h3>
             <h2 className="text-2xl font-bold mt-1 text-dark-text dark:text-dark-text-dark">Contact Us</h2>
             <div className="mt-4 flex flex-col sm:flex-row gap-6 items-center">
-                <img src="https://images.unsplash.com/photo-1587560699334-cc4ff6349d04?auto=format&fit=crop&q=80&w=400&h=300&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="rounded-xl w-full sm:w-32 h-32 object-cover" alt="Contact image"/>
+                <div className="rounded-xl w-full sm:w-32 h-32 bg-gradient-to-br from-brand-orange to-brand-blue flex items-center justify-center text-white text-2xl font-bold">
+                  HNV
+                </div>
                 <div className="flex-1">
                     <p className="text-light-text dark:text-light-text-dark text-sm">Have questions or need support? Reach out to our team.</p>
                     <span className="text-brand-primary dark:text-brand-secondary font-semibold mt-2 inline-block text-sm">Send a Message &rarr;</span>

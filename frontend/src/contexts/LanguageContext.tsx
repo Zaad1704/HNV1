@@ -59,11 +59,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return;
         }
 
-        // Skip IP detection to avoid CORS issues
-        // const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        const countryCode = data.country_code || 'US';
-        const detected = getLanguageFromCountry(countryCode);
+        // Skip IP detection to avoid CORS issues - use browser language
+        const browserLang = navigator.language.split('-')[0];
+        const detected = languages.find(l => l.code === browserLang)?.code || 'en';
         setDetectedLang(detected);
         
         const initialLang = detected === 'en' ? 'en' : detected;
