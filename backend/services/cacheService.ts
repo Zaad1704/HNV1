@@ -1,14 +1,19 @@
-import Redis from 'redis';
+let redis: any = null;
 
-const redis = Redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
-
-redis.on('error', (err) => console.error('Redis Client Error', err));
-redis.connect().catch(console.error);
+try {
+  const Redis = require('redis');
+  redis = Redis.createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379'
+  });
+  redis.on('error', (err: any) => console.error('Redis Client Error', err));
+  redis.connect().catch(console.error);
+} catch (error) {
+  console.warn('Redis not available, caching disabled');
+}
 
 export const cacheService = {
   async get(key: string) {
+    if (!redis) return null;
     try {
       const data = await redis.get(key);
       return data ? JSON.parse(data) : null;
@@ -19,6 +24,7 @@ export const cacheService = {
   },
 
   async set(key: string, data: any, ttl: number = 3600) {
+    if (!redis) return;
     try {
       await redis.setEx(key, ttl, JSON.stringify(data));
     } catch (error) {
@@ -27,6 +33,7 @@ export const cacheService = {
   },
 
   async del(key: string) {
+    if (!redis) return;
     try {
       await redis.del(key);
     } catch (error) {
@@ -35,6 +42,7 @@ export const cacheService = {
   },
 
   async flush() {
+    if (!redis) return;
     try {
       await redis.flushAll();
     } catch (error) {
