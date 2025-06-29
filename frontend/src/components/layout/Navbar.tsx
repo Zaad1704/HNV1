@@ -90,42 +90,17 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Layout - Responsive */}
-        <div className="md:hidden">
-          {/* Top Row: Menu + Brand + Get Started */}
-          <div className="flex items-center justify-between mb-2">
+        {/* Mobile Layout */}
+        <div className="md:hidden flex items-center justify-between relative">
+          {/* Left: Menu + Controls */}
+          <div className="flex items-center gap-1">
             <button 
               onClick={() => setShowMobileMenu(true)}
               className="btn-glass p-2 rounded-full"
             >
-              <Menu size={18} />
+              <Menu size={16} />
             </button>
-            
-            <Link to="/" className="flex items-center gap-2 text-white flex-1 justify-center">
-              <img 
-                src={settings?.logos?.faviconUrl || '/logo-min.png'} 
-                alt="Logo" 
-                className="h-6 w-6 rounded-lg object-contain" 
-              />
-              <div className="flex flex-col leading-tight">
-                <span className="text-sm font-bold">
-                  {settings?.logos?.companyName || 'HNV Property Management Solutions'}
-                </span>
-                <span className="text-xs text-white/70">{t('common.property_management')}</span>
-              </div>
-            </Link>
-            
-            <Link 
-              to="/register" 
-              className="btn-glass px-3 py-1.5 rounded-full text-xs font-semibold"
-            >
-              {t('header.get_started')}
-            </Link>
-          </div>
-          
-          {/* Bottom Row: Language + Theme */}
-          <div className="flex items-center justify-center gap-3">
-            <div className="scale-75">
+            <div className="scale-75 origin-left">
               <SmartLanguageSwitcher />
             </div>
             <button 
@@ -136,6 +111,29 @@ const Navbar = () => {
               {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
             </button>
           </div>
+          
+          {/* Center: Brand */}
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-white">
+            <img 
+              src={settings?.logos?.faviconUrl || '/logo-min.png'} 
+              alt="Logo" 
+              className="h-6 w-6 rounded-lg object-contain" 
+            />
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs font-bold whitespace-nowrap">
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
+              </span>
+              <span className="text-xs text-white/70">{t('common.property_management')}</span>
+            </div>
+          </Link>
+          
+          {/* Right: Get Started */}
+          <Link 
+            to="/register" 
+            className="btn-glass px-2 py-1 rounded-full text-xs font-semibold"
+          >
+            {t('header.get_started')}
+          </Link>
         </div>
       </div>
 
