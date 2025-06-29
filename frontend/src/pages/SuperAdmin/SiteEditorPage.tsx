@@ -193,7 +193,7 @@ const SiteEditorPage = () => {
                 <img 
                   src={(settings.bannerSection as any).imageUrl} 
                   alt="Banner Preview" 
-                  className="mt-2 w-full h-32 object-cover rounded-lg"
+                  className="mt-2 w-full h-48 object-contain bg-gray-100 rounded-lg"
                 />
               )}
             </div>
