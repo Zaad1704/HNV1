@@ -1,84 +1,151 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { logger } from '../services/logger';
 
 dotenv.config();
 
-const createIndexes = async () => {
+const createDatabaseIndexes = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI!);
-    console.log('Connected to MongoDB');
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not defined');
+    }
+
+    await mongoose.connect(process.env.MONGO_URI);
+    logger.info('Connected to MongoDB for index creation');
 
     const db = mongoose.connection.db;
 
-    // Users collection indexes
+    // User indexes
     await db.collection('users').createIndex({ email: 1 }, { unique: true });
     await db.collection('users').createIndex({ organizationId: 1 });
     await db.collection('users').createIndex({ role: 1 });
     await db.collection('users').createIndex({ status: 1 });
     await db.collection('users').createIndex({ createdAt: -1 });
+    await db.collection('users').createIndex({ 'email': 1, 'organizationId': 1 });
 
-    // Properties collection indexes
+    // Property indexes
     await db.collection('properties').createIndex({ organizationId: 1 });
-    await db.collection('properties').createIndex({ ownerId: 1 });
+    await db.collection('properties').createIndex({ createdBy: 1 });
+    await db.collection('properties').createIndex({ managedByAgentId: 1 });
     await db.collection('properties').createIndex({ status: 1 });
+    await db.collection('properties').createIndex({ location: '2dsphere' });
     await db.collection('properties').createIndex({ 'address.city': 1 });
+    await db.collection('properties').createIndex({ 'address.state': 1 });
     await db.collection('properties').createIndex({ createdAt: -1 });
 
-    // Tenants collection indexes
-    await db.collection('tenants').createIndex({ organizationId: 1, email: 1 });
+    // Tenant indexes
+    await db.collection('tenants').createIndex({ organizationId: 1 });
     await db.collection('tenants').createIndex({ propertyId: 1 });
+    await db.collection('tenants').createIndex({ email: 1 });
     await db.collection('tenants').createIndex({ status: 1 });
     await db.collection('tenants').createIndex({ leaseEndDate: 1 });
     await db.collection('tenants').createIndex({ rentDueDate: 1 });
+    await db.collection('tenants').createIndex({ createdAt: -1 });
 
-    // Payments collection indexes
-    await db.collection('payments').createIndex({ tenantId: 1, date: -1 });
-    await db.collection('payments').createIndex({ propertyId: 1, date: -1 });
-    await db.collection('payments').createIndex({ organizationId: 1, date: -1 });
+    // Payment indexes
+    await db.collection('payments').createIndex({ organizationId: 1 });
+    await db.collection('payments').createIndex({ tenantId: 1 });
+    await db.collection('payments').createIndex({ propertyId: 1 });
     await db.collection('payments').createIndex({ status: 1 });
-    await db.collection('payments').createIndex({ method: 1 });
+    await db.collection('payments').createIndex({ dueDate: 1 });
+    await db.collection('payments').createIndex({ paidDate: 1 });
+    await db.collection('payments').createIndex({ createdAt: -1 });
 
-    // Expenses collection indexes
-    await db.collection('expenses').createIndex({ organizationId: 1, date: -1 });
-    await db.collection('expenses').createIndex({ propertyId: 1, date: -1 });
+    // Expense indexes
+    await db.collection('expenses').createIndex({ organizationId: 1 });
+    await db.collection('expenses').createIndex({ propertyId: 1 });
     await db.collection('expenses').createIndex({ category: 1 });
-    await db.collection('expenses').createIndex({ status: 1 });
+    await db.collection('expenses').createIndex({ date: -1 });
+    await db.collection('expenses').createIndex({ createdAt: -1 });
 
-    // Maintenance requests collection indexes
-    await db.collection('maintenancerequests').createIndex({ organizationId: 1, createdAt: -1 });
-    await db.collection('maintenancerequests').createIndex({ propertyId: 1, status: 1 });
+    // Maintenance Request indexes
+    await db.collection('maintenancerequests').createIndex({ organizationId: 1 });
+    await db.collection('maintenancerequests').createIndex({ propertyId: 1 });
     await db.collection('maintenancerequests').createIndex({ tenantId: 1 });
-    await db.collection('maintenancerequests').createIndex({ priority: 1, status: 1 });
+    await db.collection('maintenancerequests').createIndex({ status: 1 });
+    await db.collection('maintenancerequests').createIndex({ priority: 1 });
+    await db.collection('maintenancerequests').createIndex({ createdAt: -1 });
 
-    // Audit logs collection indexes
-    await db.collection('auditlogs').createIndex({ organizationId: 1, timestamp: -1 });
-    await db.collection('auditlogs').createIndex({ userId: 1, timestamp: -1 });
-    await db.collection('auditlogs').createIndex({ action: 1 });
-    await db.collection('auditlogs').createIndex({ timestamp: -1 });
-
-    // Organizations collection indexes
+    // Organization indexes
     await db.collection('organizations').createIndex({ owner: 1 });
     await db.collection('organizations').createIndex({ status: 1 });
+    await db.collection('organizations').createIndex({ members: 1 });
     await db.collection('organizations').createIndex({ createdAt: -1 });
 
-    // Subscriptions collection indexes
-    await db.collection('subscriptions').createIndex({ organizationId: 1 });
-    await db.collection('subscriptions').createIndex({ status: 1 });
-    await db.collection('subscriptions').createIndex({ currentPeriodEndsAt: 1 });
-    await db.collection('subscriptions').createIndex({ trialExpiresAt: 1 });
+    // Notification indexes
+    await db.collection('notifications').createIndex({ userId: 1 });
+    await db.collection('notifications').createIndex({ organizationId: 1 });
+    await db.collection('notifications').createIndex({ read: 1 });
+    await db.collection('notifications').createIndex({ type: 1 });
+    await db.collection('notifications').createIndex({ createdAt: -1 });
 
-    // Cash flow collection indexes
-    await db.collection('cashflows').createIndex({ organizationId: 1, transactionDate: -1 });
-    await db.collection('cashflows').createIndex({ fromUser: 1 });
-    await db.collection('cashflows').createIndex({ toUser: 1 });
-    await db.collection('cashflows').createIndex({ status: 1 });
+    // Audit Log indexes
+    await db.collection('auditlogs').createIndex({ userId: 1 });
+    await db.collection('auditlogs').createIndex({ organizationId: 1 });
+    await db.collection('auditlogs').createIndex({ action: 1 });
+    await db.collection('auditlogs').createIndex({ resourceType: 1 });
+    await db.collection('auditlogs').createIndex({ timestamp: -1 });
 
-    console.log('All indexes created successfully');
-    process.exit(0);
+    // Invoice indexes
+    await db.collection('invoices').createIndex({ organizationId: 1 });
+    await db.collection('invoices').createIndex({ tenantId: 1 });
+    await db.collection('invoices').createIndex({ propertyId: 1 });
+    await db.collection('invoices').createIndex({ status: 1 });
+    await db.collection('invoices').createIndex({ dueDate: 1 });
+    await db.collection('invoices').createIndex({ createdAt: -1 });
+
+    // Lease indexes
+    await db.collection('leases').createIndex({ organizationId: 1 });
+    await db.collection('leases').createIndex({ tenantId: 1 });
+    await db.collection('leases').createIndex({ propertyId: 1 });
+    await db.collection('leases').createIndex({ status: 1 });
+    await db.collection('leases').createIndex({ startDate: 1 });
+    await db.collection('leases').createIndex({ endDate: 1 });
+
+    // Compound indexes for common queries
+    await db.collection('payments').createIndex({ 
+      organizationId: 1, 
+      status: 1, 
+      dueDate: 1 
+    });
+
+    await db.collection('properties').createIndex({ 
+      organizationId: 1, 
+      status: 1 
+    });
+
+    await db.collection('tenants').createIndex({ 
+      organizationId: 1, 
+      status: 1, 
+      leaseEndDate: 1 
+    });
+
+    await db.collection('maintenancerequests').createIndex({ 
+      organizationId: 1, 
+      status: 1, 
+      priority: 1 
+    });
+
+    logger.info('All database indexes created successfully');
+    
+    // Display index information
+    const collections = ['users', 'properties', 'tenants', 'payments', 'expenses', 'maintenancerequests'];
+    for (const collectionName of collections) {
+      const indexes = await db.collection(collectionName).indexes();
+      logger.info(`${collectionName} indexes:`, indexes.map(idx => idx.name));
+    }
+
   } catch (error) {
-    console.error('Error creating indexes:', error);
-    process.exit(1);
+    logger.error('Error creating indexes:', error);
+  } finally {
+    await mongoose.disconnect();
+    logger.info('Disconnected from MongoDB');
   }
 };
 
-createIndexes();
+// Run if called directly
+if (require.main === module) {
+  createDatabaseIndexes();
+}
+
+export { createDatabaseIndexes };
