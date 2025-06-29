@@ -44,7 +44,8 @@ router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
 router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findByIdAndDelete(req.params.userId);
   if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found' });
+    res.status(404).json({ success: false, message: 'User not found' });
+    return;
   }
   res.json({ success: true, message: 'User deleted successfully' });
 }));
