@@ -17,8 +17,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle, showNotificat
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50">
       <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Menu/Logo */}
-        <div className="flex items-center gap-3">
+        {/* Left: Menu */}
+        <div className="flex items-center">
           {onMenuToggle && (
             <button
               onClick={onMenuToggle}
@@ -27,6 +27,10 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle, showNotificat
               <Menu size={20} className="text-gray-700 dark:text-gray-300" />
             </button>
           )}
+        </div>
+        
+        {/* Center: Logo + Company Name */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img 
               src="/logo-min.png" 
@@ -39,12 +43,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle, showNotificat
           </Link>
         </div>
 
-        {/* Right: Language Switcher + Notifications + Profile */}
+        {/* Right: Notifications + Profile */}
         <div className="flex items-center gap-2">
-          <div className="scale-75 origin-right">
-            <SmartLanguageSwitcher />
-          </div>
-          
           {showNotifications && (
             <button className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative">
               <Bell size={18} className="text-gray-700 dark:text-gray-300" />
