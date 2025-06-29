@@ -15,7 +15,8 @@ export const useIPLocation = () => {
     const detectLocation = async () => {
       try {
         // Try multiple IP geolocation services
-        const response = await fetch('https://ipapi.co/json/');
+        // Skip IP detection to avoid CORS issues
+        // const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         
         const locationData: LocationData = {

@@ -203,6 +203,15 @@ const SiteEditorPage = () => {
           </div>
         </Section>
 
+        <Section title="Contact Section">
+          <div className="space-y-4">
+            <InputField label="Contact Title" section="contact" field="title" />
+            <TextAreaField label="Contact Subtitle" section="contact" field="subtitle" />
+            <InputField label="Contact Email" section="contact" field="email" />
+            <InputField label="Contact Phone" section="contact" field="phone" />
+          </div>
+        </Section>
+
         <Section title="Footer Settings">
           <div className="space-y-4">
             <TextAreaField label="Footer Description" section="footer" field="description" />

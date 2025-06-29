@@ -59,7 +59,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           return;
         }
 
-        const response = await fetch('https://ipapi.co/json/');
+        // Skip IP detection to avoid CORS issues
+        // const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         const countryCode = data.country_code || 'US';
         const detected = getLanguageFromCountry(countryCode);
