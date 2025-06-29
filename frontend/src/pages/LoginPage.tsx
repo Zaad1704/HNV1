@@ -22,16 +22,17 @@ const LoginPage: React.FC = () => {
     
     try {
       const response = await apiClient.post('/auth/login', { email, password });
+      console.log('Full login response:', response);
       console.log('Login response:', response.data);
       
-      if (response.data.success && response.data.data) {
-        const { token, user } = response.data.data;
-        login(token, user);
-        navigate('/dashboard');
-      } else if (response.data.token && response.data.user) {
+      if (response.data.success && response.data.token && response.data.user) {
         login(response.data.token, response.data.user);
         navigate('/dashboard');
+      } else if (response.data.data && response.data.data.token && response.data.data.user) {
+        login(response.data.data.token, response.data.data.user);
+        navigate('/dashboard');
       } else {
+        console.error('Invalid response structure:', response.data);
         setError('Invalid response from server');
       }
     } catch (err: any) {
