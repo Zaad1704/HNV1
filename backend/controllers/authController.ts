@@ -56,7 +56,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         password, 
         role, 
         organizationId: organization._id,
-        isEmailVerified: role === 'super_admin' ? true : false // Super admin auto-verified
+        isEmailVerified: role === 'Super Admin' ? true : false // Super admin auto-verified
     });
 
     organization.owner = user._id as Types.ObjectId; 
@@ -75,7 +75,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await subscription.save();
     
     // Skip email verification for super admin
-    if (role === 'super_admin') {
+    if (role === 'Super Admin') {
         await user.save();
         res.status(201).json({ success: true, message: 'Super admin registration successful! You can now log in.' });
     } else {
@@ -116,7 +116,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Skip email verification for super admin
-    if (!user.isEmailVerified && user.role !== 'super_admin') {
+    if (!user.isEmailVerified && user.role !== 'Super Admin') {
         return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
     }
 
