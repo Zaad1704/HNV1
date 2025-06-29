@@ -12,11 +12,13 @@ router.get('/health', async (req, res) => {
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     
     // Test cache connection
-    let cacheStatus = 'disconnected';
+    let cacheStatus = 'disabled';
     try {
-      await cacheService.set('health-check', 'ok', 10);
-      const cacheTest = await cacheService.get('health-check');
-      cacheStatus = cacheTest === 'ok' ? 'connected' : 'error';
+      if (redis) {
+        await cacheService.set('health-check', 'ok', 10);
+        const cacheTest = await cacheService.get('health-check');
+        cacheStatus = cacheTest === 'ok' ? 'connected' : 'error';
+      }
     } catch (error) {
       cacheStatus = 'error';
     }
