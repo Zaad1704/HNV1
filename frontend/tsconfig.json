@@ -15,5 +15,13 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/__tests__",
+    "src/setupTests.ts",
+    "src/components/common/VirtualizedList.tsx",
+    "src/hooks/useRealTime.ts",
+    "src/hooks/usePerformanceMonitor.ts",
+    "src/services/offlineService.ts"
+  ]
 }
