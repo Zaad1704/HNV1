@@ -1,0 +1,22 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+// backend/models/Invoice.ts
+const mongoose_1 = require("mongoose");
+const InvoiceSchema = new mongoose_1.Schema({
+    tenantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Tenant', required: true },
+    propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
+    organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
+    leaseId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Lease', required: true },
+    invoiceNumber: { type: String, required: true, unique: true }, // NEW SCHEMA FIELD
+    amount: { type: Number, required: true },
+    dueDate: { type: Date, required: true },
+    status: { type: String, default: 'pending', enum: ['pending', 'paid', 'overdue', 'canceled'] },
+    lineItems: [{
+            description: { type: String, required: true },
+            amount: { type: Number, required: true },
+        }],
+    paidAt: { type: Date }, // NEW SCHEMA FIELD
+    transactionId: { type: String }, // NEW SCHEMA FIELD
+}, { timestamps: true });
+exports.default = (0, mongoose_1.model)('Invoice', InvoiceSchema);
+//# sourceMappingURL=Invoice.js.map
