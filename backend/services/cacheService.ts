@@ -1,14 +1,21 @@
 let redis: any = null;
 
-try {
-  const Redis = require('redis');
-  redis = Redis.createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-  });
-  redis.on('error', (err: any) => console.error('Redis Client Error', err));
-  redis.connect().catch(console.error);
-} catch (error) {
-  console.warn('Redis not available, caching disabled');
+if (process.env.REDIS_URL) {
+  try {
+    const Redis = require('redis');
+    redis = Redis.createClient({
+      url: process.env.REDIS_URL
+    });
+    redis.on('error', () => {
+      // Silent error handling - Redis not available
+      redis = null;
+    });
+    redis.connect().catch(() => {
+      redis = null;
+    });
+  } catch (error) {
+    redis = null;
+  }
 }
 
 export const cacheService = {
