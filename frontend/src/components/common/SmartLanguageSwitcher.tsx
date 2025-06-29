@@ -35,7 +35,7 @@ const SmartLanguageSwitcher = () => {
         {showAll && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowAll(false)} />
-            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] overflow-hidden max-h-80 overflow-y-auto transform scale-90 md:scale-100 origin-top-right max-w-[calc(100vw-2rem)] md:max-w-none">
+            <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] overflow-hidden max-h-80 overflow-y-auto transform scale-90 md:scale-100 origin-top-right" style={{right: '0', maxWidth: 'calc(100vw - 2rem)'}}>
               <div className="p-1">
                 {languages.map((language) => (
                   <button
