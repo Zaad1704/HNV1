@@ -11,7 +11,7 @@ import './config/passport-setup';
 
 // --- Import API Route Files ---
 import authRoutes from './routes/authRoutes';
-import billingRoutes from './routes/billingRoutes'; // <--- FIX: Import billingRoutes
+import billingRoutes from './routes/billingRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
 import propertiesRoutes from './routes/propertiesRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
@@ -47,6 +47,7 @@ import healthRoutes from './routes/healthRoutes';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { logger } from './services/logger';
 import compression from 'compression';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -70,20 +71,18 @@ const connectDB = async () => {
 };
 connectDB();
 
-// Dynamically configure CORS allowed origins from environment variable
-const allowedOriginsEnv = process.env.CORS_ALLOWED_ORIGINS;
-const allowedOrigins: string[] = allowedOriginsEnv ? allowedOriginsEnv.split(',') : [];
-
+// Fixed CORS configuration
 const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Not allowed by CORS: ${origin}`)); // Improved error message
-    }
-  },
-  credentials: true
+  origin: [
+    'https://www.hnvpm.com',
+    'https://hnvpm.com',
+    'https://hnv.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
 app.use(cors(corsOptions));
@@ -96,45 +95,26 @@ app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url} - ${req.ip}`);
   next();
 });
-// Enhanced security headers
+
+// Simplified security headers
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-eval'"],
-      connectSrc: ["'self'", "https://api.stripe.com"],
-      frameSrc: ["'self'", "https://js.stripe.com"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
 }));
 
-// CSRF Protection
-const csrf = require('csurf');
-app.use(csrf({ cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'production' } }));
-
-// Rate limiting per user
+// Rate limiting
 const userRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req: any) => req.user?.id || req.ip,
   message: 'Too many requests from this user'
 });
 app.use('/api', userRateLimit);
 app.use(passport.initialize());
 
 // --- Mount API Routes ---
-// (All app.use(...) calls for your routes go here)
 app.use('/api/auth', authRoutes);
-app.use('/api/billing', billingRoutes); // <--- FIX: Mount the billing routes
+app.use('/api/billing', billingRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/tenants', tenantsRoutes);
