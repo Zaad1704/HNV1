@@ -22,6 +22,12 @@ export interface IUser extends Document {
   emailVerificationExpires?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  phone?: string;
+  profilePicture?: string;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string;
+  twoFactorToken?: string;
+  twoFactorExpires?: Date;
   
   // --- Method signatures ---
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -53,7 +59,13 @@ const UserSchema: Schema<IUser> = new Schema({
   emailVerificationToken: { type: String, select: false },
   emailVerificationExpires: { type: Date, select: false },
   passwordResetToken: { type: String, select: false },
-  passwordResetExpires: { type: Date, select: false }
+  passwordResetExpires: { type: Date, select: false },
+  phone: { type: String },
+  profilePicture: { type: String },
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: { type: String, select: false },
+  twoFactorToken: { type: String, select: false },
+  twoFactorExpires: { type: Date, select: false }
 });
 
 // --- Lifecycle Hooks (pre-save for password hashing) ---

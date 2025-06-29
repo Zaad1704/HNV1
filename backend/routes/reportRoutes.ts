@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
 import PDFDocument from 'pdfkit';
-import { Parser } from 'json2csv';
+const { Parser } = require('json2csv');
 
 const router = Router();
 

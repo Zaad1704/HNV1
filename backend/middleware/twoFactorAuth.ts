@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { User } from '../models/User';
-import { emailService } from '../services/emailService';
+import User from '../models/User';
+import emailService from '../services/emailService';
 
 interface TwoFactorRequest extends Request {
   user?: any;
