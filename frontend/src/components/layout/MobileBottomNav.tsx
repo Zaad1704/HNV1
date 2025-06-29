@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 
 interface NavItem {
   id: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: any;
   label: string;
   path?: string;
   action?: () => void;
