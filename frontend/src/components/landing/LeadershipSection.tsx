@@ -13,20 +13,17 @@ const LeadershipSection = () => {
     {
       name: 'John Smith',
       position: 'CEO & Founder',
-      bio: 'Over 15 years of experience in property management and technology.',
-      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      bio: 'Over 15 years of experience in property management and technology.'
     },
     {
       name: 'Sarah Johnson',
       position: 'CTO',
-      bio: 'Former tech lead at major real estate platforms with expertise in scalable systems.',
-      imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+      bio: 'Former tech lead at major real estate platforms with expertise in scalable systems.'
     },
     {
       name: 'Michael Chen',
       position: 'Head of Product',
-      bio: 'Product strategist focused on user experience and customer success.',
-      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+      bio: 'Product strategist focused on user experience and customer success.'
     }
   ];
 
