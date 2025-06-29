@@ -35,13 +35,13 @@
     "morgan": "^1.10.0",
     "cookie-parser": "^1.4.6",
     "marked": "^9.1.6",
-    "json2csv": "^6.1.0",
-    "validator": "^13.11.0",
-    "express-validator": "^7.0.1",
-    "redis": "^4.6.0",
-    "winston": "^3.11.0",
+    "json2csv": "^5.0.7",
+    "validator": "^13.9.0",
+    "express-validator": "^6.15.0",
+    "redis": "^4.5.1",
+    "winston": "^3.8.2",
     "compression": "^1.7.4",
-    "express-slow-down": "^2.0.1"
+    "express-slow-down": "^1.6.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
