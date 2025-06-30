@@ -31,4 +31,19 @@ router
   .put(upload.fields(tenantUploadFields), asyncHandler(updateTenant))
   .delete(asyncHandler(deleteTenant));
 
+// Add missing tenant details endpoint
+router.get('/:id/details', protect, asyncHandler(async (req: Request, res: Response) => {
+  const tenant = await Tenant.findById(req.params.id)
+    .populate('propertyId', 'name address')
+    .populate('leaseId')
+    .populate('organizationId', 'name');
+  
+  if (!tenant) {
+    res.status(404).json({ success: false, message: 'Tenant not found' });
+    return;
+  }
+  
+  res.json({ success: true, data: tenant });
+}));
+
 export default router;

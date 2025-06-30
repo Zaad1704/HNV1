@@ -73,4 +73,33 @@ router.post('/export', protect, async (req, res) => {
   }
 });
 
+// Add missing report endpoints
+router.get('/monthly-collection', protect, asyncHandler(async (req: Request, res: Response) => {
+  const { month, year } = req.query;
+  const Payment = require('../models/Payment');
+  
+  const payments = await Payment.find({
+    organizationId: req.user?.organizationId,
+    createdAt: {
+      $gte: new Date(Number(year), Number(month) - 1, 1),
+      $lt: new Date(Number(year), Number(month), 1)
+    }
+  }).populate('tenantId', 'name').populate('propertyId', 'name');
+  
+  res.json({ success: true, data: payments });
+}));
+
+router.post('/export', protect, asyncHandler(async (req: Request, res: Response) => {
+  const { type, format, dateRange } = req.body;
+  
+  // Mock export functionality
+  const exportData = {
+    filename: `${type}-export-${Date.now()}.${format}`,
+    url: `/exports/${type}-export-${Date.now()}.${format}`,
+    status: 'completed'
+  };
+  
+  res.json({ success: true, data: exportData });
+}));
+
 export default router;

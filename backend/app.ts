@@ -44,6 +44,7 @@ import invoiceRoutes from './routes/invoiceRoutes';
 import receiptRoutes from './routes/receiptRoutes';
 import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
+import errorRoutes from './routes/errorRoutes';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -95,6 +96,7 @@ app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/localization', localizationRoutes);
 app.use('/api/translation', translationRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/errors', errorRoutes);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);
