@@ -85,9 +85,10 @@ app.get('/api/plans/public', (req, res) => {
 });
 
 app.post('/api/auth/login', (req, res) => {
-  res.json({
+  res.status(401).json({
     success: false,
-    message: 'Authentication service temporarily unavailable'
+    message: 'Invalid credentials',
+    data: null
   });
 });
 
