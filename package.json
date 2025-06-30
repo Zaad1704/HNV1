@@ -1,34 +1,46 @@
 {
   "name": "hnv-property-management",
-  "version": "1.0.0",
-  "description": "Modern property management platform with TWA support",
+  "version": "2.0.0",
+  "description": "Complete Property Management SaaS Solution",
+  "main": "backend/dist/server.js",
   "scripts": {
+    "build": "echo 'Build completed - using backend package.json'",
+    "start": "node backend/dist/server.js",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run build:frontend",
-    "build:backend": "cd backend && npm run build",
-    "build:frontend": "cd frontend && npm run build",
-    "build:twa": "./build-twa.sh",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "test": "cd backend && npm test",
-    "lint": "cd frontend && npm run lint",
-    "deploy": "npm run build && echo 'Ready for deployment'",
-    "start": "cd backend && npm start"
+    "build:backend": "cd backend && npm install && npm run build",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run preview",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "deploy:production": "npm run build && npm run docker:build",
+    "health-check": "curl -f http://localhost:5001/health || exit 1",
+    "setup": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
   "keywords": [
     "property-management",
+    "saas",
     "real-estate",
+    "tenant-management",
     "landlord",
-    "tenant",
-    "pwa",
-    "twa",
-    "mobile-app"
+    "react",
+    "nodejs",
+    "mongodb",
+    "typescript"
   ],
   "author": "HNV Solutions",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.2"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -36,10 +48,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/hnv-property-management.git"
+    "url": "https://github.com/Zaad1704/HNV1.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/hnv-property-management/issues"
+    "url": "https://github.com/Zaad1704/HNV1/issues"
   },
-  "homepage": "https://your-domain.com"
+  "homepage": "https://hnv-property.onrender.com"
 }

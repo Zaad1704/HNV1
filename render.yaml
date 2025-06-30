@@ -3,8 +3,8 @@ services:
     name: hnv-backend
     env: node
     plan: starter
-    buildCommand: cd backend && npm install --production
-    startCommand: cd backend && node server.js
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,31 +14,23 @@ services:
         fromDatabase:
           name: hnv-mongodb
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: hnv-redis
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
-      - key: CORS_ALLOWED_ORIGINS
+      - key: FRONTEND_URL
         value: https://hnv-frontend.onrender.com
+      - key: BACKEND_URL
+        value: https://hnv-backend.onrender.com
 
   - type: web
     name: hnv-frontend
     env: static
-    plan: starter
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
-      - key: REACT_APP_API_URL
-        value: https://hnv-backend.onrender.com
+      - key: VITE_API_URL
+        value: https://hnv-backend.onrender.com/api
 
 databases:
   - name: hnv-mongodb
-    databaseName: hnv_production
-    user: hnv_user
-    plan: starter
-
-  - name: hnv-redis
-    plan: starter
+    databaseName: hnv-saas
+    user: hnv-user

@@ -2,28 +2,31 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
+    "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "declaration": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": false,
     "baseUrl": "./",
     "paths": {
       "*": ["node_modules/*"]
-    },
-    "types": ["node"],
-    "typeRoots": ["node_modules/@types"],
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "resolveJsonModule": true
+    }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", "dist", "coverage", "**/*.test.ts", "tests", "services/backgroundJobs.ts", "services/realTimeService.ts"],
-  "files": [
-    "src/types/express.d.ts" // Explicitly include the global declaration file
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }
