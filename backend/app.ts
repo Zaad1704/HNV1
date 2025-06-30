@@ -45,6 +45,8 @@ import receiptRoutes from './routes/receiptRoutes';
 import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
 import { protect } from './middleware/authMiddleware';
+import passport from 'passport';
+import './config/passport-setup'; // Initialize passport strategies
 
 // Create the Express app instance
 const app: Express = express();
@@ -72,6 +74,8 @@ app.use(hpp());
 // Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Passport middleware
+app.use(passport.initialize());
 // Input sanitization
 app.use(sanitizeInput);
 // Request logging
