@@ -53,3 +53,67 @@ export const updateSiteSettings = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// Add specific section update endpoints
+export const updateHeroSection = async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
+    }
+
+    try {
+        const updatedSettings = await SiteSettings.findOneAndUpdate(
+            {},
+            { 
+                'heroSection': req.body,
+                updatedBy: req.user._id 
+            },
+            { new: true, upsert: true }
+        );
+        res.status(200).json({ success: true, data: updatedSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+export const updateLandscapeSection = async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
+    }
+
+    try {
+        const updatedSettings = await SiteSettings.findOneAndUpdate(
+            {},
+            { 
+                'landscapeSection': req.body,
+                updatedBy: req.user._id 
+            },
+            { new: true, upsert: true }
+        );
+        res.status(200).json({ success: true, data: updatedSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+export const updateBannerSection = async (req: Request, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ success: false, message: 'Not authorized' });
+        return;
+    }
+
+    try {
+        const updatedSettings = await SiteSettings.findOneAndUpdate(
+            {},
+            { 
+                'bannerSection': req.body,
+                updatedBy: req.user._id 
+            },
+            { new: true, upsert: true }
+        );
+        res.status(200).json({ success: true, data: updatedSettings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};

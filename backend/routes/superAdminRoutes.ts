@@ -34,6 +34,8 @@ router.get('/organizations', asyncHandler(getAllOrganizations));
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.put('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
 router.put('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
+router.post('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
+router.post('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
 router.delete('/organizations/:orgId', asyncHandler(deleteOrganization)); // New Route
 
 router.put('/organizations/:orgId/subscription', asyncHandler(updateOrganizationSubscription)); 
@@ -65,6 +67,60 @@ router.post('/moderators', asyncHandler(async (req: Request, res: Response) => {
 
 router.get('/moderators', asyncHandler(getModerators));
 router.get('/billing', asyncHandler(getGlobalBilling));
+
+// Plan management routes
+router.get('/plans', asyncHandler(async (req: Request, res: Response) => {
+  const Plan = require('../models/Plan');
+  const plans = await Plan.find({}).sort({ price: 1 });
+  res.json({ success: true, data: plans });
+}));
+
+router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
+  const Plan = require('../models/Plan');
+  const plan = await Plan.create(req.body);
+  res.status(201).json({ success: true, data: plan });
+}));
+
+router.put('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
+  const Plan = require('../models/Plan');
+  const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (!plan) {
+    res.status(404).json({ success: false, message: 'Plan not found' });
+    return;
+  }
+  res.json({ success: true, data: plan });
+}));
+
+router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
+  const Plan = require('../models/Plan');
+  const plan = await Plan.findByIdAndDelete(req.params.id);
+  if (!plan) {
+    res.status(404).json({ success: false, message: 'Plan not found' });
+    return;
+  }
+  res.json({ success: true, message: 'Plan deleted successfully' });
+}));
+
+// User billing management
+router.put('/users/:userId/plan', asyncHandler(async (req: Request, res: Response) => {
+  const { planId } = req.body;
+  const Subscription = require('../models/Subscription');
+  const User = require('../models/User');
+  
+  const user = await User.findById(req.params.userId);
+  if (!user) {
+    res.status(404).json({ success: false, message: 'User not found' });
+    return;
+  }
+  
+  const subscription = await Subscription.findOneAndUpdate(
+    { organizationId: user.organizationId },
+    { planId, status: 'active' },
+    { new: true, upsert: true }
+  );
+  
+  res.json({ success: true, data: subscription });
+}));
 
 router.get('/all-maintenance-requests', asyncHandler(getAllMaintenanceRequests));
 

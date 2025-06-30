@@ -223,9 +223,13 @@ const DashboardLayout = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <LocalLanguageToggle />
-            <GlobalLanguageSwitcher />
+          <div className="flex items-center gap-2 md:gap-3 relative z-50">
+            <div className="relative z-[60]">
+              <LocalLanguageToggle />
+            </div>
+            <div className="relative z-[60]">
+              <GlobalLanguageSwitcher />
+            </div>
             <button 
               onClick={toggleTheme} 
               className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
