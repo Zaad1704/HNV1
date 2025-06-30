@@ -93,8 +93,14 @@ app.get('/api/plans/public', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   
+  console.log('=== LOGIN ATTEMPT ===');
+  console.log('Email received:', email);
+  console.log('Password received:', password ? '[PROVIDED]' : '[MISSING]');
+  console.log('Request body:', JSON.stringify(req.body));
+  
   // Demo credentials for testing
   if (email === 'admin@hnv.com' && password === 'admin123') {
+    console.log('✅ LOGIN SUCCESS for:', email);
     res.json({
       success: true,
       message: 'Login successful',
@@ -109,6 +115,7 @@ app.post('/api/auth/login', (req, res) => {
       }
     });
   } else {
+    console.log('❌ LOGIN FAILED for:', email, '- Invalid credentials');
     res.status(401).json({
       success: false,
       message: 'Invalid credentials',
