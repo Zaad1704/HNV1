@@ -84,6 +84,13 @@ app.get('/api/plans/public', (req, res) => {
   });
 });
 
+app.post('/api/auth/login', (req, res) => {
+  res.json({
+    success: false,
+    message: 'Authentication service temporarily unavailable'
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
