@@ -68,8 +68,10 @@ const PublicHeader = () => {
 
                     {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center gap-2">
-                        <SmartLanguageSwitcher />
-                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                        <div className="scale-90">
+                            <SmartLanguageSwitcher />
+                        </div>
+                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none z-50">
                             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
@@ -77,7 +79,7 @@ const PublicHeader = () => {
             </div>
 
             {/* Mobile Menu Drawer */}
-            <div className={`md:hidden absolute top-full left-0 w-full bg-light-card dark:bg-dark-card shadow-lg border-t border-border-color dark:border-border-color-dark transition-all duration-300 ease-in-out z-50 ${isMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-4'}`}>
+            <div className={`md:hidden fixed top-20 left-0 w-full bg-light-card dark:bg-dark-card shadow-lg border-t border-border-color dark:border-border-color-dark transition-all duration-300 ease-in-out z-[60] ${isMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-4'}`}>
                 <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {navLinks.map(link => (
                         <a key={link.name} href={link.href} onClick={(e) => handleScroll(e, link.href)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">

@@ -67,17 +67,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initLanguage = async () => {
       try {
+        // Always detect regional language first
+        const detected = await detectRegionalLanguage();
+        
         const savedLang = localStorage.getItem('language');
         if (savedLang) {
           setLang(savedLang);
           i18n.changeLanguage(savedLang);
-          // Still detect regional language for toggle
-          await detectRegionalLanguage();
           return;
         }
 
-        // Detect regional language and set as initial
-        const detected = await detectRegionalLanguage();
+        // Use detected language as initial if not English
         const initialLang = detected !== 'en' ? detected : 'en';
         setLang(initialLang);
         i18n.changeLanguage(initialLang);
@@ -121,14 +121,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
   
   const toggleLanguage = () => {
-    const newLang = lang === 'en' ? detectedLang : 'en';
+    const newLang = lang === 'en' ? (detectedLang !== 'en' ? detectedLang : 'es') : 'en';
     handleSetLang(newLang);
   };
   
   const getNextToggleLanguage = () => {
-    return lang === 'en' 
-      ? languages.find(l => l.code === detectedLang) || languages[0]
-      : languages[0];
+    if (lang === 'en') {
+      return languages.find(l => l.code === detectedLang) || languages.find(l => l.code === 'es') || languages[1];
+    }
+    return languages[0];
   };
 
   useEffect(() => {

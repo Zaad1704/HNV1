@@ -14,21 +14,21 @@ const SmartLanguageSwitcher = () => {
       {/* Quick toggle - always show */}
       <button
         onClick={toggleLanguage}
-        className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors flex items-center gap-1"
+        className="px-2 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-medium transition-colors flex items-center gap-1 text-white border border-white/20"
         title={`Switch to ${lang === 'en' ? (localLanguage?.name || 'Local') : 'English'}`}
       >
         {lang === 'en' ? (localLanguage?.flag || '🌐') : '🇺🇸'}
-        <span className="hidden sm:inline">{lang === 'en' ? (localLanguage?.code?.toUpperCase() || 'LOC') : 'EN'}</span>
+        <span className="hidden sm:inline text-white">{lang === 'en' ? (localLanguage?.code?.toUpperCase() || 'LOC') : 'EN'}</span>
       </button>
 
       {/* Globe for all languages */}
       <div className="relative">
         <button
           onClick={() => setShowAll(!showAll)}
-          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+          className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white border border-white/20"
           title="All Languages"
         >
-          <Globe size={16} />
+          <Globe size={16} className="text-white" />
         </button>
 
         {showAll && (
