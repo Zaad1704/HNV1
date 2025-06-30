@@ -93,25 +93,28 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [i18n]);
 
   const detectRegionalLanguage = async (): Promise<string> => {
+    // Always set a fallback first
+    const browserLang = navigator.language.split('-')[0];
+    const browserDetected = languages.find(l => l.code === browserLang)?.code || 'es';
+    setDetectedLang(browserDetected);
+    
     try {
-      // Try IP-based detection first
-      const response = await fetch('https://ipapi.co/json/');
+      // Try IP-based detection
+      const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
       if (response.ok) {
         const data = await response.json();
         const countryCode = data.country_code;
         const detected = getLanguageFromCountry(countryCode);
-        setDetectedLang(detected);
-        return detected;
+        if (detected !== 'en') {
+          setDetectedLang(detected);
+          return detected;
+        }
       }
     } catch (error) {
       console.log('IP detection failed, using browser language');
     }
     
-    // Fallback to browser language
-    const browserLang = navigator.language.split('-')[0];
-    const detected = languages.find(l => l.code === browserLang)?.code || 'en';
-    setDetectedLang(detected);
-    return detected;
+    return browserDetected;
   };
   
   const handleSetLang = (newLang: string) => {

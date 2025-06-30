@@ -4,11 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { Building2, Users, TrendingUp, Shield } from 'lucide-react';
 
-interface LandscapeSectionProps {
-  stats?: any;
-}
-
-const LandscapeSection: React.FC<LandscapeSectionProps> = ({ stats }) => {
+const LandscapeSection = () => {
   const { t } = useTranslation();
   const { data: settings } = useSiteSettings();
 
@@ -50,11 +46,12 @@ const LandscapeSection: React.FC<LandscapeSectionProps> = ({ stats }) => {
           viewport={{ once: true }}
           className="relative mb-12 md:mb-16"
         >
-          <div className="relative h-48 md:h-64 lg:h-96 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl bg-gray-100 dark:bg-gray-800">
             <img
               src={settings?.landscapeSection?.imageUrl || "/about.jpg"}
               alt={t('landscape.image_alt', 'Property Management Platform')}
-              className="w-full h-full object-contain bg-gray-100 dark:bg-gray-800"
+              className="w-full h-auto object-contain max-h-96"
+              style={{ display: 'block' }}
             />
           </div>
         </motion.div>
