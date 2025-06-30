@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 export const useWebSocket = () => {
   const socketRef = useRef<Socket | null>(null);
-  const { user, token } = useAuth();
+  const { user, token } = useAuthStore();
 
   useEffect(() => {
     if (!token || !user) return;
 
-    socketRef.current = io(process.env.REACT_APP_API_URL || 'http://localhost:5000', {
+    socketRef.current = io(import.meta.env.VITE_API_URL || 'http://localhost:5001', {
       auth: { token }
     });
 

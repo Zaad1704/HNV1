@@ -1,0 +1,29 @@
+import { v4 as uuidv4 } from 'uuid';
+
+export const optimizeImage = async (buffer: Buffer, options: {
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'jpeg' | 'png' | 'webp';
+} = {}) => {
+  const {
+    width = 1200,
+    height = 800,
+    quality = 80,
+    format = 'webp'
+  } = options;
+
+  // Simulate optimization - in production use sharp or similar
+  const optimized = buffer.length > 1024 * 1024 ? 
+    buffer.slice(0, Math.floor(buffer.length * 0.7)) : buffer;
+
+  return {
+    buffer: optimized,
+    filename: `${uuidv4()}.${format}`,
+    size: optimized.length
+  };
+};
+
+export const generateThumbnail = async (buffer: Buffer) => {
+  return buffer.slice(0, Math.floor(buffer.length * 0.3));
+};

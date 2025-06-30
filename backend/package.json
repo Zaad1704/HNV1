@@ -7,7 +7,9 @@
     "start": "node dist/server.js",
     "dev": "nodemon server.ts",
     "build": "tsc",
-    "postinstall": "npm run build",
+    "build:safe": "tsc --skipLibCheck --noEmitOnError false",
+    "build:prod": "tsc --skipLibCheck",
+    "postinstall": "npm run build:prod",
     "test": "jest --detectOpenHandles"
   },
   "dependencies": {

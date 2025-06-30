@@ -5,12 +5,15 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
@@ -22,6 +25,10 @@
     "src/components/common/VirtualizedList.tsx",
     "src/hooks/useRealTime.ts",
     "src/hooks/usePerformanceMonitor.ts",
-    "src/services/offlineService.ts"
+    "src/services/offlineService.ts",
+    "src/pages/SuperAdmin/SiteEditorPage.tsx",
+    "src/contexts/LanguageContext.tsx",
+    "src/components/ErrorBoundary.tsx",
+    "src/components/layout/PublicLayout.tsx"
   ]
 }

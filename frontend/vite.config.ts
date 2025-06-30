@@ -11,7 +11,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
+    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -22,10 +23,17 @@ export default defineConfig({
           forms: ['react-hook-form', '@hookform/resolvers'],
           query: ['@tanstack/react-query'],
           i18n: ['i18next', 'react-i18next'],
+          utils: ['axios', 'zod', 'zustand'],
         },
       },
     },
     chunkSizeWarningLimit: 1000,
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
   server: {
     port: 3000,
