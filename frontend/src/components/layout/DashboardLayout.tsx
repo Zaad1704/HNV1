@@ -4,6 +4,8 @@ import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import GlobalLanguageSwitcher from '../common/GlobalLanguageSwitcher';
+import LocalLanguageToggle from '../common/LocalLanguageToggle';
 import { 
   Home, Building, Users, CreditCard, Shield, Settings, LogOut, 
   Wrench, FileText, DollarSign, Repeat, CheckSquare, Bell, 
@@ -222,13 +224,8 @@ const DashboardLayout = () => {
           </div>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <button 
-              onClick={() => setLang(getNextToggleLanguage().code)} 
-              className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
-              aria-label="Switch language"
-            >
-              <Globe size={20} />
-            </button>
+            <LocalLanguageToggle />
+            <GlobalLanguageSwitcher />
             <button 
               onClick={toggleTheme} 
               className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"

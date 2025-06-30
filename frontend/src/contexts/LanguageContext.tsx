@@ -56,15 +56,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (savedLang) {
           setLang(savedLang);
           i18n.changeLanguage(savedLang);
+          // Still detect regional language for toggle
+          await detectRegionalLanguage();
           return;
         }
 
-        // Skip IP detection to avoid CORS issues - use browser language
-        const browserLang = navigator.language.split('-')[0];
-        const detected = languages.find(l => l.code === browserLang)?.code || 'en';
-        setDetectedLang(detected);
-        
-        const initialLang = detected === 'en' ? 'en' : detected;
+        // Detect regional language and set as initial
+        const detected = await detectRegionalLanguage();
+        const initialLang = detected !== 'en' ? detected : 'en';
         setLang(initialLang);
         i18n.changeLanguage(initialLang);
         localStorage.setItem('language', initialLang);
@@ -77,6 +76,28 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
     initLanguage();
   }, [i18n]);
+
+  const detectRegionalLanguage = async (): Promise<string> => {
+    try {
+      // Try IP-based detection first
+      const response = await fetch('https://ipapi.co/json/');
+      if (response.ok) {
+        const data = await response.json();
+        const countryCode = data.country_code;
+        const detected = getLanguageFromCountry(countryCode);
+        setDetectedLang(detected);
+        return detected;
+      }
+    } catch (error) {
+      console.log('IP detection failed, using browser language');
+    }
+    
+    // Fallback to browser language
+    const browserLang = navigator.language.split('-')[0];
+    const detected = languages.find(l => l.code === browserLang)?.code || 'en';
+    setDetectedLang(detected);
+    return detected;
+  };
   
   const handleSetLang = (newLang: string) => {
     setLang(newLang);

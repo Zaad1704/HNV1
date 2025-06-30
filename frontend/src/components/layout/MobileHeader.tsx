@@ -1,68 +1,68 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Bell, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, Bell, Sun, Moon, Globe, Languages } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useLang } from '../../contexts/LanguageContext';
+import { useTranslation } from 'react-i18next';
 import SmartLanguageSwitcher from '../common/SmartLanguageSwitcher';
-import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { useAuthStore } from '../../store/authStore';
+import NotificationsPanel from '../dashboard/NotificationsPanel';
 
 interface MobileHeaderProps {
-  onMenuToggle?: () => void;
+  onMenuToggle: () => void;
   showNotifications?: boolean;
+  title?: string;
 }
 
-const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle, showNotifications = false }) => {
-  const { data: settings } = useSiteSettings();
-  const { user } = useAuthStore();
+const MobileHeader: React.FC<MobileHeaderProps> = ({ 
+  onMenuToggle, 
+  showNotifications = false,
+  title = 'Dashboard'
+}) => {
+  const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50">
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Left: Menu */}
-        <div className="flex items-center">
-          {onMenuToggle && (
-            <button
-              onClick={onMenuToggle}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              <Menu size={20} className="text-gray-700 dark:text-gray-300" />
-            </button>
-          )}
-        </div>
-        
-        {/* Center: Logo + Company Name */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/logo-min.png" 
-              alt="HNV Logo" 
-              className="w-8 h-8 object-contain"
-            />
-            <span className="font-bold text-lg text-gray-900 dark:text-white">
-              {settings?.logos?.companyName?.split(' ')[0] || 'HNV'}
-            </span>
-          </Link>
-        </div>
+    <>
+      <header className="fixed top-0 left-0 right-0 z-30 h-16 bg-app-surface/95 backdrop-blur-md border-b border-app-border shadow-app">
+        <div className="flex items-center justify-between h-full px-4">
+          {/* Left: Menu Button */}
+          <button
+            onClick={onMenuToggle}
+            className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
 
-        {/* Right: Notifications + Profile */}
-        <div className="flex items-center gap-2">
-          {showNotifications && (
-            <button className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative">
-              <Bell size={18} className="text-gray-700 dark:text-gray-300" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-            </button>
-          )}
-          
-          {user && (
-            <Link 
-              to="/dashboard/settings"
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          {/* Center: Title */}
+          <h1 className="text-lg font-semibold text-text-primary truncate">
+            {title}
+          </h1>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1">
+            {/* Smart Language Switcher */}
+            <div className="scale-75">
+              <SmartLanguageSwitcher />
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
-              <User size={18} className="text-gray-700 dark:text-gray-300" />
-            </Link>
-          )}
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+
+            {/* Notifications */}
+            {showNotifications && <NotificationsPanel />}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+
+    </>
   );
 };
 

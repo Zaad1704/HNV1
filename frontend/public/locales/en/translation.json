@@ -95,7 +95,12 @@
     "features": "Features",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
-    "property_management": "Property Management"
+    "property_management": "Property Management",
+    "change_language": "Change Language",
+    "select_language": "Select Language",
+    "toggle_language": "Toggle Language",
+    "switch_to": "Switch to",
+    "current_language": "Current Language"
   },
   "dashboard": {
     "overview": "Overview",
@@ -175,6 +180,13 @@
   "install_app": {
     "title": "Install Our App",
     "subtitle": "Get the native mobile experience"
+  },
+  "hero": {
+    "title": "The All-in-One Platform for Modern Property Management",
+    "subtitle": "Automate tasks, track finances, and manage tenants with ease. Join thousands of property managers who trust our platform.",
+    "cta_primary": "Start Your Free Trial",
+    "cta_secondary": "Watch Demo",
+    "trusted_by": "Trusted by property managers worldwide"
   },
   "forms": {
     "street_address": "Street Address",
