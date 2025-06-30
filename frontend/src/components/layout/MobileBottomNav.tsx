@@ -81,7 +81,9 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type }) => {
       return (
         <button
           onClick={() => setShowMore(!showMore)}
-          className="flex flex-col items-center justify-center p-2 transition-all duration-200"
+          className="touch-target flex flex-col items-center justify-center p-2 transition-all duration-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="More options"
+          aria-expanded={showMore}
         >
           <div className="p-2 rounded-xl">
             <IconComponent size={20} className="text-gray-600 dark:text-gray-400" />
@@ -95,16 +97,14 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type }) => {
 
     if (item.isCenter) {
       const centerContent = (
-        <div className="flex flex-col items-center justify-center transition-all duration-200 transform hover:scale-105">
-          {/* Hexagon background */}
+        <div className="touch-target flex flex-col items-center justify-center transition-all duration-200 transform hover:scale-105">
+          {/* Improved center button */}
           <div className="relative">
-            <div className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 transform rotate-45 rounded-lg shadow-lg flex items-center justify-center">
-              <div className="transform -rotate-45">
-                <IconComponent size={24} className="text-white" />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform">
+              <IconComponent size={28} className="text-white drop-shadow-sm" />
             </div>
             {active && (
-              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-yellow-500 rounded-full border-2 border-white"></div>
             )}
           </div>
           <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 mt-1">
@@ -125,21 +125,21 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type }) => {
     }
 
     const regularContent = (
-      <div className="flex flex-col items-center justify-center p-2 transition-all duration-200">
-        <div className={`p-2 rounded-xl transition-colors ${
+      <div className="touch-target flex flex-col items-center justify-center p-2 transition-all duration-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+        <div className={`p-3 rounded-xl transition-colors ${
           active 
-            ? 'bg-blue-100 dark:bg-blue-900' 
+            ? 'bg-blue-100 dark:bg-blue-900 shadow-sm' 
             : 'hover:bg-gray-100 dark:hover:bg-gray-800'
         }`}>
           <IconComponent 
-            size={20} 
+            size={22} 
             className={active 
               ? 'text-blue-600 dark:text-blue-400' 
               : 'text-gray-600 dark:text-gray-400'
             } 
           />
         </div>
-        <span className={`text-xs font-medium mt-1 ${
+        <span className={`text-xs font-medium mt-1 text-center ${
           active 
             ? 'text-blue-600 dark:text-blue-400' 
             : 'text-gray-600 dark:text-gray-400'
@@ -147,7 +147,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type }) => {
           {item.label}
         </span>
         {active && (
-          <div className="w-1 h-1 bg-blue-500 rounded-full mt-1"></div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
         )}
       </div>
     );
@@ -194,8 +194,12 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type }) => {
       )}
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50">
-        <div className="flex items-center justify-around px-2 py-2 safe-area-bottom">
+      <nav 
+        className="fixed bottom-0 left-0 right-0 z-30 bg-white/98 dark:bg-gray-900/98 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50 shadow-lg"
+        role="navigation"
+        aria-label="Bottom navigation"
+      >
+        <div className="flex items-center justify-around px-2 py-2 safe-area-bottom max-w-md mx-auto">
           {navItems.map((item) => (
             <NavButton key={item.id} item={item} />
           ))}

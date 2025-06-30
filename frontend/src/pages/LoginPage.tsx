@@ -20,12 +20,34 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     setError('');
     
+    // Client-side validation
+    if (!email.trim()) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+    if (!password.trim()) {
+      setError('Password is required');
+      setLoading(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', { 
+        email: email.trim().toLowerCase(), 
+        password 
+      });
       
       if (response.data.success && response.data.token && response.data.user) {
         login(response.data.token, response.data.user);
-        navigate('/dashboard');
+        // Add success feedback
+        setError('');
+        navigate('/dashboard', { replace: true });
       } else {
         setError('Invalid response from server. Please try again.');
       }
@@ -35,6 +57,7 @@ const LoginPage: React.FC = () => {
       // Handle specific error codes
       const errorCode = err.response?.data?.code;
       const errorMessage = err.response?.data?.message;
+      const status = err.response?.status;
       
       switch (errorCode) {
         case 'MISSING_CREDENTIALS':
@@ -46,24 +69,33 @@ const LoginPage: React.FC = () => {
         case 'ACCOUNT_SUSPENDED':
           setError('Your account has been suspended. Please contact support.');
           break;
+        case 'EMAIL_NOT_VERIFIED':
+          setError('Please verify your email address before logging in.');
+          break;
         case 'SERVER_ERROR':
           setError('Server error. Please try again in a moment.');
           break;
+        case 'OAUTH_NOT_CONFIGURED':
+          setError('Google login is temporarily unavailable. Please use email/password.');
+          break;
         default:
-          // Retry logic for network/server issues
+          // Enhanced retry logic
           if (err.code === 'ECONNABORTED' || 
               err.message?.includes('timeout') || 
-              err.response?.status >= 500 ||
-              err.code === 'ERR_NETWORK') {
-            if (retryCount < 2) {
-              setError(`Connection issue... Retrying (${retryCount + 1}/3)`);
+              status >= 500 ||
+              err.code === 'ERR_NETWORK' ||
+              !navigator.onLine) {
+            if (retryCount < 3) {
+              setError(`Connection issue... Retrying (${retryCount + 1}/4)`);
               setTimeout(() => {
                 handleLogin(e, retryCount + 1);
-              }, 2000 + (retryCount * 1000)); // Progressive delay
+              }, Math.min(2000 * Math.pow(2, retryCount), 10000)); // Exponential backoff
               return;
             } else {
               setError('Unable to connect to server. Please check your internet connection and try again.');
             }
+          } else if (status === 429) {
+            setError('Too many login attempts. Please wait a few minutes and try again.');
           } else {
             setError(errorMessage || 'Login failed. Please try again.');
           }
@@ -83,9 +115,31 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    const baseURL = apiClient.defaults.baseURL;
-    const role = 'Landlord'; // Default role for Google login
-    window.location.href = `${baseURL}/auth/google?role=${role}`;
+    try {
+      const baseURL = apiClient.defaults.baseURL;
+      const role = 'Landlord'; // Default role for Google login
+      const googleAuthUrl = `${baseURL}/auth/google?role=${role}`;
+      
+      // Check if popup is blocked
+      const popup = window.open(googleAuthUrl, 'google-auth', 'width=500,height=600,scrollbars=yes,resizable=yes');
+      
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // Fallback to redirect if popup is blocked
+        window.location.href = googleAuthUrl;
+      } else {
+        // Monitor popup for completion
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            // Refresh the page to check for auth state
+            window.location.reload();
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      setError('Google login is temporarily unavailable. Please try again.');
+    }
   };
 
   return (
@@ -115,7 +169,13 @@ const LoginPage: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-center text-sm mb-6"
+              className={`px-4 py-3 rounded-2xl text-center text-sm mb-6 ${
+                error.includes('Retrying') 
+                  ? 'bg-yellow-50 border border-yellow-200 text-yellow-700'
+                  : 'bg-red-50 border border-red-200 text-red-600'
+              }`}
+              role="alert"
+              aria-live="polite"
             >
               {error}
             </motion.div>
@@ -132,10 +192,12 @@ const LoginPage: React.FC = () => {
                   type="email"
                   name="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
                   placeholder={t('auth.enter_email')}
+                  aria-describedby="email-error"
                 />
               </div>
             </div>

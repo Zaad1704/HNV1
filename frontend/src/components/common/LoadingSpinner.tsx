@@ -1,9 +1,9 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  color?: 'primary' | 'secondary' | 'white' | 'gray';
+  color?: 'primary' | 'secondary' | 'white';
   text?: string;
   fullScreen?: boolean;
   overlay?: boolean;
@@ -18,16 +18,15 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-    xl: 'w-12 h-12'
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16'
   };
 
   const colorClasses = {
-    primary: 'text-blue-600',
-    secondary: 'text-gray-600',
-    white: 'text-white',
-    gray: 'text-gray-400'
+    primary: 'border-brand-blue',
+    secondary: 'border-text-secondary',
+    white: 'border-white'
   };
 
   const textSizeClasses = {
@@ -38,21 +37,30 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const spinner = (
-    <div className="flex flex-col items-center justify-center space-y-2">
-      <Loader2 
-        className={`${sizeClasses[size]} ${colorClasses[color]} animate-spin`}
+    <div className="flex flex-col items-center justify-center gap-3">
+      <motion.div
+        className={`${sizeClasses[size]} border-4 ${colorClasses[color]} border-t-transparent rounded-full`}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
       />
       {text && (
-        <p className={`${textSizeClasses[size]} ${colorClasses[color]} font-medium`}>
+        <motion.p
+          className={`${textSizeClasses[size]} font-medium ${
+            color === 'white' ? 'text-white' : 'text-text-secondary'
+          }`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
           {text}
-        </p>
+        </motion.p>
       )}
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-app-bg flex items-center justify-center z-50">
         {spinner}
       </div>
     );
@@ -60,7 +68,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   if (overlay) {
     return (
-      <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-40">
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-40">
         {spinner}
       </div>
     );
@@ -72,12 +80,10 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 // Skeleton loading components
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse ${className}`}>
-    <div className="bg-gray-200 dark:bg-gray-700 rounded-lg p-4 space-y-3">
-      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
-      <div className="space-y-2">
-        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded"></div>
-        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-5/6"></div>
-      </div>
+    <div className="app-surface rounded-2xl p-6 border border-app-border">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
     </div>
   </div>
 );
@@ -87,102 +93,42 @@ export const SkeletonTable: React.FC<{ rows?: number; cols?: number }> = ({
   cols = 4 
 }) => (
   <div className="animate-pulse">
-    <div className="space-y-3">
+    <div className="app-surface rounded-2xl border border-app-border overflow-hidden">
       {/* Header */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-        {Array.from({ length: cols }).map((_, i) => (
-          <div key={i} className="h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
-        ))}
+      <div className="border-b border-app-border p-4">
+        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+          {Array.from({ length: cols }).map((_, i) => (
+            <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          ))}
+        </div>
       </div>
       
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={rowIndex} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-          {Array.from({ length: cols }).map((_, colIndex) => (
-            <div key={colIndex} className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          ))}
+        <div key={rowIndex} className="border-b border-app-border p-4 last:border-b-0">
+          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+            {Array.from({ length: cols }).map((_, colIndex) => (
+              <div key={colIndex} className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            ))}
+          </div>
         </div>
       ))}
     </div>
   </div>
 );
 
-export const SkeletonChart: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`animate-pulse ${className}`}>
-    <div className="bg-gray-200 dark:bg-gray-700 rounded-lg p-4">
-      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
-      <div className="h-48 bg-gray-300 dark:bg-gray-600 rounded"></div>
-    </div>
-  </div>
-);
-
-// Loading states for specific components
-export const PropertyCardSkeleton: React.FC = () => (
-  <div className="animate-pulse">
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-      <div className="h-48 bg-gray-300 dark:bg-gray-600"></div>
-      <div className="p-4 space-y-3">
-        <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-        <div className="flex justify-between items-center pt-2">
-          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
-          <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export const TenantCardSkeleton: React.FC = () => (
-  <div className="animate-pulse">
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 space-y-3">
-      <div className="flex items-center space-x-3">
-        <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+export const SkeletonList: React.FC<{ items?: number }> = ({ items = 5 }) => (
+  <div className="space-y-4">
+    {Array.from({ length: items }).map((_, i) => (
+      <div key={i} className="animate-pulse flex items-center space-x-4 p-4 app-surface rounded-2xl border border-app-border">
+        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
         </div>
       </div>
-      <div className="space-y-2">
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-      </div>
-    </div>
+    ))}
   </div>
-);
-
-// Loading button component
-export const LoadingButton: React.FC<{
-  loading: boolean;
-  children: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
-}> = ({ 
-  loading, 
-  children, 
-  className = '', 
-  disabled = false, 
-  onClick,
-  type = 'button'
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled || loading}
-    className={`relative ${className} ${(disabled || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-  >
-    {loading && (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Loader2 className="w-4 h-4 animate-spin" />
-      </div>
-    )}
-    <span className={loading ? 'invisible' : 'visible'}>
-      {children}
-    </span>
-  </button>
 );
 
 export default LoadingSpinner;

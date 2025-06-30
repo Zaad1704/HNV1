@@ -1,67 +1,72 @@
 import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import slowDown from 'express-slow-down';
+import { body, validationResult } from 'express-validator';
 
-// Rate limiting
-export const createRateLimit = (windowMs: number = 15 * 60 * 1000, max: number = 100) => {
-  return rateLimit({
-    windowMs,
-    max,
-    message: { error: 'Too many requests, please try again later' },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-};
-
-// Security headers with CSP
+// Enhanced security headers
 export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: [
-        "'self'", 
-        "https://hnv.onrender.com", 
-        "https://api.exchangerate-api.com",
-        "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com"
-      ],
-      frameSrc: ["'none'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.googletagmanager.com"],
+      connectSrc: ["'self'", "https://api.stripe.com", "wss:", "ws:"],
+      frameSrc: ["'self'", "https://js.stripe.com"],
       objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"]
-    }
+      upgradeInsecureRequests: [],
+    },
   },
   crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
 });
 
-// CORS configuration
-export const corsConfig = cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? (process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['https://hnv.onrender.com'])
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
-  exposedHeaders: ['X-Total-Count', 'X-Rate-Limit-Remaining'],
+// Rate limiting
+export const createRateLimit = (windowMs: number, max: number, message?: string) => 
+  rateLimit({
+    windowMs,
+    max,
+    message: message || 'Too many requests, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      res.status(429).json({
+        success: false,
+        message: 'Rate limit exceeded',
+        retryAfter: Math.round(windowMs / 1000)
+      });
+    }
+  });
+
+// Speed limiting
+export const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 50, // Allow 50 requests per windowMs without delay
+  delayMs: 500, // Add 500ms delay per request after delayAfter
+  maxDelayMs: 20000, // Maximum delay of 20 seconds
 });
 
 // Input sanitization
 export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
   const sanitize = (obj: any): any => {
     if (typeof obj === 'string') {
-      return obj.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                .replace(/javascript:/gi, '')
-                .replace(/on\w+=/gi, '');
+      return obj.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     }
-    if (typeof obj === 'object' && obj !== null) {
+    if (Array.isArray(obj)) {
+      return obj.map(sanitize);
+    }
+    if (obj && typeof obj === 'object') {
+      const sanitized: any = {};
       for (const key in obj) {
-        obj[key] = sanitize(obj[key]);
+        sanitized[key] = sanitize(obj[key]);
       }
+      return sanitized;
     }
     return obj;
   };
@@ -72,14 +77,93 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction) =
   next();
 };
 
+// Validation error handler
+export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+  next();
+};
+
+// Common validation rules
+export const emailValidation = body('email')
+  .isEmail()
+  .normalizeEmail()
+  .withMessage('Please provide a valid email address');
+
+export const passwordValidation = body('password')
+  .isLength({ min: 8 })
+  .withMessage('Password must be at least 8 characters long')
+  .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+  .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+
+export const nameValidation = body('name')
+  .trim()
+  .isLength({ min: 2, max: 50 })
+  .withMessage('Name must be between 2 and 50 characters')
+  .matches(/^[a-zA-Z\s]+$/)
+  .withMessage('Name can only contain letters and spaces');
+
+// IP whitelist middleware
+export const ipWhitelist = (allowedIPs: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    
+    if (process.env.NODE_ENV === 'development') {
+      return next();
+    }
+    
+    if (allowedIPs.includes(clientIP as string)) {
+      next();
+    } else {
+      res.status(403).json({
+        success: false,
+        message: 'Access denied from this IP address'
+      });
+    }
+  };
+};
+
 // Request logging
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+    const logData = {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
+    };
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.log(JSON.stringify(logData));
+    } else {
+      console.log(`${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
+    }
   });
   
   next();
+};
+
+export default {
+  securityHeaders,
+  createRateLimit,
+  speedLimiter,
+  sanitizeInput,
+  handleValidationErrors,
+  emailValidation,
+  passwordValidation,
+  nameValidation,
+  ipWhitelist,
+  requestLogger
 };

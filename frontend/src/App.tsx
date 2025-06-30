@@ -3,6 +3,9 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
+import ErrorBoundary from './components/ErrorBoundary';
+import OfflineIndicator from './components/common/OfflineIndicator';
+import LoadingSpinner from './components/common/LoadingSpinner';
 
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -57,7 +60,9 @@ const AdminDataManagementPage = React.lazy(() => import('./pages/AdminDataManage
 const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfilePage')); // SuperAdmin profile page
 
 const FullScreenLoader = () => (
-    <div className="h-screen w-full flex items-center justify-center bg-light-bg dark:bg-dark-bg"><p className="text-dark-text dark:text-dark-text-dark">Loading Application...</p></div>
+    <div className="h-screen w-full flex items-center justify-center bg-app-bg">
+        <LoadingSpinner size="lg" text="Loading Application..." />
+    </div>
 );
 
 function App() {
@@ -85,8 +90,10 @@ function App() {
   }
 
   return (
-    <Suspense fallback={<FullScreenLoader />}>
-      <Routes>
+    <ErrorBoundary>
+      <OfflineIndicator />
+      <Suspense fallback={<FullScreenLoader />}>
+        <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
@@ -153,8 +160,9 @@ function App() {
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

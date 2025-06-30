@@ -59,7 +59,7 @@ const DashboardLayout = () => {
   const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
 
   const Sidebar = ({ isMobile = false }) => (
-    <aside className={`${isMobile ? 'w-full' : 'w-72'} flex-shrink-0 app-surface border-r border-app-border flex flex-col`}>
+    <aside className={`${isMobile ? 'w-full max-w-sm' : 'w-72 xl:w-80'} flex-shrink-0 app-surface border-r border-app-border flex flex-col h-full`}>
       <div className="h-20 flex items-center justify-between px-6 border-b border-app-border">
         <Link to="/dashboard" className="flex items-center space-x-3 text-xl font-bold text-text-primary">
           <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
@@ -154,10 +154,12 @@ const DashboardLayout = () => {
           )}
         </AnimatePresence>
         
-        <main className="pt-16 pb-20 px-4">
-          <AnimatePresence mode="wait">
-            <Outlet />
-          </AnimatePresence>
+        <main className="pt-16 pb-20 px-4 mobile-content scroll-container">
+          <div className="max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <Outlet />
+            </AnimatePresence>
+          </div>
         </main>
         
         <MobileBottomNav type="dashboard" />
@@ -198,11 +200,12 @@ const DashboardLayout = () => {
 
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-20 app-surface/80 backdrop-blur-md border-b border-app-border flex-shrink-0 grid grid-cols-3 items-center px-4 lg:px-8 shadow-app">
-          <div className="flex items-center gap-4 justify-start">
+        <header className="h-20 app-surface/95 backdrop-blur-md border-b border-app-border flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-app">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-full text-text-secondary hover:text-text-primary"
+              className="lg:hidden touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+              aria-label="Open navigation menu"
             >
               <Menu size={20} />
             </button>
@@ -211,23 +214,25 @@ const DashboardLayout = () => {
             </h1>
           </div>
 
-          {/* Center: Company Name */}
-          <div className="flex items-center justify-center">
+          {/* Center: Company Name - Hidden on mobile */}
+          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
             <span className="text-lg font-bold text-text-primary text-center">
               {user?.organizationId?.branding?.companyName || 'HNV Solutions'}
             </span>
           </div>
 
-          <div className="flex items-center gap-3 justify-end">
+          <div className="flex items-center gap-2 md:gap-3">
             <button 
               onClick={() => setLang(getNextToggleLanguage().code)} 
-              className="p-2 rounded-full text-text-secondary hover:text-text-primary transition-colors"
+              className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+              aria-label="Switch language"
             >
               <Globe size={20} />
             </button>
             <button 
               onClick={toggleTheme} 
-              className="p-2 rounded-full text-text-secondary hover:text-text-primary transition-colors"
+              className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
@@ -245,10 +250,12 @@ const DashboardLayout = () => {
         </header>
         
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-24 lg:pb-8">
-          <AnimatePresence mode="wait">
-            <Outlet />
-          </AnimatePresence>
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-24 lg:pb-8 scroll-container">
+          <div className="max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <Outlet />
+            </AnimatePresence>
+          </div>
         </div>
       </main>
 

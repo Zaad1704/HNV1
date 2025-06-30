@@ -1,20 +1,58 @@
 import { useState, useEffect } from 'react';
 
-export const useOfflineStatus = () => {
+interface OfflineStatus {
+  isOnline: boolean;
+  isOffline: boolean;
+  wasOffline: boolean;
+}
+
+export const useOfflineStatus = (): OfflineStatus => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [wasOffline, setWasOffline] = useState(false);
 
   useEffect(() => {
-    const updateStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-    return () => {
-      window.removeEventListener('online', updateStatus);
-      window.removeEventListener('offline', updateStatus);
+    const handleOnline = () => {
+      setIsOnline(true);
+      if (wasOffline) {
+        // Show reconnection notification
+        console.log('Connection restored');
+      }
     };
-  }, []);
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setWasOffline(true);
+      console.log('Connection lost');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Periodic connectivity check
+    const checkConnectivity = async () => {
+      try {
+        const response = await fetch('/api/health', {
+          method: 'HEAD',
+          cache: 'no-cache'
+        });
+        setIsOnline(response.ok);
+      } catch {
+        setIsOnline(false);
+      }
+    };
+
+    const interval = setInterval(checkConnectivity, 30000); // Check every 30 seconds
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(interval);
+    };
+  }, [wasOffline]);
 
   return {
     isOnline,
-    isOffline: !isOnline
+    isOffline: !isOnline,
+    wasOffline
   };
 };
