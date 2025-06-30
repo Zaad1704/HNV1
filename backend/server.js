@@ -85,11 +85,58 @@ app.get('/api/plans/public', (req, res) => {
 });
 
 app.post('/api/auth/login', (req, res) => {
-  res.status(401).json({
-    success: false,
-    message: 'Invalid credentials',
-    data: null
-  });
+  const { email, password } = req.body;
+  
+  // Demo credentials for testing
+  if (email === 'admin@hnv.com' && password === 'admin123') {
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        token: 'demo-jwt-token',
+        user: {
+          id: '1',
+          email: 'admin@hnv.com',
+          name: 'Admin User',
+          role: 'Super Admin'
+        }
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      message: 'Invalid credentials',
+      data: null
+    });
+  }
+});
+
+app.get('/api/auth/google', (req, res) => {
+  res.redirect('https://accounts.google.com/oauth/authorize?client_id=demo&redirect_uri=https://hnv.onrender.com/api/auth/google/callback&response_type=code&scope=email%20profile');
+});
+
+app.get('/api/auth/google/callback', (req, res) => {
+  res.redirect('https://www.hnvpm.com/dashboard?auth=success');
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const token = req.headers.authorization;
+  if (token === 'Bearer demo-jwt-token') {
+    res.json({
+      success: true,
+      data: {
+        id: '1',
+        email: 'admin@hnv.com',
+        name: 'Admin User',
+        role: 'Super Admin'
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      message: 'Not authenticated'
+    });
+  }
 });
 
 app.get('/api/health', (req, res) => {
