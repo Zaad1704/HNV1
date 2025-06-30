@@ -39,7 +39,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Basic API test route
+// Basic API routes
 app.get('/api/test', (req, res) => {
   res.json({ 
     message: 'HNV Backend is running successfully!', 
@@ -51,6 +51,32 @@ app.get('/api/test', (req, res) => {
       'Multi-tenant SaaS',
       'Real-time Notifications'
     ]
+  });
+});
+
+// Auth routes
+app.post('/api/auth/login', (req, res) => {
+  res.json({ success: false, message: 'Login endpoint - under construction' });
+});
+
+app.post('/api/auth/register', (req, res) => {
+  res.json({ success: false, message: 'Register endpoint - under construction' });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  res.json({ success: false, message: 'Auth check endpoint - under construction' });
+});
+
+// Landing page stats
+app.get('/api/landing-stats', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalProperties: 1250,
+      totalTenants: 3400,
+      totalRevenue: 2500000,
+      activeUsers: 850
+    }
   });
 });
 
