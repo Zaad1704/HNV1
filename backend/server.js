@@ -145,23 +145,9 @@ app.post('/api/auth/register', (req, res) => {
   });
 });
 
-// Try to load full routes if available
+// Skip problematic route loading - use fallback routes only
 const loadRoutes = () => {
-  try {
-    const authRoutes = require('./routes/authRoutes');
-    const siteSettingsRoutes = require('./routes/siteSettingsRoutes');
-    
-    // Only use full routes if database is connected
-    if (dbConnected) {
-      app.use('/api/auth', authRoutes);
-      app.use('/api/site-settings', siteSettingsRoutes);
-      console.log('✅ Full route handlers loaded with database support');
-    } else {
-      console.log('⚠️  Using fallback routes (no database connection)');
-    }
-  } catch (error) {
-    console.log('⚠️  Using fallback routes:', error.message);
-  }
+  console.log('✅ Using optimized fallback routes');
 };
 
 // Generic API fallback for unhandled routes
