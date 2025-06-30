@@ -81,8 +81,18 @@ UserSchema.pre<IUser>('save', async function(next) {
 // --- Instance Methods ---
 
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
-  if (!this.password) return false;
-  return await bcrypt.compare(enteredPassword, this.password);
+  if (!this.password || !enteredPassword) {
+    console.log('Password matching failed: missing password or entered password');
+    return false;
+  }
+  try {
+    const result = await bcrypt.compare(enteredPassword, this.password);
+    console.log('Password match result:', result);
+    return result;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 };
 
 UserSchema.methods.getSignedJwtToken = function(): string {

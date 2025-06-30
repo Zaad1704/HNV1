@@ -26,8 +26,19 @@ const callbackURL = process.env.NODE_ENV === 'production'
     ? `${process.env.BACKEND_URL}/api/auth/google/callback`
     : 'http://localhost:5001/api/auth/google/callback';
 
-// Only configure Google OAuth if credentials are provided
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+// Check if Google OAuth is properly configured
+const isGoogleOAuthConfigured = () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    return clientId && clientSecret && 
+           clientId !== 'your_google_client_id' && 
+           clientSecret !== 'your_google_client_secret' &&
+           !clientId.includes('1234567890') &&
+           !clientSecret.includes('GOCSPX-abcdefghijklmnopqrstuvwxyz');
+};
+
+// Only configure Google OAuth if properly set up
+if (isGoogleOAuthConfigured()) {
     console.log('Configuring Google OAuth with callback URL:', callbackURL);
     
     passport.use(new GoogleStrategy(
