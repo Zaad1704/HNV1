@@ -32,7 +32,13 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({ 
+  contentSecurityPolicy: {
+    directives: {
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"]
+    }
+  }
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -112,7 +118,10 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 app.get('/api/auth/google', (req, res) => {
-  res.redirect('https://accounts.google.com/oauth/authorize?client_id=demo&redirect_uri=https://hnv.onrender.com/api/auth/google/callback&response_type=code&scope=email%20profile');
+  res.json({
+    success: false,
+    message: 'Google OAuth not configured. Please contact administrator.'
+  });
 });
 
 app.get('/api/auth/google/callback', (req, res) => {
