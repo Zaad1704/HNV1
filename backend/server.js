@@ -150,16 +150,7 @@ const loadRoutes = () => {
   console.log('✅ Using optimized fallback routes');
 };
 
-// Generic API fallback for unhandled routes
-app.use('/api/*', (req, res) => {
-  res.status(503).json({
-    success: false,
-    error: 'Service temporarily unavailable',
-    message: 'This API endpoint is currently being configured.',
-    path: req.originalUrl,
-    method: req.method
-  });
-});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
