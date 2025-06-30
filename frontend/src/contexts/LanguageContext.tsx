@@ -3,19 +3,24 @@ import { useTranslation } from 'react-i18next';
 
 const getLanguageFromCountry = (countryCode: string): string => {
   const countryLanguageMap: Record<string, string> = {
-    'BD': 'bn',
-    'IN': 'hi', 
-    'CN': 'zh',
+    'BD': 'bn', 'IN': 'hi', 'PK': 'hi',
+    'CN': 'zh', 'TW': 'zh', 'HK': 'zh', 'SG': 'zh',
     'JP': 'ja',
-    'ES': 'es',
-    'MX': 'es',
-    'AR': 'es',
-    'FR': 'fr',
-    'DE': 'de',
-    'BR': 'pt',
-    'SA': 'ar',
-    'AE': 'ar',
-    'EG': 'ar'
+    'KR': 'ko',
+    'TH': 'th',
+    'VN': 'vi',
+    'ID': 'id',
+    'MY': 'ms', 'BN': 'ms',
+    'ES': 'es', 'MX': 'es', 'AR': 'es', 'CO': 'es', 'PE': 'es', 'VE': 'es', 'CL': 'es',
+    'FR': 'fr', 'CA': 'fr', 'BE': 'fr', 'CH': 'fr',
+    'DE': 'de', 'AT': 'de',
+    'IT': 'it',
+    'BR': 'pt', 'PT': 'pt',
+    'RU': 'ru', 'BY': 'ru', 'KZ': 'ru',
+    'SA': 'ar', 'AE': 'ar', 'EG': 'ar', 'JO': 'ar', 'LB': 'ar', 'SY': 'ar', 'IQ': 'ar',
+    'TR': 'tr',
+    'NL': 'nl',
+    'SE': 'sv', 'NO': 'sv', 'DK': 'sv'
   };
   
   return countryLanguageMap[countryCode] || 'en';
@@ -34,14 +39,24 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
   { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
   { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
   { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
   { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
   { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+  { code: 'th', name: 'Thai', nativeName: 'ไทย', flag: '🇹🇭' },
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾' },
   { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' }
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
+  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
+  { code: 'sv', name: 'Swedish', nativeName: 'Svenska', flag: '🇸🇪' }
 ];
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

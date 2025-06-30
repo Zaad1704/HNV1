@@ -15,7 +15,7 @@ interface MobileHeaderProps {
 const MobileHeader: React.FC<MobileHeaderProps> = ({ 
   onMenuToggle, 
   showNotifications = false,
-  title = 'Dashboard'
+  title
 }) => {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
@@ -34,9 +34,9 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
             <Menu size={20} />
           </button>
 
-          {/* Center: Title */}
-          <h1 className="text-lg font-semibold text-text-primary truncate">
-            {title}
+          {/* Center: Company Name */}
+          <h1 className="text-sm font-bold text-text-primary truncate px-2">
+            {title || t('app_name')}
           </h1>
 
           {/* Right: Actions */}
