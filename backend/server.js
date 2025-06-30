@@ -1,67 +1,46 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+const http = require('http');
+const mongoose = require('mongoose');
+const app = require('./app');
+
 const PORT = process.env.PORT || 5001;
+const server = http.createServer(app);
 
-app.use(cors({
-  origin: '*',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
-}));
-
-app.use(express.json());
-
-// API endpoints - defined first
-app.get('/api/site-settings', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      siteName: 'HNV Property Management',
-      logoUrl: '/logo-min.png',
-      theme: 'light',
-      language: 'en'
+const connectToDatabase = async () => {
+  try {
+    if (process.env.MONGO_URI || process.env.MONGODB_URI) {
+      await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
+      console.log('MongoDB connected successfully.');
     }
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+  }
+};
+
+const startServer = async () => {
+  await connectToDatabase();
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-});
+};
 
-app.get('/api/landing-stats', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      totalProperties: 1250,
-      totalTenants: 3400,
-      totalRevenue: 2850000,
-      satisfactionRate: 98
-    }
+const gracefulShutdown = (signal) => {
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+  server.close(() => {
+    mongoose.connection.close(false, () => {
+      process.exit(0);
+    });
   });
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+  gracefulShutdown('unhandledRejection');
+});
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  gracefulShutdown('uncaughtException');
 });
 
-app.get('/api/public', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      appName: 'HNV Property Management',
-      version: '1.0.0',
-      status: 'operational'
-    }
-  });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-app.post('/api/auth/login', (req, res) => {
-  res.json({
-    success: false,
-    message: 'Authentication service temporarily unavailable'
-  });
-});
-
-app.get('/', (req, res) => {
-  res.json({ message: 'HNV API is running!' });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+startServer();
