@@ -94,6 +94,31 @@ app.get('/api/site-settings', (req, res) => {
   });
 });
 
+// Landing stats endpoint
+app.get('/api/landing-stats', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalProperties: 1250,
+      totalTenants: 3400,
+      totalRevenue: 2850000,
+      satisfactionRate: 98
+    }
+  });
+});
+
+// Public endpoint
+app.get('/api/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      appName: 'HNV Property Management',
+      version: '1.0.0',
+      status: 'operational'
+    }
+  });
+});
+
 // Auth endpoints
 app.post('/api/auth/login', (req, res) => {
   console.log('Login attempt received');
