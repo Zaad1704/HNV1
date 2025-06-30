@@ -10,10 +10,11 @@ import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMont
 export const getOverviewStats = asyncHandler(async (req: Request, res: Response) => {
     try {
         if (!req.user) { 
-            return res.status(200).json({
+            res.status(200).json({
                 success: true,
                 data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }
             });
+            return;
         }
         const organizationId = req.user.organizationId; 
 

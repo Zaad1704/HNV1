@@ -31,7 +31,7 @@ export const advancedAuth = async (req: Request, res: Response, next: NextFuncti
     
     next();
   } catch (error) {
-    logger.warn(`Invalid token attempt from ${req.ip}`, { error: error.message });
+    logger.warn(`Invalid token attempt from ${req.ip}`, { error: (error as Error).message });
     res.status(401).json({ success: false, message: 'Invalid token.' });
   }
 };
@@ -84,7 +84,7 @@ export const sessionManager = {
 
 // IP-based security
 export const ipSecurity = (req: Request, res: Response, next: NextFunction) => {
-  const clientIp = req.ip;
+  const clientIp = req.ip || '';
   const suspiciousIps = new Set(['127.0.0.1']); // Add known malicious IPs
   
   if (suspiciousIps.has(clientIp)) {

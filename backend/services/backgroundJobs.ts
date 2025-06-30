@@ -1,7 +1,7 @@
 import Bull from 'bull';
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 import { logger } from './logger';
-import { emailService } from './emailService';
+import emailService from './emailService';
 import { getRealTimeService } from './realTimeService';
 import User from '../models/User';
 import Tenant from '../models/Tenant';
@@ -148,23 +148,26 @@ class ScheduledJobs {
 
       for (const payment of overduePayments) {
         // Send reminder email
+        const tenant = payment.tenantId as any;
+        const paymentDoc = payment as any;
         await emailQueue.add('send-email', {
-          to: payment.tenantId.email,
+          to: tenant.email,
           subject: 'Rent Payment Overdue',
           template: 'rentOverdue',
           data: {
-            tenantName: payment.tenantId.name,
-            amount: payment.amount,
-            dueDate: payment.dueDate,
-            daysOverdue: Math.floor((Date.now() - payment.dueDate.getTime()) / (1000 * 60 * 60 * 24))
+            tenantName: tenant.name,
+            amount: paymentDoc.amount,
+            dueDate: paymentDoc.dueDate,
+            daysOverdue: Math.floor((Date.now() - paymentDoc.dueDate.getTime()) / (1000 * 60 * 60 * 24))
           }
         });
 
         // Send real-time notification
+        const organization = payment.organizationId as any;
         await notificationQueue.add('send-notification', {
-          organizationId: payment.organizationId._id,
+          organizationId: organization._id,
           type: 'rent_overdue',
-          message: `Rent overdue for ${payment.tenantId.name}`,
+          message: `Rent overdue for ${tenant.name}`,
           data: payment
         });
       }
@@ -186,26 +189,29 @@ class ScheduledJobs {
       }).populate('tenantId organizationId propertyId');
 
       for (const lease of expiringLeases) {
+        const leaseTenant = lease.tenantId as any;
+        const leaseProperty = lease.propertyId as any;
+        const leaseOrg = lease.organizationId as any;
         // Notify landlord
         await emailQueue.add('send-email', {
-          to: await getOrganizationOwnerEmail(lease.organizationId._id),
+          to: await getOrganizationOwnerEmail(leaseOrg._id),
           subject: 'Lease Expiring Soon',
           template: 'leaseExpiring',
           data: {
-            tenantName: lease.tenantId.name,
-            propertyName: lease.propertyId.name,
+            tenantName: leaseTenant.name,
+            propertyName: leaseProperty.name,
             expirationDate: lease.endDate
           }
         });
 
         // Notify tenant
         await emailQueue.add('send-email', {
-          to: lease.tenantId.email,
+          to: leaseTenant.email,
           subject: 'Your Lease is Expiring Soon',
           template: 'leaseExpiringTenant',
           data: {
-            tenantName: lease.tenantId.name,
-            propertyName: lease.propertyId.name,
+            tenantName: leaseTenant.name,
+            propertyName: leaseProperty.name,
             expirationDate: lease.endDate
           }
         });
@@ -251,15 +257,19 @@ class ScheduledJobs {
       }).populate('tenantId organizationId propertyId');
 
       for (const request of pendingRequests) {
+        const requestDoc = request as any;
+        const requestTenant = requestDoc.tenantId;
+        const requestProperty = requestDoc.propertyId;
+        const requestOrg = requestDoc.organizationId;
         await emailQueue.add('send-email', {
-          to: await getOrganizationOwnerEmail(request.organizationId._id),
+          to: await getOrganizationOwnerEmail(requestOrg._id),
           subject: 'Maintenance Request Follow-up',
           template: 'maintenanceFollowUp',
           data: {
-            requestTitle: request.title,
-            tenantName: request.tenantId.name,
-            propertyName: request.propertyId.name,
-            daysOld: Math.floor((Date.now() - request.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+            requestTitle: requestDoc.title,
+            tenantName: requestTenant.name,
+            propertyName: requestProperty.name,
+            daysOld: Math.floor((Date.now() - requestDoc.createdAt.getTime()) / (1000 * 60 * 60 * 24))
           }
         });
       }

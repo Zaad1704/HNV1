@@ -7,8 +7,8 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import compression from 'compression';
-import { securityHeaders, corsConfig, createRateLimit, sanitizeInput, requestLogger } from './middleware/securityMiddleware';
-import errorHandler from './middleware/errorHandler';
+import { securityHeaders, createRateLimit, sanitizeInput, requestLogger } from './middleware/securityMiddleware';
+import { errorHandler } from './middleware/errorHandler';
 
 // Import route files
 import healthRoutes from './routes/healthRoutes';
@@ -57,8 +57,11 @@ app.set('trust proxy', 1);
 app.use(securityHeaders);
 // Compression
 app.use(compression());
-// Configured CORS
-app.use(corsConfig);
+// CORS configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 // Rate limiting - more restrictive for auth endpoints
 app.use('/api/auth', createRateLimit(15 * 60 * 1000, 10)); // 10 requests per 15 minutes
 app.use('/api', createRateLimit(15 * 60 * 1000, 100)); // 100 requests per 15 minutes
@@ -66,7 +69,7 @@ app.use('/api', createRateLimit(15 * 60 * 1000, 100)); // 100 requests per 15 mi
 app.use(mongoSanitize());
 // Prevent HTTP Parameter Pollution
 app.use(hpp());
-// Parse JSON bodies with size limit
+// Parse JSON bodies
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Input sanitization

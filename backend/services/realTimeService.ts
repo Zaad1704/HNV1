@@ -1,4 +1,4 @@
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
 import { logger } from './logger';
@@ -52,7 +52,7 @@ class RealTimeService {
   }
 
   private setupEventHandlers() {
-    this.io.on('connection', (socket: AuthenticatedSocket) => {
+    this.io.on('connection', (socket: Socket & { userId?: string; organizationId?: string; role?: string }) => {
       logger.info(`User ${socket.userId} connected via WebSocket`);
       
       // Store connection
