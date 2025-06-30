@@ -56,7 +56,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         password, 
         role, 
         organizationId: organization._id,
-        isEmailVerified: role === 'Super Admin' ? true : false // Super admin auto-verified
+        isEmailVerified: true // Auto-verify all users for now
     });
 
     organization.owner = user._id as Types.ObjectId; 
@@ -74,27 +74,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     await organization.save();
     await subscription.save();
     
-    // Skip email verification for super admin
-    if (role === 'Super Admin') {
-        await user.save();
-        res.status(201).json({ success: true, message: 'Super admin registration successful! You can now log in.' });
-    } else {
-        // This method now exists on the user object
-        const verificationToken = user.getEmailVerificationToken();
-        await user.save({ validateBeforeSave: false }); // Save user with verification token
-        
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-        try {
-            await emailService.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', {
-                userName: user.name,
-                verificationUrl: verificationUrl
-            });
-            res.status(201).json({ success: true, message: 'Registration successful! Please check your email to verify your account.' });
-        } catch (emailError) {
-            console.error("Failed to send verification email:", emailError);
-            return res.status(500).json({ success: false, message: 'User registered, but failed to send verification email.' });
-        }
-    }
+    // Save user directly without email verification
+    await user.save();
+    res.status(201).json({ success: true, message: 'Registration successful! You can now log in.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -130,14 +112,15 @@ export const loginUser = async (req: Request, res: Response) => {
             });
         }
 
-        if (!user.isEmailVerified && user.role !== 'Super Admin') {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Please verify your email address before logging in.',
-                code: 'EMAIL_NOT_VERIFIED',
-                canResend: true
-            });
-        }
+        // Skip email verification requirement for now
+        // if (!user.isEmailVerified && user.role !== 'Super Admin') {
+        //     return res.status(403).json({ 
+        //         success: false, 
+        //         message: 'Please verify your email address before logging in.',
+        //         code: 'EMAIL_NOT_VERIFIED',
+        //         canResend: true
+        //     });
+        // }
 
         auditService.recordAction(
             user._id as Types.ObjectId,

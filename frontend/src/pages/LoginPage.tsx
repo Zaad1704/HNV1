@@ -32,22 +32,7 @@ const LoginPage: React.FC = () => {
     } catch (err: any) {
       console.error('Login error:', err);
       
-      // Handle specific error codes
-      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
-        setError(
-          <div>
-            {err.response.data.message}
-            <button 
-              onClick={handleResendVerification}
-              className="ml-2 text-brand-blue underline hover:no-underline"
-            >
-              Resend verification email
-            </button>
-          </div>
-        );
-        setLoading(false);
-        return;
-      }
+      // Removed email verification handling
       
       // Retry logic for server wake-up
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.response?.status >= 500) {
