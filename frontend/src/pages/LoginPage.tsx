@@ -120,22 +120,8 @@ const LoginPage: React.FC = () => {
       const role = 'Landlord'; // Default role for Google login
       const googleAuthUrl = `${baseURL}/auth/google?role=${role}`;
       
-      // Check if popup is blocked
-      const popup = window.open(googleAuthUrl, 'google-auth', 'width=500,height=600,scrollbars=yes,resizable=yes');
-      
-      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-        // Fallback to redirect if popup is blocked
-        window.location.href = googleAuthUrl;
-      } else {
-        // Monitor popup for completion
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed);
-            // Refresh the page to check for auth state
-            window.location.reload();
-          }
-        }, 1000);
-      }
+      // Direct redirect in the same window
+      window.location.href = googleAuthUrl;
     } catch (error) {
       console.error('Google login error:', error);
       setError('Google login is temporarily unavailable. Please try again.');
