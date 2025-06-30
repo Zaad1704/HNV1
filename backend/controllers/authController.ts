@@ -112,15 +112,15 @@ export const loginUser = async (req: Request, res: Response) => {
             });
         }
 
-        // Skip email verification requirement for now
-        // if (!user.isEmailVerified && user.role !== 'Super Admin') {
-        //     return res.status(403).json({ 
-        //         success: false, 
-        //         message: 'Please verify your email address before logging in.',
-        //         code: 'EMAIL_NOT_VERIFIED',
-        //         canResend: true
-        //     });
-        // }
+        // Check email verification for non-admin users
+        if (!user.isEmailVerified && user.role !== 'Super Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Please verify your email address before logging in.',
+                code: 'EMAIL_NOT_VERIFIED',
+                canResend: true
+            });
+        }
 
         auditService.recordAction(
             user._id as Types.ObjectId,

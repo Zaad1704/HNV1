@@ -8,17 +8,33 @@ import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
+// Passport session serialization
+passport.serializeUser((user: any, done) => {
+    done(null, user._id);
+});
+
+passport.deserializeUser(async (id: string, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
+
 const callbackURL = process.env.NODE_ENV === 'production' 
     ? `${process.env.BACKEND_URL}/api/auth/google/callback`
-    : 'http://localhost:5001/api/auth/google/callback';
+    : `http://localhost:${process.env.PORT || 5001}/api/auth/google/callback`;
 
-passport.use(new GoogleStrategy(
-    {
-        clientID: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        callbackURL: callbackURL,
-        passReqToCallback: true // **SOLUTION: Pass request object to the callback**
-    },
+// Only configure Google OAuth if credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy(
+        {
+            clientID: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            callbackURL: callbackURL,
+            passReqToCallback: true
+        },
     async (req: Request, accessToken, refreshToken, profile, done) => {
         const userEmail = profile.emails?.[0].value;
         const authRole = (req as any).authRole || 'Landlord'; // Get role from state

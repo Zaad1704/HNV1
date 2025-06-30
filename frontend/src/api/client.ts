@@ -2,19 +2,19 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { rateLimiter } from '../utils/security';
 
-// Get the API URL from environment or use production URL
+// Get the API URL from environment or use development URL
 const getApiUrl = () => {
   // Check for explicit environment variable first
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl) return viteApiUrl;
   
-  // Development fallback
+  // Always use localhost for development
   if (import.meta.env.DEV) {
     return 'http://localhost:5001/api';
   }
   
-  // Production fallback
-  return 'https://hnv.onrender.com/api';
+  // Production fallback only if explicitly in production
+  return import.meta.env.PROD ? 'https://hnv.onrender.com/api' : 'http://localhost:5001/api';
 };
 
 const apiClient = axios.create({
