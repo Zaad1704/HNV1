@@ -44,6 +44,7 @@ import invoiceRoutes from './routes/invoiceRoutes';
 import receiptRoutes from './routes/receiptRoutes';
 import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
+import errorRoutes from './routes/errorRoutes';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -121,6 +122,7 @@ app.use('/api/file-upload', protect, fileUploadRoutes);
 app.use('/api/invoices', protect, invoiceRoutes);
 app.use('/api/receipts', protect, receiptRoutes);
 app.use('/api/reports', protect, reportRoutes);
+app.use('/api/errors', errorRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

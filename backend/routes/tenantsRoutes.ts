@@ -31,4 +31,7 @@ router
   .put(upload.fields(tenantUploadFields), asyncHandler(updateTenant))
   .delete(asyncHandler(deleteTenant));
 
+// Tenant details endpoint for modal
+router.get("/:id/details", asyncHandler(getTenantById));
+
 export default router;
