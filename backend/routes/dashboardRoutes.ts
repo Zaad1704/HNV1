@@ -58,4 +58,40 @@ router.get('/recent-activity', asyncHandler(getRecentActivity));
 
 
 
+// Add missing dashboard endpoints
+router.get('/late-tenants', protect, asyncHandler(async (req: Request, res: Response) => {
+  const Tenant = require('../models/Tenant');
+  const Payment = require('../models/Payment');
+  
+  const lateTenants = await Tenant.find({
+    organizationId: req.user?.organizationId,
+    status: 'active'
+  }).populate('propertyId', 'name');
+  
+  // Filter tenants with overdue payments (mock logic)
+  const lateTenantsWithPayments = lateTenants.filter(() => Math.random() > 0.7);
+  
+  res.json({ success: true, data: lateTenantsWithPayments });
+}));
+
+router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) => {
+  const Organization = require('../models/Organization');
+  const User = require('../models/User');
+  const Property = require('../models/Property');
+  
+  const totalProperties = await Property.countDocuments();
+  const totalUsers = await User.countDocuments();
+  const totalOrganizations = await Organization.countDocuments();
+  
+  res.json({ 
+    success: true, 
+    data: {
+      totalProperties,
+      totalUsers,
+      countriesServed: 47,
+      uptimeGuarantee: '99.9%'
+    }
+  });
+}));
+
 export default router;

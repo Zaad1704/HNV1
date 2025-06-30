@@ -96,6 +96,7 @@ app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/localization', localizationRoutes);
 app.use('/api/translation', translationRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/errors', errorRoutes);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);

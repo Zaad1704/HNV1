@@ -31,4 +31,15 @@ router
 router.get('/organization', authorize('Super Admin', 'Landlord', 'Agent'), asyncHandler(getOrgUsers)); 
 router.get('/my-agents', authorize('Super Admin', 'Landlord'), asyncHandler(getManagedAgents));
 
+// Add missing user endpoints
+router.get('/my-agents', protect, asyncHandler(async (req: Request, res: Response) => {
+  const agents = await User.find({
+    organizationId: req.user?.organizationId,
+    role: 'Agent',
+    status: 'active'
+  }).select('name email _id');
+  
+  res.json({ success: true, data: agents });
+}));
+
 export default router;
