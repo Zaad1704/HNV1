@@ -1,12 +1,42 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const helmet = require('helmet');
 const app = express();
-const PORT = process.env.PORT || 5001;
 
-app.use(cors({ origin: '*', credentials: true }));
-app.use(express.json());
+const connectDB = async () => {
+  try {
+    if (process.env.MONGO_URI || process.env.MONGODB_URI) {
+      await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
+      console.log('MongoDB Connected...');
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+};
+connectDB();
 
-// Direct route definitions to avoid import issues
+const allowedOrigins = ['https://www.hnvpm.com', 'https://hnvpm.com', 'https://hnv.onrender.com'];
+if (process.env.CORS_ALLOWED_ORIGINS) {
+  allowedOrigins.push(...process.env.CORS_ALLOWED_ORIGINS.split(','));
+}
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
+  credentials: true
+}));
+
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// API Routes
 app.get('/api/site-settings', (req, res) => {
   res.json({
     success: true,
@@ -20,7 +50,7 @@ app.get('/api/site-settings', (req, res) => {
   });
 });
 
-app.get('/api/landing-stats', (req, res) => {
+app.get('/api/dashboard/landing-stats', (req, res) => {
   res.json({
     success: true,
     data: {
@@ -47,9 +77,9 @@ app.get('/api/plans/public', (req, res) => {
   res.json({
     success: true,
     data: [
-      { id: 1, name: 'Basic', price: 29, features: ['5 Properties', 'Basic Support'] },
-      { id: 2, name: 'Pro', price: 79, features: ['25 Properties', 'Priority Support'] },
-      { id: 3, name: 'Enterprise', price: 199, features: ['Unlimited Properties', '24/7 Support'] }
+      { id: 1, name: 'Basic', price: 29, features: ['5 Properties'] },
+      { id: 2, name: 'Pro', price: 79, features: ['25 Properties'] },
+      { id: 3, name: 'Enterprise', price: 199, features: ['Unlimited'] }
     ]
   });
 });
@@ -59,9 +89,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.json({ message: 'HNV API is running!' });
+  res.send('HNV SaaS API is running successfully!');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
