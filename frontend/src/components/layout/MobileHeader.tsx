@@ -41,8 +41,8 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1">
-            {/* Smart Language Switcher */}
-            <div className="scale-75">
+            {/* Smart Language Switcher - Mobile Optimized */}
+            <div className="relative">
               <SmartLanguageSwitcher />
             </div>
 

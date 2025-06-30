@@ -45,13 +45,13 @@ const HeroSection = () => {
             </div>
             <div className="gradient-dark-orange-blue rounded-3xl p-8 mb-8 shadow-app-xl border border-white/20">
               <h1 className="text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
+                {settings?.heroSection?.title || t('landing.hero_title')}
               </h1>
               <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
-                Modern Property Management
+                {t('hero.title', 'Modern Property Management')}
               </h2>
               <p className="text-xl text-white/80 leading-relaxed drop-shadow-sm">
-                Streamline your property management with our all-in-one platform
+                {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
               </p>
             </div>
             <div className="flex gap-4">
@@ -59,7 +59,7 @@ const HeroSection = () => {
                 to="/register" 
                 className="gradient-dark-orange-blue text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-xl hover:scale-105 transition-all shadow-lg"
               >
-                {t('landing.hero_cta')}
+                {t('landing.hero_cta', 'Start Your Free Trial')}
                 <ArrowRight size={20} />
               </Link>
               <button 
@@ -158,7 +158,7 @@ const HeroSection = () => {
                 to="/register" 
                 className="w-full gradient-dark-orange-blue text-white py-4 rounded-full font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
               >
-                {t('landing.hero_cta')}
+                {t('landing.hero_cta', 'Start Your Free Trial')}
                 <ArrowRight size={20} />
               </Link>
               <button 

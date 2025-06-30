@@ -75,21 +75,29 @@ const PublicHeader = () => {
             </div>
 
             {/* Mobile Menu Drawer */}
-            <div className={`md:hidden absolute top-full left-0 w-full bg-light-card dark:bg-dark-card shadow-lg border-t border-border-color dark:border-border-color-dark transition-transform duration-300 ease-in-out ${isMenuOpen ? 'transform translate-y-0' : 'transform -translate-y-[150%]'}`}>
+            <div className={`md:hidden absolute top-full left-0 w-full bg-light-card dark:bg-dark-card shadow-lg border-t border-border-color dark:border-border-color-dark transition-all duration-300 ease-in-out z-50 ${isMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-4'}`}>
                 <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {navLinks.map(link => (
-                        <a key={link.name} href={link.href} onClick={(e) => handleScroll(e, link.href)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <a key={link.name} href={link.href} onClick={(e) => handleScroll(e, link.href)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                             {link.name}
                         </a>
                     ))}
+                    <div className="px-3 py-2">
+                        <Link to="/login" className="block w-full text-center py-2 px-4 text-gray-600 dark:text-gray-300 hover:text-brand-primary dark:hover:text-brand-primary-dark transition-colors">
+                            {t('header.login', 'Log In')}
+                        </Link>
+                        <Link to="/register" className="block w-full text-center mt-2 py-2 px-4 bg-brand-primary text-white font-semibold rounded-lg shadow-md hover:bg-opacity-90 transition-all">
+                            {t('header.get_started', 'Get Started')}
+                        </Link>
+                    </div>
                 </div>
                 <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
                     <div className="mt-3 px-2 space-y-2">
-                         <button onClick={toggleTheme} className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">
-                            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />} <span>Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode</span>
+                         <button onClick={toggleTheme} className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors">
+                            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />} <span>{t('common.switch_to')} {theme === 'light' ? t('common.theme_dark', 'Dark') : t('common.theme_light', 'Light')} {t('common.mode', 'Mode')}</span>
                         </button>
-                         <button onClick={() => setLang(getNextToggleLanguage().code)} className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">
-                           <Globe size={18} /> <span>Switch to {getNextToggleLanguage().name}</span>
+                         <button onClick={() => setLang(getNextToggleLanguage().code)} className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition-colors">
+                           <Globe size={18} /> <span>{t('common.switch_to')} {getNextToggleLanguage().name}</span>
                         </button>
                     </div>
                 </div>

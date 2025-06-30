@@ -1,14 +1,23 @@
 {
+  "app_name": "HNV Property Management Solutions",
+  "app_name_short": "HNV Solutions",
   "header": {
-    "login": "Anmelden",
-    "get_started": "Loslegen"
+    "login": "Login",
+    "get_started": "Get Started",
+    "about": "About",
+    "services": "Services",
+    "pricing": "Pricing",
+    "contact": "Contact"
   },
   "nav": {
-    "home": "Startseite",
-    "about": "Über uns",
-    "pricing": "Preise",
-    "contact": "Kontakt",
-    "login": "Anmelden"
+    "home": "Home",
+    "about": "About",
+    "features": "Features",
+    "services": "Services",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "login": "Login",
+    "dashboard": "Dashboard"
   },
   "auth": {
     "welcome_back": "Welcome Back!",
@@ -95,7 +104,16 @@
     "features": "Features",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
-    "property_management": "Property Management"
+    "property_management": "Property Management",
+    "change_language": "Change Language",
+    "select_language": "Select Language",
+    "toggle_language": "Toggle Language",
+    "switch_to": "Switch to",
+    "current_language": "Current Language",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "mode": "Mode",
+    "security": "Security"
   },
   "dashboard": {
     "overview": "Overview",
@@ -139,7 +157,18 @@
     "tenant": "Tenant",
     "next_send": "Next Send",
     "frequency": "Frequency",
-    "payments": "Payments"
+    "payments": "Payments",
+    "welcome_message": "Welcome to your dashboard",
+    "good_morning": "Good morning",
+    "good_afternoon": "Good afternoon",
+    "good_evening": "Good evening"
+  },
+  "hero": {
+    "title": "The All-in-One Platform for Modern Property Management",
+    "subtitle": "Automate tasks, track finances, and manage tenants with ease. Join thousands of property managers who trust our platform.",
+    "cta_primary": "Start Your Free Trial",
+    "cta_secondary": "Watch Demo",
+    "trusted_by": "Trusted by property managers worldwide"
   },
   "landing": {
     "hero_title": "The All-in-One Platform for Modern Property Management",
@@ -151,7 +180,40 @@
     "countries_served": "Countries Served",
     "uptime_guarantee": "Uptime Guarantee"
   },
+  "landscape": {
+    "title": "Transform Your Property Management",
+    "subtitle": "Experience the future of property management with our comprehensive platform",
+    "image_alt": "Property Management Platform"
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "Revolutionizing property management with innovative technology",
+    "description": "We are dedicated to providing the most comprehensive and user-friendly property management solution. Our platform helps landlords, agents, and property managers streamline their operations and grow their business.",
+    "mission_title": "Our Mission",
+    "mission_description": "To empower property managers with cutting-edge technology that simplifies complex tasks and drives business growth.",
+    "vision_title": "Our Vision",
+    "vision_description": "To become the global leader in property management software, trusted by millions of users worldwide."
+  },
+  "features": {
+    "title": "Powerful Features",
+    "subtitle": "Everything you need to manage properties efficiently",
+    "property_management": "Property Management",
+    "property_management_desc": "Comprehensive property tracking and management tools",
+    "tenant_management": "Tenant Management",
+    "tenant_management_desc": "Complete tenant lifecycle management",
+    "financial_tracking": "Financial Tracking",
+    "financial_tracking_desc": "Advanced financial reporting and analytics",
+    "maintenance_management": "Maintenance Management",
+    "maintenance_management_desc": "Streamlined maintenance request handling",
+    "automated_reminders": "Automated Reminders",
+    "automated_reminders_desc": "Never miss important dates and payments",
+    "mobile_access": "Mobile Access",
+    "mobile_access_desc": "Manage your properties on the go",
+    "security_desc": "Enterprise-grade security for your data"
+  },
   "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Choose the plan that fits your needs",
     "free": "Free",
     "choose_plan": "Choose Plan",
     "monthly": "Monthly",
@@ -160,21 +222,64 @@
     "per_year": "per year",
     "most_popular": "Most Popular",
     "get_started": "Get Started",
-    "contact_sales": "Contact Sales"
+    "contact_sales": "Contact Sales",
+    "free_plan_name": "Starter",
+    "basic_plan_name": "Professional",
+    "premium_plan_name": "Enterprise",
+    "free_plan_desc": "Perfect for getting started",
+    "basic_plan_desc": "For growing property portfolios",
+    "premium_plan_desc": "For large-scale operations"
   },
   "services": {
-    "title": "Unsere Dienste",
-    "subtitle": "Umfassende Immobilienverwaltungslösungen",
-    "property_tracking_title": "Immobilien-Tracking",
-    "property_tracking_desc": "Verfolgen Sie alle Ihre Immobilien an einem Ort",
-    "rent_collection_title": "Mieteinzug",
-    "rent_collection_desc": "Automatischer Mieteinzug und Erinnerungen",
-    "tenant_management_title": "Mieterverwaltung",
-    "tenant_management_desc": "Verwalten Sie Mieter und Mietverträge"
+    "title": "Our Services",
+    "subtitle": "Comprehensive property management solutions",
+    "property_tracking_title": "Property Tracking",
+    "property_tracking_desc": "Track all your properties in one place",
+    "rent_collection_title": "Rent Collection",
+    "rent_collection_desc": "Automated rent collection and reminders",
+    "tenant_management_title": "Tenant Management",
+    "tenant_management_desc": "Manage tenants and lease agreements",
+    "maintenance_title": "Maintenance Management",
+    "maintenance_desc": "Handle maintenance requests efficiently",
+    "financial_reporting_title": "Financial Reporting",
+    "financial_reporting_desc": "Comprehensive financial insights and reports",
+    "document_management_title": "Document Management",
+    "document_management_desc": "Secure document storage and management"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "send_message": "Send Message",
+    "contact_info": "Contact Information",
+    "address": "Address",
+    "phone": "Phone",
+    "email_address": "Email Address",
+    "business_hours": "Business Hours",
+    "monday_friday": "Monday - Friday: 9:00 AM - 6:00 PM",
+    "saturday": "Saturday: 10:00 AM - 4:00 PM",
+    "sunday": "Sunday: Closed"
   },
   "install_app": {
-    "title": "Unsere App Installieren",
-    "subtitle": "Native mobile Erfahrung erhalten"
+    "title": "Install Our App",
+    "subtitle": "Get the native mobile experience",
+    "description": "Download our mobile app for the best property management experience on the go.",
+    "download_ios": "Download for iOS",
+    "download_android": "Download for Android",
+    "scan_qr": "Scan QR Code"
+  },
+  "leadership": {
+    "title": "Meet Our Team",
+    "subtitle": "The experts behind our success",
+    "ceo_name": "John Smith",
+    "ceo_title": "Chief Executive Officer",
+    "cto_name": "Jane Doe",
+    "cto_title": "Chief Technology Officer",
+    "coo_name": "Mike Johnson",
+    "coo_title": "Chief Operating Officer"
   },
   "forms": {
     "street_address": "Street Address",
@@ -241,5 +346,17 @@
     "legal_professional": "Legal & Professional",
     "travel": "Travel",
     "office_supplies": "Office Supplies"
+  },
+  "footer": {
+    "company_description": "The leading property management platform trusted by thousands of property managers worldwide.",
+    "quick_links": "Quick Links",
+    "support": "Support",
+    "legal": "Legal",
+    "follow_us": "Follow Us",
+    "newsletter_title": "Stay Updated",
+    "newsletter_subtitle": "Subscribe to our newsletter for the latest updates",
+    "enter_email": "Enter your email",
+    "subscribe": "Subscribe",
+    "all_rights_reserved": "All rights reserved"
   }
 }

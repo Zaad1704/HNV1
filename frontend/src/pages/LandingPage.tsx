@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import HeroSection from '../components/landing/HeroSection';
+import LandscapeSection from '../components/landing/LandscapeSection';
 import AboutSection from '../components/landing/AboutSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
 import ServicesSection from '../components/landing/ServicesSection';
@@ -46,6 +47,10 @@ const LandingPage = () => {
     <div className="min-h-screen pb-24 md:pb-0">
       <section id="hero">
         <HeroSection />
+      </section>
+      
+      <section id="landscape">
+        <LandscapeSection />
       </section>
       
       {/* Banner Section - Editable by Super Admin */}
