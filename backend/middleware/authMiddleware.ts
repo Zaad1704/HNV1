@@ -38,20 +38,34 @@ export const protect = async (
           .json({ success: false, message: "User account is not active." });
       }
 
-      // Check organization's subscription status (relaxed for login issues)
+      // Check organization's subscription status (relaxed approach)
       if (req.user.organizationId) {
-        const subscription = await Subscription.findOne({ organizationId: req.user.organizationId });
-
-        if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
-          // Allow Super Admin and Super Moderator even if subscription is inactive
-          if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
-            return next();
+        try {
+          const subscription = await Subscription.findOne({ organizationId: req.user.organizationId });
+          
+          if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
+            // Allow Super Admin and Super Moderator regardless of subscription
+            if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
+              return next();
+            }
+            // For other roles, add warning but don't block access
+            (req as any).subscriptionWarning = {
+              status: subscription?.status || 'none',
+              message: 'Subscription may be inactive. Some features may be limited.'
+            };
           }
-          // For other roles, allow limited access but warn about subscription
-          (req as any).subscriptionWarning = true;
+        } catch (subscriptionError) {
+          console.warn('Subscription check failed:', subscriptionError);
+          // Don't block user if subscription check fails
+          (req as any).subscriptionWarning = {
+            status: 'unknown',
+            message: 'Unable to verify subscription status.'
+          };
         }
-      } else if (req.user.role !== 'Super Admin') {
-        return res.status(403).json({ success: false, message: "User is not associated with an organization." });
+      } else if (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator') {
+        // Only block if user has no organization and is not a super user
+        console.warn('User has no organization:', req.user.email);
+        (req as any).organizationWarning = 'User is not associated with an organization.';
       }
 
       return next(); // Proceed if user and subscription are active

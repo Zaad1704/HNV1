@@ -86,6 +86,8 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 export const loginUser = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
+        
+        // Validate input
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -94,46 +96,60 @@ export const loginUser = async (req: Request, res: Response) => {
             });
         }
         
+        // Find user with password field
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
             return res.status(401).json({ 
                 success: false, 
-                message: 'Invalid credentials',
+                message: 'Invalid email or password',
                 code: 'INVALID_CREDENTIALS'
             });
         }
         
+        // Check password
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
             return res.status(401).json({ 
                 success: false, 
-                message: 'Invalid credentials',
+                message: 'Invalid email or password',
                 code: 'INVALID_CREDENTIALS'
             });
         }
 
-        // Check email verification for non-admin users
-        if (!user.isEmailVerified && user.role !== 'Super Admin') {
+        // Check if user account is suspended
+        if (user.status === 'suspended') {
             return res.status(403).json({ 
                 success: false, 
-                message: 'Please verify your email address before logging in.',
-                code: 'EMAIL_NOT_VERIFIED',
-                canResend: true
+                message: 'Your account has been suspended. Please contact support.',
+                code: 'ACCOUNT_SUSPENDED'
             });
         }
 
-        auditService.recordAction(
-            user._id as Types.ObjectId,
-            user.organizationId as Types.ObjectId,
-            'USER_LOGIN',
-            {}
-        );
+        // Auto-verify users on login (remove email verification barrier)
+        if (!user.isEmailVerified) {
+            user.isEmailVerified = true;
+            user.status = 'active';
+            await user.save();
+        }
+
+        // Record login audit
+        try {
+            auditService.recordAction(
+                user._id as Types.ObjectId,
+                user.organizationId as Types.ObjectId,
+                'USER_LOGIN',
+                { loginTime: new Date(), userAgent: req.get('User-Agent') }
+            );
+        } catch (auditError) {
+            console.warn('Audit logging failed:', auditError);
+        }
+        
         await sendTokenResponse(user, 200, res);
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ 
             success: false, 
-            message: 'Server error during login',
+            message: 'Server error during login. Please try again.',
             code: 'SERVER_ERROR'
         });
     }

@@ -27,25 +27,47 @@ const LoginPage: React.FC = () => {
         login(response.data.token, response.data.user);
         navigate('/dashboard');
       } else {
-        setError('Invalid response from server');
+        setError('Invalid response from server. Please try again.');
       }
     } catch (err: any) {
       console.error('Login error:', err);
       
-      // Removed email verification handling
+      // Handle specific error codes
+      const errorCode = err.response?.data?.code;
+      const errorMessage = err.response?.data?.message;
       
-      // Retry logic for server wake-up
-      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.response?.status >= 500) {
-        if (retryCount < 2) {
-          setError(`Server starting up... Retrying (${retryCount + 1}/3)`);
-          setTimeout(() => {
-            handleLogin(e, retryCount + 1);
-          }, 3000);
-          return;
-        }
+      switch (errorCode) {
+        case 'MISSING_CREDENTIALS':
+          setError('Please provide both email and password.');
+          break;
+        case 'INVALID_CREDENTIALS':
+          setError('Invalid email or password. Please check your credentials.');
+          break;
+        case 'ACCOUNT_SUSPENDED':
+          setError('Your account has been suspended. Please contact support.');
+          break;
+        case 'SERVER_ERROR':
+          setError('Server error. Please try again in a moment.');
+          break;
+        default:
+          // Retry logic for network/server issues
+          if (err.code === 'ECONNABORTED' || 
+              err.message?.includes('timeout') || 
+              err.response?.status >= 500 ||
+              err.code === 'ERR_NETWORK') {
+            if (retryCount < 2) {
+              setError(`Connection issue... Retrying (${retryCount + 1}/3)`);
+              setTimeout(() => {
+                handleLogin(e, retryCount + 1);
+              }, 2000 + (retryCount * 1000)); // Progressive delay
+              return;
+            } else {
+              setError('Unable to connect to server. Please check your internet connection and try again.');
+            }
+          } else {
+            setError(errorMessage || 'Login failed. Please try again.');
+          }
       }
-      
-      setError(err.response?.data?.message || err.message || 'Login failed. Server may be starting up, please try again.');
     } finally {
       if (retryCount === 0) setLoading(false);
     }

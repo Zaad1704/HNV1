@@ -2,19 +2,26 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { rateLimiter } from '../utils/security';
 
-// Get the API URL from environment or use development URL
+// Get the API URL from environment with better fallback logic
 const getApiUrl = () => {
   // Check for explicit environment variable first
   const viteApiUrl = import.meta.env.VITE_API_URL;
-  if (viteApiUrl) return viteApiUrl;
-  
-  // Always use localhost for development
-  if (import.meta.env.DEV) {
-    return 'http://localhost:5001/api';
+  if (viteApiUrl) {
+    console.log('Using API URL from environment:', viteApiUrl);
+    return viteApiUrl;
   }
   
-  // Production fallback only if explicitly in production
-  return import.meta.env.PROD ? 'https://hnv.onrender.com/api' : 'http://localhost:5001/api';
+  // Development fallback
+  if (import.meta.env.DEV) {
+    const devUrl = 'http://localhost:5001/api';
+    console.log('Using development API URL:', devUrl);
+    return devUrl;
+  }
+  
+  // Production fallback
+  const prodUrl = 'https://hnv.onrender.com/api';
+  console.log('Using production API URL:', prodUrl);
+  return prodUrl;
 };
 
 const apiClient = axios.create({
@@ -57,27 +64,47 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle CSP errors
-    if (error.message === 'Network Error' && error.code === 'ERR_NETWORK') {
-      console.error('Network error - possibly blocked by CSP. Check Content Security Policy configuration.');
+    // Handle different types of errors
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network error - check internet connection or server availability');
+      error.userMessage = 'Network connection error. Please check your internet connection.';
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout');
+      error.userMessage = 'Request timed out. Server may be starting up.';
     }
     
+    // Handle HTTP status codes
     if (error.response?.status === 401) {
-      // Only redirect if user was authenticated before
-      const { token } = useAuthStore.getState();
-      if (token) {
+      const { token, isAuthenticated } = useAuthStore.getState();
+      // Only auto-logout if user was previously authenticated
+      if (token && isAuthenticated) {
+        console.log('Authentication expired, logging out');
         useAuthStore.getState().logout();
-        window.location.href = '/login';
+        // Don't redirect immediately, let the component handle it
+        setTimeout(() => {
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login?session=expired';
+          }
+        }, 100);
       }
     } else if (error.response?.status === 403) {
-      // Don't auto-logout on 403, might be subscription issue
-      console.error('Access forbidden:', error.response?.data?.message);
+      // Don't auto-logout on 403 - might be subscription or permission issue
+      console.warn('Access forbidden:', error.response?.data?.message);
+      error.userMessage = error.response?.data?.message || 'Access denied';
     } else if (error.response?.status === 429) {
       console.error('Rate limit exceeded');
+      error.userMessage = 'Too many requests. Please wait a moment and try again.';
+    } else if (error.response?.status >= 500) {
+      console.error('Server error:', error.response?.status);
+      error.userMessage = 'Server error. Please try again later.';
     }
     
     if (import.meta.env.DEV) {
-      console.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, error);
+      console.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        code: error.code
+      });
     }
     
     return Promise.reject(error);
