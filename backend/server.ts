@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { createServer } from 'http';
 import { app } from './app';
+import websocketService from './services/websocketService';
 
 // Load environment variables
 dotenv.config();
@@ -35,9 +37,13 @@ const connectDB = async () => {
 const startServer = async () => {
   await connectDB();
   
-  app.listen(PORT, () => {
+  const server = createServer(app);
+  websocketService.initialize(server);
+  
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`WebSocket enabled`);
   });
 };
 

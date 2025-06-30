@@ -17,6 +17,7 @@ import MobileHeader from './MobileHeader';
 import MobileBottomNav from './MobileBottomNav';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
+import RealTimeNotifications from '../dashboard/RealTimeNotifications';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DashboardLayout = () => {
@@ -237,6 +238,7 @@ const DashboardLayout = () => {
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </button>
+            <RealTimeNotifications />
             <NotificationsPanel />
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 app-gradient rounded-full flex items-center justify-center font-semibold text-white">

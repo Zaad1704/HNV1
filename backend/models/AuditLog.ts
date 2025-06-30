@@ -1,16 +1,32 @@
-import mongoose, { Schema, Document, model } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
+
 export interface IAuditLog extends Document {
-    user: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-    action: string;
-    organizationId: mongoose.Types.ObjectId; // FIX: Changed to mongoose.Types.ObjectId
-    details: Map<string, string>;
-    timestamp: Date;
+  userId: mongoose.Types.ObjectId;
+  organizationId: mongoose.Types.ObjectId;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  details: any;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: Date;
 }
-const AuditLogSchema: Schema<IAuditLog> = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    action: { type: String, required: true },
-    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-    details: { type: Map, of: String },
-    timestamp: { type: Date, default: Date.now },
+
+const auditLogSchema = new Schema<IAuditLog>({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+  action: { type: String, required: true },
+  resource: { type: String, required: true },
+  resourceId: { type: String },
+  details: { type: Schema.Types.Mixed },
+  ipAddress: { type: String, required: true },
+  userAgent: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
+}, {
+  timestamps: true
 });
-export default model<IAuditLog>('AuditLog', AuditLogSchema);
+
+auditLogSchema.index({ organizationId: 1, timestamp: -1 });
+auditLogSchema.index({ userId: 1, timestamp: -1 });
+
+export default mongoose.model<IAuditLog>('AuditLog', auditLogSchema);

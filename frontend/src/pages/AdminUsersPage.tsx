@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import apiClient from "../api/client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Eye, X } from 'lucide-react';
+import { Trash2, Eye, X, CreditCard, DollarSign } from 'lucide-react';
 
 type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; };
 
@@ -25,6 +25,24 @@ const AdminUsersPage: React.FC = () => {
       setSelectedUser(null);
     },
     onError: (err: any) => alert(err.response?.data?.message || 'Failed to delete user.'),
+  });
+
+  const updateUserPlanMutation = useMutation({
+    mutationFn: ({ userId, planId }: { userId: string; planId: string }) => 
+      apiClient.put(`/super-admin/users/${userId}/plan`, { planId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
+      alert('User plan updated successfully');
+    },
+    onError: (err: any) => alert(err.response?.data?.message || 'Failed to update plan.'),
+  });
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['plans'],
+    queryFn: async () => {
+      const response = await apiClient.get('/super-admin/plans');
+      return response.data.data;
+    }
   });
 
   const handleDeleteUser = (user: User) => {
@@ -80,6 +98,16 @@ const AdminUsersPage: React.FC = () => {
                       title="View Details"
                     >
                       <Eye size={16}/>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const planId = prompt('Enter Plan ID for user:');
+                        if (planId) updateUserPlanMutation.mutate({ userId: user._id, planId });
+                      }}
+                      className="p-2 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" 
+                      title="Manage Billing"
+                    >
+                      <CreditCard size={16}/>
                     </button>
                     <button 
                       onClick={() => handleDeleteUser(user)}
@@ -144,6 +172,16 @@ const AdminUsersPage: React.FC = () => {
               )}
             </div>
             <div className="mt-6 flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  const planId = prompt('Enter Plan ID:');
+                  if (planId) updateUserPlanMutation.mutate({ userId: selectedUser._id, planId });
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <DollarSign size={16} />
+                Update Plan
+              </button>
               <button 
                 onClick={() => handleDeleteUser(selectedUser)}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"

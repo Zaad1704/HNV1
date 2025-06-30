@@ -45,6 +45,7 @@ import receiptRoutes from './routes/receiptRoutes';
 import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
 import errorRoutes from './routes/errorRoutes';
+import twoFactorRoutes from './routes/authRoutes';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -89,6 +90,7 @@ app.use('/health', healthRoutes);
 
 // Public routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', twoFactorRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/feedback', feedbackRoutes);

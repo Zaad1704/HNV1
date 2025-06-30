@@ -163,28 +163,98 @@ const SiteEditorPage = () => {
           </div>
         </Section>
 
+        <Section title="Landscape Section">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Landscape Image</label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert('Image must be less than 5MB');
+                      return;
+                    }
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    apiClient.post('/upload/image', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                    })
+                      .then(response => {
+                        handleInputChange('landscapeSection', 'imageUrl', response.data.imageUrl);
+                      })
+                      .catch(() => alert('Failed to upload image'));
+                  }
+                }}
+                className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+              />
+              {(settings.landscapeSection as any)?.imageUrl && (
+                <img 
+                  src={(settings.landscapeSection as any).imageUrl} 
+                  alt="Landscape Preview" 
+                  className="mt-2 w-full h-48 object-cover rounded-lg"
+                />
+              )}
+            </div>
+            <InputField label="Title" section="landscapeSection" field="title" />
+            <TextAreaField label="Description" section="landscapeSection" field="description" />
+          </div>
+        </Section>
+
+        <Section title="About Section">
+          <div className="space-y-4">
+            <InputField label="About Title" section="aboutSection" field="title" />
+            <TextAreaField label="About Content" section="aboutSection" field="content" />
+            <InputField label="Mission Statement" section="aboutSection" field="mission" />
+          </div>
+        </Section>
+
+        <Section title="Features Section">
+          <div className="space-y-4">
+            <InputField label="Features Title" section="featuresSection" field="title" />
+            <TextAreaField label="Features Description" section="featuresSection" field="description" />
+          </div>
+        </Section>
+
+        <Section title="Services Section">
+          <div className="space-y-4">
+            <InputField label="Services Title" section="servicesSection" field="title" />
+            <TextAreaField label="Services Description" section="servicesSection" field="description" />
+          </div>
+        </Section>
+
+        <Section title="Pricing Section">
+          <div className="space-y-4">
+            <InputField label="Pricing Title" section="pricingSection" field="title" />
+            <TextAreaField label="Pricing Subtitle" section="pricingSection" field="subtitle" />
+          </div>
+        </Section>
+
         <Section title="Banner Section">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">Banner Image</label>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert('Image must be less than 5MB');
+                      return;
+                    }
                     const formData = new FormData();
                     formData.append('image', file);
-                    // Upload image and get URL
                     apiClient.post('/upload/image', formData, {
-                      headers: {
-                        'Content-Type': 'multipart/form-data'
-                      }
+                      headers: { 'Content-Type': 'multipart/form-data' }
                     })
                       .then(response => {
                         handleInputChange('bannerSection', 'imageUrl', response.data.imageUrl);
                       })
-                      .catch(err => alert('Failed to upload image'));
+                      .catch(() => alert('Failed to upload image'));
                   }
                 }}
                 className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
