@@ -38,22 +38,19 @@ export const protect = async (
           .json({ success: false, message: "User account is not active." });
       }
 
-      // NEW LOGIC: Check organization's subscription status
+      // Check organization's subscription status (relaxed for login issues)
       if (req.user.organizationId) {
         const subscription = await Subscription.findOne({ organizationId: req.user.organizationId });
 
         if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
-          // Allow Super Admin even if subscription is inactive/canceled
-          if (req.user.role === 'Super Admin') {
+          // Allow Super Admin and Super Moderator even if subscription is inactive
+          if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
             return next();
           }
-          // For other roles, deny access if subscription is not active or trialing
-          // REVERTED: Changed back to 403 status with message for frontend interceptor
-          return res.status(403).json({ success: false, message: "Your organization's subscription is not active. Please renew to continue accessing features." });
+          // For other roles, allow limited access but warn about subscription
+          (req as any).subscriptionWarning = true;
         }
-      } else {
-        // If user has no organizationId, they cannot access protected routes
-        // This case might occur if an organization was deleted but user still exists.
+      } else if (req.user.role !== 'Super Admin') {
         return res.status(403).json({ success: false, message: "User is not associated with an organization." });
       }
 

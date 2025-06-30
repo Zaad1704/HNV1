@@ -4,13 +4,17 @@ import { rateLimiter } from '../utils/security';
 
 // Get the API URL from environment or use production URL
 const getApiUrl = () => {
-  // Check if we're in development
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  // Check for explicit environment variable first
+  const viteApiUrl = import.meta.env.VITE_API_URL;
+  if (viteApiUrl) return viteApiUrl;
+  
+  // Development fallback
+  if (import.meta.env.DEV) {
     return 'http://localhost:5001/api';
   }
-  // Use environment variable or fallback to production
-  const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-  return viteApiUrl || 'https://hnv.onrender.com/api';
+  
+  // Production fallback
+  return 'https://hnv.onrender.com/api';
 };
 
 const apiClient = axios.create({
@@ -66,7 +70,8 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     } else if (error.response?.status === 403) {
-      console.error('Access forbidden');
+      // Don't auto-logout on 403, might be subscription issue
+      console.error('Access forbidden:', error.response?.data?.message);
     } else if (error.response?.status === 429) {
       console.error('Rate limit exceeded');
     }

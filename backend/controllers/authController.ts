@@ -102,31 +102,58 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Please provide email and password' });
-    }
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-        return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Please provide email and password',
+                code: 'MISSING_CREDENTIALS'
+            });
+        }
+        
+        const user = await User.findOne({ email }).select('+password');
+        if (!user) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid credentials',
+                code: 'INVALID_CREDENTIALS'
+            });
+        }
+        
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid credentials',
+                code: 'INVALID_CREDENTIALS'
+            });
+        }
 
-    // Skip email verification for super admin
-    if (!user.isEmailVerified && user.role !== 'Super Admin') {
-        return res.status(403).json({ success: false, message: 'Please verify your email address before logging in.' });
-    }
+        if (!user.isEmailVerified && user.role !== 'Super Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Please verify your email address before logging in.',
+                code: 'EMAIL_NOT_VERIFIED',
+                canResend: true
+            });
+        }
 
-    auditService.recordAction(
-        user._id as Types.ObjectId,
-        user.organizationId as Types.ObjectId,
-        'USER_LOGIN',
-        {}
-    );
-    await sendTokenResponse(user, 200, res);
+        auditService.recordAction(
+            user._id as Types.ObjectId,
+            user.organizationId as Types.ObjectId,
+            'USER_LOGIN',
+            {}
+        );
+        await sendTokenResponse(user, 200, res);
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during login',
+            code: 'SERVER_ERROR'
+        });
+    }
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
@@ -175,10 +202,42 @@ export const getMe = async (req: Request, res: Response) => {
 
 export const googleAuthCallback = (req: Request, res: Response) => {
     if (!req.user) {
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=google-auth-failed`);
     }
     const token = (req.user as IUser).getSignedJwtToken();
-    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/google/callback?token=${token}`);
+};
+
+export const resendVerification = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+        
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        if (user.isEmailVerified) {
+            return res.status(400).json({ success: false, message: 'Email already verified' });
+        }
+        
+        const verificationToken = user.getEmailVerificationToken();
+        await user.save({ validateBeforeSave: false });
+        
+        const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email/${verificationToken}`;
+        await emailService.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', {
+            userName: user.name,
+            verificationUrl: verificationUrl
+        });
+        
+        res.json({ success: true, message: 'Verification email sent' });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({ success: false, message: 'Failed to resend verification email' });
+    }
 };
 
 export const updateProfile = async (req: Request, res: Response) => {

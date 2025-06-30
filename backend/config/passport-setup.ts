@@ -8,7 +8,9 @@ import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 
-const callbackURL = `${process.env.BACKEND_URL || 'http://localhost:5001'}/api/auth/google/callback`;
+const callbackURL = process.env.NODE_ENV === 'production' 
+    ? `${process.env.BACKEND_URL}/api/auth/google/callback`
+    : 'http://localhost:5001/api/auth/google/callback';
 
 passport.use(new GoogleStrategy(
     {
@@ -35,10 +37,11 @@ passport.use(new GoogleStrategy(
             // Check if user exists with this email but not linked to Google yet
             user = await User.findOne({ email: userEmail });
             if (user) {
-                user.googleId = profile.id; // Link Google ID
+                user.googleId = profile.id;
                 user.name = user.name || profile.displayName;
+                user.isEmailVerified = true; // Auto-verify Google users
                 await user.save();
-                return done(null, user); // Linked account, log them in
+                return done(null, user);
             }
 
             // --- **SOLUTION: Logic to create a new user with Organization and Trial Subscription** ---
@@ -71,8 +74,10 @@ passport.use(new GoogleStrategy(
                 googleId: profile.id,
                 name: profile.displayName,
                 email: userEmail,
-                role: authRole, // **SOLUTION: Use the role from the state**
+                role: authRole,
                 organizationId: organization._id,
+                isEmailVerified: true, // Auto-verify Google users
+                status: 'active'
             });
 
             // Assign the new user as the owner of the organization

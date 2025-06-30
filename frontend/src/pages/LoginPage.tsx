@@ -22,23 +22,34 @@ const LoginPage: React.FC = () => {
     
     try {
       const response = await apiClient.post('/auth/login', { email, password });
-      console.log('Full login response:', response);
-      console.log('Login response:', response.data);
       
       if (response.data.success && response.data.token && response.data.user) {
         login(response.data.token, response.data.user);
         navigate('/dashboard');
-      } else if (response.data.data && response.data.data.token && response.data.data.user) {
-        login(response.data.data.token, response.data.data.user);
-        navigate('/dashboard');
       } else {
-        console.error('Invalid response structure:', response.data);
         setError('Invalid response from server');
       }
     } catch (err: any) {
       console.error('Login error:', err);
       
-      // Retry logic for server wake-up (Render free tier)
+      // Handle specific error codes
+      if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        setError(
+          <div>
+            {err.response.data.message}
+            <button 
+              onClick={handleResendVerification}
+              className="ml-2 text-brand-blue underline hover:no-underline"
+            >
+              Resend verification email
+            </button>
+          </div>
+        );
+        setLoading(false);
+        return;
+      }
+      
+      // Retry logic for server wake-up
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.response?.status >= 500) {
         if (retryCount < 2) {
           setError(`Server starting up... Retrying (${retryCount + 1}/3)`);
@@ -55,9 +66,19 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    try {
+      await apiClient.post('/auth/resend-verification', { email });
+      setError('Verification email sent! Please check your inbox.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to resend verification email');
+    }
+  };
+
   const handleGoogleLogin = () => {
     const baseURL = apiClient.defaults.baseURL;
-    window.location.href = `${baseURL}/auth/google`;
+    const role = 'Landlord'; // Default role for Google login
+    window.location.href = `${baseURL}/auth/google?role=${role}`;
   };
 
   return (
