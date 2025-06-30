@@ -23,19 +23,19 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-30 h-16 bg-app-surface/95 backdrop-blur-md border-b border-app-border shadow-app">
+      <header className="fixed top-0 left-0 right-0 z-30 h-16 bg-gradient-to-r from-brand-orange/90 to-brand-blue/90 backdrop-blur-md border-b border-white/20 shadow-app">
         <div className="flex items-center justify-between h-full px-4">
           {/* Left: Menu Button */}
           <button
             onClick={onMenuToggle}
-            className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+            className="touch-target p-2 rounded-xl text-white hover:text-white hover:bg-white/20 transition-colors"
             aria-label="Open menu"
           >
             <Menu size={20} />
           </button>
 
           {/* Center: Company Name */}
-          <h1 className="text-sm font-bold text-text-primary truncate px-2">
+          <h1 className="text-sm font-bold text-white truncate px-2">
             {title || t('app_name')}
           </h1>
 
@@ -49,7 +49,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="touch-target p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+              className="touch-target p-2 rounded-xl text-white hover:text-white hover:bg-white/20 transition-colors"
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}

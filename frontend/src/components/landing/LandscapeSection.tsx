@@ -83,33 +83,7 @@ const LandscapeSection: React.FC<LandscapeSectionProps> = ({ stats }) => {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="mt-12 md:mt-16 bg-gradient-to-r from-brand-orange to-brand-blue rounded-2xl md:rounded-3xl p-6 md:p-8 text-white"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center">
-            <div>
-              <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">{stats?.totalProperties?.toLocaleString() || '10K+'}</div>
-              <div className="text-xs md:text-sm opacity-90">{t('landing.properties_managed', 'Properties Managed')}</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">{stats?.totalUsers?.toLocaleString() || '5K+'}</div>
-              <div className="text-xs md:text-sm opacity-90">{t('landing.active_users', 'Active Users')}</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">{stats?.countriesServed || '50+'}</div>
-              <div className="text-xs md:text-sm opacity-90">{t('landing.countries_served', 'Countries Served')}</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 md:mb-2">99.9%</div>
-              <div className="text-xs md:text-sm opacity-90">{t('landing.uptime_guarantee', 'Uptime Guarantee')}</div>
-            </div>
-          </div>
-        </motion.div>
+
       </div>
     </section>
   );

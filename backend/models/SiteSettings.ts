@@ -52,6 +52,16 @@ export interface ISiteSettings extends Document {
     ctaText: string;
     backgroundImageUrl: string;
   };
+  landscapeSection: {
+    imageUrl: string;
+    altText: string;
+  };
+  bannerSection: {
+    imageUrl: string;
+    altText: string;
+    overlayText: string;
+    overlaySubtext: string;
+  };
   featuresPage: {
     title: string;
     subtitle: string;
@@ -123,6 +133,16 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
     subtitle: { type: String, default: 'Automate tasks, track finances, and manage tenants with ease.' },
     ctaText: { type: String, default: 'Start Your Free Trial' },
     backgroundImageUrl: { type: String, default: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop' },
+  },
+  landscapeSection: {
+    imageUrl: { type: String, default: '/about.jpg' },
+    altText: { type: String, default: 'Property Management Platform' },
+  },
+  bannerSection: {
+    imageUrl: { type: String, default: '' },
+    altText: { type: String, default: 'Platform Banner' },
+    overlayText: { type: String, default: '' },
+    overlaySubtext: { type: String, default: '' },
   },
   featuresPage: {
     title: { type: String, default: 'Powerful Tools for Every Role' },

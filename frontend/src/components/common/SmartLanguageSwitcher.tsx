@@ -10,37 +10,36 @@ const SmartLanguageSwitcher = () => {
   const localLanguage = languages.find(l => l.code === detectedLang);
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Quick toggle if not English detected */}
-      {detectedLang !== 'en' && (
-        <button
-          onClick={toggleLanguage}
-          className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors"
-          title={`Switch to ${lang === 'en' ? localLanguage?.name : 'English'}`}
-        >
-          {lang === 'en' ? localLanguage?.flag : '🇺🇸'} {lang === 'en' ? localLanguage?.code?.toUpperCase() : 'EN'}
-        </button>
-      )}
+    <div className="flex items-center gap-1">
+      {/* Quick toggle - always show */}
+      <button
+        onClick={toggleLanguage}
+        className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors flex items-center gap-1"
+        title={`Switch to ${lang === 'en' ? (localLanguage?.name || 'Local') : 'English'}`}
+      >
+        {lang === 'en' ? (localLanguage?.flag || '🌐') : '🇺🇸'}
+        <span className="hidden sm:inline">{lang === 'en' ? (localLanguage?.code?.toUpperCase() || 'LOC') : 'EN'}</span>
+      </button>
 
       {/* Globe for all languages */}
       <div className="relative">
         <button
           onClick={() => setShowAll(!showAll)}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
           title="All Languages"
         >
-          <Globe size={18} />
+          <Globe size={16} />
         </button>
 
         {showAll && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowAll(false)} />
             <div 
-              className="absolute top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] overflow-hidden max-h-80 overflow-y-auto"
+              className="absolute top-full mt-2 w-48 md:w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] overflow-hidden max-h-80 overflow-y-auto"
               style={{
                 right: 0,
-                maxWidth: 'min(224px, calc(100vw - 2rem))',
-                transform: 'translateX(calc(-100% + 2.5rem))'
+                maxWidth: 'min(200px, calc(100vw - 2rem))',
+                transform: 'translateX(calc(-100% + 1.5rem))'
               }}
             >
               <div className="p-1">

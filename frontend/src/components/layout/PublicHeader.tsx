@@ -4,8 +4,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, Sun, Moon, Globe } from 'lucide-react';
-import { useTheme } from '../../contexts/ThemeContext'; // Assuming this context exists
-import { useLang } from '../../contexts/LanguageContext'; // Assuming this context exists
+import { useTheme } from '../../contexts/ThemeContext';
+import { useLang } from '../../contexts/LanguageContext';
+import SmartLanguageSwitcher from '../common/SmartLanguageSwitcher';
 
 const PublicHeader = () => {
     const { data: settings } = useSiteSettings();
@@ -66,7 +67,8 @@ const PublicHeader = () => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center">
+                    <div className="md:hidden flex items-center gap-2">
+                        <SmartLanguageSwitcher />
                         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
                             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
