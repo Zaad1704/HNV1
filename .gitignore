@@ -49,8 +49,25 @@ coverage/
 *.tar.gz
 *.tgz
 
-# Scripts that are no longer needed
-create-*.sh
-make-*.sh
-final-*.sh
-HNV-*.zip
+# Scripts and documentation
+*.sh
+*.md
+*.txt
+*.py
+CRITICAL_*
+COMPLETE_*
+COMPREHENSIVE_*
+DEPLOYMENT_*
+FINAL_*
+FIXED_*
+FRONTEND_*
+LOGIN_*
+PRODUCTION_*
+README_*
+REMOVE_*
+RENDER_*
+TECHNICAL_*
+TRANSLATION_*
+TWA_*
+UPDATE_*
+HNV-*
