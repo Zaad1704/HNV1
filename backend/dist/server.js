@@ -218,7 +218,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 });
 
-// Landing page stats
+// Landing page stats - enhanced
 app.get('/api/landing-stats', (req, res) => {
   res.json({
     success: true,
@@ -226,7 +226,25 @@ app.get('/api/landing-stats', (req, res) => {
       totalProperties: 1250,
       totalTenants: 3400,
       totalRevenue: 2500000,
-      activeUsers: 850
+      activeUsers: 850,
+      countriesServed: 25,
+      uptimeGuarantee: '99.9%',
+      monthlyGrowth: 15.2,
+      customerSatisfaction: 4.8
+    }
+  });
+});
+
+// Additional stats endpoint
+app.get('/api/stats', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      properties: 1250,
+      tenants: 3400,
+      revenue: 2500000,
+      users: 850,
+      growth: 15.2
     }
   });
 });
@@ -238,7 +256,10 @@ app.get('/api/site-settings/public', (req, res) => {
     data: {
       siteName: 'HNV Property Management',
       logo: '/logo-min.png',
-      theme: 'default'
+      theme: 'default',
+      companyName: 'HNV Solutions',
+      tagline: 'Modern Property Management Platform',
+      supportEmail: 'support@hnvpm.com'
     }
   });
 });
@@ -255,12 +276,67 @@ app.get('/api/site-settings', (req, res) => {
   });
 });
 
+// Public settings endpoint
+app.get('/api/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      siteName: 'HNV Property Management',
+      companyName: 'HNV Solutions',
+      logo: '/logo-min.png',
+      tagline: 'Modern Property Management Platform',
+      features: {
+        propertyManagement: true,
+        tenantPortal: true,
+        paymentProcessing: true,
+        maintenanceTracking: true,
+        financialReporting: true
+      },
+      stats: {
+        totalProperties: 1250,
+        totalTenants: 3400,
+        totalRevenue: 2500000,
+        activeUsers: 850
+      }
+    }
+  });
+});
+
+// Additional common endpoints
+app.get('/api/config', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      apiVersion: '1.0.0',
+      features: ['auth', 'properties', 'tenants', 'payments'],
+      environment: process.env.NODE_ENV || 'development'
+    }
+  });
+});
+
+app.get('/api/version', (req, res) => {
+  res.json({
+    success: true,
+    version: '1.0.0',
+    build: Date.now()
+  });
+});
+
 // Catch-all for missing API routes
 app.use('/api/*', (req, res) => {
-  console.log(`Missing API endpoint: ${req.method} ${req.originalUrl}`);
+  console.log(`⚠️ Missing API endpoint: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: `API endpoint not found: ${req.originalUrl}`,
+    availableEndpoints: [
+      '/api/health',
+      '/api/status', 
+      '/api/public',
+      '/api/landing-stats',
+      '/api/site-settings/public',
+      '/api/auth/login',
+      '/api/auth/register'
+    ],
     timestamp: new Date().toISOString()
   });
 });
