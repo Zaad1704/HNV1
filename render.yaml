@@ -3,7 +3,7 @@ services:
     name: hnv-backend
     env: node
     plan: starter
-    buildCommand: cd backend && npm install --production
+    buildCommand: cd backend && npm install --production --ignore-scripts
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
