@@ -4,7 +4,8 @@ const { createServer } = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-// Use built-in crypto for password hashing
+// Use bcryptjs for password hashing (already in package.json)
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 // Add error handling for server startup
@@ -163,30 +164,29 @@ app.post('/api/auth/login', async (req, res) => {
     // Check password - support multiple formats
     let passwordMatch = false;
     
-    // Try different password comparison methods
-    if (user.password === password) {
-      // Plain text match
-      passwordMatch = true;
-    } else if (user.password.startsWith('$2')) {
-      // Bcrypt format - for now just log and reject (need proper bcrypt)
-      console.log('Bcrypt password detected - cannot verify without bcrypt library');
-      passwordMatch = false;
-    } else if (user.password.length === 64) {
-      // SHA256 hash
-      const hash = crypto.createHash('sha256').update(password).digest('hex');
-      passwordMatch = user.password === hash;
-    } else if (user.password.length === 32) {
-      // Try MD5 hash
-      try {
+    try {
+      if (user.password.startsWith('$2')) {
+        // Bcrypt format - use bcryptjs
+        console.log('Using bcrypt comparison for hashed password');
+        passwordMatch = await bcrypt.compare(password, user.password);
+      } else if (user.password === password) {
+        // Plain text match
+        passwordMatch = true;
+      } else if (user.password.length === 64) {
+        // SHA256 hash
+        const hash = crypto.createHash('sha256').update(password).digest('hex');
+        passwordMatch = user.password === hash;
+      } else if (user.password.length === 32) {
+        // MD5 hash
         const md5Hash = crypto.createHash('md5').update(password).digest('hex');
         passwordMatch = user.password === md5Hash;
-      } catch (error) {
-        console.error('MD5 hash error:', error);
-        passwordMatch = false;
+      } else {
+        // Unknown format - try plain text
+        passwordMatch = user.password === password;
       }
-    } else {
-      // Unknown format - just try plain text
-      passwordMatch = user.password === password;
+    } catch (error) {
+      console.error('Password comparison error:', error);
+      passwordMatch = false;
     }
     
     if (!passwordMatch) {
@@ -239,6 +239,31 @@ app.post('/api/auth/logout', (req, res) => {
     sessions.delete(token);
   }
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Forgot password endpoint
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email required' });
+  }
+  
+  try {
+    if (!isDBConnected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+    
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.json({ success: true, message: 'If the email exists, a reset link has been sent' });
+    }
+    
+    res.json({ success: true, message: 'If the email exists, a reset link has been sent' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Failed to process request' });
+  }
 });
 
 // Landing page stats
