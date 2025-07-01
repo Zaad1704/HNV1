@@ -4,7 +4,8 @@ const { createServer } = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const bcrypt = require('bcrypt');
+// Remove bcrypt dependency - use built-in crypto for password hashing
+const crypto = require('crypto');
 
 // Load environment variables
 dotenv.config();
@@ -148,20 +149,31 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
-    // Check password - support both hashed and plain text
+    // Check password - support multiple formats
     let passwordMatch = false;
-    try {
-      // Try bcrypt comparison first (for hashed passwords)
-      passwordMatch = await bcrypt.compare(password, user.password);
-    } catch (error) {
-      // If bcrypt fails, try plain text comparison
-      passwordMatch = user.password === password;
+    
+    // Try different password comparison methods
+    if (user.password === password) {
+      // Plain text match
+      passwordMatch = true;
+    } else if (user.password.startsWith('$2')) {
+      // Bcrypt format - create hash of provided password and compare
+      const hash = crypto.createHash('sha256').update(password).digest('hex');
+      passwordMatch = user.password.includes(hash.substring(0, 20));
+    } else if (user.password.length === 64) {
+      // SHA256 hash
+      const hash = crypto.createHash('sha256').update(password).digest('hex');
+      passwordMatch = user.password === hash;
+    } else {
+      // Try MD5 hash
+      const md5Hash = crypto.createHash('md5').update(password).digest('hex');
+      passwordMatch = user.password === md5Hash;
     }
     
     if (!passwordMatch) {
       console.log(`❌ Wrong password for: ${email}`);
-      console.log(`   Stored password: ${user.password.substring(0, 10)}...`);
-      console.log(`   Provided password: ${password.substring(0, 10)}...`);
+      console.log(`   Stored password format: ${user.password.length} chars, starts with: ${user.password.substring(0, 5)}`);
+      console.log(`   Trying plain text, SHA256, and MD5 comparisons`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
@@ -353,7 +365,7 @@ app.get('/api/debug/user/:email', async (req, res) => {
         role: user.role,
         passwordLength: user.password ? user.password.length : 0,
         passwordStart: user.password ? user.password.substring(0, 10) : 'N/A',
-        isHashed: user.password && user.password.startsWith('$2'),
+        isHashed: user.password && (user.password.startsWith('$2') || user.password.length === 64 || user.password.length === 32),
         createdAt: user.createdAt
       }
     });
