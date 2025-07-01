@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon server.ts",
-    "build": "echo 'Using pre-built files - no build needed'",
+    "build": "tsc --skipLibCheck",
     "build:safe": "tsc --skipLibCheck --noEmitOnError false",
     "build:prod": "tsc --skipLibCheck",
     "postinstall": "echo 'Using pre-built dist files'",
