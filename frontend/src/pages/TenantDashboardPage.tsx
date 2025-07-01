@@ -1,53 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { motion } from 'framer-motion';
 import { 
-  Home, 
-  CreditCard, 
-  Calendar, 
-  User, 
-  MapPin, 
-  Phone, 
-  Mail,
-  DollarSign,
-  Clock,
-  FileText
+  Home, CreditCard, Wrench, FileText, Calendar, 
+  DollarSign, AlertCircle, CheckCircle, Clock,
+  Phone, Mail, MapPin
 } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
-const fetchTenantDashboard = async () => {
-  const { data } = await apiClient.get('/api/dashboard/tenant-portal');
+const fetchTenantData = async () => {
+  const { data } = await apiClient.get('/api/tenant/dashboard');
   return data.data;
 };
 
 const TenantDashboardPage = () => {
-  const { data: dashboardData, isLoading, error } = useQuery({
+  const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: tenantData, isLoading } = useQuery({
     queryKey: ['tenantDashboard'],
-    queryFn: fetchTenantDashboard
+    queryFn: fetchTenantData
   });
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Home },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
+    { id: 'documents', label: 'Documents', icon: FileText }
+  ];
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading your dashboard...</span>
+        <span className="ml-3 text-text-secondary">Loading your portal...</span>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-          <FileText size={24} className="text-red-500" />
-        </div>
-        <h3 className="text-lg font-semibold text-text-primary mb-2">Unable to Load Dashboard</h3>
-        <p className="text-text-secondary">Please contact your landlord to set up your tenant profile.</p>
-      </div>
-    );
-  }
-
-  const { leaseInfo, paymentHistory, upcomingDues } = dashboardData || {};
 
   return (
     <motion.div
@@ -57,189 +47,261 @@ const TenantDashboardPage = () => {
     >
       {/* Welcome Header */}
       <div className="app-gradient rounded-3xl p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Your Portal</h1>
-        <p className="text-white/80">
-          Manage your lease, payments, and communicate with your landlord.
-        </p>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+            <Home size={32} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
+            <p className="text-white/80">Your tenant portal</p>
+          </div>
+        </div>
       </div>
 
-      {/* Property & Lease Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="app-surface rounded-3xl p-8 border border-app-border"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
-              <Home size={20} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-text-primary">Your Property</h2>
-          </div>
-          
-          {leaseInfo && (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <MapPin size={16} className="text-text-muted mt-1" />
-                <div>
-                  <p className="font-semibold text-text-primary">
-                    {leaseInfo.property?.name}
-                  </p>
-                  <p className="text-text-secondary text-sm">
-                    Unit {leaseInfo.unit} • {leaseInfo.property?.street}, {leaseInfo.property?.city}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <DollarSign size={16} className="text-text-muted" />
-                <div>
-                  <p className="font-semibold text-text-primary">
-                    ${leaseInfo.rentAmount?.toLocaleString()}/month
-                  </p>
-                  <p className="text-text-secondary text-sm">Monthly Rent</p>
-                </div>
-              </div>
-              
-              {leaseInfo.leaseEndDate && (
-                <div className="flex items-center gap-3">
-                  <Calendar size={16} className="text-text-muted" />
-                  <div>
-                    <p className="font-semibold text-text-primary">
-                      {new Date(leaseInfo.leaseEndDate).toLocaleDateString()}
-                    </p>
-                    <p className="text-text-secondary text-sm">Lease Expires</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="app-surface rounded-3xl p-8 border border-app-border"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
-              <User size={20} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-text-primary">Landlord Contact</h2>
-          </div>
-          
-          {leaseInfo?.landlord && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <User size={16} className="text-text-muted" />
-                <div>
-                  <p className="font-semibold text-text-primary">
-                    {leaseInfo.landlord.name}
-                  </p>
-                  <p className="text-text-secondary text-sm">Property Manager</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Mail size={16} className="text-text-muted" />
-                <div>
-                  <p className="font-semibold text-text-primary">
-                    {leaseInfo.landlord.email}
-                  </p>
-                  <p className="text-text-secondary text-sm">Email</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Upcoming Payments */}
-      {upcomingDues && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="app-surface rounded-3xl p-8 border border-app-border"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-              <Clock size={20} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-text-primary">Upcoming Payment</h2>
-          </div>
-          
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6">
-            <div className="flex justify-between items-start mb-4">
+      {/* Property Info Card */}
+      <div className="app-surface rounded-3xl p-8 border border-app-border">
+        <h2 className="text-xl font-bold text-text-primary mb-6">Your Property</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Home size={20} className="text-text-muted" />
               <div>
-                <p className="text-lg font-bold text-orange-800">
-                  ${upcomingDues.totalAmount?.toLocaleString()}
-                </p>
-                <p className="text-orange-600 text-sm">
-                  Due: {new Date(upcomingDues.dueDate).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-text-secondary">Property</p>
+                <p className="font-semibold text-text-primary">Sunset Apartments</p>
               </div>
-              <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-                Pending
-              </span>
             </div>
-            
-            {upcomingDues.lineItems && upcomingDues.lineItems.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-orange-800">Payment Details:</p>
-                {upcomingDues.lineItems.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm text-orange-700">
-                    <span>{item.description}</span>
-                    <span>${item.amount?.toLocaleString()}</span>
-                  </div>
-                ))}
+            <div className="flex items-center gap-3">
+              <MapPin size={20} className="text-text-muted" />
+              <div>
+                <p className="text-sm text-text-secondary">Unit</p>
+                <p className="font-semibold text-text-primary">Unit 2A</p>
               </div>
-            )}
+            </div>
+            <div className="flex items-center gap-3">
+              <Calendar size={20} className="text-text-muted" />
+              <div>
+                <p className="text-sm text-text-secondary">Lease Expires</p>
+                <p className="font-semibold text-text-primary">December 31, 2024</p>
+              </div>
+            </div>
           </div>
-        </motion.div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <DollarSign size={20} className="text-text-muted" />
+              <div>
+                <p className="text-sm text-text-secondary">Monthly Rent</p>
+                <p className="font-semibold text-text-primary">$1,200</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone size={20} className="text-text-muted" />
+              <div>
+                <p className="text-sm text-text-secondary">Property Manager</p>
+                <p className="font-semibold text-text-primary">John Smith</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail size={20} className="text-text-muted" />
+              <div>
+                <p className="text-sm text-text-secondary">Contact</p>
+                <p className="font-semibold text-text-primary">john@property.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-app-border">
+        <nav className="flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? 'border-brand-blue text-brand-blue'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-gray-300'
+              }`}
+            >
+              <tab.icon size={16} />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Payment Status */}
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">Payment Status</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={20} className="text-green-600" />
+                  <div>
+                    <p className="font-semibold text-green-900">Rent Paid</p>
+                    <p className="text-sm text-green-700">January 2024</p>
+                  </div>
+                </div>
+                <span className="font-bold text-green-900">$1,200</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl">
+                <div className="flex items-center gap-3">
+                  <Calendar size={20} className="text-blue-600" />
+                  <div>
+                    <p className="font-semibold text-blue-900">Next Due</p>
+                    <p className="text-sm text-blue-700">February 1, 2024</p>
+                  </div>
+                </div>
+                <span className="font-bold text-blue-900">$1,200</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Maintenance */}
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">Maintenance Requests</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-app-bg rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Clock size={16} className="text-orange-500" />
+                  <div>
+                    <p className="font-medium text-text-primary">Kitchen faucet leak</p>
+                    <p className="text-sm text-text-secondary">Submitted 2 days ago</p>
+                  </div>
+                </div>
+                <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
+                  In Progress
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-app-bg rounded-xl">
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={16} className="text-green-500" />
+                  <div>
+                    <p className="font-medium text-text-primary">Light bulb replacement</p>
+                    <p className="text-sm text-text-secondary">Completed last week</p>
+                  </div>
+                </div>
+                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                  Completed
+                </span>
+              </div>
+            </div>
+            <button className="w-full mt-4 bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition-colors">
+              Submit New Request
+            </button>
+          </div>
+        </div>
       )}
 
-      {/* Payment History */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="app-surface rounded-3xl p-8 border border-app-border"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
-            <CreditCard size={20} className="text-white" />
+      {activeTab === 'payments' && (
+        <div className="app-surface rounded-3xl p-8 border border-app-border">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-text-primary">Payment History</h3>
+            <button className="btn-gradient px-6 py-3 rounded-2xl font-semibold">
+              Make Payment
+            </button>
           </div>
-          <h2 className="text-xl font-bold text-text-primary">Recent Payments</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-app-border">
+                <tr>
+                  <th className="text-left py-3 font-semibold text-text-secondary">Date</th>
+                  <th className="text-left py-3 font-semibold text-text-secondary">Description</th>
+                  <th className="text-left py-3 font-semibold text-text-secondary">Amount</th>
+                  <th className="text-left py-3 font-semibold text-text-secondary">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-app-border">
+                {[
+                  { date: '2024-01-01', desc: 'January Rent', amount: '$1,200', status: 'Paid' },
+                  { date: '2023-12-01', desc: 'December Rent', amount: '$1,200', status: 'Paid' },
+                  { date: '2023-11-01', desc: 'November Rent', amount: '$1,200', status: 'Paid' }
+                ].map((payment, index) => (
+                  <tr key={index}>
+                    <td className="py-3 text-text-primary">{payment.date}</td>
+                    <td className="py-3 text-text-primary">{payment.desc}</td>
+                    <td className="py-3 text-text-primary font-semibold">{payment.amount}</td>
+                    <td className="py-3">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                        {payment.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-        
-        {paymentHistory && paymentHistory.length > 0 ? (
+      )}
+
+      {activeTab === 'maintenance' && (
+        <div className="app-surface rounded-3xl p-8 border border-app-border">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-text-primary">Maintenance Requests</h3>
+            <button className="btn-gradient px-6 py-3 rounded-2xl font-semibold">
+              New Request
+            </button>
+          </div>
           <div className="space-y-4">
-            {paymentHistory.slice(0, 5).map((payment: any) => (
-              <div key={payment._id} className="flex justify-between items-center p-4 bg-app-bg rounded-2xl">
-                <div>
-                  <p className="font-semibold text-text-primary">
-                    ${payment.amount?.toLocaleString()}
-                  </p>
-                  <p className="text-text-secondary text-sm">
-                    {new Date(payment.paymentDate).toLocaleDateString()}
-                  </p>
+            {[
+              { id: 1, issue: 'Kitchen faucet leak', status: 'in_progress', date: '2024-01-15', priority: 'medium' },
+              { id: 2, issue: 'Light bulb replacement', status: 'completed', date: '2024-01-10', priority: 'low' },
+              { id: 3, issue: 'Heating not working', status: 'pending', date: '2024-01-08', priority: 'high' }
+            ].map((request) => (
+              <div key={request.id} className="p-4 border border-app-border rounded-2xl">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-semibold text-text-primary">{request.issue}</h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    request.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {request.status.replace('_', ' ')}
+                  </span>
                 </div>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {payment.status}
-                </span>
+                <div className="flex justify-between text-sm text-text-secondary">
+                  <span>Submitted: {request.date}</span>
+                  <span className={`font-medium ${
+                    request.priority === 'high' ? 'text-red-600' :
+                    request.priority === 'medium' ? 'text-orange-600' :
+                    'text-green-600'
+                  }`}>
+                    {request.priority} priority
+                  </span>
+                </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <CreditCard size={48} className="mx-auto text-text-muted mb-4" />
-            <p className="text-text-secondary">No payment history available</p>
+        </div>
+      )}
+
+      {activeTab === 'documents' && (
+        <div className="app-surface rounded-3xl p-8 border border-app-border">
+          <h3 className="text-xl font-bold text-text-primary mb-6">Documents</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: 'Lease Agreement', type: 'PDF', date: '2024-01-01' },
+              { name: 'Move-in Checklist', type: 'PDF', date: '2024-01-01' },
+              { name: 'Property Rules', type: 'PDF', date: '2024-01-01' },
+              { name: 'Emergency Contacts', type: 'PDF', date: '2024-01-01' }
+            ].map((doc, index) => (
+              <div key={index} className="p-4 border border-app-border rounded-2xl hover:bg-app-bg transition-colors cursor-pointer">
+                <div className="flex items-center gap-3 mb-2">
+                  <FileText size={20} className="text-blue-600" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text-primary truncate">{doc.name}</p>
+                    <p className="text-sm text-text-secondary">{doc.type} • {doc.date}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
