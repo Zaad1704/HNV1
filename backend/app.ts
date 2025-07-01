@@ -65,6 +65,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://hnv-1-frontend.onrender.com',
   'https://hnv-property.onrender.com',
+  'https://www.hnvpm.com',
+  'https://hnvpm.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -113,6 +115,19 @@ app.get('/', (req, res) => {
     service: 'HNV Property Management API',
     version: '1.0.0',
     timestamp: new Date().toISOString()
+  });
+});
+
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+  res.json({
+    status: 'OK',
+    origin: req.get('Origin'),
+    userAgent: req.get('User-Agent'),
+    headers: req.headers,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    frontendUrl: process.env.FRONTEND_URL
   });
 });
 

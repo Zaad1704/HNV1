@@ -17,7 +17,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://hnv-1-frontend.onrender.com
+        value: https://www.hnvpm.com
       - key: BACKEND_URL
         value: https://hnv.onrender.com
       - key: GOOGLE_CLIENT_ID
