@@ -13,7 +13,7 @@ import {
 } from '../controllers/dashboardController';
 
 // Mock implementations for missing controllers
-const mockFinancialSummary = asyncHandler(async (req: Request, res: Response) => {
+const mockFinancialSummary = async (req: Request, res: Response) => {
   const mockData = [
     { name: 'Jan', Revenue: 4000, Expenses: 2400 },
     { name: 'Feb', Revenue: 3000, Expenses: 1398 },
@@ -23,15 +23,15 @@ const mockFinancialSummary = asyncHandler(async (req: Request, res: Response) =>
     { name: 'Jun', Revenue: 2390, Expenses: 3800 }
   ];
   res.json({ success: true, data: mockData });
-});
+};
 
-const mockRentStatus = asyncHandler(async (req: Request, res: Response) => {
+const mockRentStatus = async (req: Request, res: Response) => {
   const mockData = [
     { name: 'Paid', value: 75 },
     { name: 'Overdue', value: 25 }
   ];
   res.json({ success: true, data: mockData });
-});
+};
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
@@ -87,7 +87,8 @@ router.get('/tenant-portal', protect, authorize(['Tenant']), asyncHandler(async 
   }).populate('propertyId landlordId');
   
   if (!tenant) {
-    return res.status(404).json({ success: false, message: 'Tenant profile not found' });
+    res.status(404).json({ success: false, message: 'Tenant profile not found' });
+    return;
   }
   
   const paymentHistory = await Payment.find({ tenantId: tenant._id }).sort({ createdAt: -1 }).limit(10);
@@ -102,30 +103,6 @@ router.get('/tenant-portal', protect, authorize(['Tenant']), asyncHandler(async 
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         lineItems: [{ description: 'Monthly Rent', amount: tenant.rentAmount || 1200 }]
       }
-    }
-  });
-}));
-
-
-
-
-
-router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) => {
-  const Organization = require('../models/Organization');
-  const User = require('../models/User');
-  const Property = require('../models/Property');
-  
-  const totalProperties = await Property.countDocuments();
-  const totalUsers = await User.countDocuments();
-  const totalOrganizations = await Organization.countDocuments();
-  
-  res.json({ 
-    success: true, 
-    data: {
-      totalProperties,
-      totalUsers,
-      countriesServed: 47,
-      uptimeGuarantee: '99.9%'
     }
   });
 }));
