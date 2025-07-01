@@ -12,6 +12,7 @@ import {
   Activity,
   BarChart3
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart';
 import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
 
@@ -177,9 +178,9 @@ const AdminDashboardPage = () => {
             { title: 'Billing Overview', icon: CreditCard, href: '/admin/billing' },
             { title: 'Site Settings', icon: Activity, href: '/admin/site-editor' }
           ].map((action, index) => (
-            <a
+            <Link
               key={action.title}
-              href={action.href}
+              to={action.href}
               className="flex flex-col items-center p-6 bg-app-bg rounded-2xl hover:bg-app-surface hover:shadow-app transition-all duration-300 group"
             >
               <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
@@ -188,7 +189,7 @@ const AdminDashboardPage = () => {
               <span className="text-sm font-medium text-text-primary text-center">
                 {action.title}
               </span>
-            </a>
+            </Link>
           ))}
         </div>
       </motion.div>

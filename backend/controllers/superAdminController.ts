@@ -34,7 +34,12 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const systemOverview = await masterDataService.getSystemOverview();
-    res.status(200).json({ success: true, data: systemOverview });
+    res.status(200).json({ success: true, data: {
+        totalUsers: systemOverview.stats.totalUsers,
+        totalOrgs: systemOverview.stats.totalOrganizations,
+        activeSubscriptions: systemOverview.stats.activeSubscriptions,
+        totalRevenue: systemOverview.stats.totalRevenue
+    }});
 });
 
 export const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
