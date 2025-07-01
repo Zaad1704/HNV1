@@ -145,6 +145,79 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
+// Google OAuth routes
+app.get('/api/auth/google', (req, res) => {
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${process.env.GOOGLE_CLIENT_ID || 'your-google-client-id'}` +
+    `&redirect_uri=${encodeURIComponent(process.env.BACKEND_URL || 'https://hnv.onrender.com')}/api/auth/google/callback` +
+    `&response_type=code` +
+    `&scope=email profile` +
+    `&access_type=offline`;
+  
+  res.redirect(googleAuthUrl);
+});
+
+app.get('/api/auth/google/callback', async (req, res) => {
+  const { code } = req.query;
+  
+  if (!code) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/login?error=oauth_failed`);
+  }
+  
+  try {
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
+        client_secret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: `${process.env.BACKEND_URL || 'https://hnv.onrender.com'}/api/auth/google/callback`
+      })
+    });
+    
+    const tokens = await tokenResponse.json();
+    
+    if (!tokens.access_token) {
+      throw new Error('No access token received');
+    }
+    
+    // Get user info from Google
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    });
+    
+    const googleUser = await userResponse.json();
+    
+    // Find or create user
+    let user = users.get(googleUser.email);
+    if (!user) {
+      user = {
+        id: Date.now().toString(),
+        name: googleUser.name,
+        email: googleUser.email,
+        googleId: googleUser.id,
+        role: 'Landlord',
+        createdAt: new Date().toISOString()
+      };
+      users.set(googleUser.email, user);
+    }
+    
+    // Create session
+    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email: user.email })).toString('base64');
+    sessions.set(token, user);
+    
+    // Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/auth/google/callback?token=${token}`);
+    
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/login?error=oauth_failed`);
+  }
+});
+
 // Landing page stats
 app.get('/api/landing-stats', (req, res) => {
   res.json({
@@ -243,12 +316,13 @@ const startServer = async () => {
   const server = createServer(app);
   
   server.listen(PORT, () => {
+    const baseUrl = process.env.NODE_ENV === 'production' ? 'https://hnv.onrender.com' : `http://localhost:${PORT}`;
     console.log('🚀 HNV Property Management Backend');
     console.log('=====================================');
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`✅ Health check: http://localhost:${PORT}/health`);
-    console.log(`✅ API status: http://localhost:${PORT}/api/status`);
+    console.log(`✅ Health check: ${baseUrl}/health`);
+    console.log(`✅ API status: ${baseUrl}/api/status`);
     console.log('=====================================');
   });
 
