@@ -5,7 +5,7 @@ export const useSiteSettings = () => {
   return useQuery({
     queryKey: ['siteSettings'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/site-settings');
+      const { data } = await apiClient.get('/api/site-settings');
       return data.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
