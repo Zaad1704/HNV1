@@ -61,8 +61,8 @@ const startServer = async () => {
       const websocketService = await import('./services/websocketService');
       websocketService.default.initialize(server);
       console.log('✓ WebSocket service initialized');
-    } catch (wsError) {
-      console.warn('⚠ WebSocket service not available:', wsError.message);
+    } catch (wsError: any) {
+      console.warn('⚠ WebSocket service not available:', wsError?.message || 'Unknown error');
     }
     
     server.listen(PORT, () => {
@@ -78,8 +78,10 @@ const startServer = async () => {
       console.log(`${signal} received, shutting down gracefully`);
       server.close(() => {
         console.log('HTTP server closed');
-        mongoose.connection.close(() => {
+        mongoose.connection.close().then(() => {
           console.log('Database connection closed');
+          process.exit(0);
+        }).catch(() => {
           process.exit(0);
         });
       });
