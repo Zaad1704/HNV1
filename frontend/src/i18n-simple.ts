@@ -5,11 +5,15 @@ import { initReactI18next } from 'react-i18next';
 import enTranslations from '../public/locales/en/translation.json';
 import esTranslations from '../public/locales/es/translation.json';
 import frTranslations from '../public/locales/fr/translation.json';
+import bnTranslations from '../public/locales/bn/translation.json';
+import deTranslations from '../public/locales/de/translation.json';
 
 const resources = {
   en: { translation: enTranslations },
   es: { translation: esTranslations },
-  fr: { translation: frTranslations }
+  fr: { translation: frTranslations },
+  bn: { translation: bnTranslations },
+  de: { translation: deTranslations }
 };
 
 i18n
