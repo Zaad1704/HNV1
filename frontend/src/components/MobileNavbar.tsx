@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Globe, Sun, Moon, Download, ArrowRight } from 'lucide-react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { useLang } from '../contexts/LanguageContext';
+import LanguageDropdown from './LanguageDropdown';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MobileNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: settings } = useSiteSettings();
-  const { setLang, getNextToggleLanguage } = useLang();
+
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
 
@@ -118,16 +118,9 @@ const MobileNavbar = () => {
                 {/* Controls */}
                 <div className="p-6 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-4">
-                    <button
-                      onClick={() => {
-                        setLang(getNextToggleLanguage().code);
-                        toggleMenu();
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    >
-                      <Globe size={16} />
-                      <span className="text-sm">{getNextToggleLanguage().name}</span>
-                    </button>
+                    <div onClick={toggleMenu}>
+                      <LanguageDropdown />
+                    </div>
 
                     <button
                       onClick={() => {

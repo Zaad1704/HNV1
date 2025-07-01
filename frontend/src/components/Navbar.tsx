@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { ArrowRight, Globe, Sun, Moon, Download } from 'lucide-react';
-import { useLang } from '../contexts/LanguageContext';
+import LanguageDropdown from './LanguageDropdown';
 import { useTheme } from '../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
   const { data: settings } = useSiteSettings();
-  const { setLang, getNextToggleLanguage } = useLang();
+
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
 
@@ -56,13 +56,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Left: Theme & Language */}
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setLang(getNextToggleLanguage().code)} 
-              className="btn-glass p-3 rounded-full"
-              title={`Switch to ${getNextToggleLanguage().name}`}
-            >
-              <Globe size={20} />
-            </button>
+            <LanguageDropdown />
             <button 
               onClick={toggleTheme} 
               className="btn-glass p-3 rounded-full"

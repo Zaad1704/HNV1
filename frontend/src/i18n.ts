@@ -10,15 +10,15 @@ i18n
   .init({
     supportedLngs: ['en', 'ar', 'bn', 'de', 'es', 'fr', 'hi', 'ja', 'pt', 'zh', 'ko', 'it', 'ru', 'tr', 'nl', 'sv', 'th', 'vi', 'id', 'ms'],
     fallbackLng: 'en',
-    debug: import.meta.env.DEV,
+    debug: false,
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
     },
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
       requestOptions: {
-        cache: 'no-cache'
+        cache: 'default'
       }
     },
     interpolation: {
@@ -28,7 +28,10 @@ i18n
       useSuspense: false,
     },
     load: 'languageOnly',
-    cleanCode: true
+    cleanCode: true,
+    returnEmptyString: false,
+    returnNull: false,
+    returnObjects: false
   });
 
 export default i18n;
