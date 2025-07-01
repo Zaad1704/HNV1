@@ -1,140 +1,141 @@
-// frontend/src/pages/ResubscribePage.tsx
-import React from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import apiClient from '../api/client';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { CreditCard, ArrowLeftCircle, ShieldAlert, CheckCircle } from 'lucide-react'; // Added CheckCircle
-import { useAuthStore } from '../store/authStore';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { CreditCard, Check, AlertCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-// Interfaces for type safety
-interface IPlanDisplay {
-    _id: string;
-    name: string;
-    price: number;
-    duration: string;
-    features: string[];
-}
+const ResubscribePage = () => {
+  const [selectedPlan, setSelectedPlan] = useState('professional');
+  const [loading, setLoading] = useState(false);
 
-interface ISubscriptionDisplay {
-    organizationId: string;
-    planId: IPlanDisplay;
-    status: 'trialing' | 'active' | 'inactive' | 'canceled' | 'past_due';
-    isLifetime: boolean;
-    trialExpiresAt?: string;
-    currentPeriodEndsAt?: string;
-}
-
-const fetchBillingDetails = async (): Promise<ISubscriptionDisplay> => {
-    const { data } = await apiClient.get('/billing');
-    return data.data;
-};
-
-const createCheckoutSession = async (planId: string): Promise<string> => {
-    const { data } = await apiClient.post('/billing/create-checkout-session', { planId });
-    return data.redirectUrl;
-};
-
-const ResubscribePage: React.FC = () => {
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const initialStatus = searchParams.get('status') || 'inactive';
-    const { logout } = useAuthStore();
-
-    const { data: billingInfo, isLoading, isError, error } = useQuery<ISubscriptionDisplay, Error>({
-        queryKey: ['userBillingInfoResubscribe'],
-        queryFn: fetchBillingDetails,
-        retry: false, // Do not retry on failure, handle errors immediately
-    });
-
-    const reactivateMutation = useMutation({
-        mutationFn: (planId: string) => createCheckoutSession(planId),
-        onSuccess: (redirectUrl) => {
-            window.location.href = redirectUrl;
-        },
-        onError: (err: any) => {
-            alert(`Failed to initiate checkout: ${err.response?.data?.message || 'Please try again.'}`);
-        }
-    });
-
-    const handleReactivate = () => {
-        if (billingInfo?.planId?._id) {
-            reactivateMutation.mutate(billingInfo.planId._id);
-        } else {
-            alert('Could not retrieve your previous plan. Please choose a new plan from our pricing page.');
-            navigate('/pricing');
-        }
-    };
-
-    const handleGoBackToLogin = () => {
-        logout();
-        navigate('/login', { replace: true });
-    };
-
-    if (isLoading) {
-        return <div className="min-h-screen bg-dark-bg flex items-center justify-center text-dark-text dark:text-dark-text-dark">Loading subscription details...</div>;
+  const plans = [
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: 29,
+      features: ['Up to 10 properties', 'Basic tenant management', 'Email support']
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: 79,
+      features: ['Up to 50 properties', 'Advanced analytics', 'Priority support', 'Agent management'],
+      popular: true
+    },
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 199,
+      features: ['Unlimited properties', 'White-label solution', '24/7 phone support', 'Custom integrations']
     }
+  ];
 
-    if (isError || !billingInfo) {
-         return (
-            <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark flex justify-center items-center p-4 transition-colors duration-300">
-                <div className="text-center bg-light-card dark:bg-dark-card p-10 rounded-2xl shadow-xl border border-border-color dark:border-border-color-dark max-w-lg transition-all duration-200">
-                    <ShieldAlert className="mx-auto text-brand-orange w-16 h-16 mb-4" /> {/* Adjusted color to brand-orange */}
-                    <h1 className="text-3xl font-bold text-dark-text dark:text-dark-text-dark mb-4">Subscription Issue</h1>
-                    <p className="text-light-text dark:text-light-text-dark text-lg mb-8">
-                        We could not find an active or restorable subscription for your account. This can happen if the subscription has been removed or if your session has expired.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link to="/pricing" className="px-6 py-3 bg-brand-primary font-semibold text-white rounded-lg hover:bg-brand-secondary transition-colors duration-200">
-                            View Pricing Plans
-                        </Link>
-                        <button onClick={handleGoBackToLogin} className="px-6 py-3 bg-light-bg dark:bg-dark-bg/50 border border-border-color dark:border-border-color-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-dark-bg/70 transition-colors flex items-center gap-2 mx-auto sm:mx-0">
-                            <ArrowLeftCircle size={20} /> Return to Login
-                        </button>
+  const handleResubscribe = async () => {
+    setLoading(true);
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setLoading(false);
+    // Redirect to success page
+  };
+
+  return (
+    <div className="min-h-screen bg-app-bg py-20">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle size={32} className="text-orange-600" />
+          </div>
+          <h1 className="text-4xl font-bold text-text-primary mb-4">
+            Reactivate Your Subscription
+          </h1>
+          <p className="text-text-secondary text-lg">
+            Your subscription has expired. Choose a plan to continue using HNV Property Management.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {plans.map((plan, index) => (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`relative app-surface rounded-3xl p-8 border transition-all duration-300 cursor-pointer ${
+                selectedPlan === plan.id
+                  ? 'border-brand-blue shadow-app-lg scale-105'
+                  : 'border-app-border hover:border-brand-orange'
+              } ${plan.popular ? 'gradient-dark-orange-blue text-white' : ''}`}
+              onClick={() => setSelectedPlan(plan.id)}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-white text-brand-orange px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+              
+              <div className="text-center mb-8">
+                <h3 className={`text-2xl font-bold mb-2 ${plan.popular ? 'text-white' : 'text-text-primary'}`}>
+                  {plan.name}
+                </h3>
+                <div className="mb-4">
+                  <span className={`text-4xl font-bold ${plan.popular ? 'text-white' : 'text-text-primary'}`}>
+                    ${plan.price}
+                  </span>
+                  <span className={`${plan.popular ? 'text-gray-200' : 'text-text-secondary'}`}>
+                    /month
+                  </span>
+                </div>
+              </div>
+
+              <ul className="space-y-4">
+                {plan.features.map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                      plan.popular ? 'bg-white/20' : 'bg-green-100'
+                    }`}>
+                      <Check size={12} className={`${plan.popular ? 'text-white' : 'text-green-600'}`} />
                     </div>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark flex justify-center items-center p-4 transition-colors duration-300">
-            <div className="w-full max-w-md bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-2xl border border-border-color dark:border-border-color-dark transition-all duration-200">
-                <h1 className="text-3xl font-bold text-center mb-2">Your Account is {initialStatus.replace('_', ' ')}</h1>
-                <p className="text-light-text dark:text-light-text-dark text-center mb-6">
-                    To regain full access, please reactivate your subscription.
-                </p>
-
-                <div className="bg-light-bg dark:bg-dark-bg/50 p-6 rounded-lg mb-6 border border-border-color dark:border-border-color-dark transition-all duration-200">
-                    <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-secondary">{billingInfo.planId?.name || 'Previous Plan'} Plan</h2>
-                    <p className="text-lg font-mono text-light-text dark:text-light-text-dark mt-2">
-                        ${(billingInfo.planId?.price / 100)?.toFixed(2) || '0.00'} / {billingInfo.planId?.duration || 'N/A'}
-                    </p>
-                    <ul className="text-light-text dark:text-light-text-dark space-y-2 mt-4 text-sm">
-                        {(billingInfo.planId?.features || []).map((feature: string) => (
-                            <li key={feature} className="flex items-center">
-                                <CheckCircle className="w-4 h-4 mr-2 text-brand-primary dark:text-brand-secondary" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <button
-                    onClick={handleReactivate}
-                    disabled={reactivateMutation.isLoading}
-                    className="w-full py-3 bg-brand-primary text-white font-semibold rounded-lg hover:bg-brand-secondary transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                    <CreditCard size={20} /> {reactivateMutation.isLoading ? 'Redirecting...' : 'Reactivate Subscription'}
-                </button>
-                <button
-                    onClick={handleGoBackToLogin}
-                    className="w-full mt-4 py-3 border border-border-color dark:border-border-color-dark text-light-text dark:text-light-text-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-dark-bg/70 transition-colors flex items-center justify-center gap-2"
-                >
-                    <ArrowLeftCircle size={20} /> Cancel and Go Back
-                </button>
-            </div>
+                    <span className={`${plan.popular ? 'text-gray-100' : 'text-text-secondary'}`}>
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
         </div>
-    );
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-center"
+        >
+          <button
+            onClick={handleResubscribe}
+            disabled={loading}
+            className="btn-gradient px-8 py-4 rounded-2xl font-semibold text-lg flex items-center gap-2 mx-auto disabled:opacity-50"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <CreditCard size={20} />
+            )}
+            {loading ? 'Processing...' : 'Reactivate Subscription'}
+          </button>
+          
+          <p className="text-text-muted text-sm mt-4">
+            Need help? <Link to="/contact" className="text-brand-blue hover:underline">Contact Support</Link>
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
 };
 
 export default ResubscribePage;
