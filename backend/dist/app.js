@@ -45,6 +45,7 @@ const receiptRoutes_1 = __importDefault(require("./routes/receiptRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 const planRoutes_1 = __importDefault(require("./routes/planRoutes"));
 const errorRoutes_1 = __importDefault(require("./routes/errorRoutes"));
+const publicRoutes_1 = __importDefault(require("./routes/publicRoutes"));
 const authMiddleware_1 = require("./middleware/authMiddleware");
 const passport_1 = __importDefault(require("passport"));
 require("./config/passport-setup");
@@ -57,6 +58,8 @@ const allowedOrigins = [
     'http://localhost:3000',
     'https://hnv-1-frontend.onrender.com',
     'https://hnv-property.onrender.com',
+    'https://www.hnvpm.com',
+    'https://hnvpm.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 app.use((0, cors_1.default)({
@@ -73,7 +76,7 @@ app.use((0, cors_1.default)({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time']
 }));
 app.use('/api/auth', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 10));
 app.use('/api', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 100));
@@ -84,9 +87,27 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 app.use(passport_1.default.initialize());
 app.use(securityMiddleware_1.sanitizeInput);
 app.use(securityMiddleware_1.requestLogger);
+app.get('/', (req, res) => {
+    res.json({
+        status: 'OK',
+        service: 'HNV Property Management API',
+        version: '1.0.0',
+        timestamp: new Date().toISOString()
+    });
+});
+app.get('/api/debug', (req, res) => {
+    res.json({
+        status: 'OK',
+        origin: req.get('Origin'),
+        userAgent: req.get('User-Agent'),
+        headers: req.headers,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        frontendUrl: process.env.FRONTEND_URL
+    });
+});
 app.use('/api/health', healthRoutes_1.default);
 app.use('/health', healthRoutes_1.default);
-app.use('/', healthRoutes_1.default);
 const routeErrorHandler = (err, req, res, next) => {
     console.error(`Route error in ${req.originalUrl}:`, err);
     if (!res.headersSent) {
@@ -106,6 +127,7 @@ app.use('/api/localization', localizationRoutes_1.default, routeErrorHandler);
 app.use('/api/translation', translationRoutes_1.default, routeErrorHandler);
 app.use('/api/plans', planRoutes_1.default, routeErrorHandler);
 app.use('/api/errors', errorRoutes_1.default, routeErrorHandler);
+app.use('/api', publicRoutes_1.default, routeErrorHandler);
 app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default);
 app.use('/api/properties', authMiddleware_1.protect, propertiesRoutes_1.default);
 app.use('/api/tenants', authMiddleware_1.protect, tenantsRoutes_1.default);

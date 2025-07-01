@@ -45,6 +45,7 @@ import receiptRoutes from './routes/receiptRoutes';
 import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
 import errorRoutes from './routes/errorRoutes';
+import publicRoutes from './routes/publicRoutes';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -88,7 +89,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time']
 }));
 // Rate limiting - more restrictive for auth endpoints
 app.use('/api/auth', createRateLimit(15 * 60 * 1000, 10)); // 10 requests per 15 minutes
@@ -157,6 +158,7 @@ app.use('/api/localization', localizationRoutes, routeErrorHandler);
 app.use('/api/translation', translationRoutes, routeErrorHandler);
 app.use('/api/plans', planRoutes, routeErrorHandler);
 app.use('/api/errors', errorRoutes, routeErrorHandler);
+app.use('/api', publicRoutes, routeErrorHandler);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);
