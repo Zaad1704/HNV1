@@ -20,40 +20,6 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check routes
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    service: 'HNV Property Management Backend',
-    version: '1.0.0',
-    timestamp: new Date().toISOString() 
-  });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    service: 'HNV Backend API',
-    version: '1.0.0',
-    timestamp: new Date().toISOString() 
-  });
-});
-
-// Basic API routes
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    message: 'HNV Backend is running successfully!', 
-    version: '1.0.0',
-    features: [
-      'Property Management',
-      'Tenant Management', 
-      'Payment Processing',
-      'Multi-tenant SaaS',
-      'Real-time Notifications'
-    ]
-  });
-});
-
 // User model schema
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -68,14 +34,66 @@ const User = mongoose.model('User', UserSchema);
 
 // Session storage
 const sessions = new Map();
+let isDBConnected = false;
 
-// Auth routes
+// Health check routes
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'HNV Property Management Backend',
+    version: '1.0.0',
+    database: isDBConnected ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'HNV Backend API',
+    version: '1.0.0',
+    database: isDBConnected ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+app.get('/api/status', (req, res) => {
+  res.json({
+    success: true,
+    message: 'HNV Property Management API is operational',
+    database: isDBConnected ? 'Connected' : 'Disconnected',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Basic API routes
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'HNV Backend is running successfully!', 
+    version: '1.0.0',
+    database: isDBConnected ? 'Connected' : 'Disconnected',
+    features: [
+      'Property Management',
+      'Tenant Management', 
+      'Payment Processing',
+      'Multi-tenant SaaS',
+      'Real-time Notifications'
+    ]
+  });
+});
+
+// Auth routes with fallback
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, role = 'Landlord' } = req.body;
     
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Name, email and password required' });
+    }
+    
+    if (!isDBConnected) {
+      return res.status(503).json({ success: false, message: 'Database not available. Please try again later.' });
     }
     
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -86,7 +104,7 @@ app.post('/api/auth/register', async (req, res) => {
     const user = new User({
       name,
       email: email.toLowerCase(),
-      password, // In production, hash this
+      password,
       role
     });
     
@@ -105,7 +123,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ success: false, message: 'Registration failed' });
+    res.status(500).json({ success: false, message: 'Registration failed: ' + error.message });
   }
 });
 
@@ -117,6 +135,10 @@ app.post('/api/auth/login', async (req, res) => {
     
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password required' });
+    }
+    
+    if (!isDBConnected) {
+      return res.status(503).json({ success: false, message: 'Database not available. Please try again later.' });
     }
     
     const user = await User.findOne({ email: email.toLowerCase() });
@@ -145,7 +167,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ success: false, message: 'Login failed' });
+    res.status(500).json({ success: false, message: 'Login failed: ' + error.message });
   }
 });
 
@@ -163,7 +185,7 @@ app.get('/api/auth/me', (req, res) => {
   
   res.json({
     success: true,
-    data: { id: user.id, name: user.name, email: user.email, role: user.role }
+    data: { id: user._id || user.id, name: user.name, email: user.email, role: user.role }
   });
 });
 
@@ -175,79 +197,7 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// Google OAuth routes
-app.get('/api/auth/google', (req, res) => {
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-    `client_id=${process.env.GOOGLE_CLIENT_ID || 'your-google-client-id'}` +
-    `&redirect_uri=${encodeURIComponent(process.env.BACKEND_URL || 'https://hnv.onrender.com')}/api/auth/google/callback` +
-    `&response_type=code` +
-    `&scope=email profile` +
-    `&access_type=offline`;
-  
-  res.redirect(googleAuthUrl);
-});
-
-app.get('/api/auth/google/callback', async (req, res) => {
-  const { code } = req.query;
-  
-  if (!code) {
-    return res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/login?error=oauth_failed`);
-  }
-  
-  try {
-    // Exchange code for tokens
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID || 'your-google-client-id',
-        client_secret: process.env.GOOGLE_CLIENT_SECRET || 'your-google-client-secret',
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: `${process.env.BACKEND_URL || 'https://hnv.onrender.com'}/api/auth/google/callback`
-      })
-    });
-    
-    const tokens = await tokenResponse.json();
-    
-    if (!tokens.access_token) {
-      throw new Error('No access token received');
-    }
-    
-    // Get user info from Google
-    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
-    });
-    
-    const googleUser = await userResponse.json();
-    
-    // Find or create user
-    let user = await User.findOne({ email: googleUser.email });
-    if (!user) {
-      user = new User({
-        name: googleUser.name,
-        email: googleUser.email,
-        googleId: googleUser.id,
-        role: 'Landlord',
-        password: 'google-oauth' // Placeholder for OAuth users
-      });
-      await user.save();
-    }
-    
-    // Create session
-    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user._id, email: user.email })).toString('base64');
-    sessions.set(token, user);
-    
-    // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/auth/google/callback?token=${token}`);
-    
-  } catch (error) {
-    console.error('Google OAuth error:', error);
-    res.redirect(`${process.env.FRONTEND_URL || 'https://hnv-1-frontend.onrender.com'}/login?error=oauth_failed`);
-  }
-});
-
-// Landing page stats - enhanced
+// Landing page stats
 app.get('/api/landing-stats', (req, res) => {
   res.json({
     success: true,
@@ -260,47 +210,6 @@ app.get('/api/landing-stats', (req, res) => {
       uptimeGuarantee: '99.9%',
       monthlyGrowth: 15.2,
       customerSatisfaction: 4.8
-    }
-  });
-});
-
-// Additional stats endpoint
-app.get('/api/stats', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      properties: 1250,
-      tenants: 3400,
-      revenue: 2500000,
-      users: 850,
-      growth: 15.2
-    }
-  });
-});
-
-// Site settings - multiple endpoints
-app.get('/api/site-settings/public', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      siteName: 'HNV Property Management',
-      logo: '/logo-min.png',
-      theme: 'default',
-      companyName: 'HNV Solutions',
-      tagline: 'Modern Property Management Platform',
-      supportEmail: 'support@hnvpm.com'
-    }
-  });
-});
-
-app.get('/api/site-settings', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      siteName: 'HNV Property Management',
-      logo: '/logo-min.png',
-      theme: 'default',
-      features: ['property-management', 'tenant-portal', 'payments']
     }
   });
 });
@@ -331,23 +240,31 @@ app.get('/api/public', (req, res) => {
   });
 });
 
-// Additional common endpoints
+// Site settings
+app.get('/api/site-settings/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      siteName: 'HNV Property Management',
+      logo: '/logo-min.png',
+      theme: 'default',
+      companyName: 'HNV Solutions',
+      tagline: 'Modern Property Management Platform',
+      supportEmail: 'support@hnvpm.com'
+    }
+  });
+});
+
+// Additional endpoints
 app.get('/api/config', (req, res) => {
   res.json({
     success: true,
     data: {
       apiVersion: '1.0.0',
       features: ['auth', 'properties', 'tenants', 'payments'],
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      database: isDBConnected ? 'Connected' : 'Disconnected'
     }
-  });
-});
-
-app.get('/api/version', (req, res) => {
-  res.json({
-    success: true,
-    version: '1.0.0',
-    build: Date.now()
   });
 });
 
@@ -367,16 +284,6 @@ app.use('/api/*', (req, res) => {
       '/api/auth/register'
     ],
     timestamp: new Date().toISOString()
-  });
-});
-
-// API status endpoint
-app.get('/api/status', (req, res) => {
-  res.json({
-    success: true,
-    message: 'HNV Property Management API is operational',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -403,14 +310,19 @@ app.use((error, req, res, next) => {
 const connectDB = async () => {
   try {
     if (process.env.MONGO_URI) {
-      const conn = await mongoose.connect(process.env.MONGO_URI);
+      const conn = await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      });
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      isDBConnected = true;
     } else {
-      console.log('⚠️  MongoDB URI not provided - running without database');
+      console.log('⚠️ MongoDB URI not provided - running without database');
+      isDBConnected = false;
     }
   } catch (error) {
     console.error('❌ Database connection error:', error.message);
-    // Don't exit in production, continue without DB for basic functionality
+    isDBConnected = false;
   }
 };
 
@@ -420,12 +332,13 @@ const startServer = async () => {
   
   const server = createServer(app);
   
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     const baseUrl = process.env.NODE_ENV === 'production' ? 'https://hnv.onrender.com' : `http://localhost:${PORT}`;
     console.log('🚀 HNV Property Management Backend');
     console.log('=====================================');
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✅ Database: ${isDBConnected ? 'Connected' : 'Disconnected'}`);
     console.log(`✅ Health check: ${baseUrl}/health`);
     console.log(`✅ API status: ${baseUrl}/api/status`);
     console.log('=====================================');
