@@ -54,36 +54,95 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// In-memory user store (replace with database in production)
+const users = new Map();
+const sessions = new Map();
+
 // Auth routes
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
+app.post('/api/auth/register', async (req, res) => {
+  const { name, email, password, role = 'Landlord' } = req.body;
   
-  // Demo login - accept any email/password
-  if (email && password) {
-    res.json({ 
-      success: true, 
-      message: 'Login successful',
-      data: {
-        user: {
-          id: '1',
-          name: 'Demo User',
-          email: email,
-          role: 'Landlord'
-        },
-        token: 'demo-jwt-token-' + Date.now()
-      }
-    });
-  } else {
-    res.status(400).json({ success: false, message: 'Email and password required' });
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, message: 'Name, email and password required' });
   }
+  
+  if (users.has(email)) {
+    return res.status(400).json({ success: false, message: 'User already exists' });
+  }
+  
+  const user = {
+    id: Date.now().toString(),
+    name,
+    email,
+    password, // In production, hash this
+    role,
+    createdAt: new Date().toISOString()
+  };
+  
+  users.set(email, user);
+  
+  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email })).toString('base64');
+  sessions.set(token, user);
+  
+  res.json({
+    success: true,
+    message: 'Registration successful',
+    data: {
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      token
+    }
+  });
 });
 
-app.post('/api/auth/register', (req, res) => {
-  res.json({ success: false, message: 'Register endpoint - under construction' });
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: 'Email and password required' });
+  }
+  
+  const user = users.get(email);
+  if (!user || user.password !== password) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+  
+  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email })).toString('base64');
+  sessions.set(token, user);
+  
+  res.json({
+    success: true,
+    message: 'Login successful',
+    data: {
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      token
+    }
+  });
 });
 
 app.get('/api/auth/me', (req, res) => {
-  res.json({ success: false, message: 'Auth check endpoint - under construction' });
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'No token provided' });
+  }
+  
+  const user = sessions.get(token);
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Invalid token' });
+  }
+  
+  res.json({
+    success: true,
+    data: { id: user.id, name: user.name, email: user.email, role: user.role }
+  });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    sessions.delete(token);
+  }
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // Landing page stats
