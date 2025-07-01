@@ -54,6 +54,15 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time']
 }));
+// Add preflight OPTIONS handler
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Client-Version, X-Request-Time');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.status(200).end();
+});
+
 // Add request logging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
@@ -81,6 +90,9 @@ let isDBConnected = false;
 
 // Health check routes
 app.get('/health', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.json({ 
     status: 'OK', 
     service: 'HNV Property Management Backend',
@@ -112,10 +124,15 @@ app.get('/api/status', (req, res) => {
 
 // Basic API routes
 app.get('/api/test', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.json({ 
     message: 'HNV Backend is running successfully!', 
     version: '1.0.0',
     database: isDBConnected ? 'Connected' : 'Disconnected',
+    origin: req.get('Origin'),
+    userAgent: req.get('User-Agent'),
     features: [
       'Property Management',
       'Tenant Management', 
