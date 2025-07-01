@@ -37,7 +37,9 @@ const DashboardLayout = () => {
 
   const getLinkClass = (path: string) => {
     const base = 'flex items-center space-x-3 px-4 py-3 font-medium rounded-2xl transition-all duration-300';
-    const isActive = location.pathname.startsWith(path);
+    const isActive = path === '/dashboard/overview' 
+      ? (location.pathname === '/dashboard' || location.pathname === '/dashboard/overview')
+      : location.pathname.startsWith(path);
     return isActive 
       ? `${base} app-gradient text-white shadow-app` 
       : `${base} text-text-secondary hover:text-text-primary hover:bg-app-surface`;
@@ -45,7 +47,7 @@ const DashboardLayout = () => {
 
   const mainNavLinks = [
     { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
-    { href: "/dashboard/tenant", icon: Users, label: 'My Portal', roles: ['Tenant'] },
+    { href: "/dashboard/tenant", icon: Home, label: 'My Portal', roles: ['Tenant'] },
     { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] },

@@ -116,7 +116,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             {/* General User Dashboards */}
-            <Route index element={<OverviewPage />} />
+            <Route index element={<Navigate to="overview" replace />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<TenantProfilePage />} /> {/* Assuming a generic profile page */}
