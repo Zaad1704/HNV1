@@ -50,6 +50,8 @@ import exportRoutes from './routes/exportRoutes';
 import rentCollectionRoutes from './routes/rentCollectionRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import integrationRoutes from './routes/integrationRoutes';
+import subscriptionRoutes from './routes/subscriptionRoutes';
+import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -166,6 +168,12 @@ app.use('/api/export', exportRoutes, routeErrorHandler);
 app.use('/api/rent-collection', rentCollectionRoutes, routeErrorHandler);
 app.use('/api/analytics', analyticsRoutes, routeErrorHandler);
 app.use('/api/integrations', integrationRoutes, routeErrorHandler);
+app.use('/api/subscription', subscriptionRoutes, routeErrorHandler);
+
+// Apply subscription middleware to protected routes
+app.use('/api/properties', checkSubscriptionStatus);
+app.use('/api/tenants', checkSubscriptionStatus);
+app.use('/api/payments', checkSubscriptionStatus);
 app.use('/api', publicRoutes, routeErrorHandler);
 
 // Protected routes (require authentication)
