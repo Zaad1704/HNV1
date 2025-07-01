@@ -46,6 +46,7 @@ import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
 import errorRoutes from './routes/errorRoutes';
 import publicRoutes from './routes/publicRoutes';
+import contactRoutes from './routes/contactRoutes';
 import exportRoutes from './routes/exportRoutes';
 import rentCollectionRoutes from './routes/rentCollectionRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
@@ -176,6 +177,7 @@ app.use('/api/properties', checkSubscriptionStatus);
 app.use('/api/tenants', checkSubscriptionStatus);
 app.use('/api/payments', checkSubscriptionStatus);
 app.use('/api', publicRoutes, routeErrorHandler);
+app.use('/api/contact', contactRoutes, routeErrorHandler);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);

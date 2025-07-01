@@ -5,6 +5,7 @@ import apiClient from '../api/client';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import HeroSection from '../components/landing/HeroSection';
 import LandscapeSection from '../components/landing/LandscapeSection';
+import MobileNavbar from '../components/MobileNavbar';
 import TransformSection from '../components/landing/TransformSection';
 import AboutSection from '../components/landing/AboutSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
@@ -49,6 +50,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-0 overflow-x-hidden">
+      <MobileNavbar />
       <section id="hero">
         <HeroSection />
       </section>

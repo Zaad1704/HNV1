@@ -97,7 +97,7 @@ export const handleStripeWebhook = asyncHandler(async (req: Request, res: Respon
   const signature = req.headers['stripe-signature'] as string;
   const organizationId = req.params.organizationId;
 
-  await paymentService.handleWebhook(organizationId, req.body, signature);
+  await paymentService.handleWebhook(req.body, signature);
 
   res.json({ received: true });
 });

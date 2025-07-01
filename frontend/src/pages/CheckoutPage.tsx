@@ -22,11 +22,22 @@ const CheckoutPage: React.FC = () => {
 
   const paymentMutation = useMutation({
     mutationFn: async (paymentData: any) => {
-      const response = await apiClient.post('/subscription/payment', paymentData);
+      const response = await apiClient.post('/integrations/payment/intent', {
+        planId,
+        amount: plan.price / 100, // Convert from cents
+        currency: 'usd',
+        description: `Subscription to ${plan.name} plan`
+      });
       return response.data;
     },
-    onSuccess: () => {
-      navigate('/dashboard?upgraded=true');
+    onSuccess: (data) => {
+      // Redirect to Stripe Checkout or handle client secret
+      if (data.data.url) {
+        window.location.href = data.data.url;
+      } else {
+        // Handle payment intent client secret for custom checkout
+        console.log('Payment intent created:', data.data.clientSecret);
+      }
     },
     onError: (error: any) => {
       alert(`Payment failed: ${error.response?.data?.message || error.message}`);
@@ -38,17 +49,7 @@ const CheckoutPage: React.FC = () => {
     
     if (!planId) return;
     
-    paymentMutation.mutate({
-      planId,
-      paymentMethod: {
-        type: paymentMethod,
-        // In real implementation, collect card details
-        cardNumber: '4242424242424242',
-        expiryMonth: '12',
-        expiryYear: '2025',
-        cvc: '123'
-      }
-    });
+    paymentMutation.mutate({});
   };
 
   if (isLoading) {

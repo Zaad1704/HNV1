@@ -1,31 +1,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
 
 interface Executive {
   name: string;
   position: string;
   bio: string;
   imageUrl?: string;
+  linkedin?: string;
+  twitter?: string;
 }
 
 const LeadershipSection = () => {
-  const executives: Executive[] = [
-    {
-      name: 'John Smith',
-      position: 'CEO & Founder',
-      bio: 'Over 15 years of experience in property management and technology.'
+  const { data: landingData } = useQuery({
+    queryKey: ['landingData'],
+    queryFn: async () => {
+      const response = await apiClient.get('/public/landing-data');
+      return response.data.data;
     },
-    {
-      name: 'Sarah Johnson',
-      position: 'CTO',
-      bio: 'Former tech lead at major real estate platforms with expertise in scalable systems.'
-    },
-    {
-      name: 'Michael Chen',
-      position: 'Head of Product',
-      bio: 'Product strategist focused on user experience and customer success.'
-    }
-  ];
+    staleTime: 5 * 60 * 1000
+  });
+
+  const leadershipSection = landingData?.siteSettings?.leadershipSection;
+  const executives = leadershipSection?.leaders || [];
 
   return (
     <section className="py-20 bg-app-surface">
@@ -37,10 +35,10 @@ const LeadershipSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            Meet Our Leadership
+            {leadershipSection?.title || 'Meet Our Leadership'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Our experienced team is dedicated to revolutionizing property management.
+            {leadershipSection?.subtitle || 'Our experienced team is dedicated to revolutionizing property management.'}
           </p>
         </motion.div>
 
