@@ -48,7 +48,7 @@ const HeroSection = () => {
                 {settings?.heroSection?.title || t('landing.hero_title')}
               </h1>
               <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
-                {t('hero.title', 'Modern Property Management')}
+                {t('hero.subtitle', 'Streamline your property management with our comprehensive solution')}
               </h2>
               <p className="text-xl text-white/80 leading-relaxed drop-shadow-sm">
                 {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
@@ -67,7 +67,7 @@ const HeroSection = () => {
                 className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-app-border text-text-primary hover:bg-app-surface hover:scale-105 transition-all shadow-md"
               >
                 <Play size={20} />
-                {t('common.learn_more')}
+                {t('common.learn_more', 'Learn More')}
               </button>
             </div>
           </motion.div>
@@ -166,7 +166,7 @@ const HeroSection = () => {
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-full border border-app-border text-text-primary bg-app-surface/50 backdrop-blur-sm"
               >
                 <Play size={20} />
-                Learn More
+                {t('common.learn_more', 'Learn More')}
               </button>
             </div>
 

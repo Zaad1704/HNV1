@@ -2,35 +2,38 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { IFeaturesPage } from '../../types/siteSettings';
 import { Shield, Users, TrendingUp, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface FeaturesSectionProps {
   data?: IFeaturesPage;
 }
 
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
+  const { t } = useTranslation();
+  
   const defaultFeatures = [
     {
       icon: 'Shield',
-      title: 'Secure & Reliable',
-      text: 'Bank-level security with 99.9% uptime guarantee',
+      title: t('features.secure_reliable', 'Secure & Reliable'),
+      text: t('features.secure_reliable_desc', 'Bank-level security with 99.9% uptime guarantee'),
       sectionId: 'security'
     },
     {
       icon: 'Users',
-      title: 'Tenant Management',
-      text: 'Streamline tenant communications and lease management',
+      title: t('features.tenant_management', 'Tenant Management'),
+      text: t('features.tenant_management_desc', 'Streamline tenant communications and lease management'),
       sectionId: 'tenants'
     },
     {
       icon: 'TrendingUp',
-      title: 'Financial Insights',
-      text: 'Track revenue, expenses, and profitability in real-time',
+      title: t('features.financial_insights', 'Financial Insights'),
+      text: t('features.financial_insights_desc', 'Track revenue, expenses, and profitability in real-time'),
       sectionId: 'analytics'
     },
     {
       icon: 'Clock',
-      title: '24/7 Support',
-      text: 'Round-the-clock customer support when you need it',
+      title: t('features.support_247', '24/7 Support'),
+      text: t('features.support_247_desc', 'Round-the-clock customer support when you need it'),
       sectionId: 'support'
     }
   ];
@@ -57,10 +60,10 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            {data?.title || 'Why Choose Our Platform?'}
+            {data?.title || t('features.title', 'Powerful Features')}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            {data?.subtitle || 'Built for modern property managers who demand efficiency, security, and growth.'}
+            {data?.subtitle || t('features.subtitle', 'Everything you need to manage properties efficiently')}
           </p>
         </motion.div>
 

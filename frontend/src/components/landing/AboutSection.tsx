@@ -11,23 +11,23 @@ const AboutSection = () => {
   const defaultFeatures = [
     {
       icon: Shield,
-      title: 'Secure & Reliable',
-      description: 'Bank-level security with 99.9% uptime guarantee'
+      title: t('features.secure_reliable', 'Secure & Reliable'),
+      description: t('features.secure_reliable_desc', 'Bank-level security with 99.9% uptime guarantee')
     },
     {
       icon: Users,
-      title: 'Tenant Management',
-      description: 'Streamline tenant communications and lease management'
+      title: t('features.tenant_management', 'Tenant Management'),
+      description: t('features.tenant_management_desc', 'Streamline tenant communications and lease management')
     },
     {
       icon: TrendingUp,
-      title: 'Financial Insights',
-      description: 'Track revenue, expenses, and profitability in real-time'
+      title: t('features.financial_insights', 'Financial Insights'),
+      description: t('features.financial_insights_desc', 'Track revenue, expenses, and profitability in real-time')
     },
     {
       icon: Clock,
-      title: '24/7 Support',
-      description: 'Round-the-clock customer support when you need it'
+      title: t('features.support_247', '24/7 Support'),
+      description: t('features.support_247_desc', 'Round-the-clock customer support when you need it')
     }
   ];
   
@@ -50,10 +50,10 @@ const AboutSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            {settings?.featuresPage?.title || 'Why Choose Our Platform?'}
+            {settings?.featuresPage?.title || t('about.title', 'Why Choose Our Platform?')}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            {settings?.featuresPage?.subtitle || 'Built for modern property managers who demand efficiency, security, and growth.'}
+            {settings?.featuresPage?.subtitle || t('about.subtitle', 'Built for modern property managers who demand efficiency, security, and growth.')}
           </p>
         </motion.div>
 

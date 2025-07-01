@@ -157,7 +157,7 @@
   },
   "hero": {
     "title": "The All-in-One Platform for Modern Property Management",
-    "subtitle": "Automate tasks, track finances, and manage tenants with ease. Join thousands of property managers who trust our platform.",
+    "subtitle": "Streamline your property management with our comprehensive solution",
     "cta_primary": "Start Your Free Trial",
     "cta_secondary": "Watch Demo",
     "trusted_by": "Trusted by property managers worldwide"
@@ -173,8 +173,8 @@
     "uptime_guarantee": "Uptime Guarantee"
   },
   "about": {
-    "title": "About Us",
-    "subtitle": "Revolutionizing property management with innovative technology",
+    "title": "Why Choose Our Platform?",
+    "subtitle": "Built for modern property managers who demand efficiency, security, and growth.",
     "description": "We are dedicated to providing the most comprehensive and user-friendly property management solution. Our platform helps landlords, agents, and property managers streamline their operations and grow their business.",
     "mission_title": "Our Mission",
     "mission_description": "To empower property managers with cutting-edge technology that simplifies complex tasks and drives business growth.",
@@ -195,7 +195,13 @@
     "automated_reminders": "Automated Reminders",
     "automated_reminders_desc": "Never miss important dates and payments",
     "mobile_access": "Mobile Access",
-    "mobile_access_desc": "Manage your properties on the go"
+    "mobile_access_desc": "Manage your properties on the go",
+    "secure_reliable": "Secure & Reliable",
+    "secure_reliable_desc": "Bank-level security with 99.9% uptime guarantee",
+    "financial_insights": "Financial Insights",
+    "financial_insights_desc": "Track revenue, expenses, and profitability in real-time",
+    "support_247": "24/7 Support",
+    "support_247_desc": "Round-the-clock customer support when you need it"
   },
   "pricing": {
     "title": "Simple, Transparent Pricing",

@@ -31,9 +31,23 @@
   },
   "hero": {
     "title": "La Plateforme Tout-en-Un pour la Gestion Immobilière Moderne",
-    "subtitle": "Automatisez les tâches, suivez les finances et gérez les locataires facilement. Rejoignez des milliers de gestionnaires immobiliers qui font confiance à notre plateforme.",
+    "subtitle": "Optimisez votre gestion immobilière avec notre solution complète",
     "cta_primary": "Commencez Votre Essai Gratuit",
     "cta_secondary": "Voir la Démo"
+  },
+  "features": {
+    "secure_reliable": "Sécurisé et Fiable",
+    "secure_reliable_desc": "Sécurité de niveau bancaire avec garantie de disponibilité de 99,9%",
+    "tenant_management": "Gestion des Locataires",
+    "tenant_management_desc": "Rationalisez les communications avec les locataires et la gestion des baux",
+    "financial_insights": "Analyses Financières",
+    "financial_insights_desc": "Suivez les revenus, les dépenses et la rentabilité en temps réel",
+    "support_247": "Support 24/7",
+    "support_247_desc": "Support client 24h/24 quand vous en avez besoin"
+  },
+  "about": {
+    "title": "Pourquoi Choisir Notre Plateforme?",
+    "subtitle": "Conçue pour les gestionnaires immobiliers modernes qui exigent efficacité, sécurité et croissance."
   },
   "landing": {
     "hero_title": "La Plateforme Tout-en-Un pour la Gestion Immobilière Moderne",

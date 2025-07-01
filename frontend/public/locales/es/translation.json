@@ -31,9 +31,23 @@
   },
   "hero": {
     "title": "La Plataforma Todo-en-Uno para la Gestión Moderna de Propiedades",
-    "subtitle": "Automatiza tareas, rastrea finanzas y gestiona inquilinos con facilidad. Únete a miles de administradores de propiedades que confían en nuestra plataforma.",
+    "subtitle": "Optimiza tu gestión de propiedades con nuestra solución integral",
     "cta_primary": "Comienza tu Prueba Gratuita",
     "cta_secondary": "Ver Demo"
+  },
+  "features": {
+    "secure_reliable": "Seguro y Confiable",
+    "secure_reliable_desc": "Seguridad de nivel bancario con garantía de tiempo de actividad del 99.9%",
+    "tenant_management": "Gestión de Inquilinos",
+    "tenant_management_desc": "Optimiza las comunicaciones con inquilinos y la gestión de contratos",
+    "financial_insights": "Perspectivas Financieras",
+    "financial_insights_desc": "Rastrea ingresos, gastos y rentabilidad en tiempo real",
+    "support_247": "Soporte 24/7",
+    "support_247_desc": "Atención al cliente las 24 horas cuando lo necesites"
+  },
+  "about": {
+    "title": "¿Por Qué Elegir Nuestra Plataforma?",
+    "subtitle": "Construida para administradores de propiedades modernos que exigen eficiencia, seguridad y crecimiento."
   },
   "landing": {
     "hero_title": "La Plataforma Todo-en-Uno para la Gestión Moderna de Propiedades",
