@@ -9,6 +9,7 @@ import BulkActions from '../components/common/BulkActions';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
+import ExportModal from '../components/common/ExportModal';
 
 const fetchProperties = async () => {
   const { data } = await apiClient.get('/properties');
@@ -21,6 +22,7 @@ const PropertiesPage = () => {
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
+  const [showExportModal, setShowExportModal] = useState(false);
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport();
 
@@ -124,13 +126,22 @@ const PropertiesPage = () => {
           <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.properties')}</h1>
           <p className="text-text-secondary mt-1">{t('property.manage_portfolio')}</p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold touch-feedback"
-        >
-          <Plus size={20} />
-          {t('property.add_property')}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold touch-feedback"
+          >
+            <Plus size={20} />
+            {t('property.add_property')}
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter */}
@@ -263,6 +274,13 @@ const PropertiesPage = () => {
         onSelectAll={() => setSelectedProperties(filteredProperties?.map((p: any) => p._id) || [])}
         onClearSelection={() => setSelectedProperties([])}
         actions={bulkActions}
+      />
+
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        section="properties"
+        title="Properties"
       />
     </motion.div>
   );

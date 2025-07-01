@@ -7,6 +7,8 @@ import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 import Expense from '../models/Expense';
+import RentCollectionPeriod from '../models/RentCollectionPeriod';
+import CollectionAction from '../models/CollectionAction';
 import fs from 'fs';
 import path from 'path';
 
@@ -145,6 +147,18 @@ class ExportService {
           .lean();
         break;
 
+      case 'rent_collection':
+        data = await RentCollectionPeriod.find(query)
+          .lean();
+        break;
+
+      case 'collection_actions':
+        data = await CollectionAction.find(query)
+          .populate('tenantId', 'name')
+          .populate('userId', 'name')
+          .lean();
+        break;
+
       default:
         throw new Error('Invalid export type');
     }
@@ -254,6 +268,20 @@ class ExportService {
         { field: 'category', label: 'Category', format: 'text' },
         { field: 'date', label: 'Date', format: 'date' },
         { field: 'propertyId.name', label: 'Property', format: 'text' }
+      ],
+      rent_collection: [
+        { field: 'period.month', label: 'Month', format: 'number' },
+        { field: 'period.year', label: 'Year', format: 'number' },
+        { field: 'summary.expectedRent', label: 'Expected', format: 'currency' },
+        { field: 'summary.collectedRent', label: 'Collected', format: 'currency' },
+        { field: 'summary.collectionRate', label: 'Rate %', format: 'number' }
+      ],
+      collection_actions: [
+        { field: 'tenantId.name', label: 'Tenant', format: 'text' },
+        { field: 'type', label: 'Action Type', format: 'text' },
+        { field: 'details.outcome', label: 'Outcome', format: 'text' },
+        { field: 'details.notes', label: 'Notes', format: 'text' },
+        { field: 'createdAt', label: 'Date', format: 'date' }
       ]
     };
 

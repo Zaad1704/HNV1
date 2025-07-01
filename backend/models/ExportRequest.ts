@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, model } from 'mongoose';
 export interface IExportRequest extends Document {
   organizationId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  type: 'properties' | 'tenants' | 'payments' | 'maintenance' | 'expenses';
+  type: 'properties' | 'tenants' | 'payments' | 'maintenance' | 'expenses' | 'rent_collection' | 'collection_actions';
   format: 'pdf' | 'csv' | 'excel';
   
   filters: {
@@ -47,7 +47,7 @@ const ExportRequestSchema: Schema<IExportRequest> = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   type: { 
     type: String, 
-    enum: ['properties', 'tenants', 'payments', 'maintenance', 'expenses'], 
+    enum: ['properties', 'tenants', 'payments', 'maintenance', 'expenses', 'rent_collection', 'collection_actions'], 
     required: true 
   },
   format: { type: String, enum: ['pdf', 'csv', 'excel'], required: true },
