@@ -108,7 +108,7 @@ const LandingPage = () => {
             <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src={siteSettings.bannerSection.imageUrl}
-                alt={siteSettings.bannerSection.altText || 'Platform Banner'
+                alt={siteSettings.bannerSection.altText || 'Platform Banner'}
                 className="w-full h-32 md:h-48 lg:h-64 object-contain bg-gray-100"
               />
               {siteSettings.bannerSection.overlayText && (
