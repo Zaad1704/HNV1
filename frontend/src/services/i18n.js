@@ -12,7 +12,7 @@ i18n
     react: {
       useSuspense: true, // This is the key change
     },
-    supportedLngs: ['en', 'bn'],
+    supportedLngs: ['en', 'bn', 'hi', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ja', 'zh', 'ko', 'th', 'vi', 'id', 'ms', 'ar', 'tr', 'nl', 'sv'],
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
     detection: {

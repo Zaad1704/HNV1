@@ -99,15 +99,34 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setDetectedLang(browserDetected);
     
     try {
-      // Try IP-based detection
-      const response = await fetch('https://ipapi.co/json/', { timeout: 3000 });
-      if (response.ok) {
-        const data = await response.json();
-        const countryCode = data.country_code;
-        const detected = getLanguageFromCountry(countryCode);
-        if (detected !== 'en') {
-          setDetectedLang(detected);
-          return detected;
+      // Try IP-based detection with multiple services
+      const ipServices = [
+        'https://ipapi.co/json/',
+        'https://api.ipgeolocation.io/ipgeo?apiKey=free',
+        'https://ipinfo.io/json'
+      ];
+      
+      for (const service of ipServices) {
+        try {
+          const response = await fetch(service, { 
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            const countryCode = data.country_code || data.country || data.countryCode;
+            if (countryCode) {
+              const detected = getLanguageFromCountry(countryCode.toUpperCase());
+              console.log(`🌍 IP Detection: ${countryCode} → ${detected}`);
+              if (detected !== 'en') {
+                setDetectedLang(detected);
+                return detected;
+              }
+            }
+          }
+        } catch (err) {
+          console.log(`IP service ${service} failed:`, err.message);
+          continue;
         }
       }
     } catch (error) {
