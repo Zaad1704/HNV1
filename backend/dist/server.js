@@ -4,8 +4,19 @@ const { createServer } = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-// Remove bcrypt dependency - use built-in crypto for password hashing
+// Use built-in crypto for password hashing
 const crypto = require('crypto');
+
+// Add error handling for server startup
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 // Load environment variables
 dotenv.config();
@@ -157,17 +168,25 @@ app.post('/api/auth/login', async (req, res) => {
       // Plain text match
       passwordMatch = true;
     } else if (user.password.startsWith('$2')) {
-      // Bcrypt format - create hash of provided password and compare
-      const hash = crypto.createHash('sha256').update(password).digest('hex');
-      passwordMatch = user.password.includes(hash.substring(0, 20));
+      // Bcrypt format - for now just log and reject (need proper bcrypt)
+      console.log('Bcrypt password detected - cannot verify without bcrypt library');
+      passwordMatch = false;
     } else if (user.password.length === 64) {
       // SHA256 hash
       const hash = crypto.createHash('sha256').update(password).digest('hex');
       passwordMatch = user.password === hash;
-    } else {
+    } else if (user.password.length === 32) {
       // Try MD5 hash
-      const md5Hash = crypto.createHash('md5').update(password).digest('hex');
-      passwordMatch = user.password === md5Hash;
+      try {
+        const md5Hash = crypto.createHash('md5').update(password).digest('hex');
+        passwordMatch = user.password === md5Hash;
+      } catch (error) {
+        console.error('MD5 hash error:', error);
+        passwordMatch = false;
+      }
+    } else {
+      // Unknown format - just try plain text
+      passwordMatch = user.password === password;
     }
     
     if (!passwordMatch) {
