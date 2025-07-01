@@ -22,7 +22,21 @@ export interface IProperty extends Document {
   createdBy: mongoose.Types.ObjectId;
   managedByAgentId?: mongoose.Types.ObjectId;
   status: 'Active' | 'Inactive' | 'Under Renovation';
-  imageUrl?: string; // <-- ADD THIS NEW FIELD
+  imageUrl?: string;
+  units: Array<{
+    unitNumber: string;
+    bedrooms: number;
+    bathrooms: number;
+    sqft: number;
+    rent: number;
+    deposit: number;
+    status: 'vacant' | 'occupied' | 'maintenance';
+    amenities: string[];
+    images: string[];
+    tenantId?: mongoose.Types.ObjectId;
+    leaseStart?: Date;
+    leaseEnd?: Date;
+  }>;
   createdAt: Date;
 }
 
@@ -73,11 +87,25 @@ const PropertySchema: Schema<IProperty> = new Schema({
     enum: ['Active', 'Inactive', 'Under Renovation'],
     default: 'Active',
   },
-  imageUrl: { type: String }, // <-- ADD THIS NEW FIELD TO THE SCHEMA
+  imageUrl: { type: String },
+  units: [{
+    unitNumber: { type: String, required: true },
+    bedrooms: { type: Number, default: 1 },
+    bathrooms: { type: Number, default: 1 },
+    sqft: { type: Number, default: 0 },
+    rent: { type: Number, required: true },
+    deposit: { type: Number, default: 0 },
+    status: { type: String, enum: ['vacant', 'occupied', 'maintenance'], default: 'vacant' },
+    amenities: [String],
+    images: [String],
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+    leaseStart: Date,
+    leaseEnd: Date
+  }],
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
 // pre-save middleware remains unchanged...

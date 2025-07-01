@@ -49,10 +49,24 @@ const PropertySchema = new mongoose_1.Schema({
         default: 'Active',
     },
     imageUrl: { type: String },
+    units: [{
+            unitNumber: { type: String, required: true },
+            bedrooms: { type: Number, default: 1 },
+            bathrooms: { type: Number, default: 1 },
+            sqft: { type: Number, default: 0 },
+            rent: { type: Number, required: true },
+            deposit: { type: Number, default: 0 },
+            status: { type: String, enum: ['vacant', 'occupied', 'maintenance'], default: 'vacant' },
+            amenities: [String],
+            images: [String],
+            tenantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Tenant' },
+            leaseStart: Date,
+            leaseEnd: Date
+        }],
     createdAt: {
         type: Date,
-        default: Date.now,
-    },
+        default: Date.now
+    }
 });
 PropertySchema.pre('save', async function (next) {
     this.location = {
