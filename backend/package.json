@@ -4,7 +4,7 @@
   "description": "Backend for HNV SaaS",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node server.js",
     "dev": "nodemon server.ts",
     "build": "tsc --skipLibCheck --noEmitOnError false",
     "build:safe": "tsc --skipLibCheck --noEmitOnError false",
