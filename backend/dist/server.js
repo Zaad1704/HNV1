@@ -58,6 +58,37 @@ app.get('/api/test', (req, res) => {
 const users = new Map();
 const sessions = new Map();
 
+// Create default super admin user
+const createDefaultAdmin = () => {
+  const adminUser = {
+    id: 'admin-001',
+    name: 'Super Admin',
+    email: 'admin@hnvpm.com',
+    password: 'admin123',
+    role: 'SuperAdmin',
+    createdAt: new Date().toISOString()
+  };
+  users.set('admin@hnvpm.com', adminUser);
+  
+  // Also create a demo user
+  const demoUser = {
+    id: 'demo-001',
+    name: 'Demo User',
+    email: 'demo@hnvpm.com',
+    password: 'demo123',
+    role: 'Landlord',
+    createdAt: new Date().toISOString()
+  };
+  users.set('demo@hnvpm.com', demoUser);
+  
+  console.log('✅ Default users created:');
+  console.log('   Admin: admin@hnvpm.com / admin123');
+  console.log('   Demo: demo@hnvpm.com / demo123');
+};
+
+// Initialize default users
+createDefaultAdmin();
+
 // Auth routes
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password, role = 'Landlord' } = req.body;
@@ -66,7 +97,7 @@ app.post('/api/auth/register', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Name, email and password required' });
   }
   
-  if (users.has(email)) {
+  if (users.has(email.toLowerCase())) {
     return res.status(400).json({ success: false, message: 'User already exists' });
   }
   
@@ -79,7 +110,7 @@ app.post('/api/auth/register', async (req, res) => {
     createdAt: new Date().toISOString()
   };
   
-  users.set(email, user);
+  users.set(email.toLowerCase(), user);
   
   const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email })).toString('base64');
   sessions.set(token, user);
@@ -97,17 +128,28 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   
+  console.log(`🔑 Login attempt: ${email}`);
+  
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Email and password required' });
   }
   
-  const user = users.get(email);
-  if (!user || user.password !== password) {
+  const user = users.get(email.toLowerCase());
+  if (!user) {
+    console.log(`❌ User not found: ${email}`);
+    console.log('Available users:', Array.from(users.keys()));
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }
   
-  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email })).toString('base64');
+  if (user.password !== password) {
+    console.log(`❌ Wrong password for: ${email}`);
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+  
+  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email: user.email })).toString('base64');
   sessions.set(token, user);
+  
+  console.log(`✅ Login successful: ${email}`);
   
   res.json({
     success: true,
