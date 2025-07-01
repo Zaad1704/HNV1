@@ -54,111 +54,99 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// In-memory user store (replace with database in production)
-const users = new Map();
+// User model schema
+const UserSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, default: 'Landlord' },
+  googleId: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', UserSchema);
+
+// Session storage
 const sessions = new Map();
-
-// Create default super admin user
-const createDefaultAdmin = () => {
-  const adminUser = {
-    id: 'admin-001',
-    name: 'Super Admin',
-    email: 'admin@hnvpm.com',
-    password: 'admin123',
-    role: 'SuperAdmin',
-    createdAt: new Date().toISOString()
-  };
-  users.set('admin@hnvpm.com', adminUser);
-  
-  // Also create a demo user
-  const demoUser = {
-    id: 'demo-001',
-    name: 'Demo User',
-    email: 'demo@hnvpm.com',
-    password: 'demo123',
-    role: 'Landlord',
-    createdAt: new Date().toISOString()
-  };
-  users.set('demo@hnvpm.com', demoUser);
-  
-  console.log('✅ Default users created:');
-  console.log('   Admin: admin@hnvpm.com / admin123');
-  console.log('   Demo: demo@hnvpm.com / demo123');
-};
-
-// Initialize default users
-createDefaultAdmin();
 
 // Auth routes
 app.post('/api/auth/register', async (req, res) => {
-  const { name, email, password, role = 'Landlord' } = req.body;
-  
-  if (!name || !email || !password) {
-    return res.status(400).json({ success: false, message: 'Name, email and password required' });
-  }
-  
-  if (users.has(email.toLowerCase())) {
-    return res.status(400).json({ success: false, message: 'User already exists' });
-  }
-  
-  const user = {
-    id: Date.now().toString(),
-    name,
-    email,
-    password, // In production, hash this
-    role,
-    createdAt: new Date().toISOString()
-  };
-  
-  users.set(email.toLowerCase(), user);
-  
-  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email })).toString('base64');
-  sessions.set(token, user);
-  
-  res.json({
-    success: true,
-    message: 'Registration successful',
-    data: {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token
+  try {
+    const { name, email, password, role = 'Landlord' } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email and password required' });
     }
-  });
+    
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'User already exists' });
+    }
+    
+    const user = new User({
+      name,
+      email: email.toLowerCase(),
+      password, // In production, hash this
+      role
+    });
+    
+    await user.save();
+    
+    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user._id, email: user.email })).toString('base64');
+    sessions.set(token, user);
+    
+    res.json({
+      success: true,
+      message: 'Registration successful',
+      data: {
+        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ success: false, message: 'Registration failed' });
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  
-  console.log(`🔑 Login attempt: ${email}`);
-  
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Email and password required' });
-  }
-  
-  const user = users.get(email.toLowerCase());
-  if (!user) {
-    console.log(`❌ User not found: ${email}`);
-    console.log('Available users:', Array.from(users.keys()));
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-  
-  if (user.password !== password) {
-    console.log(`❌ Wrong password for: ${email}`);
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-  
-  const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email: user.email })).toString('base64');
-  sessions.set(token, user);
-  
-  console.log(`✅ Login successful: ${email}`);
-  
-  res.json({
-    success: true,
-    message: 'Login successful',
-    data: {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token
+  try {
+    const { email, password } = req.body;
+    
+    console.log(`🔑 Login attempt: ${email}`);
+    
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password required' });
     }
-  });
+    
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      console.log(`❌ User not found: ${email}`);
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    
+    if (user.password !== password) {
+      console.log(`❌ Wrong password for: ${email}`);
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+    
+    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user._id, email: user.email })).toString('base64');
+    sessions.set(token, user);
+    
+    console.log(`✅ Login successful: ${email}`);
+    
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Login failed' });
+  }
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -234,21 +222,20 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const googleUser = await userResponse.json();
     
     // Find or create user
-    let user = users.get(googleUser.email);
+    let user = await User.findOne({ email: googleUser.email });
     if (!user) {
-      user = {
-        id: Date.now().toString(),
+      user = new User({
         name: googleUser.name,
         email: googleUser.email,
         googleId: googleUser.id,
         role: 'Landlord',
-        createdAt: new Date().toISOString()
-      };
-      users.set(googleUser.email, user);
+        password: 'google-oauth' // Placeholder for OAuth users
+      });
+      await user.save();
     }
     
     // Create session
-    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user.id, email: user.email })).toString('base64');
+    const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user._id, email: user.email })).toString('base64');
     sessions.set(token, user);
     
     // Redirect to frontend with token
