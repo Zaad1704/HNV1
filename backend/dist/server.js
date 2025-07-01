@@ -401,6 +401,7 @@ app.use('/api/*', (req, res) => {
       '/api/dashboard/landing-stats',
       '/api/plans/public',
       '/api/site-settings/public',
+      '/api/debug/user/:email',
       '/api/auth/login',
       '/api/auth/register'
     ],
