@@ -14,6 +14,7 @@ const TenantSchema = new mongoose_1.Schema({
     rentDueDay: { type: Number, default: 1, min: 1, max: 31 },
     unitNumber: { type: String },
     preferredContactMethod: { type: String, enum: ['phone', 'email', 'sms'], default: 'phone' },
+    stripeCustomerId: { type: String },
     imageUrl: { type: String },
     govtIdNumber: { type: String },
     govtIdImageUrlFront: { type: String },

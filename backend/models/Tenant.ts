@@ -37,6 +37,7 @@ export interface ITenant extends Document {
     rentDueDay?: number; // Day of month rent is due
     unitNumber?: string; // Alternative to unit
     preferredContactMethod?: 'phone' | 'email' | 'sms';
+    stripeCustomerId?: string;
     
     // --- NEW FIELDS FOR PRIMARY TENANT ---
     imageUrl?: string; // Tenant's own photo
@@ -69,6 +70,7 @@ const TenantSchema: Schema<ITenant> = new Schema({
     rentDueDay: { type: Number, default: 1, min: 1, max: 31 },
     unitNumber: { type: String },
     preferredContactMethod: { type: String, enum: ['phone', 'email', 'sms'], default: 'phone' },
+    stripeCustomerId: { type: String },
     
     // --- ADDING NEW FIELDS TO THE SCHEMA ---
     imageUrl: { type: String },
