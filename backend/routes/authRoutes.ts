@@ -2,6 +2,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import asyncHandler from 'express-async-handler';
 import { registerUser, loginUser, getMe, verifyEmail, googleAuthCallback, resendVerification, updateProfile } from '../controllers/authController';
+import { forgotPassword, resetPassword } from '../controllers/passwordResetController';
 import { protect } from '../middleware/authMiddleware';
 import { generateTwoFactorSecret, enableTwoFactor, verifyTwoFactor } from '../middleware/twoFactorAuth';
 import { validate } from '../middleware/validateMiddleware';
@@ -15,6 +16,8 @@ router.post('/login', loginUser as any);
 router.get('/me', protect, getMe as any);
 router.get('/verify-email/:token', verifyEmail as any);
 router.post('/resend-verification', resendVerification as any);
+router.post('/forgot-password', forgotPassword as any);
+router.put('/reset-password/:resetToken', resetPassword as any);
 router.put('/profile', protect, updateProfile as any);
 
 // Google OAuth

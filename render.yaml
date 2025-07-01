@@ -24,6 +24,12 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: HNV Property Management <noreply@hnvpm.com>
+      - key: CONTACT_EMAIL
+        value: contact@hnvpm.com
 
   - type: web
     name: hnv-frontend

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import apiClient from '../api/client';
-import { CheckCircle, XCircle, Mail, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const VerifyEmailPage: React.FC = () => {
@@ -18,39 +18,23 @@ const VerifyEmailPage: React.FC = () => {
       }
 
       try {
-        const response = await apiClient.get(`/auth/verify-email/${token}`);
-        setStatus('success');
-        setMessage(response.data.message || 'Email verified successfully!');
-      } catch (error: any) {
+        const response = await apiClient.get(`/api/auth/verify-email/${token}`);
+        if (response.data.success) {
+          setStatus('success');
+          setMessage('Email verified successfully! You can now log in.');
+        } else {
+          setStatus('error');
+          setMessage(response.data.message || 'Verification failed');
+        }
+      } catch (err: any) {
+        console.error('Email verification error:', err);
         setStatus('error');
-        setMessage(error.response?.data?.message || 'Email verification failed');
+        setMessage(err.response?.data?.message || 'Verification failed. The link may be expired or invalid.');
       }
     };
 
     verifyEmail();
   }, [token]);
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Mail size={32} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-text-primary mb-4">Verifying Your Email</h1>
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-brand-blue rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-brand-blue rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-brand-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
@@ -59,52 +43,58 @@ const VerifyEmailPage: React.FC = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md text-center"
       >
-        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 ${
-          status === 'success' ? 'bg-green-500' : 'bg-red-500'
-        }`}>
-          {status === 'success' ? (
-            <CheckCircle size={32} className="text-white" />
-          ) : (
-            <XCircle size={32} className="text-white" />
-          )}
-        </div>
-        
-        <h1 className={`text-3xl font-bold mb-4 ${
-          status === 'success' ? 'text-green-600' : 'text-red-600'
-        }`}>
-          {status === 'success' ? 'Email Verified!' : 'Verification Failed'}
-        </h1>
-        
-        <p className="text-text-secondary mb-8">
-          {message}
-        </p>
-        
-        {status === 'success' ? (
-          <Link 
-            to="/login" 
-            className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2 font-semibold"
-          >
-            Continue to Login
-            <ArrowRight size={16} />
-          </Link>
-        ) : (
-          <div className="space-y-4">
-            <Link 
-              to="/register" 
-              className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2 font-semibold"
-            >
-              Try Again
-              <ArrowRight size={16} />
-            </Link>
-            <div>
-              <Link 
-                to="/login" 
-                className="text-text-secondary hover:text-text-primary transition-colors"
-              >
-                Back to Login
-              </Link>
+        {status === 'loading' && (
+          <>
+            <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <Mail size={32} className="text-white animate-pulse" />
             </div>
-          </div>
+            <h1 className="text-3xl font-bold text-text-primary mb-4">Verifying Email...</h1>
+            <p className="text-text-secondary">
+              Please wait while we verify your email address.
+            </p>
+          </>
+        )}
+
+        {status === 'success' && (
+          <>
+            <div className="w-20 h-20 bg-green-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <CheckCircle size={32} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-text-primary mb-4">Email Verified!</h1>
+            <p className="text-text-secondary mb-8">{message}</p>
+            <Link 
+              to="/login" 
+              className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2"
+            >
+              Go to Login
+            </Link>
+          </>
+        )}
+
+        {status === 'error' && (
+          <>
+            <div className="w-20 h-20 bg-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <XCircle size={32} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-text-primary mb-4">Verification Failed</h1>
+            <p className="text-text-secondary mb-8">{message}</p>
+            <div className="space-y-4">
+              <Link 
+                to="/register" 
+                className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2"
+              >
+                Register Again
+              </Link>
+              <div>
+                <Link 
+                  to="/login" 
+                  className="text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  Back to Login
+                </Link>
+              </div>
+            </div>
+          </>
         )}
       </motion.div>
     </div>

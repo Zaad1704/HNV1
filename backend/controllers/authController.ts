@@ -56,8 +56,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         password, 
         role, 
         organizationId: organization._id,
-        isEmailVerified: true // Auto-verify all users for now
+        isEmailVerified: false // Require email verification
     });
+    
+    // Generate email verification token
+    const verificationToken = user.getEmailVerificationToken();
 
     organization.owner = user._id as Types.ObjectId; 
     organization.members.push(user._id as Types.ObjectId); 
@@ -73,10 +76,29 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     
     await organization.save();
     await subscription.save();
+    await user.save({ validateBeforeSave: false });
     
-    // Save user directly without email verification
-    await user.save();
-    res.status(201).json({ success: true, message: 'Registration successful! You can now log in.' });
+    // Send verification email
+    try {
+      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+      await emailService.sendEmail(
+        user.email,
+        'Verify Your Email Address',
+        'emailVerification',
+        { userName: user.name, verificationUrl }
+      );
+      res.status(201).json({ 
+        success: true, 
+        message: 'Registration successful! Please check your email to verify your account.' 
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Still allow registration but inform user
+      res.status(201).json({ 
+        success: true, 
+        message: 'Registration successful! Email verification temporarily unavailable - you can log in directly.' 
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
@@ -130,11 +152,13 @@ export const loginUser = async (req: Request, res: Response) => {
             });
         }
 
-        // Auto-verify users on login (remove email verification barrier)
+        // Check email verification
         if (!user.isEmailVerified) {
-            user.isEmailVerified = true;
-            user.status = 'active';
-            await user.save();
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+                code: 'EMAIL_NOT_VERIFIED'
+            });
         }
 
         // Record login audit

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../api/client';
-import { Lock, CheckCircle, ArrowRight } from 'lucide-react';
+import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ResetPasswordPage: React.FC = () => {
@@ -26,25 +26,29 @@ const ResetPasswordPage: React.FC = () => {
       setError('Passwords do not match');
       return;
     }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
       return;
     }
-
+    
     setLoading(true);
     setError('');
 
     try {
-      const response = await apiClient.post(`/auth/reset-password/${token}`, {
+      const response = await apiClient.put(`/api/auth/reset-password/${token}`, {
         password: formData.password
       });
-      console.log('Reset password response:', response.data);
-      setSuccess(true);
-      setTimeout(() => navigate('/login'), 3000);
+      
+      if (response.data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      }
     } catch (err: any) {
-      console.error('Reset password error:', err);
-      setError(err.response?.data?.message || err.message || 'Failed to reset password. The link may be expired.');
+      console.error('Password reset error:', err);
+      setError(err.response?.data?.message || 'Failed to reset password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,16 +65,15 @@ const ResetPasswordPage: React.FC = () => {
           <div className="w-20 h-20 bg-green-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={32} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-4">Password Reset!</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">Password Reset Successful!</h1>
           <p className="text-text-secondary mb-8">
-            Your password has been successfully reset. You'll be redirected to login shortly.
+            Your password has been successfully reset. You will be redirected to the login page shortly.
           </p>
           <Link 
             to="/login" 
             className="btn-gradient px-8 py-3 rounded-2xl inline-flex items-center gap-2"
           >
             Go to Login
-            <ArrowRight size={16} />
           </Link>
         </motion.div>
       </div>
@@ -90,7 +93,9 @@ const ResetPasswordPage: React.FC = () => {
             <Lock size={32} className="text-white" />
           </div>
           <h1 className="text-4xl font-bold text-text-primary mb-2">Reset Password</h1>
-          <p className="text-text-secondary">Enter your new password below</p>
+          <p className="text-text-secondary">
+            Enter your new password below.
+          </p>
         </div>
 
         <div className="app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
@@ -115,11 +120,11 @@ const ResetPasswordPage: React.FC = () => {
                   type="password"
                   name="password"
                   required
+                  minLength={8}
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
                   placeholder="Enter new password"
-                  minLength={6}
                 />
               </div>
             </div>
@@ -134,11 +139,11 @@ const ResetPasswordPage: React.FC = () => {
                   type="password"
                   name="confirmPassword"
                   required
+                  minLength={8}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
                   placeholder="Confirm new password"
-                  minLength={6}
                 />
               </div>
             </div>
@@ -151,10 +156,7 @@ const ResetPasswordPage: React.FC = () => {
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <>
-                  Reset Password
-                  <ArrowRight size={20} />
-                </>
+                'Reset Password'
               )}
             </button>
           </form>
@@ -162,8 +164,9 @@ const ResetPasswordPage: React.FC = () => {
           <div className="mt-8 text-center">
             <Link 
               to="/login" 
-              className="text-text-secondary hover:text-text-primary transition-colors"
+              className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
             >
+              <ArrowLeft size={16} />
               Back to Login
             </Link>
           </div>
