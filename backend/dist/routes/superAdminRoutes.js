@@ -16,10 +16,18 @@ router.get('/platform-growth', (0, express_async_handler_1.default)(superAdminCo
 router.get('/plan-distribution', (0, express_async_handler_1.default)(superAdminController_1.getPlanDistribution));
 router.get('/organizations', (0, express_async_handler_1.default)(superAdminController_1.getAllOrganizations));
 router.put('/organizations/:id/status', (0, express_async_handler_1.default)(superAdminController_1.updateSubscriptionStatus));
-router.put('/organizations/:id/grant-lifetime', (0, express_async_handler_1.default)(superAdminController_1.grantLifetimeAccess));
-router.put('/organizations/:id/revoke-lifetime', (0, express_async_handler_1.default)(superAdminController_1.revokeLifetimeAccess));
-router.post('/organizations/:id/grant-lifetime', (0, express_async_handler_1.default)(superAdminController_1.grantLifetimeAccess));
-router.post('/organizations/:id/revoke-lifetime', (0, express_async_handler_1.default)(superAdminController_1.revokeLifetimeAccess));
+router.patch('/organizations/:id/activate', (0, express_async_handler_1.default)(async (req, res) => {
+    const Subscription = require('../models/Subscription');
+    const subscription = await Subscription.findOneAndUpdate({ organizationId: req.params.id }, { status: 'active' }, { new: true, upsert: true });
+    res.json({ success: true, data: subscription });
+}));
+router.patch('/organizations/:id/deactivate', (0, express_async_handler_1.default)(async (req, res) => {
+    const Subscription = require('../models/Subscription');
+    const subscription = await Subscription.findOneAndUpdate({ organizationId: req.params.id }, { status: 'inactive' }, { new: true });
+    res.json({ success: true, data: subscription });
+}));
+router.patch('/organizations/:id/grant-lifetime', (0, express_async_handler_1.default)(superAdminController_1.grantLifetimeAccess));
+router.patch('/organizations/:id/revoke-lifetime', (0, express_async_handler_1.default)(superAdminController_1.revokeLifetimeAccess));
 router.delete('/organizations/:orgId', (0, express_async_handler_1.default)(superAdminController_1.deleteOrganization));
 router.put('/organizations/:orgId/subscription', (0, express_async_handler_1.default)(superAdminController_1.updateOrganizationSubscription));
 router.put('/organizations/:orgId/toggle-self-deletion', (0, express_async_handler_1.default)(superAdminController_1.toggleSelfDeletion));
@@ -41,11 +49,29 @@ router.post('/moderators', (0, express_async_handler_1.default)(async (req, res)
         password,
         role: 'Super Moderator',
         organizationId: req.user?.organizationId,
-        isEmailVerified: true
+        isEmailVerified: true,
+        status: 'active'
     });
     res.status(201).json({ success: true, data: user });
 }));
 router.get('/moderators', (0, express_async_handler_1.default)(superAdminController_1.getModerators));
+router.put('/moderators/:id', (0, express_async_handler_1.default)(async (req, res) => {
+    const { name, email, status } = req.body;
+    const user = await User_1.default.findByIdAndUpdate(req.params.id, { name, email, status: status === 'active' ? 'active' : 'suspended' }, { new: true });
+    if (!user) {
+        res.status(404).json({ success: false, message: 'Moderator not found' });
+        return;
+    }
+    res.json({ success: true, data: user });
+}));
+router.delete('/moderators/:id', (0, express_async_handler_1.default)(async (req, res) => {
+    const user = await User_1.default.findByIdAndDelete(req.params.id);
+    if (!user) {
+        res.status(404).json({ success: false, message: 'Moderator not found' });
+        return;
+    }
+    res.json({ success: true, message: 'Moderator removed successfully' });
+}));
 router.get('/billing', (0, express_async_handler_1.default)(superAdminController_1.getGlobalBilling));
 router.get('/plans', (0, express_async_handler_1.default)(async (req, res) => {
     const Plan = require('../models/Plan');

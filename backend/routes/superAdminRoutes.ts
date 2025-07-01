@@ -32,10 +32,28 @@ router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 
 router.get('/organizations', asyncHandler(getAllOrganizations));
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
-router.put('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
-router.put('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
-router.post('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
-router.post('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
+router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
+  const Subscription = require('../models/Subscription');
+  const subscription = await Subscription.findOneAndUpdate(
+    { organizationId: req.params.id },
+    { status: 'active' },
+    { new: true, upsert: true }
+  );
+  res.json({ success: true, data: subscription });
+}));
+
+router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => {
+  const Subscription = require('../models/Subscription');
+  const subscription = await Subscription.findOneAndUpdate(
+    { organizationId: req.params.id },
+    { status: 'inactive' },
+    { new: true }
+  );
+  res.json({ success: true, data: subscription });
+}));
+
+router.patch('/organizations/:id/grant-lifetime', asyncHandler(grantLifetimeAccess));
+router.patch('/organizations/:id/revoke-lifetime', asyncHandler(revokeLifetimeAccess));
 router.delete('/organizations/:orgId', asyncHandler(deleteOrganization)); // New Route
 
 router.put('/organizations/:orgId/subscription', asyncHandler(updateOrganizationSubscription)); 
@@ -60,12 +78,36 @@ router.post('/moderators', asyncHandler(async (req: Request, res: Response) => {
     password,
     role: 'Super Moderator',
     organizationId: req.user?.organizationId,
-    isEmailVerified: true
+    isEmailVerified: true,
+    status: 'active'
   });
   res.status(201).json({ success: true, data: user });
 }));
 
 router.get('/moderators', asyncHandler(getModerators));
+
+router.put('/moderators/:id', asyncHandler(async (req: Request, res: Response) => {
+  const { name, email, status } = req.body;
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { name, email, status: status === 'active' ? 'active' : 'suspended' },
+    { new: true }
+  );
+  if (!user) {
+    res.status(404).json({ success: false, message: 'Moderator not found' });
+    return;
+  }
+  res.json({ success: true, data: user });
+}));
+
+router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) {
+    res.status(404).json({ success: false, message: 'Moderator not found' });
+    return;
+  }
+  res.json({ success: true, message: 'Moderator removed successfully' });
+}));
 router.get('/billing', asyncHandler(getGlobalBilling));
 
 // Plan management routes
