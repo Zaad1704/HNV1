@@ -1,103 +1,64 @@
-// frontend/src/pages/TermsPage.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useSiteSettings } from '../hooks/useSiteSettings';
-
-// Static content from the provided text file
-const termsContent = `
-**Terms and Conditions for HNV Property Management Solutions**
-
-**Last Updated: June 24, 2025**
-
-Welcome to HNV Property Management Solutions ("HNV," "we," "us," or "our").
-These Terms and Conditions ("Terms") govern your access to and use of our website, services, and software platform (collectively, the "Service").
-By accessing or using the Service, creating an account, or by clicking "I Agree" or a similar button, you agree to be bound by these Terms and our Privacy Policy.
-If you do not agree to these Terms, you may not access or use the Service.
-
-**1. Account Registration & Use**
-
-1.1. **Eligibility**: You must be at least 18 years old and capable of entering into a legally binding agreement to create an account and use the Service.
-By creating an account, you represent and warrant that you meet these requirements.
-
-1.2. **Account Types**: The Service offers different account types (e.g., "Landlord," "Agent," "Tenant," "Super Admin").
-Your access to features will depend on your account type and subscription plan.
-
-1.3. **Account Security**: You are responsible for safeguarding your account password and for all activities that occur under your account.
-You agree to notify us immediately of any unauthorized use.
-We are not liable for any loss arising from your failure to protect your account.
-
-1.4. **Organizational Accounts**: If you are using the Service on behalf of an organization, you are agreeing to these Terms for that organization and promising that you have the authority to bind that organization to these terms.
-**2. Subscriptions and Billing**
-
-2.1. **Plans and Pricing**: Our Service is offered under various subscription plans.
-The features, limits, and pricing for each plan are detailed on our Pricing page and are subject to change.
-All fees are quoted in U.S. Dollars unless otherwise specified.
-
-2.2. **Billing and Payments**: By selecting a paid plan, you agree to pay all applicable fees.
-Payments will be processed by our third-party payment processor. You agree to provide them with valid and updated payment information.
-2.3. **Automatic Renewals**: To ensure uninterrupted service, your paid subscription will automatically renew at the end of each billing cycle for the same subscription period.
-You may cancel your subscription at any time through your account's billing settings, and your cancellation will take effect at the end of the current billing cycle.
-2.4. **Manual Subscription Control**: We reserve the right, at our sole discretion, for authorized administrative users to manually activate, deactivate, or modify the duration of any subscription plan for any user account for administrative, support, or billing-related reasons.
-**3. User Data & Content**
-
-3.1. **Ownership**: You retain all ownership rights to the data, information, and content you upload to the Service ("Your Content").
-This includes property details, tenant information, and financial records.
-
-3.2. **License to HNV**: By using the Service, you grant us a limited, worldwide, non-exclusive, royalty-free license to host, copy, transmit, and display Your Content as necessary for us to provide and improve the Service.
-3.3. **Acceptable Use**: You agree not to upload or transmit any content that is unlawful, defamatory, harassing, abusive, fraudulent, or obscene, or that infringes on any third-party's intellectual property rights or privacy.
-**4. Data Portability & Account Deletion**
-
-4.1. **Data Export**: We provide tools within the Service for you to export key data sets (e.g., tenant lists, expense reports) in common electronic formats like CSV and PDF.
-4.2. **Account Deletion**: You may request the permanent deletion of your account and all associated data through your "Settings" page.
-This action is irreversible after a specified grace period. We reserve the right to enable or disable this self-service feature for any organization at our discretion.
-**5. Intellectual Property**
-
-The Service, its visual interfaces, features, and all underlying technology and software are the exclusive property of HNV and its licensors.
-Except as expressly authorized, you may not sell, license, distribute, copy, modify, or otherwise make any derivative use of our content or technology.
-**6. Limitation of Liability**
-
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, HNV SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR ACCESS TO OR USE OF THE SERVICE.
-**7. Governing Law**
-
-These Terms shall be governed by the laws of the jurisdiction in which HNV is headquartered, without regard to its conflict of law provisions.
-**8. Changes to Terms**
-
-We reserve the right to modify these Terms at any time.
-We will provide notice of material changes by posting the new Terms on the Service or by sending you an email.
-Your continued use of the Service after any such change constitutes your acceptance of the new Terms.
-
-**9. Contact Information**
-
-If you have any questions about these Terms, please contact us at: **legal@hnvpm.com**.
-`;
+import { motion } from 'framer-motion';
 
 const TermsPage = () => {
-  const { data: settings, isLoading, isError } = useSiteSettings();
-
-  if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading...</div>;
-
   return (
-    <div className="bg-light-bg min-h-screen text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300">
-       <header className="bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color dark:border-border-color-dark transition-colors duration-300">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <Link to="/" className="flex items-center space-x-3">
-              <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" />
-              <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.logos?.companyName || "HNV Property Management"}</span>
-            </Link>
-            <Link to="/login" className="font-semibold text-dark-text dark:text-dark-text-dark hover:text-brand-primary transition-colors duration-150">
-              Portal Log In
-            </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-app-bg py-20">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <h1 className="text-4xl font-bold text-text-primary mb-8">Terms of Service</h1>
+          
+          <div className="prose prose-lg max-w-none text-text-secondary space-y-6">
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">1. Acceptance of Terms</h2>
+              <p>By accessing and using HNV Property Management Solutions, you accept and agree to be bound by the terms and provision of this agreement.</p>
+            </section>
 
-      <main className="container mx-auto px-6 py-16">
-        <div className="bg-light-card max-w-4xl mx-auto p-8 md:p-12 rounded-xl border border-border-color shadow-sm dark:bg-dark-card dark:border-border-color-dark">
-          <h1 className="text-4xl font-extrabold mb-6 text-dark-text dark:text-dark-text-dark">Terms and Conditions</h1>
-          <div className="prose prose-lg max-w-none prose-h3:font-bold prose-a:text-brand-primary hover:prose-a:opacity-80 dark:text-light-text-dark"
-               dangerouslySetInnerHTML={{ __html: termsContent.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">2. Use License</h2>
+              <p>Permission is granted to temporarily use HNV Property Management Solutions for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">3. Service Description</h2>
+              <p>HNV Property Management Solutions provides a comprehensive platform for property management including tenant management, payment processing, maintenance tracking, and financial reporting.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">4. User Responsibilities</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Maintain the confidentiality of your account credentials</li>
+                <li>Provide accurate and up-to-date information</li>
+                <li>Use the service in compliance with applicable laws</li>
+                <li>Not engage in any unauthorized or illegal activities</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">5. Privacy Policy</h2>
+              <p>Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the Service, to understand our practices.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">6. Limitation of Liability</h2>
+              <p>In no event shall HNV Property Management Solutions be liable for any damages arising out of the use or inability to use the service.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">7. Contact Information</h2>
+              <p>If you have any questions about these Terms of Service, please contact us at legal@hnvpm.com</p>
+            </section>
           </div>
-        </div>
-      </main>
+
+          <div className="mt-8 pt-8 border-t border-app-border text-sm text-text-muted">
+            Last updated: {new Date().toLocaleDateString()}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

@@ -1,24 +1,38 @@
-// frontend/src/pages/NotFound.tsx
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { Home, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const NotFound = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark p-4 transition-colors duration-300">
-      <AlertTriangle className="w-16 h-16 text-brand-orange mb-6" />
-      <h1 className="text-5xl font-extrabold mb-2">404</h1>
-      <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
-      <p className="text-light-text dark:text-light-text-dark max-w-md text-center mb-8">
-        Sorry, the page you are looking for does not exist or may have been moved.
-      </p>
-      <Link
-        to="/"
-        className="px-6 py-3 bg-brand-primary text-white font-bold rounded-lg hover:bg-brand-secondary transition-colors duration-200"
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-md"
       >
-        Return to Homepage
-      </Link>
+        <div className="text-8xl font-bold text-brand-orange mb-4">404</div>
+        <h1 className="text-3xl font-bold text-text-primary mb-4">Page Not Found</h1>
+        <p className="text-text-secondary mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div className="flex gap-4 justify-center">
+          <Link
+            to="/"
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Home size={20} />
+            Go Home
+          </Link>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary hover:bg-app-surface transition-colors flex items-center gap-2"
+          >
+            <ArrowLeft size={20} />
+            Go Back
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 };

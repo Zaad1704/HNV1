@@ -1,107 +1,79 @@
-// frontend/src/pages/PrivacyPolicyPage.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useSiteSettings } from '../hooks/useSiteSettings';
-
-// Static content from the provided text file
-const privacyContent = `
-**Privacy Policy for HNV Property Management Solutions**
-
-**Last Updated: June 24, 2025**
-
-HNV Property Management Solutions ("HNV," "we," "us," or "our") is committed to protecting your privacy.
-This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website, services, and software platform (collectively, the "Service").
-**1. Information We Collect**
-
-We may collect information about you in a variety of ways:
-
-* **Personal Data**: Personally identifiable information, such as your name, email address, telephone number, and professional role, that you voluntarily provide when you register for the Service.
-* **Financial Data**: Data related to your payment method (e.g., valid credit card number, card brand, expiration date) that you provide when subscribing to a paid plan.
-All financial information is stored and processed by our secure third-party payment processor.
-* **User-Generated Content**: Information you upload to the platform, such as property details, tenant information, lease agreements, financial records, and maintenance requests.
-* **Derivative Data**: Information our servers automatically collect, such as your IP address, browser type, operating system, and access times.
-**2. Use of Your Information**
-
-We use the information collected to:
-
-* Create and manage your account.
-* Provide, operate, and maintain our Service.
-* Process your payments and manage your subscriptions.
-* Communicate with you, including responding to your comments, questions, and support requests.
-* Send you technical notices, updates, security alerts, and administrative messages.
-* Monitor and analyze usage and trends to improve your experience and the Service's functionality.
-* Comply with legal obligations.
-**3. Disclosure of Your Information**
-
-We do not sell your personal information.
-We may share your information in the following limited circumstances:
-
-* **With Your Consent**: We may share your information with your consent or at your direction.
-* **Third-Party Service Providers**: We may share your information with third parties that perform services for us, including payment processing, data analysis, email delivery, and hosting services.
-These service providers are contractually bound to protect your information.
-* **Legal Compliance**: We may disclose information if required to do so by law or in the good faith belief that such action is necessary to comply with a legal obligation, protect and defend our rights or property, or prevent fraud.
-* **Business Transfers**: We may share or transfer your information in connection with any merger, sale of company assets, financing, or acquisition of all or a portion of our business.
-**4. Data Security**
-
-We use administrative, technical, and physical security measures to help protect your personal information.
-While we have taken reasonable steps to secure the information you provide, no security measures are perfect or impenetrable.
-
-**5. Data Retention**
-
-We will retain your personal information for as long as is necessary to fulfill the purposes outlined in this Privacy Policy unless a longer retention period is required or permitted by law.
-**6. Your Data Protection Rights**
-
-Depending on your location, you may have the following rights regarding your personal information:
-
-* The right to access, update, or delete the information we have on you.
-* The right of rectification.
-* The right to object to our processing of your information.
-* The right of restriction.
-* The right to data portability.
-* The right to withdraw consent.
-You can exercise these rights through your account settings or by contacting us directly.
-
-**7. International Data Transfers**
-
-Your information may be transferred to — and maintained on — computers located outside of your state, province, or country where the data protection laws may differ.
-**8. Changes to This Privacy Policy**
-
-We may update this Privacy Policy from time to time.
-We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
-**9. Contact Us**
-
-If you have any questions about this Privacy Policy, please contact us at: **privacy@hnvpm.com**.
-`;
+import { motion } from 'framer-motion';
 
 const PrivacyPolicyPage = () => {
-    const { data: settings, isLoading } = useSiteSettings();
+  return (
+    <div className="min-h-screen bg-app-bg py-20">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="app-surface rounded-3xl p-8 border border-app-border"
+        >
+          <h1 className="text-4xl font-bold text-text-primary mb-8">Privacy Policy</h1>
+          
+          <div className="prose prose-lg max-w-none text-text-secondary space-y-6">
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">1. Information We Collect</h2>
+              <p>We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support.</p>
+              <ul className="list-disc pl-6 space-y-2 mt-4">
+                <li>Personal information (name, email, phone number)</li>
+                <li>Property and tenant information</li>
+                <li>Payment and billing information</li>
+                <li>Usage data and analytics</li>
+              </ul>
+            </section>
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading...</div>;
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">2. How We Use Your Information</h2>
+              <p>We use the information we collect to:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-4">
+                <li>Provide, maintain, and improve our services</li>
+                <li>Process transactions and send related information</li>
+                <li>Send technical notices and support messages</li>
+                <li>Respond to your comments and questions</li>
+              </ul>
+            </section>
 
-    return (
-        <div className="bg-light-bg min-h-screen text-dark-text dark:bg-dark-bg dark:text-dark-text-dark transition-colors duration-300">
-            <header className="bg-light-card/80 dark:bg-dark-card/80 backdrop-blur-md shadow-sm sticky top-0 z-10 border-b border-border-color dark:border-border-color-dark transition-colors duration-300">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-3">
-                        <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" width="40" height="40" />
-                        <span className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{settings?.logos?.companyName || "HNV Property Management"}</span>
-                    </Link>
-                    <Link to="/login" className="font-semibold text-dark-text dark:text-dark-text-dark hover:text-brand-primary transition-colors duration-150">
-                        Portal Log In
-                    </Link>
-                </div>
-            </header>
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">3. Information Sharing</h2>
+              <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+            </section>
 
-            <main className="container mx-auto px-6 py-16">
-                <div className="bg-light-card max-w-4xl mx-auto p-8 md:p-12 rounded-xl border border-border-color shadow-sm dark:bg-dark-card dark:border-border-color-dark">
-                    <h1 className="text-4xl font-extrabold mb-6 text-dark-text dark:text-dark-text-dark">Privacy Policy</h1>
-                    <div className="prose prose-lg max-w-none prose-h3:font-bold prose-a:text-brand-primary hover:prose-a:opacity-80 dark:text-light-text-dark"
-                        dangerouslySetInnerHTML={{ __html: privacyContent.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
-                    </div>
-                </div>
-            </main>
-        </div>
-    );
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">4. Data Security</h2>
+              <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">5. Your Rights</h2>
+              <p>You have the right to:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-4">
+                <li>Access your personal information</li>
+                <li>Correct inaccurate information</li>
+                <li>Delete your personal information</li>
+                <li>Object to processing of your information</li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">6. Cookies</h2>
+              <p>We use cookies and similar technologies to enhance your experience, analyze usage, and assist in our marketing efforts.</p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-text-primary mb-4">7. Contact Us</h2>
+              <p>If you have any questions about this Privacy Policy, please contact us at privacy@hnvpm.com</p>
+            </section>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-app-border text-sm text-text-muted">
+            Last updated: {new Date().toLocaleDateString()}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
 };
 
 export default PrivacyPolicyPage;
