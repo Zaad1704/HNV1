@@ -1,6 +1,11 @@
-import { Server as SocketIOServer } from 'socket.io';
+import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
+
+interface AuthenticatedSocket extends Socket {
+  userId?: string;
+  organizationId?: string;
+}
 
 class WebSocketService {
   private io: SocketIOServer | null = null;
@@ -13,7 +18,7 @@ class WebSocketService {
       }
     });
 
-    this.io.use((socket, next) => {
+    this.io.use((socket: AuthenticatedSocket, next) => {
       const token = socket.handshake.auth.token;
       if (!token) return next(new Error('Authentication error'));
       
@@ -27,7 +32,7 @@ class WebSocketService {
       }
     });
 
-    this.io.on('connection', (socket) => {
+    this.io.on('connection', (socket: AuthenticatedSocket) => {
       socket.join(`org_${socket.organizationId}`);
       socket.join(`user_${socket.userId}`);
       

@@ -20,12 +20,4 @@ router
     .delete((0, authMiddleware_1.authorize)('Super Admin'), (0, express_async_handler_1.default)(userController_1.deleteUser));
 router.get('/organization', (0, authMiddleware_1.authorize)('Super Admin', 'Landlord', 'Agent'), (0, express_async_handler_1.default)(userController_1.getOrgUsers));
 router.get('/my-agents', (0, authMiddleware_1.authorize)('Super Admin', 'Landlord'), (0, express_async_handler_1.default)(userController_1.getManagedAgents));
-router.get('/my-agents', authMiddleware_1.protect, (0, express_async_handler_1.default)(async (req, res) => {
-    const agents = await User.find({
-        organizationId: req.user?.organizationId,
-        role: 'Agent',
-        status: 'active'
-    }).select('name email _id');
-    res.json({ success: true, data: agents });
-}));
 exports.default = router;

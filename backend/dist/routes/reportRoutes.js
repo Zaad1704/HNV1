@@ -62,25 +62,4 @@ router.post('/export', authMiddleware_1.protect, async (req, res) => {
         res.status(500).json({ success: false, message: 'Export failed' });
     }
 });
-router.get('/monthly-collection', authMiddleware_1.protect, asyncHandler(async (req, res) => {
-    const { month, year } = req.query;
-    const Payment = require('../models/Payment');
-    const payments = await Payment.find({
-        organizationId: req.user?.organizationId,
-        createdAt: {
-            $gte: new Date(Number(year), Number(month) - 1, 1),
-            $lt: new Date(Number(year), Number(month), 1)
-        }
-    }).populate('tenantId', 'name').populate('propertyId', 'name');
-    res.json({ success: true, data: payments });
-}));
-router.post('/export', authMiddleware_1.protect, asyncHandler(async (req, res) => {
-    const { type, format, dateRange } = req.body;
-    const exportData = {
-        filename: `${type}-export-${Date.now()}.${format}`,
-        url: `/exports/${type}-export-${Date.now()}.${format}`,
-        status: 'completed'
-    };
-    res.json({ success: true, data: exportData });
-}));
 exports.default = router;
