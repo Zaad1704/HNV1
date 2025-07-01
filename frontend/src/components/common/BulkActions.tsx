@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { Check, X, Trash2, Mail, Download, Edit } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import React from 'react';
+import { CheckSquare, Square } from 'lucide-react';
+
+interface BulkAction {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+  color: string;
+  action: (ids: string[]) => void;
+}
 
 interface BulkActionsProps {
   selectedItems: string[];
   totalItems: number;
   onSelectAll: () => void;
   onClearSelection: () => void;
-  actions: Array<{
-    key: string;
-    label: string;
-    icon: React.ComponentType<any>;
-    color: string;
-    action: (selectedIds: string[]) => void;
-  }>;
+  actions: BulkAction[];
 }
 
 const BulkActions: React.FC<BulkActionsProps> = ({
@@ -24,70 +24,48 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   onClearSelection,
   actions
 }) => {
-  const { t } = useTranslation();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleAction = async (actionFn: (ids: string[]) => void) => {
-    setIsProcessing(true);
-    try {
-      await actionFn(selectedItems);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   if (selectedItems.length === 0) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 z-50"
-      >
-        <div className="app-surface rounded-2xl border border-app-border shadow-app-xl p-4 backdrop-blur-md">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 app-gradient rounded-full flex items-center justify-center">
-                <Check size={16} className="text-white" />
-              </div>
-              <span className="font-semibold text-text-primary">
-                {selectedItems.length} of {totalItems} selected
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onSelectAll}
-                className="text-sm text-brand-blue hover:text-brand-blue/80 font-medium"
-              >
-                Select All
-              </button>
-              <button
-                onClick={onClearSelection}
-                className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-app-bg"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto">
-            {actions.map((action) => (
-              <button
-                key={action.key}
-                onClick={() => handleAction(action.action)}
-                disabled={isProcessing}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${action.color} disabled:opacity-50`}
-              >
-                <action.icon size={16} />
-                {action.label}
-              </button>
-            ))}
-          </div>
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-50">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={selectedItems.length === totalItems ? onClearSelection : onSelectAll}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            {selectedItems.length === totalItems ? (
+              <CheckSquare size={20} className="text-blue-600" />
+            ) : (
+              <Square size={20} className="text-gray-400" />
+            )}
+          </button>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {selectedItems.length} selected
+          </span>
         </div>
-      </motion.div>
-    </AnimatePresence>
+        
+        <div className="flex gap-2">
+          {actions.map((action) => (
+            <button
+              key={action.key}
+              onClick={() => action.action(selectedItems)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${action.color}`}
+            >
+              <action.icon size={16} />
+              {action.label}
+            </button>
+          ))}
+        </div>
+        
+        <button
+          onClick={onClearSelection}
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
   );
 };
 

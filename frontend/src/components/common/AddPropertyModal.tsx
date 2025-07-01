@@ -1,237 +1,147 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import apiClient from '../../api/client';
-import { useMutation } from '@tanstack/react-query';
-import { X, Upload, Building2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 
-const AddPropertyModal = ({ 
-  isOpen, 
-  onClose, 
-  onPropertyAdded 
-}: { 
+interface AddPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPropertyAdded: (property: any) => void;
-}) => {
-  const { t } = useTranslation();
+}
+
+const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, onPropertyAdded }) => {
   const [formData, setFormData] = useState({
-    name: '', 
-    street: '', 
-    city: '', 
-    state: '', 
-    zipCode: '', 
-    numberOfUnits: 1,
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [error, setError] = useState('');
-
-  const mutation = useMutation({
-    mutationFn: (propertyData: FormData) => apiClient.post('/properties', propertyData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }),
-    onSuccess: (response: any) => {
-      onPropertyAdded(response.data.data);
-      onClose();
-      // Reset form
-      setFormData({
-        name: '', 
-        street: '', 
-        city: '', 
-        state: '', 
-        zipCode: '', 
-        numberOfUnits: 1,
-      });
-      setImageFile(null);
-      setError('');
+    name: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      zipCode: ''
     },
-    onError: (err: any) => setError(err.response?.data?.message || 'Failed to add property.')
+    numberOfUnits: 1,
+    propertyType: 'Apartment'
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setImageFile(e.target.files[0]);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setIsSubmitting(true);
     
-    const propertyFormData = new FormData();
-    propertyFormData.append('name', formData.name);
-    propertyFormData.append('address[street]', formData.street);
-    propertyFormData.append('address[city]', formData.city);
-    propertyFormData.append('address[state]', formData.state);
-    propertyFormData.append('address[zipCode]', formData.zipCode);
-    propertyFormData.append('numberOfUnits', formData.numberOfUnits.toString());
-    
-    if (imageFile) propertyFormData.append('image', imageFile);
-    
-    mutation.mutate(propertyFormData);
+    try {
+      const { data } = await apiClient.post('/api/properties', formData);
+      onPropertyAdded(data.data);
+      onClose();
+      setFormData({
+        name: '',
+        address: { street: '', city: '', state: '', zipCode: '' },
+        numberOfUnits: 1,
+        propertyType: 'Apartment'
+      });
+    } catch (error) {
+      console.error('Failed to add property:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="app-surface rounded-3xl shadow-app-xl w-full max-w-lg border border-app-border"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-app-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
-                  <Building2 size={20} className="text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-text-primary">{t('property.add_new_property')}</h2>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-app-bg transition-all"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-2xl text-sm"
-                >
-                  {error}
-                </motion.div>
-              )}
-              
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-2">
-                  {t('property.property_name')}
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full"
-                  placeholder={t('property.enter_property_name')}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
-                  {t('property.address')}
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    name="street"
-                    placeholder={t('property.street_address')}
-                    value={formData.street}
-                    onChange={handleChange}
-                    className="sm:col-span-2"
-                  />
-                  <input
-                    name="city"
-                    placeholder={t('property.city')}
-                    value={formData.city}
-                    onChange={handleChange}
-                  />
-                  <input
-                    name="state"
-                    placeholder={t('property.state')}
-                    value={formData.state}
-                    onChange={handleChange}
-                  />
-                  <input
-                    name="zipCode"
-                    placeholder={t('property.zip_code')}
-                    value={formData.zipCode}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="numberOfUnits" className="block text-sm font-medium text-text-secondary mb-2">
-                  {t('property.number_of_units')}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  name="numberOfUnits"
-                  id="numberOfUnits"
-                  required
-                  value={formData.numberOfUnits}
-                  onChange={handleChange}
-                  placeholder="1"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="image" className="block text-sm font-medium text-text-secondary mb-2">
-                  {t('property.property_image')}
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    name="image"
-                    id="image"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="image"
-                    className="flex items-center justify-center w-full p-6 border-2 border-dashed border-app-border rounded-2xl cursor-pointer hover:border-brand-blue hover:bg-brand-blue/5 transition-all"
-                  >
-                    <div className="text-center">
-                      <Upload size={24} className="mx-auto text-text-muted mb-2" />
-                      <p className="text-sm text-text-secondary">
-                        {imageFile ? imageFile.name : t('property.click_to_upload')}
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-end space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary hover:bg-app-bg transition-all"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={mutation.isLoading}
-                  className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 disabled:opacity-50"
-                >
-                  {mutation.isLoading ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Building2 size={16} />
-                  )}
-                  {mutation.isLoading ? t('property.saving') : t('property.save_property')}
-                </button>
-              </div>
-            </form>
-          </motion.div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Add Property</h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+            <X size={20} />
+          </button>
         </div>
-      )}
-    </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Property Name
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Street Address
+            </label>
+            <input
+              type="text"
+              value={formData.address.street}
+              onChange={(e) => setFormData({ ...formData, address: { ...formData.address, street: e.target.value } })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                City
+              </label>
+              <input
+                type="text"
+                value={formData.address.city}
+                onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                State
+              </label>
+              <input
+                type="text"
+                value={formData.address.state}
+                onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Number of Units
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={formData.numberOfUnits}
+              onChange={(e) => setFormData({ ...formData, numberOfUnits: Number(e.target.value) })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? 'Adding...' : 'Add Property'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

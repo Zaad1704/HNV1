@@ -12,7 +12,7 @@ import { useDataExport } from '../hooks/useDataExport';
 import ExportModal from '../components/common/ExportModal';
 
 const fetchProperties = async () => {
-  const { data } = await apiClient.get('/properties');
+  const { data } = await apiClient.get('/api/properties');
   return data.data;
 };
 

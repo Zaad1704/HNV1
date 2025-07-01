@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign } from 'lucide-react';
 
 const fetchTenants = async () => {
-  const { data } = await apiClient.get('/tenants');
+  const { data } = await apiClient.get('/api/tenants');
   return data.data;
 };
 

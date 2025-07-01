@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const fetchTenantDashboard = async () => {
-  const { data } = await apiClient.get('/tenant-portal/dashboard');
+  const { data } = await apiClient.get('/api/dashboard/tenant-portal');
   return data.data;
 };
 
