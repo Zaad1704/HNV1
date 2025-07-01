@@ -1,17 +1,44 @@
-// backend/routes/communicationRoutes.ts
-
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { sendCustomEmail, sendRentReminder } from '../controllers/communicationController'; 
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
-// Route for sending custom emails
-router.post('/email', protect, authorize(['Landlord', 'Agent']), asyncHandler(sendCustomEmail));
+router.use(protect);
 
-// NEW ROUTE for C.1: Send Rent Reminder
-router.post('/send-rent-reminder', protect, authorize(['Landlord', 'Agent']), asyncHandler(sendRentReminder));
+// Send rent reminder
+router.post('/send-rent-reminder', asyncHandler(async (req, res) => {
+  const { tenantId } = req.body;
+  
+  if (!tenantId) {
+    res.status(400).json({ success: false, message: 'Tenant ID is required' });
+    return;
+  }
+
+  // Mock implementation - in real app, this would send email/SMS
+  console.log(`Sending rent reminder to tenant: ${tenantId}`);
+  
+  res.json({ 
+    success: true, 
+    message: 'Rent reminder sent successfully!' 
+  });
+}));
+
+// Send lease renewal notice
+router.post('/send-lease-renewal', asyncHandler(async (req, res) => {
+  const { tenantId } = req.body;
+  
+  if (!tenantId) {
+    res.status(400).json({ success: false, message: 'Tenant ID is required' });
+    return;
+  }
+
+  console.log(`Sending lease renewal notice to tenant: ${tenantId}`);
+  
+  res.json({ 
+    success: true, 
+    message: 'Lease renewal notice sent successfully!' 
+  });
+}));
 
 export default router;

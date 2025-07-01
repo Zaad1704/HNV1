@@ -305,7 +305,7 @@ const OverviewPage = () => {
             emptyText={t('dashboard.no_overdue_rent')}
             linkTo="/dashboard/tenants?filter=late"
             onActionClick={handleSendReminder}
-            isActionLoading={reminderMutation.isLoading}
+            isActionLoading={reminderMutation.isPending}
             loadingItemId={remindingTenantId}
           />
         </motion.div>

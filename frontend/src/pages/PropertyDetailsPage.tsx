@@ -1,45 +1,18 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Building2, MapPin, Users, DollarSign, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit } from 'lucide-react';
 
-interface Tenant {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  unit: string;
-  rentAmount: number;
-  leaseStartDate: string;
-  leaseEndDate: string;
-  status: string;
-}
-
-interface Property {
-  _id: string;
-  name: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    formattedAddress: string;
-  };
-  numberOfUnits: number;
-  imageUrl?: string;
-  tenants: Tenant[];
-}
-
-const fetchPropertyDetails = async (propertyId: string): Promise<Property> => {
-  const { data } = await apiClient.get(`/properties/${propertyId}`);
+const fetchPropertyDetails = async (propertyId: string) => {
+  const { data } = await apiClient.get(`/api/properties/${propertyId}`);
   return data.data;
 };
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
-
+  
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', propertyId],
     queryFn: () => fetchPropertyDetails(propertyId!),
@@ -58,9 +31,15 @@ const PropertyDetailsPage = () => {
   if (error || !property) {
     return (
       <div className="text-center py-16">
-        <Building2 size={48} className="mx-auto text-text-muted mb-4" />
-        <h3 className="text-xl font-semibold text-text-primary mb-2">Property Not Found</h3>
-        <p className="text-text-secondary">The property you're looking for doesn't exist.</p>
+        <h3 className="text-xl font-bold text-text-primary mb-2">Property Not Found</h3>
+        <p className="text-text-secondary mb-4">The property you're looking for doesn't exist.</p>
+        <Link
+          to="/dashboard/properties"
+          className="btn-gradient px-6 py-3 rounded-2xl font-semibold inline-flex items-center gap-2"
+        >
+          <ArrowLeft size={20} />
+          Back to Properties
+        </Link>
       </div>
     );
   }
@@ -71,103 +50,129 @@ const PropertyDetailsPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      {/* Property Header */}
-      <div className="app-surface rounded-3xl p-8 border border-app-border">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-text-primary mb-4">{property.name}</h1>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <MapPin size={20} className="text-text-muted" />
-                <span className="text-text-secondary">
-                  {property.address.formattedAddress}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Building2 size={20} className="text-text-muted" />
-                <span className="text-text-secondary">
-                  {property.numberOfUnits} {property.numberOfUnits === 1 ? 'Unit' : 'Units'}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Users size={20} className="text-text-muted" />
-                <span className="text-text-secondary">
-                  {property.tenants?.length || 0} Active Tenants
-                </span>
-              </div>
-            </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/dashboard/properties"
+            className="p-2 rounded-xl hover:bg-app-bg transition-colors"
+          >
+            <ArrowLeft size={24} />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">{property.name}</h1>
+            <p className="text-text-secondary">Property Details</p>
           </div>
-          
-          {property.imageUrl && (
-            <div className="w-full lg:w-80 h-64 rounded-2xl overflow-hidden">
-              <img
-                src={property.imageUrl}
-                alt={property.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
         </div>
+        <button className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold">
+          <Edit size={20} />
+          Edit Property
+        </button>
       </div>
 
-      {/* Tenants List */}
-      <div className="app-surface rounded-3xl p-8 border border-app-border">
-        <h2 className="text-2xl font-semibold text-text-primary mb-6">Tenants</h2>
-        
-        {property.tenants && property.tenants.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {property.tenants.map((tenant: Tenant) => (
-              <div key={tenant._id} className="bg-app-bg rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
-                    {tenant.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-text-primary">{tenant.name}</h3>
-                    <p className="text-sm text-text-secondary">Unit {tenant.unit}</p>
-                  </div>
+      {/* Property Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Info */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Property Image */}
+          <div className="app-surface rounded-3xl overflow-hidden border border-app-border">
+            <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-orange relative">
+              {property.imageUrl ? (
+                <img
+                  src={property.imageUrl}
+                  alt={property.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Users size={48} className="text-white/80" />
                 </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <DollarSign size={14} className="text-text-muted" />
-                    <span className="text-text-secondary">
-                      ${tenant.rentAmount?.toLocaleString()}/month
-                    </span>
-                  </div>
-                  
-                  {tenant.leaseEndDate && (
-                    <div className="flex items-center gap-2">
-                      <Calendar size={14} className="text-text-muted" />
-                      <span className="text-text-secondary">
-                        Lease ends: {new Date(tenant.leaseEndDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="mt-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      tenant.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {tenant.status}
-                    </span>
-                  </div>
+              )}
+              <div className="absolute top-4 right-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  property.status === 'Active' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {property.status}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="app-surface rounded-3xl p-8 border border-app-border">
+            <h2 className="text-xl font-bold text-text-primary mb-4">Description</h2>
+            <p className="text-text-secondary">
+              {property.description || 'No description available for this property.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Quick Stats */}
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="text-lg font-bold text-text-primary mb-4">Property Details</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <MapPin size={16} className="text-text-muted" />
+                <div>
+                  <p className="text-sm text-text-secondary">Address</p>
+                  <p className="font-medium text-text-primary">
+                    {property.address?.formattedAddress || 'Address not available'}
+                  </p>
                 </div>
               </div>
-            ))}
+              
+              <div className="flex items-center gap-3">
+                <Users size={16} className="text-text-muted" />
+                <div>
+                  <p className="text-sm text-text-secondary">Units</p>
+                  <p className="font-medium text-text-primary">
+                    {property.numberOfUnits} {property.numberOfUnits === 1 ? 'Unit' : 'Units'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DollarSign size={16} className="text-text-muted" />
+                <div>
+                  <p className="text-sm text-text-secondary">Property Type</p>
+                  <p className="font-medium text-text-primary">
+                    {property.propertyType || 'Not specified'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Calendar size={16} className="text-text-muted" />
+                <div>
+                  <p className="text-sm text-text-secondary">Created</p>
+                  <p className="font-medium text-text-primary">
+                    {new Date(property.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <Users size={48} className="mx-auto text-text-muted mb-4" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">No Tenants</h3>
-            <p className="text-text-secondary">This property doesn't have any tenants yet.</p>
+
+          {/* Actions */}
+          <div className="app-surface rounded-3xl p-6 border border-app-border">
+            <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors">
+                View Tenants
+              </button>
+              <button className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors">
+                Add Tenant
+              </button>
+              <button className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors">
+                View Payments
+              </button>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );

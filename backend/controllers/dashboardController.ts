@@ -54,7 +54,14 @@ export const getLateTenants = asyncHandler(async (req: Request, res: Response) =
     }
     const { organizationId } = req.user;
     
-    const lateTenants = await Tenant.find({ organizationId, status: 'Late' })
+    const lateTenants = await Tenant.find({ 
+        organizationId, 
+        $or: [
+            { status: 'Late' },
+            { status: 'Overdue' },
+            { rentStatus: 'overdue' }
+        ]
+    })
         .populate('propertyId', 'name unit') 
         .select('name email unit propertyId') 
         .limit(5); 
