@@ -33,34 +33,36 @@ const GlobalLanguageSwitcher = () => {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full right-0 mt-2 w-64 bg-app-surface border border-app-border rounded-xl shadow-app-lg z-50 max-h-80 overflow-y-auto">
+          <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-96 overflow-y-auto">
             <div className="p-2">
-              <div className="text-xs font-semibold text-text-muted px-3 py-2 uppercase tracking-wide">
-                {t('common.select_language')}
+              <div className="text-xs font-semibold text-gray-500 px-3 py-2 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
+                Select Language
               </div>
-              {languages.map((language) => (
-                <button
-                  key={language.code}
-                  onClick={() => {
-                    setLang(language.code);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                    lang === language.code
-                      ? 'bg-brand-blue/10 text-brand-blue'
-                      : 'hover:bg-app-bg text-text-primary'
-                  }`}
-                >
-                  <span className="text-lg">{language.flag}</span>
-                  <div className="flex-1">
-                    <div className="font-medium">{language.nativeName}</div>
-                    <div className="text-xs text-text-muted">{language.name}</div>
-                  </div>
-                  {lang === language.code && (
-                    <div className="w-2 h-2 bg-brand-blue rounded-full" />
-                  )}
-                </button>
-              ))}
+              <div className="py-1">
+                {languages.map((language) => (
+                  <button
+                    key={language.code}
+                    onClick={() => {
+                      setLang(language.code);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                      lang === language.code
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <span className="text-xl">{language.flag}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{language.nativeName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{language.name}</div>
+                    </div>
+                    {lang === language.code && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </>

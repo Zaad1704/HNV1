@@ -56,7 +56,26 @@ app.get('/api/test', (req, res) => {
 
 // Auth routes
 app.post('/api/auth/login', (req, res) => {
-  res.json({ success: false, message: 'Login endpoint - under construction' });
+  const { email, password } = req.body;
+  
+  // Demo login - accept any email/password
+  if (email && password) {
+    res.json({ 
+      success: true, 
+      message: 'Login successful',
+      data: {
+        user: {
+          id: '1',
+          name: 'Demo User',
+          email: email,
+          role: 'Landlord'
+        },
+        token: 'demo-jwt-token-' + Date.now()
+      }
+    });
+  } else {
+    res.status(400).json({ success: false, message: 'Email and password required' });
+  }
 });
 
 app.post('/api/auth/register', (req, res) => {

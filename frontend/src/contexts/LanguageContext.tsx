@@ -99,10 +99,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setDetectedLang(browserDetected);
     
     try {
-      // Try IP-based detection with multiple services
+      // Try IP-based detection with free services only
       const ipServices = [
         'https://ipapi.co/json/',
-        'https://api.ipgeolocation.io/ipgeo?apiKey=free',
         'https://ipinfo.io/json'
       ];
       
