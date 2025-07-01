@@ -15,8 +15,8 @@ import ContactSection from '../components/landing/ContactSection';
 import InstallAppSection from '../components/landing/InstallAppSection';
 import { useTranslation } from 'react-i18next';
 
-const fetchLandingStats = async () => {
-  const { data } = await apiClient.get('/dashboard/landing-stats');
+const fetchLandingData = async () => {
+  const { data } = await apiClient.get('/public/landing-data');
   return data.data;
 };
 
@@ -25,11 +25,14 @@ const LandingPage = () => {
   const { t } = useTranslation();
   const { data: settings } = useSiteSettings();
   
-  const { data: stats } = useQuery({
-    queryKey: ['landingStats'],
-    queryFn: fetchLandingStats,
+  const { data: landingData } = useQuery({
+    queryKey: ['landingData'],
+    queryFn: fetchLandingData,
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
+
+  const stats = landingData?.stats;
+  const siteSettings = landingData?.siteSettings;
 
   useEffect(() => {
     // Handle hash navigation from URL
@@ -97,21 +100,21 @@ const LandingPage = () => {
       </section>
       
       {/* Banner Section - Editable by Super Admin */}
-      {settings?.bannerSection?.imageUrl && (
+      {siteSettings?.bannerSection?.imageUrl && (
         <section id="banner" className="py-8 md:py-12">
           <div className="container mx-auto px-4">
             <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl">
               <img
-                src={settings.bannerSection.imageUrl}
-                alt={settings.bannerSection.altText || 'Platform Banner'}
+                src={siteSettings.bannerSection.imageUrl}
+                alt={siteSettings.bannerSection.altText || 'Platform Banner'
                 className="w-full h-32 md:h-48 lg:h-64 object-contain bg-gray-100"
               />
-              {settings.bannerSection.overlayText && (
+              {siteSettings.bannerSection.overlayText && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white px-4">
-                    <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">{settings.bannerSection.overlayText}</h2>
-                    {settings.bannerSection.overlaySubtext && (
-                      <p className="text-sm md:text-xl text-white/90">{settings.bannerSection.overlaySubtext}</p>
+                    <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">{siteSettings.bannerSection.overlayText}</h2>
+                    {siteSettings.bannerSection.overlaySubtext && (
+                      <p className="text-sm md:text-xl text-white/90">{siteSettings.bannerSection.overlaySubtext}</p>
                     )}
                   </div>
                 </div>

@@ -114,4 +114,8 @@ router.put('/users/:userId/plan', (0, express_async_handler_1.default)(async (re
     res.json({ success: true, data: subscription });
 }));
 router.get('/all-maintenance-requests', (0, express_async_handler_1.default)(superAdminController_1.getAllMaintenanceRequests));
+router.put('/site-content/:section', (0, express_async_handler_1.default)(superAdminController_1.updateSiteContent));
+router.post('/plans-enhanced', (0, express_async_handler_1.default)(superAdminController_1.createPlan));
+router.put('/plans-enhanced/:planId', (0, express_async_handler_1.default)(superAdminController_1.updatePlan));
+router.delete('/plans-enhanced/:planId', (0, express_async_handler_1.default)(superAdminController_1.deletePlan));
 exports.default = router;

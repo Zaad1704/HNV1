@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPlanDistribution = exports.getPlatformGrowth = exports.getAllMaintenanceRequests = exports.getGlobalBilling = exports.getModerators = exports.updateUserByAdmin = exports.toggleSelfDeletion = exports.updateOrganizationSubscription = exports.revokeLifetimeAccess = exports.grantLifetimeAccess = exports.updateSubscriptionStatus = exports.getAllUsers = exports.getAllOrganizations = exports.getDashboardStats = exports.deleteOrganization = void 0;
+exports.deletePlan = exports.updatePlan = exports.createPlan = exports.updateSiteContent = exports.getPlanDistribution = exports.getPlatformGrowth = exports.getAllMaintenanceRequests = exports.getGlobalBilling = exports.getModerators = exports.updateUserByAdmin = exports.toggleSelfDeletion = exports.updateOrganizationSubscription = exports.revokeLifetimeAccess = exports.grantLifetimeAccess = exports.updateSubscriptionStatus = exports.getAllUsers = exports.getAllOrganizations = exports.getDashboardStats = exports.deleteOrganization = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const User_1 = __importDefault(require("../models/User"));
 const Organization_1 = __importDefault(require("../models/Organization"));
@@ -12,6 +12,7 @@ const MaintenanceRequest_1 = __importDefault(require("../models/MaintenanceReque
 const Plan_1 = __importDefault(require("../models/Plan"));
 const date_fns_1 = require("date-fns");
 const mongoose_1 = require("mongoose");
+const masterDataService_1 = __importDefault(require("../services/masterDataService"));
 exports.deleteOrganization = (0, express_async_handler_1.default)(async (req, res) => {
     const { orgId } = req.params;
     const organization = await Organization_1.default.findById(orgId);
@@ -25,10 +26,8 @@ exports.deleteOrganization = (0, express_async_handler_1.default)(async (req, re
     res.status(200).json({ success: true, message: `Organization '${organization.name}' and all associated data has been deleted.` });
 });
 exports.getDashboardStats = (0, express_async_handler_1.default)(async (req, res, next) => {
-    const totalUsers = await User_1.default.countDocuments();
-    const totalOrgs = await Organization_1.default.countDocuments();
-    const activeSubscriptions = await Subscription_1.default.countDocuments({ status: 'active' });
-    res.status(200).json({ success: true, data: { totalUsers, totalOrgs, activeSubscriptions } });
+    const systemOverview = await masterDataService_1.default.getSystemOverview();
+    res.status(200).json({ success: true, data: systemOverview });
 });
 exports.getAllOrganizations = (0, express_async_handler_1.default)(async (req, res, next) => {
     const organizations = await Organization_1.default.find({})
@@ -179,13 +178,31 @@ exports.getPlatformGrowth = (0, express_async_handler_1.default)(async (req, res
     res.status(200).json({ success: true, data: mockData });
 });
 exports.getPlanDistribution = (0, express_async_handler_1.default)(async (req, res, next) => {
-    const plans = await Plan_1.default.find({ isPublic: true }).select('name');
-    const mockData = plans.map((plan, index) => ({
-        name: plan.name,
-        value: (index + 1) * 10
-    }));
-    if (mockData.length === 0) {
-        mockData.push({ name: 'Free Trial', value: 30 }, { name: 'Landlord Plan', value: 50 }, { name: 'Agent Plan', value: 20 });
-    }
-    res.status(200).json({ success: true, data: mockData });
+    const subscriptions = await Subscription_1.default.find({ status: 'active' }).populate('planId');
+    const planCounts = subscriptions.reduce((acc, sub) => {
+        const planName = sub.planId?.name || 'Unknown';
+        acc[planName] = (acc[planName] || 0) + 1;
+        return acc;
+    }, {});
+    const data = Object.entries(planCounts).map(([name, value]) => ({ name, value }));
+    res.status(200).json({ success: true, data });
+});
+exports.updateSiteContent = (0, express_async_handler_1.default)(async (req, res) => {
+    const { section } = req.params;
+    const updatedSettings = await masterDataService_1.default.updateSiteContent(section, req.body);
+    res.status(200).json({ success: true, data: updatedSettings });
+});
+exports.createPlan = (0, express_async_handler_1.default)(async (req, res) => {
+    const plan = await masterDataService_1.default.createPlan(req.body);
+    res.status(201).json({ success: true, data: plan });
+});
+exports.updatePlan = (0, express_async_handler_1.default)(async (req, res) => {
+    const { planId } = req.params;
+    const plan = await masterDataService_1.default.updatePlan(planId, req.body);
+    res.status(200).json({ success: true, data: plan });
+});
+exports.deletePlan = (0, express_async_handler_1.default)(async (req, res) => {
+    const { planId } = req.params;
+    await masterDataService_1.default.deletePlan(planId);
+    res.status(200).json({ success: true, message: 'Plan deleted successfully' });
 });

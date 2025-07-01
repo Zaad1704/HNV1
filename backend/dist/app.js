@@ -52,6 +52,7 @@ const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
 const integrationRoutes_1 = __importDefault(require("./routes/integrationRoutes"));
 const subscriptionRoutes_1 = __importDefault(require("./routes/subscriptionRoutes"));
 const subscriptionMiddleware_1 = require("./middleware/subscriptionMiddleware");
+const masterDataService_1 = __importDefault(require("./services/masterDataService"));
 const authMiddleware_1 = require("./middleware/authMiddleware");
 const passport_1 = __importDefault(require("passport"));
 require("./config/passport-setup");
@@ -177,3 +178,12 @@ app.use('*', (req, res) => {
     });
 });
 app.use(errorHandler_1.errorHandler);
+setTimeout(async () => {
+    try {
+        await masterDataService_1.default.initializeSystemData();
+        console.log('✅ System data initialized');
+    }
+    catch (error) {
+        console.error('❌ Failed to initialize system data:', error);
+    }
+}, 5000);

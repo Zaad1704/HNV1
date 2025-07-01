@@ -18,7 +18,7 @@ interface Plan {
 }
 
 const fetchPlans = async (): Promise<Plan[]> => {
-  const { data } = await apiClient.get('/plans/public');
+  const { data } = await apiClient.get('/public/plans/public');
   return data.data;
 };
 
@@ -41,35 +41,11 @@ const PricingSection = () => {
     { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' }
   ];
 
-  const defaultPlans: Plan[] = [
-    {
-      _id: '1',
-      name: 'Starter',
-      price: 29,
-      duration: 'monthly',
-      features: ['Up to 5 properties', 'Basic tenant management', 'Email support'],
-      isPublic: true
-    },
-    {
-      _id: '2',
-      name: 'Professional',
-      price: 79,
-      duration: 'monthly',
-      features: ['Up to 25 properties', 'Advanced analytics', 'Priority support', 'Custom branding'],
-      isPopular: true,
-      isPublic: true
-    },
-    {
-      _id: '3',
-      name: 'Enterprise',
-      price: 199,
-      duration: 'monthly',
-      features: ['Unlimited properties', 'White-label solution', '24/7 phone support', 'Custom integrations'],
-      isPublic: true
-    },
-  ];
-
-  const pricingPlans = plans.length > 0 ? plans : defaultPlans;
+  // Convert price from cents to dollars for display
+  const pricingPlans = plans.map(plan => ({
+    ...plan,
+    price: plan.price / 100 // Convert cents to dollars
+  }));
 
   if (isLoading) {
     return (

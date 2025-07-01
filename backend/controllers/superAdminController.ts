@@ -8,6 +8,7 @@ import MaintenanceRequest from '../models/MaintenanceRequest';
 import Plan from '../models/Plan';
 import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
 import { Types } from 'mongoose';
+import masterDataService from '../services/masterDataService';
 
 
 export const deleteOrganization = asyncHandler(async (req: Request, res: Response) => {
@@ -32,10 +33,8 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
 
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const totalUsers = await User.countDocuments();
-    const totalOrgs = await Organization.countDocuments();
-    const activeSubscriptions = await Subscription.countDocuments({ status: 'active' });
-    res.status(200).json({ success: true, data: { totalUsers, totalOrgs, activeSubscriptions } });
+    const systemOverview = await masterDataService.getSystemOverview();
+    res.status(200).json({ success: true, data: systemOverview });
 });
 
 export const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -218,19 +217,37 @@ export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response
 });
 
 export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const plans = await Plan.find({ isPublic: true }).select('name');
-    const mockData = plans.map((plan, index) => ({
-        name: plan.name,
-        value: (index + 1) * 10 
-    }));
+    const subscriptions = await Subscription.find({ status: 'active' }).populate('planId');
+    const planCounts = subscriptions.reduce((acc: any, sub: any) => {
+        const planName = sub.planId?.name || 'Unknown';
+        acc[planName] = (acc[planName] || 0) + 1;
+        return acc;
+    }, {});
+    
+    const data = Object.entries(planCounts).map(([name, value]) => ({ name, value }));
+    res.status(200).json({ success: true, data });
+});
 
-    if (mockData.length === 0) {
-        mockData.push(
-            { name: 'Free Trial', value: 30 },
-            { name: 'Landlord Plan', value: 50 },
-            { name: 'Agent Plan', value: 20 }
-        );
-    }
+// New endpoints for content management
+export const updateSiteContent = asyncHandler(async (req: Request, res: Response) => {
+    const { section } = req.params;
+    const updatedSettings = await masterDataService.updateSiteContent(section, req.body);
+    res.status(200).json({ success: true, data: updatedSettings });
+});
 
-    res.status(200).json({ success: true, data: mockData });
+export const createPlan = asyncHandler(async (req: Request, res: Response) => {
+    const plan = await masterDataService.createPlan(req.body);
+    res.status(201).json({ success: true, data: plan });
+});
+
+export const updatePlan = asyncHandler(async (req: Request, res: Response) => {
+    const { planId } = req.params;
+    const plan = await masterDataService.updatePlan(planId, req.body);
+    res.status(200).json({ success: true, data: plan });
+});
+
+export const deletePlan = asyncHandler(async (req: Request, res: Response) => {
+    const { planId } = req.params;
+    await masterDataService.deletePlan(planId);
+    res.status(200).json({ success: true, message: 'Plan deleted successfully' });
 });

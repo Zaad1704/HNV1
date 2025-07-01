@@ -1,31 +1,43 @@
 import { Router } from 'express';
+import asyncHandler from 'express-async-handler';
+import masterDataService from '../services/masterDataService';
 
 const router = Router();
 
-// Landing page stats
-router.get('/landing-stats', (req, res) => {
+// Public landing page data
+router.get('/landing-data', asyncHandler(async (req, res) => {
+  const landingData = await masterDataService.getLandingPageData();
   res.json({
     success: true,
-    data: {
-      totalProperties: 1250,
-      totalTenants: 3400,
-      totalUsers: 850,
-      satisfactionRate: 98
-    }
+    data: landingData
   });
-});
+}));
 
-// Public data endpoint
-router.get('/public', (req, res) => {
+// Public site settings
+router.get('/site-settings', asyncHandler(async (req, res) => {
+  const landingData = await masterDataService.getLandingPageData();
   res.json({
     success: true,
-    data: {
-      appName: 'HNV Property Management',
-      version: '1.0.0',
-      features: ['Property Management', 'Tenant Portal', 'Payment Processing'],
-      status: 'operational'
-    }
+    data: landingData.siteSettings
   });
-});
+}));
+
+// Public plans
+router.get('/plans/public', asyncHandler(async (req, res) => {
+  const landingData = await masterDataService.getLandingPageData();
+  res.json({
+    success: true,
+    data: landingData.plans
+  });
+}));
+
+// Public stats for landing page
+router.get('/stats/public', asyncHandler(async (req, res) => {
+  const landingData = await masterDataService.getLandingPageData();
+  res.json({
+    success: true,
+    data: landingData.stats
+  });
+}));
 
 export default router;

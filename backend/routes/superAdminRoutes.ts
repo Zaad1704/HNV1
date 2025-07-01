@@ -17,7 +17,11 @@ import {
     getPlanDistribution,
     updateOrganizationSubscription, 
     toggleSelfDeletion,
-    deleteOrganization
+    deleteOrganization,
+    updateSiteContent,
+    createPlan,
+    updatePlan,
+    deletePlan
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
@@ -165,5 +169,13 @@ router.put('/users/:userId/plan', asyncHandler(async (req: Request, res: Respons
 }));
 
 router.get('/all-maintenance-requests', asyncHandler(getAllMaintenanceRequests));
+
+// Content management routes
+router.put('/site-content/:section', asyncHandler(updateSiteContent));
+
+// Enhanced plan management
+router.post('/plans-enhanced', asyncHandler(createPlan));
+router.put('/plans-enhanced/:planId', asyncHandler(updatePlan));
+router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
 
 export default router;

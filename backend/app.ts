@@ -52,6 +52,7 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
+import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -216,6 +217,16 @@ app.use('*', (req, res) => {
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
+
+// Initialize system data
+setTimeout(async () => {
+  try {
+    await masterDataService.initializeSystemData();
+    console.log('✅ System data initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize system data:', error);
+  }
+}, 5000); // Wait 5 seconds for DB connection
 
 // Export the configured app
 export { app };
