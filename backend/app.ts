@@ -47,6 +47,7 @@ import planRoutes from './routes/planRoutes';
 import errorRoutes from './routes/errorRoutes';
 import publicRoutes from './routes/publicRoutes';
 import exportRoutes from './routes/exportRoutes';
+import rentCollectionRoutes from './routes/rentCollectionRoutes';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
 import './config/passport-setup'; // Initialize passport strategies
@@ -160,6 +161,7 @@ app.use('/api/translation', translationRoutes, routeErrorHandler);
 app.use('/api/plans', planRoutes, routeErrorHandler);
 app.use('/api/errors', errorRoutes, routeErrorHandler);
 app.use('/api/export', exportRoutes, routeErrorHandler);
+app.use('/api/rent-collection', rentCollectionRoutes, routeErrorHandler);
 app.use('/api', publicRoutes, routeErrorHandler);
 
 // Protected routes (require authentication)

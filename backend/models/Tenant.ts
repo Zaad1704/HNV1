@@ -34,6 +34,9 @@ export interface ITenant extends Document {
     status: 'Active' | 'Inactive' | 'Late';
     leaseEndDate?: Date;
     rentAmount?: number;
+    rentDueDay?: number; // Day of month rent is due
+    unitNumber?: string; // Alternative to unit
+    preferredContactMethod?: 'phone' | 'email' | 'sms';
     
     // --- NEW FIELDS FOR PRIMARY TENANT ---
     imageUrl?: string; // Tenant's own photo
@@ -63,6 +66,9 @@ const TenantSchema: Schema<ITenant> = new Schema({
     status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
     leaseEndDate: { type: Date },
     rentAmount: { type: Number, default: 0 },
+    rentDueDay: { type: Number, default: 1, min: 1, max: 31 },
+    unitNumber: { type: String },
+    preferredContactMethod: { type: String, enum: ['phone', 'email', 'sms'], default: 'phone' },
     
     // --- ADDING NEW FIELDS TO THE SCHEMA ---
     imageUrl: { type: String },
