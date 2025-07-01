@@ -6,6 +6,10 @@ import apiClient from './api/client';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
+import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -90,9 +94,13 @@ function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <OfflineIndicator />
-      <Suspense fallback={<FullScreenLoader />}>
+    <ThemeProvider>
+      <LanguageProvider>
+        <CurrencyProvider>
+          <ErrorBoundary>
+            <OfflineIndicator />
+            <PWAInstallPrompt />
+            <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
@@ -160,9 +168,12 @@ function App() {
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </ErrorBoundary>
+            </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </CurrencyProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 
