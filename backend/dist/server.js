@@ -4,6 +4,7 @@ const { createServer } = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const bcrypt = require('bcrypt');
 
 // Load environment variables
 dotenv.config();
@@ -147,8 +148,20 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
-    if (user.password !== password) {
+    // Check password - support both hashed and plain text
+    let passwordMatch = false;
+    try {
+      // Try bcrypt comparison first (for hashed passwords)
+      passwordMatch = await bcrypt.compare(password, user.password);
+    } catch (error) {
+      // If bcrypt fails, try plain text comparison
+      passwordMatch = user.password === password;
+    }
+    
+    if (!passwordMatch) {
       console.log(`❌ Wrong password for: ${email}`);
+      console.log(`   Stored password: ${user.password.substring(0, 10)}...`);
+      console.log(`   Provided password: ${password.substring(0, 10)}...`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
@@ -317,6 +330,36 @@ app.get('/api/dashboard/landing-stats', (req, res) => {
       overduePayments: 8
     }
   });
+});
+
+// Debug endpoint to check user data (remove in production)
+app.get('/api/debug/user/:email', async (req, res) => {
+  try {
+    if (!isDBConnected) {
+      return res.status(503).json({ success: false, message: 'Database not available' });
+    }
+    
+    const user = await User.findOne({ email: req.params.email.toLowerCase() });
+    if (!user) {
+      return res.json({ success: false, message: 'User not found' });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        passwordLength: user.password ? user.password.length : 0,
+        passwordStart: user.password ? user.password.substring(0, 10) : 'N/A',
+        isHashed: user.password && user.password.startsWith('$2'),
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // Additional endpoints
