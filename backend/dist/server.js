@@ -80,6 +80,18 @@ app.get('/api/landing-stats', (req, res) => {
   });
 });
 
+// Site settings
+app.get('/api/site-settings/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      siteName: 'HNV Property Management',
+      logo: '/logo-min.png',
+      theme: 'default'
+    }
+  });
+});
+
 // API status endpoint
 app.get('/api/status', (req, res) => {
   res.json({

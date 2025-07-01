@@ -18,8 +18,8 @@ const getApiUrl = () => {
     return devUrl;
   }
   
-  // Production fallback
-  const prodUrl = 'https://hnv.onrender.com/api';
+  // Production fallback - use correct Render URL
+  const prodUrl = 'https://hnv-backend.onrender.com/api';
   console.log('Using production API URL:', prodUrl);
   return prodUrl;
 };
