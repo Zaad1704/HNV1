@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5001;
 // Basic middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['https://hnv-1-frontend.onrender.com', 'https://www.hnvpm.com', 'http://localhost:3000'],
+  origin: ['https://hnv-1-frontend.onrender.com', 'https://www.hnvpm.com', 'https://hnvpm.com', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -240,7 +240,7 @@ app.get('/api/public', (req, res) => {
   });
 });
 
-// Site settings
+// Site settings - multiple endpoints
 app.get('/api/site-settings/public', (req, res) => {
   res.json({
     success: true,
@@ -251,6 +251,21 @@ app.get('/api/site-settings/public', (req, res) => {
       companyName: 'HNV Solutions',
       tagline: 'Modern Property Management Platform',
       supportEmail: 'support@hnvpm.com'
+    }
+  });
+});
+
+app.get('/api/site-settings', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      siteName: 'HNV Property Management',
+      logo: '/logo-min.png',
+      theme: 'default',
+      companyName: 'HNV Solutions',
+      tagline: 'Modern Property Management Platform',
+      supportEmail: 'support@hnvpm.com',
+      features: ['property-management', 'tenant-portal', 'payments']
     }
   });
 });

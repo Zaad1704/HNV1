@@ -4,18 +4,19 @@ import { rateLimiter } from '../utils/security';
 
 // Get the API URL with proper detection
 const getApiUrl = () => {
-  // Force production URL when not on localhost
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    const prodUrl = 'https://hnv.onrender.com/api';
-    console.log('🌐 Production mode - Using API URL:', prodUrl);
-    return prodUrl;
-  }
-  
-  // Check environment variable
+  // Check environment variable first
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl) {
     console.log('🔧 Using API URL from environment:', viteApiUrl);
     return viteApiUrl;
+  }
+  
+  // Force production URL when not on localhost
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const prodUrl = 'https://hnv.onrender.com/api';
+    console.log('🌐 Production mode - Using API URL:', prodUrl);
+    console.log('🌐 Current hostname:', window.location.hostname);
+    return prodUrl;
   }
   
   // Development fallback
