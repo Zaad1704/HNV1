@@ -37,7 +37,7 @@ const ContactSection = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/contact/submit', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/contact/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

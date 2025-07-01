@@ -16,10 +16,16 @@ const LeadershipSection = () => {
   const { data: landingData } = useQuery({
     queryKey: ['landingData'],
     queryFn: async () => {
-      const response = await apiClient.get('/public/landing-data');
-      return response.data.data;
+      try {
+        const response = await apiClient.get('/api/public/landing-data');
+        return response.data.data;
+      } catch (error) {
+        return null;
+      }
     },
-    staleTime: 5 * 60 * 1000
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false
   });
 
   const leadershipSection = landingData?.siteSettings?.leadershipSection;

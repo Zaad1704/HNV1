@@ -18,15 +18,22 @@ interface Plan {
 }
 
 const fetchPlans = async (): Promise<Plan[]> => {
-  const { data } = await apiClient.get('/public/plans/public');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/public/plans/public');
+    return data.data;
+  } catch (error) {
+    console.warn('Plans API failed, using defaults');
+    return [];
+  }
 };
 
 const PricingSection = () => {
   const { currencyCode } = useCurrency();
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['publicPlans'],
-    queryFn: fetchPlans
+    queryFn: fetchPlans,
+    retry: false,
+    refetchOnWindowFocus: false
   });
   const { data: exchangeRates = {}, isLoading: ratesLoading } = useCurrencyRates();
 

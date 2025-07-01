@@ -17,8 +17,13 @@ import InstallAppSection from '../components/landing/InstallAppSection';
 import { useTranslation } from 'react-i18next';
 
 const fetchLandingData = async () => {
-  const { data } = await apiClient.get('/public/landing-data');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/public/landing-data');
+    return data.data;
+  } catch (error) {
+    console.warn('Landing data API failed, using defaults');
+    return null;
+  }
 };
 
 const LandingPage = () => {
@@ -29,7 +34,9 @@ const LandingPage = () => {
   const { data: landingData } = useQuery({
     queryKey: ['landingData'],
     queryFn: fetchLandingData,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false
   });
 
   const stats = landingData?.stats;
