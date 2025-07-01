@@ -19,12 +19,6 @@ router.put('/profile', protect, updateProfile as any);
 
 // Google OAuth
 router.get('/google', (req, res, next) => {
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-        return res.status(503).json({
-            success: false,
-            message: 'Google OAuth not configured'
-        });
-    }
     const role = req.query.role || 'Landlord';
     const state = Buffer.from(JSON.stringify({ role })).toString('base64');
     const authenticator = passport.authenticate('google', {
