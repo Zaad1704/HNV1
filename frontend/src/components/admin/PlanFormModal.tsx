@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+
+interface Plan {
+  _id: string;
+  name: string;
+  price: number;
+  duration: string;
+  features: string;
+  limits: {
+    maxProperties: number;
+    maxTenants: number;
+    maxAgents: number;
+  };
+  isPublic: boolean;
+}
 
 interface PlanFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (plan: any) => void;
-  plan?: any;
+  plan?: Plan | null;
 }
 
 const PlanFormModal: React.FC<PlanFormModalProps> = ({ isOpen, onClose, onSave, plan }) => {
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
+    price: 0,
     duration: 'monthly',
     features: '',
     limits: {
@@ -26,188 +39,183 @@ const PlanFormModal: React.FC<PlanFormModalProps> = ({ isOpen, onClose, onSave, 
   useEffect(() => {
     if (plan) {
       setFormData({
-        name: plan.name || '',
-        price: plan.price?.toString() || '',
-        duration: plan.duration || 'monthly',
-        features: plan.features || '',
-        limits: plan.limits || {
+        name: plan.name,
+        price: plan.price,
+        duration: plan.duration,
+        features: plan.features,
+        limits: plan.limits,
+        isPublic: plan.isPublic
+      });
+    } else {
+      setFormData({
+        name: '',
+        price: 0,
+        duration: 'monthly',
+        features: '',
+        limits: {
           maxProperties: 10,
           maxTenants: 50,
           maxAgents: 5
         },
-        isPublic: plan.isPublic ?? true
+        isPublic: true
       });
     }
   }, [plan]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleLimitChange = (field: string, value: number) => {
-    setFormData(prev => ({
-      ...prev,
-      limits: { ...prev.limits, [field]: value }
-    }));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      price: parseFloat(formData.price)
-    });
-    onClose();
+    onSave(formData);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="app-surface rounded-3xl shadow-app-xl w-full max-w-lg border border-app-border"
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            {plan ? 'Edit Plan' : 'Create Plan'}
+          </h3>
+          <button 
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            <div className="flex justify-between items-center p-6 border-b border-app-border">
-              <h2 className="text-xl font-bold text-text-primary">
-                {plan ? 'Edit Plan' : 'Create Plan'}
-              </h2>
-              <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:text-text-primary">
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Plan Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">Price</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    required
-                    step="0.01"
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">Duration</label>
-                  <select
-                    name="duration"
-                    value={formData.duration}
-                    onChange={handleChange}
-                    className="w-full"
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <option value="2-years">2 Years</option>
-                    <option value="3-years">3 Years</option>
-                    <option value="5-years">5 Years</option>
-                    <option value="lifetime">Lifetime</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Features</label>
-                <textarea
-                  name="features"
-                  value={formData.features}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Limits</label>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs text-text-muted mb-1">Properties</label>
-                    <input
-                      type="number"
-                      value={formData.limits.maxProperties}
-                      onChange={(e) => handleLimitChange('maxProperties', parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-text-muted mb-1">Tenants</label>
-                    <input
-                      type="number"
-                      value={formData.limits.maxTenants}
-                      onChange={(e) => handleLimitChange('maxTenants', parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-text-muted mb-1">Agents</label>
-                    <input
-                      type="number"
-                      value={formData.limits.maxAgents}
-                      onChange={(e) => handleLimitChange('maxAgents', parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="isPublic"
-                  checked={formData.isPublic}
-                  onChange={handleChange}
-                  className="rounded"
-                />
-                <label className="text-sm text-text-secondary">Public Plan</label>
-              </div>
-
-              <div className="flex justify-end gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2"
-                >
-                  <Save size={16} />
-                  {plan ? 'Update' : 'Create'} Plan
-                </button>
-              </div>
-            </form>
-          </motion.div>
+            <X size={20} />
+          </button>
         </div>
-      )}
-    </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Plan Name
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Price
+            </label>
+            <input
+              type="number"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Duration
+            </label>
+            <select
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Features
+            </label>
+            <textarea
+              value={formData.features}
+              onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              rows={3}
+              placeholder="Enter features separated by commas"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Max Properties
+              </label>
+              <input
+                type="number"
+                value={formData.limits.maxProperties}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  limits: { ...formData.limits, maxProperties: Number(e.target.value) }
+                })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Max Tenants
+              </label>
+              <input
+                type="number"
+                value={formData.limits.maxTenants}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  limits: { ...formData.limits, maxTenants: Number(e.target.value) }
+                })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Max Agents
+              </label>
+              <input
+                type="number"
+                value={formData.limits.maxAgents}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  limits: { ...formData.limits, maxAgents: Number(e.target.value) }
+                })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={formData.isPublic}
+              onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-900 dark:text-white">
+              Make this plan public
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {plan ? 'Update Plan' : 'Create Plan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

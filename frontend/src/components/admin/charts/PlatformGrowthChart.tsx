@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface PlatformGrowthChartProps {
   data: Array<{
@@ -10,47 +10,38 @@ interface PlatformGrowthChartProps {
 }
 
 const PlatformGrowthChart: React.FC<PlatformGrowthChartProps> = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500">
+        No growth data available
+      </div>
+    );
+  }
+
   return (
-    <div className="h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--app-border)" />
-          <XAxis 
-            dataKey="name" 
-            stroke="var(--text-secondary)"
-            fontSize={12}
-          />
-          <YAxis 
-            stroke="var(--text-secondary)"
-            fontSize={12}
-          />
-          <Tooltip 
-            contentStyle={{
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)',
-              borderRadius: '12px',
-              color: 'var(--text-primary)'
-            }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="New Users" 
-            stroke="#4A69E2" 
-            strokeWidth={3}
-            dot={{ fill: '#4A69E2', strokeWidth: 2, r: 4 }}
-            activeDot={{ r: 6, stroke: '#4A69E2', strokeWidth: 2 }}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="New Organizations" 
-            stroke="#FFA87A" 
-            strokeWidth={3}
-            dot={{ fill: '#FFA87A', strokeWidth: 2, r: 4 }}
-            activeDot={{ r: 6, stroke: '#FFA87A', strokeWidth: 2 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line 
+          type="monotone" 
+          dataKey="New Users" 
+          stroke="#3B82F6" 
+          strokeWidth={2}
+          dot={{ fill: '#3B82F6' }}
+        />
+        <Line 
+          type="monotone" 
+          dataKey="New Organizations" 
+          stroke="#10B981" 
+          strokeWidth={2}
+          dot={{ fill: '#10B981' }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 

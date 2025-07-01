@@ -20,22 +20,22 @@ interface Plan {
 }
 
 const fetchPlans = async (): Promise<Plan[]> => {
-  const { data } = await apiClient.get('/super-admin/plans');
+  const { data } = await apiClient.get('/api/super-admin/plans');
   return data.data;
 };
 
 const createPlan = async (plan: Omit<Plan, '_id'>) => {
-  const { data } = await apiClient.post('/super-admin/plans', plan);
+  const { data } = await apiClient.post('/api/super-admin/plans', plan);
   return data.data;
 };
 
 const updatePlan = async ({ id, ...plan }: { id: string } & Partial<Plan>) => {
-  const { data } = await apiClient.put(`/super-admin/plans/${id}`, plan);
+  const { data } = await apiClient.put(`/api/super-admin/plans/${id}`, plan);
   return data.data;
 };
 
 const deletePlan = async (planId: string) => {
-  await apiClient.delete(`/super-admin/plans/${planId}`);
+  await apiClient.delete(`/api/super-admin/plans/${planId}`);
 };
 
 const AdminPlansPage = () => {

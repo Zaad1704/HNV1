@@ -16,17 +16,17 @@ import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart'
 import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
 
 const fetchAdminStats = async () => {
-  const { data } = await apiClient.get('/super-admin/dashboard-stats');
+  const { data } = await apiClient.get('/api/super-admin/dashboard-stats');
   return data.data;
 };
 
 const fetchPlatformGrowth = async () => {
-  const { data } = await apiClient.get('/super-admin/platform-growth');
+  const { data } = await apiClient.get('/api/super-admin/platform-growth');
   return data.data;
 };
 
 const fetchPlanDistribution = async () => {
-  const { data } = await apiClient.get('/super-admin/plan-distribution');
+  const { data } = await apiClient.get('/api/super-admin/plan-distribution');
   return data.data;
 };
 

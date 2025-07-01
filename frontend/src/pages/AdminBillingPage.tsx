@@ -10,7 +10,7 @@ const AdminBillingPage: React.FC = () => {
     const fetchBillingInfo = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.get("/super-admin/billing");
+        const response = await apiClient.get("/api/super-admin/billing");
         setBillingInfo(response.data.data);
       } catch (err) {
         setError("Failed to fetch billing information.");
