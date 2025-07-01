@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5001;
 // Basic middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: ['https://hnv-1-frontend.onrender.com', 'https://www.hnvpm.com', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
