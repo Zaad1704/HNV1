@@ -255,6 +255,55 @@ app.get('/api/site-settings/public', (req, res) => {
   });
 });
 
+// Plans endpoint
+app.get('/api/plans/public', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      plans: [
+        {
+          id: 'starter',
+          name: 'Starter',
+          price: 0,
+          features: ['Up to 5 properties', 'Basic tenant management', 'Email support'],
+          popular: false
+        },
+        {
+          id: 'professional',
+          name: 'Professional', 
+          price: 29,
+          features: ['Up to 50 properties', 'Advanced reporting', 'Priority support', 'Mobile app'],
+          popular: true
+        },
+        {
+          id: 'enterprise',
+          name: 'Enterprise',
+          price: 99,
+          features: ['Unlimited properties', 'Custom integrations', '24/7 support', 'White-label'],
+          popular: false
+        }
+      ]
+    }
+  });
+});
+
+// Dashboard landing stats
+app.get('/api/dashboard/landing-stats', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalProperties: 1250,
+      totalTenants: 3400,
+      totalRevenue: 2500000,
+      activeUsers: 850,
+      monthlyRevenue: 125000,
+      occupancyRate: 94.2,
+      maintenanceRequests: 23,
+      overduePayments: 8
+    }
+  });
+});
+
 // Additional endpoints
 app.get('/api/config', (req, res) => {
   res.json({
@@ -279,6 +328,8 @@ app.use('/api/*', (req, res) => {
       '/api/status', 
       '/api/public',
       '/api/landing-stats',
+      '/api/dashboard/landing-stats',
+      '/api/plans/public',
       '/api/site-settings/public',
       '/api/auth/login',
       '/api/auth/register'
