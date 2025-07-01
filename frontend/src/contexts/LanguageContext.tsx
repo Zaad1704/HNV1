@@ -12,6 +12,19 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const toggleLanguages = ['en', 'es', 'fr', 'de', 'zh'];
 
+export const languages = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' }
+];
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { i18n } = useTranslation();
   const [lang, setLangState] = useState(i18n.language || 'en');
