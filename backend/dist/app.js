@@ -53,9 +53,27 @@ exports.app = app;
 app.set('trust proxy', 1);
 app.use(securityMiddleware_1.securityHeaders);
 app.use((0, compression_1.default)());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://hnv-1-frontend.onrender.com',
+    'https://hnv-property.onrender.com',
+    process.env.FRONTEND_URL
+].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use('/api/auth', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 10));
 app.use('/api', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 100));
@@ -69,15 +87,25 @@ app.use(securityMiddleware_1.requestLogger);
 app.use('/api/health', healthRoutes_1.default);
 app.use('/health', healthRoutes_1.default);
 app.use('/', healthRoutes_1.default);
-app.use('/api/auth', authRoutes_1.default);
-app.use('/api/setup', setupRoutes_1.default);
-app.use('/api/password-reset', passwordResetRoutes_1.default);
-app.use('/api/feedback', feedbackRoutes_1.default);
-app.use('/api/site-settings', siteSettingsRoutes_1.default);
-app.use('/api/localization', localizationRoutes_1.default);
-app.use('/api/translation', translationRoutes_1.default);
-app.use('/api/plans', planRoutes_1.default);
-app.use('/api/errors', errorRoutes_1.default);
+const routeErrorHandler = (err, req, res, next) => {
+    console.error(`Route error in ${req.originalUrl}:`, err);
+    if (!res.headersSent) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+        });
+    }
+};
+app.use('/api/auth', authRoutes_1.default, routeErrorHandler);
+app.use('/api/setup', setupRoutes_1.default, routeErrorHandler);
+app.use('/api/password-reset', passwordResetRoutes_1.default, routeErrorHandler);
+app.use('/api/feedback', feedbackRoutes_1.default, routeErrorHandler);
+app.use('/api/site-settings', siteSettingsRoutes_1.default, routeErrorHandler);
+app.use('/api/localization', localizationRoutes_1.default, routeErrorHandler);
+app.use('/api/translation', translationRoutes_1.default, routeErrorHandler);
+app.use('/api/plans', planRoutes_1.default, routeErrorHandler);
+app.use('/api/errors', errorRoutes_1.default, routeErrorHandler);
 app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default);
 app.use('/api/properties', authMiddleware_1.protect, propertiesRoutes_1.default);
 app.use('/api/tenants', authMiddleware_1.protect, tenantsRoutes_1.default);
@@ -104,10 +132,12 @@ app.use('/api/receipts', authMiddleware_1.protect, receiptRoutes_1.default);
 app.use('/api/reports', authMiddleware_1.protect, reportRoutes_1.default);
 app.use('/api/errors', errorRoutes_1.default);
 app.use('*', (req, res) => {
+    console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         success: false,
         message: `Route ${req.originalUrl} not found`,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        method: req.method
     });
 });
 app.use(errorHandler_1.errorHandler);

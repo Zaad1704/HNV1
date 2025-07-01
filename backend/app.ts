@@ -61,9 +61,32 @@ app.use(securityHeaders);
 // Compression
 app.use(compression());
 // CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://hnv-1-frontend.onrender.com',
+  'https://hnv-property.onrender.com',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Allow any localhost for development
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 // Rate limiting - more restrictive for auth endpoints
 app.use('/api/auth', createRateLimit(15 * 60 * 1000, 10)); // 10 requests per 15 minutes
@@ -90,16 +113,28 @@ app.use('/health', healthRoutes);
 // Health checks
 app.use('/', healthRoutes);
 
-// Public routes
-app.use('/api/auth', authRoutes);
-app.use('/api/setup', setupRoutes);
-app.use('/api/password-reset', passwordResetRoutes);
-app.use('/api/feedback', feedbackRoutes);
-app.use('/api/site-settings', siteSettingsRoutes);
-app.use('/api/localization', localizationRoutes);
-app.use('/api/translation', translationRoutes);
-app.use('/api/plans', planRoutes);
-app.use('/api/errors', errorRoutes);
+// Route error handler middleware
+const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
+  console.error(`Route error in ${req.originalUrl}:`, err);
+  if (!res.headersSent) {
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    });
+  }
+};
+
+// Public routes with error handling
+app.use('/api/auth', authRoutes, routeErrorHandler);
+app.use('/api/setup', setupRoutes, routeErrorHandler);
+app.use('/api/password-reset', passwordResetRoutes, routeErrorHandler);
+app.use('/api/feedback', feedbackRoutes, routeErrorHandler);
+app.use('/api/site-settings', siteSettingsRoutes, routeErrorHandler);
+app.use('/api/localization', localizationRoutes, routeErrorHandler);
+app.use('/api/translation', translationRoutes, routeErrorHandler);
+app.use('/api/plans', planRoutes, routeErrorHandler);
+app.use('/api/errors', errorRoutes, routeErrorHandler);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);
@@ -130,10 +165,12 @@ app.use('/api/errors', errorRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
+    console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         success: false,
         message: `Route ${req.originalUrl} not found`,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        method: req.method
     });
 });
 
