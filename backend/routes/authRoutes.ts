@@ -10,12 +10,12 @@ import { registerSchema } from '../validators/userValidator';
 const router = Router();
 
 // Auth routes
-router.post('/register', validate(registerSchema), asyncHandler(registerUser));
-router.post('/login', asyncHandler(loginUser));
-router.get('/me', protect, asyncHandler(getMe));
-router.get('/verify-email/:token', asyncHandler(verifyEmail));
-router.post('/resend-verification', asyncHandler(resendVerification));
-router.put('/profile', protect, asyncHandler(updateProfile));
+router.post('/register', validate(registerSchema), registerUser as any);
+router.post('/login', loginUser as any);
+router.get('/me', protect, getMe as any);
+router.get('/verify-email/:token', verifyEmail as any);
+router.post('/resend-verification', resendVerification as any);
+router.put('/profile', protect, updateProfile as any);
 
 // Google OAuth
 router.get('/google', (req, res, next) => {
@@ -45,8 +45,8 @@ router.get('/google/callback',
 );
 
 // 2FA routes
-router.post('/2fa/generate', protect, asyncHandler(generateTwoFactorSecret));
-router.post('/2fa/enable', protect, asyncHandler(enableTwoFactor));
-router.post('/2fa/verify', protect, asyncHandler(verifyTwoFactor));
+router.post('/2fa/generate', protect, generateTwoFactorSecret as any);
+router.post('/2fa/enable', protect, enableTwoFactor as any);
+router.post('/2fa/verify', protect, verifyTwoFactor as any);
 
 export default router;

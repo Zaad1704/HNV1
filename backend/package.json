@@ -8,7 +8,7 @@
     "dev": "nodemon server.ts",
     "build": "tsc --skipLibCheck",
     "build:safe": "tsc --skipLibCheck --noEmitOnError false",
-    "build:prod": "tsc --skipLibCheck",
+    "build:prod": "tsc --skipLibCheck --noEmitOnError false",
     "postinstall": "echo 'Using pre-built dist files'",
     "test": "jest --detectOpenHandles"
   },
