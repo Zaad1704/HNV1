@@ -30,16 +30,33 @@ const User = mongoose.model('User', UserSchema);
 const sessions = new Map();
 let isDBConnected = false;
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || '')
-  .then(() => {
-    console.log('✅ MongoDB Connected');
-    isDBConnected = true;
-  })
-  .catch(err => {
-    console.log('❌ MongoDB Error:', err.message);
-    isDBConnected = false;
-  });
+// In-memory user store as fallback
+const users = new Map();
+
+// Create default admin user
+users.set('alhaz.halim@gmail.com', {
+  _id: 'admin-001',
+  name: 'Admin User',
+  email: 'alhaz.halim@gmail.com',
+  password: '$2b$10$your-bcrypt-hash-here', // Will be replaced by real password check
+  role: 'SuperAdmin'
+});
+
+// Connect to MongoDB (with fallback)
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('✅ MongoDB Connected');
+      isDBConnected = true;
+    })
+    .catch(err => {
+      console.log('❌ MongoDB Error, using fallback:', err.message);
+      isDBConnected = false;
+    });
+} else {
+  console.log('⚠️ No MongoDB URI, using in-memory storage');
+  isDBConnected = false;
+}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -63,11 +80,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password required' });
     }
     
-    if (!isDBConnected) {
-      return res.status(503).json({ success: false, message: 'Database not available' });
+    let user;
+    if (isDBConnected) {
+      user = await User.findOne({ email: email.toLowerCase() });
+    } else {
+      user = users.get(email.toLowerCase());
     }
-    
-    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -109,23 +127,30 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email and password required' });
     }
     
-    if (!isDBConnected) {
-      return res.status(503).json({ success: false, message: 'Database not available' });
+    let existingUser;
+    if (isDBConnected) {
+      existingUser = await User.findOne({ email: email.toLowerCase() });
+    } else {
+      existingUser = users.get(email.toLowerCase());
     }
-    
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
     
-    const user = new User({
-      name,
-      email: email.toLowerCase(),
-      password,
-      role
-    });
-    
-    await user.save();
+    let user;
+    if (isDBConnected) {
+      user = new User({ name, email: email.toLowerCase(), password, role });
+      await user.save();
+    } else {
+      user = {
+        _id: Date.now().toString(),
+        name,
+        email: email.toLowerCase(),
+        password,
+        role
+      };
+      users.set(email.toLowerCase(), user);
+    }
     
     const token = 'jwt_' + Buffer.from(JSON.stringify({ id: user._id, email: user.email })).toString('base64');
     sessions.set(token, user);
