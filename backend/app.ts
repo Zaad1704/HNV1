@@ -106,12 +106,19 @@ app.use(sanitizeInput);
 app.use(requestLogger);
 
 // --- Route Setup ---
+// Root route for health checks
+app.get('/', (req, res) => {
+  res.json({
+    status: 'OK',
+    service: 'HNV Property Management API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health check routes (no auth required)
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes);
-
-// Health checks
-app.use('/', healthRoutes);
 
 // Route error handler middleware
 const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
