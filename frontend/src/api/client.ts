@@ -2,26 +2,26 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { rateLimiter } from '../utils/security';
 
-// Get the API URL from environment with better fallback logic
+// Get the API URL with proper detection
 const getApiUrl = () => {
-  // Check for explicit environment variable first
+  // Force production URL when not on localhost
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const prodUrl = 'https://hnv-backend.onrender.com/api';
+    console.log('🌐 Production mode - Using API URL:', prodUrl);
+    return prodUrl;
+  }
+  
+  // Check environment variable
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl) {
-    console.log('Using API URL from environment:', viteApiUrl);
+    console.log('🔧 Using API URL from environment:', viteApiUrl);
     return viteApiUrl;
   }
   
   // Development fallback
-  if (import.meta.env.DEV) {
-    const devUrl = 'http://localhost:5001/api';
-    console.log('Using development API URL:', devUrl);
-    return devUrl;
-  }
-  
-  // Production fallback - use correct Render URL
-  const prodUrl = 'https://hnv-backend.onrender.com/api';
-  console.log('Using production API URL:', prodUrl);
-  return prodUrl;
+  const devUrl = 'http://localhost:5001/api';
+  console.log('🛠️ Development mode - Using API URL:', devUrl);
+  return devUrl;
 };
 
 const apiClient = axios.create({

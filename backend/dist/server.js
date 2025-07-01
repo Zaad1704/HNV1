@@ -80,7 +80,7 @@ app.get('/api/landing-stats', (req, res) => {
   });
 });
 
-// Site settings
+// Site settings - multiple endpoints
 app.get('/api/site-settings/public', (req, res) => {
   res.json({
     success: true,
@@ -89,6 +89,28 @@ app.get('/api/site-settings/public', (req, res) => {
       logo: '/logo-min.png',
       theme: 'default'
     }
+  });
+});
+
+app.get('/api/site-settings', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      siteName: 'HNV Property Management',
+      logo: '/logo-min.png',
+      theme: 'default',
+      features: ['property-management', 'tenant-portal', 'payments']
+    }
+  });
+});
+
+// Catch-all for missing API routes
+app.use('/api/*', (req, res) => {
+  console.log(`Missing API endpoint: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.originalUrl}`,
+    timestamp: new Date().toISOString()
   });
 });
 
