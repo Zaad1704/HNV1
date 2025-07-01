@@ -9,7 +9,17 @@ const SiteEditorPage = () => {
   const tabs = [
     { id: 'general', label: 'General Settings', icon: Settings },
     { id: 'hero', label: 'Hero Section', icon: Globe },
-    { id: 'features', label: 'Features', icon: Eye }
+    { id: 'stats', label: 'Stats Section', icon: Eye },
+    { id: 'landscape', label: 'Landscape Section', icon: Settings },
+    { id: 'transform', label: 'Transform Section', icon: Globe },
+    { id: 'banner', label: 'Banner Section', icon: Eye },
+    { id: 'about', label: 'About Section', icon: Settings },
+    { id: 'features', label: 'Features Section', icon: Globe },
+    { id: 'services', label: 'Services Section', icon: Eye },
+    { id: 'pricing', label: 'Pricing Section', icon: Settings },
+    { id: 'leadership', label: 'Leadership Section', icon: Globe },
+    { id: 'install', label: 'Install App Section', icon: Eye },
+    { id: 'contact', label: 'Contact Section', icon: Settings }
   ];
 
   const handleSave = async () => {
@@ -44,8 +54,8 @@ const SiteEditorPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="font-semibold text-text-primary mb-4">Settings</h3>
+          <div className="app-surface rounded-3xl p-6 border border-app-border max-h-[80vh] overflow-y-auto">
+            <h3 className="font-semibold text-text-primary mb-4">Landing Page Sections</h3>
             <div className="space-y-2">
               {tabs.map((tab) => (
                 <button
@@ -58,7 +68,7 @@ const SiteEditorPage = () => {
                   }`}
                 >
                   <tab.icon size={18} />
-                  <span className="font-medium">{tab.label}</span>
+                  <span className="font-medium text-sm">{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -67,7 +77,7 @@ const SiteEditorPage = () => {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
+          <div className="app-surface rounded-3xl p-8 border border-app-border max-h-[80vh] overflow-y-auto">
             {activeTab === 'general' && (
               <div className="space-y-6">
                 <h2 className="text-xl font-bold text-text-primary">General Settings</h2>
@@ -142,11 +152,171 @@ const SiteEditorPage = () => {
               </div>
             )}
 
+            {activeTab === 'stats' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Stats Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Stats Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Trusted by Property Managers Worldwide"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Stats Subtitle
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue="Join thousands of property managers who trust our platform"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'landscape' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Landscape Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Landscape Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Transform Your Property Management"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Landscape Subtitle
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue="Experience the future of property management"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'transform' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Transform Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Transform Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Transform Your Business"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Transform Description
+                  </label>
+                  <textarea
+                    rows={3}
+                    defaultValue="Streamline operations and grow your portfolio"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'banner' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Banner Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Banner Image URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/banner.jpg"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Banner Overlay Text
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Optional overlay text"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Banner Overlay Subtext
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Optional overlay subtext"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'about' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">About Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    About Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Why Choose Our Platform?"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    About Subtitle
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue="Built for modern property managers"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
             {activeTab === 'features' && (
               <div className="space-y-6">
                 <h2 className="text-xl font-bold text-text-primary">Features Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Features Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Powerful Features"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Features Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Everything you need to manage properties efficiently"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
+                  {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="p-4 border border-app-border rounded-2xl">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -172,6 +342,178 @@ const SiteEditorPage = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'services' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Services Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Services Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Our Services"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Services Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Comprehensive property management solutions"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'pricing' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Pricing Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Pricing Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Simple, Transparent Pricing"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Pricing Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Choose the plan that fits your needs"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'leadership' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Leadership Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Leadership Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Meet Our Team"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Leadership Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="The experts behind our success"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'install' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Install App Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Install App Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Install Our App"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Install App Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Get the native mobile experience"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    App Store URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://apps.apple.com/..."
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Google Play URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://play.google.com/..."
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'contact' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-text-primary">Contact Section</h2>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Contact Title
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue="Get in Touch"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Contact Subtitle
+                  </label>
+                  <textarea
+                    rows={2}
+                    defaultValue="We'd love to hear from you. Send us a message and we'll respond as soon as possible."
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
+                      Contact Phone
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="+1 (555) 123-4567"
+                      className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
+                      Contact Address
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="123 Business Ave, Suite 100"
+                      className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                    />
+                  </div>
                 </div>
               </div>
             )}

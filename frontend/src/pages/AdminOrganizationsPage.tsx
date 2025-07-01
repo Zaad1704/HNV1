@@ -51,33 +51,33 @@ const AdminOrganizationsPage = () => {
     if (isError) return <div className="text-center text-red-400 p-8">Failed to fetch organizations.</div>;
 
     return (
-        <div className="text-dark-text dark:text-dark-text-dark">
+        <div className="text-text-primary">
             <h1 className="text-3xl font-bold mb-8">Manage All Organizations</h1>
-            <div className="bg-light-card rounded-xl border border-border-color overflow-hidden shadow-lg dark:bg-dark-card dark:border-border-color-dark">
+            <div className="app-surface rounded-xl border border-app-border overflow-hidden shadow-lg">
                 <table className="w-full text-left">
-                    <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
+                    <thead className="bg-app-bg border-b border-app-border">
                         <tr>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Organization</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Plan</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text dark:text-light-text-dark">Status</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-light-text text-right dark:text-light-text-dark">Actions</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Organization</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Plan</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Status</th>
+                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
+                    <tbody className="divide-y divide-app-border">
                         {organizations.map((org) => (
-                            <tr key={org._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
+                            <tr key={org._id} className="hover:bg-app-bg transition-colors duration-150">
                                 <td className="p-4">
-                                    <p className="font-bold text-dark-text dark:text-dark-text-dark">{org.name}</p>
-                                    <p className="text-sm text-light-text dark:text-light-text-dark">{org.owner?.email}</p>
+                                    <p className="font-bold text-text-primary">{org.name}</p>
+                                    <p className="text-sm text-text-secondary">{org.owner?.email}</p>
                                 </td>
                                 <td className="p-4">
                                     {org.subscription?.isLifetime 
-                                        ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-brand-accent-dark/20 text-brand-accent-dark"><ShieldCheck size={14}/> Lifetime</span>
-                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-light-text/10 text-light-text dark:text-light-text-dark">{org.subscription?.planId?.name || 'No Plan'}</span>
+                                        ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"><ShieldCheck size={14}/> Lifetime</span>
+                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{org.subscription?.planId?.name || 'No Plan'}</span>
                                     }
                                 </td>
                                 <td className="p-4">
-                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-500/20 text-green-300' : 'bg-brand-orange/20 text-brand-orange'}`}> {/* Adjusted inactive/canceled to brand-orange */}
+                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                         {org.subscription?.status || 'inactive'}
                                     </span>
                                 </td>
