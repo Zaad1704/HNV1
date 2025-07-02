@@ -221,6 +221,7 @@ app.use('/api/payments', protect, paymentsRoutes);
 app.use('/api/expenses', protect, expenseRoutes);
 app.use('/api/maintenance', protect, maintenanceRoutes);
 app.use('/api/cashflow', protect, cashFlowRoutes);
+app.use('/api/invite', protect, require('./routes/inviteRoutes').default);
 app.use('/api/reminders', protect, reminderRoutes);
 app.use('/api/edit-requests', protect, editRequestRoutes);
 app.use('/api/users', protect, userRoutes);

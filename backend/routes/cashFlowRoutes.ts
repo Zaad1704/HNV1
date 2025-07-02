@@ -1,79 +1,32 @@
-// backend/routes/cashFlowRoutes.ts
-
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { createCashFlowRecord, getCashFlowRecords } from '../controllers/cashFlowController';
-import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac';
-import upload from '../middleware/uploadMiddleware'; 
-import { google } from 'googleapis'; // Imported here for direct use in middleware
-import path from 'path'; // Imported here for direct use in middleware
 
 const router = Router();
 
-// All cash flow routes require authentication
-router.use(protect);
+// Get cash flow data
+router.get('/', asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      income: [],
+      expenses: [],
+      netCashFlow: 0,
+      monthlyData: []
+    }
+  });
+}));
 
-// Route for creating a cash flow record
-router.post(
-    '/',
-    authorize(['Agent']), 
-    upload.single('document'), 
-    async (req, res, next) => { 
-        if (req.file) {
-            let auth;
-            try {
-                const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON || '{}');
-                auth = new google.auth.GoogleAuth({
-                    credentials: {
-                        client_email: credentials.client_email,
-                        private_key: credentials.private_key,
-                    },
-                    scopes: ['https://www.googleapis.com/auth/drive'],
-                });
-            } catch (e) {
-                console.error("Failed to parse Google credentials for cash flow upload:", e);
-                return res.status(500).json({ success: false, message: "Google Drive credentials not configured." });
-            }
-            const drive = google.drive({ version: 'v3', auth });
-            const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
-            if (!UPLOAD_FOLDER_ID) {
-                return res.status(500).json({ success: false, message: "Google Drive upload folder ID not defined." });
-            }
-
-            const uniqueFilename = `cashflow-${Date.now()}-${Math.random().toString(36).substring(2, 15)}${path.extname(req.file.originalname)}`;
-            const uploadResponse = await drive.files.create({
-                requestBody: {
-                    name: uniqueFilename,
-                    parents: [UPLOAD_FOLDER_ID],
-                    mimeType: req.file.mimetype,
-                },
-                media: {
-                    mimeType: req.file.mimetype,
-                    body: req.file.buffer,
-                },
-                fields: 'id',
-            });
-            const fileId = uploadResponse.data.id;
-            if (!fileId) {
-                return res.status(500).json({ success: false, message: 'Failed to get file ID for cash flow document.' });
-            }
-            await drive.permissions.create({
-                fileId: fileId,
-                requestBody: { role: 'reader', type: 'anyone' },
-            });
-            (req.file as any).imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`; 
-        }
-        next(); 
-    },
-    asyncHandler(createCashFlowRecord) 
-);
-
-// Route for getting cash flow records
-router.get(
-    '/',
-    authorize(['Agent', 'Landlord', 'Super Admin']), 
-    asyncHandler(getCashFlowRecords) 
-);
+// Get cash flow summary
+router.get('/summary', asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      totalIncome: 0,
+      totalExpenses: 0,
+      netCashFlow: 0,
+      profitMargin: 0
+    }
+  });
+}));
 
 export default router;

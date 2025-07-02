@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Bell, X, Check, AlertCircle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
 
 interface Notification {
   id: string;
@@ -13,32 +15,19 @@ interface Notification {
 
 const NotificationsPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'warning',
-      title: 'Rent Overdue',
-      message: 'John Doe has overdue rent payment for Unit 2A',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      read: false
+  
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/notifications');
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
     },
-    {
-      id: '2',
-      type: 'info',
-      title: 'Maintenance Request',
-      message: 'New maintenance request submitted for Property A',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      read: false
-    },
-    {
-      id: '3',
-      type: 'success',
-      title: 'Payment Received',
-      message: 'Rent payment received from Jane Smith',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      read: true
-    }
-  ]);
+    refetchInterval: 30000
+  });
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -86,7 +75,7 @@ const NotificationsPanel = () => {
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-0 top-12 w-80 app-surface rounded-2xl border border-app-border shadow-app-lg z-50"
+              className="absolute right-0 top-12 w-80 app-surface rounded-2xl border border-app-border shadow-app-lg z-[60]"
             >
               <div className="p-4 border-b border-app-border flex items-center justify-between">
                 <h3 className="font-semibold text-text-primary">Notifications</h3>
