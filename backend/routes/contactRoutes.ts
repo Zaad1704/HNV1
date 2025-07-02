@@ -9,7 +9,7 @@ router.post('/submit', submitContactForm);
 // Email status endpoint
 router.get('/email-status', async (req, res) => {
   try {
-    const configured = !!process.env.SMTP_HOST || !!emailService.transporter;
+    const configured = emailService.isConfigured();
     res.json({ 
       success: true, 
       configured,

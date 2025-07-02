@@ -6,6 +6,10 @@ class EmailService {
   private transporter: any = null;
   private fromEmail: string;
 
+  isConfigured(): boolean {
+    return !!this.transporter;
+  }
+
   constructor() {
     this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
     
