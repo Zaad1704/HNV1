@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
-import { useLang } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 const cardVariants = {
@@ -31,7 +30,7 @@ interface DashboardStats {
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const { data } = await apiClient.get('/dashboard/stats');
+    const { data } = await apiClient.get('/api/dashboard/stats');
     return data.data;
   } catch (error) {
     console.error('Failed to fetch dashboard stats:', error);

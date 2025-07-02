@@ -22,7 +22,7 @@ interface MaintenanceRequest {
 }
 
 const fetchMaintenanceRequests = async (): Promise<MaintenanceRequest[]> => {
-  const { data } = await apiClient.get('/maintenance-requests?limit=5');
+  const { data } = await apiClient.get('/api/maintenance-requests?limit=5');
   return data.data;
 };
 
