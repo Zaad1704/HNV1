@@ -160,6 +160,13 @@ app.options('*', (req, res) => {
   res.sendStatus(204);
 });
 
+// Debug middleware for all API routes - MUST BE FIRST
+app.use('/api', (req, res, next) => {
+  console.log(`API Request: ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
+  next();
+});
+
 // Test routes (no auth required)
 app.use('/api/test', require('./routes/testRoutes').default);
 
@@ -178,13 +185,6 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
     });
   }
 };
-
-// Debug middleware for all API routes - MUST BE FIRST
-app.use('/api', (req, res, next) => {
-  console.log(`API Request: ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
-  next();
-});
 
 // Public routes with error handling
 app.use('/api/auth', authRoutes, routeErrorHandler);
