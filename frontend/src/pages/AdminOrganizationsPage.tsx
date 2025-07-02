@@ -8,7 +8,7 @@ interface IPlan { _id: string; name: string; price: number; duration: 'daily' | 
 
 const fetchOrganizations = async (): Promise<IOrganization[]> => {
     try {
-        const { data } = await apiClient.get('/api/super-admin/organizations');
+        const { data } = await apiClient.get('/super-admin/organizations');
         return data.data || [];
     } catch (error) {
         console.error('Failed to fetch organizations:', error);
@@ -17,7 +17,7 @@ const fetchOrganizations = async (): Promise<IOrganization[]> => {
 };
 
 const fetchPlans = async (): Promise<IPlan[]> => {
-    const { data } = await apiClient.get('/api/super-admin/plans');
+    const { data } = await apiClient.get('/super-admin/plans');
     return data.data;
 };
 
@@ -32,21 +32,21 @@ const AdminOrganizationsPage = () => {
     const { data: availablePlans = [] } = useQuery<IPlan[], Error>({ queryKey:['availablePlans'], queryFn: fetchPlans });
 
     const deleteOrgMutation = useMutation({
-        mutationFn: (orgId: string) => apiClient.delete(`/api/super-admin/organizations/${orgId}`),
+        mutationFn: (orgId: string) => apiClient.delete(`/super-admin/organizations/${orgId}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to delete organization.'),
     });
 
     const toggleStatusMutation = useMutation({
         mutationFn: ({ orgId, action }: { orgId: string; action: 'activate' | 'deactivate' }) => 
-            apiClient.patch(`/api/super-admin/organizations/${orgId}/${action}`),
+            apiClient.patch(`/super-admin/organizations/${orgId}/${action}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to update organization status.'),
     });
 
     const lifetimeMutation = useMutation({
         mutationFn: ({ orgId, action }: { orgId: string; action: 'grant-lifetime' | 'revoke-lifetime' }) => 
-            apiClient.patch(`/api/super-admin/organizations/${orgId}/${action}`),
+            apiClient.patch(`/super-admin/organizations/${orgId}/${action}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to update lifetime access.'),
     });

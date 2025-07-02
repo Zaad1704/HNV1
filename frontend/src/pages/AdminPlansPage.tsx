@@ -17,7 +17,7 @@ interface Plan {
 }
 
 const fetchPlans = async (): Promise<Plan[]> => {
-  const { data } = await apiClient.get('/api/super-admin/plans');
+  const { data } = await apiClient.get('/super-admin/plans');
   return data.data;
 };
 
@@ -42,7 +42,7 @@ const AdminPlansPage = () => {
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: (planData: any) => apiClient.post('/api/super-admin/plans', planData),
+    mutationFn: (planData: any) => apiClient.post('/super-admin/plans', planData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
       setShowModal(false);
@@ -52,7 +52,7 @@ const AdminPlansPage = () => {
 
   const updatePlanMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => 
-      apiClient.put(`/api/super-admin/plans/${id}`, data),
+      apiClient.put(`/super-admin/plans/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
       setShowModal(false);
@@ -61,7 +61,7 @@ const AdminPlansPage = () => {
   });
 
   const deletePlanMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/api/super-admin/plans/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/super-admin/plans/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminPlans'] })
   });
 

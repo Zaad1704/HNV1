@@ -14,7 +14,7 @@ const AdminUsersPage: React.FC = () => {
     queryKey: ['allAdminUsers'],
     queryFn: async () => {
         try {
-            const response = await apiClient.get("/api/super-admin/users");
+            const response = await apiClient.get("/super-admin/users");
             return response.data.data || [];
         } catch (error) {
             console.error('Failed to fetch users:', error);
@@ -26,7 +26,7 @@ const AdminUsersPage: React.FC = () => {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/api/super-admin/users/${userId}`),
+    mutationFn: (userId: string) => apiClient.delete(`/super-admin/users/${userId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
       setSelectedUser(null);
@@ -36,7 +36,7 @@ const AdminUsersPage: React.FC = () => {
 
   const updateUserPlanMutation = useMutation({
     mutationFn: ({ userId, planId }: { userId: string; planId: string }) => 
-      apiClient.put(`/api/super-admin/users/${userId}/plan`, { planId }),
+      apiClient.put(`/super-admin/users/${userId}/plan`, { planId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
       alert('User plan updated successfully');
@@ -47,7 +47,7 @@ const AdminUsersPage: React.FC = () => {
   const { data: plans = [] } = useQuery({
     queryKey: ['plans'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/super-admin/plans');
+      const response = await apiClient.get('/super-admin/plans');
       return response.data.data;
     }
   });
