@@ -199,6 +199,13 @@ app.use('/api/payments', checkSubscriptionStatus);
 app.use('/api', publicRoutes, routeErrorHandler);
 app.use('/api/contact', contactRoutes, routeErrorHandler);
 
+// Debug middleware for all API routes
+app.use('/api', (req, res, next) => {
+  console.log(`API Request: ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
+  next();
+});
+
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);
 app.use('/api/properties', protect, propertiesRoutes);
@@ -215,7 +222,7 @@ app.use('/api/billing', protect, billingRoutes);
 app.use('/api/audit', protect, auditRoutes);
 app.use('/api/org', protect, orgRoutes);
 app.use('/api/subscriptions', protect, subscriptionsRoutes);
-app.use('/api/super-admin', protect, superAdminRoutes);
+app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/notifications', protect, notificationRoutes);
 app.use('/api/communication', protect, communicationRoutes);
 app.use('/api/sharing', protect, sharingRoutes);

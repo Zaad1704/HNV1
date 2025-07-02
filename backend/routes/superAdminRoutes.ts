@@ -27,6 +27,14 @@ import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
 const router = Router();
+
+// Debug middleware
+router.use((req, res, next) => {
+  console.log(`Super Admin Route: ${req.method} ${req.originalUrl}`);
+  console.log('User:', req.user?.role);
+  next();
+});
+
 router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
 router.get('/dashboard-stats', asyncHandler(getDashboardStats));
@@ -34,7 +42,23 @@ router.get('/dashboard-stats', asyncHandler(getDashboardStats));
 router.get('/platform-growth', asyncHandler(getPlatformGrowth));
 router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 
-router.get('/organizations', asyncHandler(getAllOrganizations));
+router.get('/organizations', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    console.log('Fetching organizations...');
+    const Organization = require('../models/Organization');
+    const organizations = await Organization.find({})
+      .populate('owner', 'name email')
+      .populate({
+        path: 'subscription',
+        populate: { path: 'planId', model: 'Plan' }
+      });
+    console.log('Found organizations:', organizations.length);
+    res.json({ success: true, data: organizations });
+  } catch (error) {
+    console.error('Organizations fetch error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch organizations' });
+  }
+}));
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
   const Subscription = require('../models/Subscription');
@@ -116,9 +140,16 @@ router.get('/billing', asyncHandler(getGlobalBilling));
 
 // Plan management routes
 router.get('/plans', asyncHandler(async (req: Request, res: Response) => {
-  const Plan = require('../models/Plan');
-  const plans = await Plan.find({}).sort({ price: 1 });
-  res.json({ success: true, data: plans });
+  try {
+    console.log('Fetching plans...');
+    const Plan = require('../models/Plan');
+    const plans = await Plan.find({}).sort({ price: 1 });
+    console.log('Found plans:', plans.length);
+    res.json({ success: true, data: plans || [] });
+  } catch (error) {
+    console.error('Plans fetch error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch plans', data: [] });
+  }
 }));
 
 router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
