@@ -1,30 +1,37 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
 
 class EmailService {
-  private resend: Resend | null = null;
+  private transporter: any = null;
   private fromEmail: string;
 
   constructor() {
-    this.fromEmail = process.env.EMAIL_FROM || 'HNV Property Management <noreply@hnvpm.com>';
+    this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
     
-    console.log('Email service initializing...');
+    console.log('Email service initializing with SMTP...');
     console.log('EMAIL_FROM:', this.fromEmail);
-    console.log('RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
     
-    if (process.env.RESEND_API_KEY) {
-      this.resend = new Resend(process.env.RESEND_API_KEY);
-      console.log('✅ Resend email service initialized');
-    } else {
-      console.warn("❌ RESEND_API_KEY not configured. Email service will be disabled.");
+    try {
+      this.transporter = nodemailer.createTransporter({
+        host: 'smtp.resend.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'zaad4041@gmail.com',
+          pass: 're_XvHZC6Yu_9ooAM3EzTPUcujUjXJx72zNX'
+        }
+      });
+      console.log('✅ SMTP email service initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize email service:', error);
     }
   }
 
   async sendEmail(to: string, subject: string, templateName: string, templateData: Record<string, string>) {
     console.log(`📧 Attempting to send email to ${to}: ${subject}`);
     
-    if (!this.resend) {
+    if (!this.transporter) {
       console.log(`❌ Email service disabled - would send to ${to}: ${subject}`);
       return;
     }
@@ -38,14 +45,14 @@ class EmailService {
         htmlContent = htmlContent.replace(regex, templateData[key]);
       }
 
-      const result = await this.resend.emails.send({
+      const result = await this.transporter.sendMail({
         from: this.fromEmail,
-        to: [to],
+        to: to,
         subject,
         html: htmlContent,
       });
       
-      console.log('✅ Email sent successfully:', result);
+      console.log('✅ Email sent successfully:', result.messageId);
     } catch (error) {
       console.error(`Error sending email to ${to}:`, error);
       throw new Error('Failed to send email.');
@@ -53,7 +60,7 @@ class EmailService {
   }
 
   async sendContactForm(formData: { name: string; email: string; subject: string; message: string }) {
-    if (!this.resend) {
+    if (!this.transporter) {
       console.log(`Contact form would be sent: ${formData.subject}`);
       return;
     }
@@ -75,9 +82,9 @@ class EmailService {
         </div>
       `;
 
-      await this.resend.emails.send({
+      await this.transporter.sendMail({
         from: this.fromEmail,
-        to: [process.env.CONTACT_EMAIL || 'contact@hnvpm.com'],
+        to: 'zaad4041@gmail.com',
         subject: `Contact Form: ${formData.subject}`,
         html: htmlContent,
         replyTo: formData.email
