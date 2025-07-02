@@ -31,12 +31,12 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   siteDescription: { type: String, default: 'Professional Property Management Solutions' },
   heroTitle: { type: String, default: 'The All-in-One Platform for Modern Property Management' },
   heroSubtitle: { type: String, default: 'Streamline your property management with our comprehensive solution' },
-  heroBackgroundImage: { type: String },
+  heroBackgroundImage: { type: String, default: '' },
   statsTitle: { type: String, default: 'Trusted by Property Managers Worldwide' },
   statsSubtitle: { type: String, default: 'Join thousands of property managers who trust our platform' },
-  bannerImage: { type: String },
-  bannerOverlayText: { type: String },
-  bannerOverlaySubtext: { type: String },
+  bannerImage: { type: String, default: '' },
+  bannerOverlayText: { type: String, default: '' },
+  bannerOverlaySubtext: { type: String, default: '' },
   pricingTitle: { type: String, default: 'Simple, Transparent Pricing' },
   pricingSubtitle: { type: String, default: 'Choose the plan that fits your needs' },
   leadershipTitle: { type: String, default: 'Meet Our Team' },
@@ -47,6 +47,10 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   aboutSubtitle: { type: String, default: 'Built for modern property managers' },
   contactTitle: { type: String, default: 'Get in Touch' },
   contactSubtitle: { type: String, default: "We'd love to hear from you. Send us a message and we'll respond as soon as possible." }
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  strict: false,
+  minimize: false
+});
 
 export default mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);

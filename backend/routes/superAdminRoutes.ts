@@ -300,21 +300,17 @@ router.put('/site-settings', asyncHandler(async (req: Request, res: Response) =>
   try {
     console.log('Saving site settings:', req.body);
     
-    let settings = await SiteSettings.findOne({});
+    const settings = await SiteSettings.findOneAndUpdate(
+      {}, // Find any document
+      req.body, // Update with new data
+      { 
+        new: true, // Return updated document
+        upsert: true, // Create if doesn't exist
+        runValidators: false // Skip validation for flexibility
+      }
+    );
     
-    if (settings) {
-      // Update existing settings
-      Object.keys(req.body).forEach(key => {
-        settings[key] = req.body[key];
-      });
-      await settings.save();
-      console.log('Settings updated:', settings._id);
-    } else {
-      // Create new settings
-      settings = await SiteSettings.create(req.body);
-      console.log('Settings created:', settings._id);
-    }
-    
+    console.log('Settings saved successfully:', settings._id);
     res.json({ success: true, data: settings, message: 'Settings saved successfully' });
   } catch (error) {
     console.error('Save settings error:', error);
