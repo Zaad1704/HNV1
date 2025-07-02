@@ -214,7 +214,7 @@ app.use('/api/contact', contactRoutes, routeErrorHandler);
 // app.use('/api/payments', checkSubscriptionStatus);
 
 // Protected routes (require authentication)
-app.use('/api/dashboard', protect, dashboardRoutes);
+app.use('/api/dashboard', protect, dashboardRoutes, routeErrorHandler);
 app.use('/api/properties', protect, propertiesRoutes);
 app.use('/api/tenants', protect, tenantsRoutes);
 app.use('/api/payments', protect, paymentsRoutes);

@@ -85,6 +85,7 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 router.get('/overview-stats', asyncHandler(async (req: Request, res: Response) => {
+  console.log('Overview-stats route hit');
   res.json({ success: true, data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' } });
 }));
 
