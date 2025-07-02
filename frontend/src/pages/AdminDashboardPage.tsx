@@ -17,18 +17,33 @@ import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart'
 import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
 
 const fetchAdminStats = async () => {
-  const { data } = await apiClient.get('/api/super-admin/dashboard-stats');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/super-admin/dashboard-stats');
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch admin stats:', error);
+    return { totalUsers: 0, totalOrgs: 0, activeSubscriptions: 0, totalRevenue: 0 };
+  }
 };
 
 const fetchPlatformGrowth = async () => {
-  const { data } = await apiClient.get('/api/super-admin/platform-growth');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/super-admin/platform-growth');
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch platform growth:', error);
+    return [];
+  }
 };
 
 const fetchPlanDistribution = async () => {
-  const { data } = await apiClient.get('/api/super-admin/plan-distribution');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/super-admin/plan-distribution');
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch plan distribution:', error);
+    return [];
+  }
 };
 
 const StatCard = ({ 
@@ -63,19 +78,25 @@ const StatCard = ({
 );
 
 const AdminDashboardPage = () => {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, error: statsError } = useQuery({
     queryKey: ['adminStats'],
-    queryFn: fetchAdminStats
+    queryFn: fetchAdminStats,
+    retry: 3,
+    retryDelay: 1000
   });
 
-  const { data: growthData } = useQuery({
+  const { data: growthData, error: growthError } = useQuery({
     queryKey: ['platformGrowth'],
-    queryFn: fetchPlatformGrowth
+    queryFn: fetchPlatformGrowth,
+    retry: 3,
+    retryDelay: 1000
   });
 
-  const { data: planData } = useQuery({
+  const { data: planData, error: planError } = useQuery({
     queryKey: ['planDistribution'],
-    queryFn: fetchPlanDistribution
+    queryFn: fetchPlanDistribution,
+    retry: 3,
+    retryDelay: 1000
   });
 
   if (isLoading) {
@@ -83,6 +104,24 @@ const AdminDashboardPage = () => {
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
         <span className="ml-3 text-text-secondary">Loading admin dashboard...</span>
+      </div>
+    );
+  }
+
+  if (statsError || growthError || planError) {
+    return (
+      <div className="text-center p-8">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle size={32} className="text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary mb-2">Data Loading Error</h2>
+        <p className="text-text-secondary mb-4">Some dashboard data failed to load. Please refresh the page.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+        >
+          Refresh Dashboard
+        </button>
       </div>
     );
   }

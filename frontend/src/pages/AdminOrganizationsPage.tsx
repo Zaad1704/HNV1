@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import apiClient from '../api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShieldCheck, ShieldOff, CheckCircle, XCircle, Settings, Trash2, Crown, CrownIcon, Shield } from 'lucide-react';
+import { ShieldCheck, ShieldOff, CheckCircle, XCircle, Settings, Trash2, Crown, CrownIcon, Shield, AlertTriangle } from 'lucide-react';
 
 interface IOrganization { _id: string; name: string; owner: { name: string; email: string; }; status: 'active' | 'inactive' | 'pending_deletion'; subscription?: { _id: string; planId?: { name: string; _id: string; price: number; duration: string; }; status: 'trialing' | 'active' | 'inactive' | 'canceled' | 'past_due'; isLifetime: boolean; currentPeriodEndsAt?: string; }; allowSelfDeletion?: boolean; }
 interface IPlan { _id: string; name: string; price: number; duration: 'daily' | 'weekly' | 'monthly' | 'yearly'; }
 
 const fetchOrganizations = async (): Promise<IOrganization[]> => {
-    const { data } = await apiClient.get('/api/super-admin/organizations');
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/api/super-admin/organizations');
+        return data.data || [];
+    } catch (error) {
+        console.error('Failed to fetch organizations:', error);
+        throw error;
+    }
 };
 
 const fetchPlans = async (): Promise<IPlan[]> => {
@@ -18,7 +23,12 @@ const fetchPlans = async (): Promise<IPlan[]> => {
 
 const AdminOrganizationsPage = () => {
     const queryClient = useQueryClient();
-    const { data: organizations = [], isLoading, isError } = useQuery<IOrganization[], Error>({ queryKey:['allOrganizations'], queryFn: fetchOrganizations });
+    const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
+        queryKey:['allOrganizations'], 
+        queryFn: fetchOrganizations,
+        retry: 3,
+        retryDelay: 1000
+    });
     const { data: availablePlans = [] } = useQuery<IPlan[], Error>({ queryKey:['availablePlans'], queryFn: fetchPlans });
 
     const deleteOrgMutation = useMutation({
@@ -48,7 +58,21 @@ const AdminOrganizationsPage = () => {
     };
 
     if (isLoading) return <div className="text-center p-8 text-text-secondary">Loading organizations...</div>;
-    if (isError) return <div className="text-center text-red-500 p-8">Failed to fetch organizations.</div>;
+    if (isError) return (
+        <div className="text-center p-8">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle size={32} className="text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary mb-2">Failed to Load Organizations</h2>
+            <p className="text-text-secondary mb-4">Error: {error?.message || 'Unknown error'}</p>
+            <button 
+                onClick={() => window.location.reload()}
+                className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+            >
+                Retry
+            </button>
+        </div>
+    );
 
     return (
         <div className="space-y-8">

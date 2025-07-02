@@ -33,13 +33,30 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
 
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const systemOverview = await masterDataService.getSystemOverview();
-    res.status(200).json({ success: true, data: {
-        totalUsers: systemOverview.stats.totalUsers,
-        totalOrgs: systemOverview.stats.totalOrganizations,
-        activeSubscriptions: systemOverview.stats.activeSubscriptions,
-        totalRevenue: systemOverview.stats.totalRevenue
-    }});
+    try {
+        const totalUsers = await User.countDocuments();
+        const totalOrgs = await Organization.countDocuments();
+        const activeSubscriptions = await Subscription.countDocuments({ status: { $in: ['active', 'trialing'] } });
+        
+        // Calculate total revenue from active subscriptions
+        const subscriptions = await Subscription.find({ status: 'active' }).populate('planId');
+        const totalRevenue = subscriptions.reduce((sum, sub: any) => {
+            return sum + (sub.planId?.price || 0);
+        }, 0);
+        
+        res.status(200).json({ 
+            success: true, 
+            data: {
+                totalUsers,
+                totalOrgs,
+                activeSubscriptions,
+                totalRevenue
+            }
+        });
+    } catch (error) {
+        console.error('Dashboard stats error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats' });
+    }
 });
 
 export const getAllOrganizations = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -191,10 +208,65 @@ export const getModerators = asyncHandler(async (req: Request, res: Response, ne
 });
 
 export const getGlobalBilling = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const subscriptions = await Subscription.find({})
-        .populate({ path: 'organizationId', select: 'name' })
-        .populate({ path: 'planId', select: 'name' });
-    res.status(200).json({ success: true, data: subscriptions });
+    try {
+        const subscriptions = await Subscription.find({})
+            .populate({ path: 'organizationId', select: 'name' })
+            .populate({ path: 'planId', select: 'name price' });
+        
+        // Calculate billing metrics
+        const totalRevenue = subscriptions.reduce((sum, sub: any) => {
+            return sum + (sub.planId?.price || 0);
+        }, 0);
+        
+        const monthlyRevenue = subscriptions
+            .filter((sub: any) => sub.status === 'active' && sub.planId?.duration === 'monthly')
+            .reduce((sum, sub: any) => sum + (sub.planId?.price || 0), 0);
+        
+        const activeSubscriptions = subscriptions.filter((sub: any) => sub.status === 'active').length;
+        const churnRate = subscriptions.filter((sub: any) => sub.status === 'canceled').length / subscriptions.length * 100;
+        
+        // Recent transactions (mock for now, replace with actual payment data)
+        const recentTransactions = subscriptions.slice(0, 10).map((sub: any) => ({
+            _id: sub._id,
+            organizationName: sub.organizationId?.name || 'Unknown',
+            amount: sub.planId?.price || 0,
+            status: sub.status === 'active' ? 'completed' : 'pending',
+            date: sub.createdAt || new Date(),
+            planName: sub.planId?.name || 'Unknown'
+        }));
+        
+        // Revenue chart data
+        const revenueChart = [];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        for (let i = 0; i < 6; i++) {
+            const monthStart = new Date(new Date().getFullYear(), new Date().getMonth() - i, 1);
+            const monthSubs = subscriptions.filter((sub: any) => {
+                const subDate = new Date(sub.createdAt);
+                return subDate.getMonth() === monthStart.getMonth() && subDate.getFullYear() === monthStart.getFullYear();
+            });
+            
+            revenueChart.unshift({
+                month: months[monthStart.getMonth()],
+                revenue: monthSubs.reduce((sum, sub: any) => sum + (sub.planId?.price || 0), 0),
+                subscriptions: monthSubs.length
+            });
+        }
+        
+        res.status(200).json({ 
+            success: true, 
+            data: {
+                totalRevenue,
+                monthlyRevenue,
+                activeSubscriptions,
+                churnRate: Math.round(churnRate * 100) / 100,
+                recentTransactions,
+                revenueChart
+            }
+        });
+    } catch (error) {
+        console.error('Billing data error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch billing data' });
+    }
 });
 
 export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -209,16 +281,35 @@ export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: 
 });
 
 export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const mockData = [
-        { name: 'Jan', 'New Users': 400, 'New Organizations': 240 },
-        { name: 'Feb', 'New Users': 300, 'New Organizations': 139 },
-        { name: 'Mar', 'New Users': 200, 'New Organizations': 980 },
-        { name: 'Apr', 'New Users': 278, 'New Organizations': 390 },
-        { name: 'May', 'New Users': 189, 'New Organizations': 480 },
-        { name: 'Jun', 'New Users': 239, 'New Organizations': 380 },
-        { name: 'Jul', 'New Users': 349, 'New Organizations': 430 },
-    ];
-    res.status(200).json({ success: true, data: mockData });
+    try {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const currentYear = new Date().getFullYear();
+        const data = [];
+        
+        for (let i = 0; i < 6; i++) {
+            const monthStart = new Date(currentYear, new Date().getMonth() - i, 1);
+            const monthEnd = new Date(currentYear, new Date().getMonth() - i + 1, 0);
+            
+            const newUsers = await User.countDocuments({
+                createdAt: { $gte: monthStart, $lte: monthEnd }
+            });
+            
+            const newOrgs = await Organization.countDocuments({
+                createdAt: { $gte: monthStart, $lte: monthEnd }
+            });
+            
+            data.unshift({
+                name: months[monthStart.getMonth()],
+                'New Users': newUsers,
+                'New Organizations': newOrgs
+            });
+        }
+        
+        res.status(200).json({ success: true, data });
+    } catch (error) {
+        console.error('Platform growth error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch platform growth data' });
+    }
 });
 
 export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {

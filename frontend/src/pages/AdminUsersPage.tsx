@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import apiClient from "../api/client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Eye, X, CreditCard, DollarSign } from 'lucide-react';
+import { Trash2, Eye, X, CreditCard, DollarSign, AlertTriangle } from 'lucide-react';
 
 type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; };
 
@@ -10,12 +10,19 @@ const AdminUsersPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: users = [], isLoading, isError } = useQuery({
+  const { data: users = [], isLoading, isError, error } = useQuery({
     queryKey: ['allAdminUsers'],
     queryFn: async () => {
-        const response = await apiClient.get("/api/super-admin/users");
-        return response.data.data;
-    }
+        try {
+            const response = await apiClient.get("/api/super-admin/users");
+            return response.data.data || [];
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
+            throw error;
+        }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const deleteUserMutation = useMutation({
@@ -60,7 +67,21 @@ const AdminUsersPage: React.FC = () => {
   }, [users, searchTerm]);
 
   if (isLoading) return <div className="p-4 text-center text-text-secondary">Loading users...</div>;
-  if (isError) return <div className="p-4 text-center text-red-500">Failed to fetch users.</div>;
+  if (isError) return (
+    <div className="text-center p-8">
+      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <AlertTriangle size={32} className="text-red-600" />
+      </div>
+      <h2 className="text-xl font-bold text-text-primary mb-2">Failed to Load Users</h2>
+      <p className="text-text-secondary mb-4">Error: {error?.message || 'Unknown error'}</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+      >
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <div className="space-y-8">

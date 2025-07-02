@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { DollarSign, TrendingUp, CreditCard, Calendar, Download, Filter, Search } from 'lucide-react';
+import { DollarSign, TrendingUp, CreditCard, Calendar, Download, Filter, Search, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import apiClient from '../api/client';
 
@@ -30,8 +30,13 @@ interface ChartData {
 }
 
 const fetchBillingData = async (): Promise<BillingData> => {
-  const { data } = await apiClient.get('/api/super-admin/billing');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/super-admin/billing');
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch billing data:', error);
+    throw error;
+  }
 };
 
 const AdminBillingPage = () => {
@@ -39,33 +44,39 @@ const AdminBillingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: billingData, isLoading } = useQuery({
+  const { data: billingData, isLoading, error } = useQuery({
     queryKey: ['adminBilling', timeRange],
-    queryFn: fetchBillingData
+    queryFn: fetchBillingData,
+    retry: 3,
+    retryDelay: 1000
   });
 
-  const mockData = {
-    totalRevenue: 125430,
-    monthlyRevenue: 18750,
-    activeSubscriptions: 342,
-    churnRate: 2.3,
-    recentTransactions: [
-      { _id: '1', organizationName: 'ABC Properties', amount: 7900, status: 'completed' as const, date: '2024-01-15', planName: 'Professional' },
-      { _id: '2', organizationName: 'XYZ Management', amount: 2900, status: 'completed' as const, date: '2024-01-14', planName: 'Starter' },
-      { _id: '3', organizationName: 'City Rentals', amount: 15900, status: 'pending' as const, date: '2024-01-13', planName: 'Enterprise' },
-      { _id: '4', organizationName: 'Downtown LLC', amount: 7900, status: 'failed' as const, date: '2024-01-12', planName: 'Professional' }
-    ],
-    revenueChart: [
-      { month: 'Jan', revenue: 12000, subscriptions: 45 },
-      { month: 'Feb', revenue: 15000, subscriptions: 52 },
-      { month: 'Mar', revenue: 18000, subscriptions: 58 },
-      { month: 'Apr', revenue: 16000, subscriptions: 55 },
-      { month: 'May', revenue: 22000, subscriptions: 67 },
-      { month: 'Jun', revenue: 25000, subscriptions: 72 }
-    ]
-  };
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle size={32} className="text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary mb-2">Billing Data Error</h2>
+        <p className="text-text-secondary mb-4">Failed to load billing information. Please try again.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
-  const data = billingData || mockData;
+  const data = billingData || {
+    totalRevenue: 0,
+    monthlyRevenue: 0,
+    activeSubscriptions: 0,
+    churnRate: 0,
+    recentTransactions: [],
+    revenueChart: []
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
