@@ -77,38 +77,38 @@ const LandingPage = () => {
       </section>
       
       {/* Live Stats Section */}
-      <section id="stats" className="py-12 md:py-24 bg-app-bg">
+      <section id="stats" className="py-8 sm:py-12 md:py-16 lg:py-24 bg-app-bg">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-text-primary mb-4 md:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-text-primary mb-3 sm:mb-4 md:mb-6 leading-tight">
             {siteSettings.statsTitle || t('landing.real_stats_title', 'Trusted by Property Managers Worldwide')}
           </h2>
-          <p className="text-base md:text-lg lg:text-xl text-text-secondary mb-8 md:mb-12 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-text-secondary mb-6 sm:mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed px-2">
             {siteSettings.statsSubtitle || 'Join thousands of property managers who trust our platform for their daily operations'}
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-            <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
-              <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-blue mb-2 md:mb-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+            <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-blue mb-1 sm:mb-2 md:mb-3">
                 {stats?.totalProperties?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.properties_managed', 'Properties Managed')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.properties_managed', 'Properties Managed')}</div>
             </div>
-            <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
-              <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-orange mb-2 md:mb-3">
+            <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-orange mb-1 sm:mb-2 md:mb-3">
                 {stats?.totalTenants?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.active_users', 'Active Tenants')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.active_users', 'Active Tenants')}</div>
             </div>
-            <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
-              <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-blue mb-2 md:mb-3">
+            <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-blue mb-1 sm:mb-2 md:mb-3">
                 {Math.round(stats?.occupancyRate || 0)}%
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.occupancy_rate', 'Occupancy Rate')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.occupancy_rate', 'Occupancy Rate')}</div>
             </div>
-            <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
-              <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-orange mb-2 md:mb-3">
+            <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
+              <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-orange mb-1 sm:mb-2 md:mb-3">
                 99.9%
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.uptime_guarantee', 'Uptime Guarantee')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.uptime_guarantee', 'Uptime Guarantee')}</div>
             </div>
           </div>
         </div>
@@ -124,20 +124,24 @@ const LandingPage = () => {
       
       {/* Banner Section - Editable by Super Admin */}
       {siteSettings?.bannerImage && (
-        <section id="banner" className="py-6 md:py-12">
+        <section id="banner" className="py-4 md:py-8 lg:py-12">
           <div className="container mx-auto px-4">
-            <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-app-lg">
+            <div className="relative rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-app-lg">
               <img
                 src={siteSettings.bannerImage}
                 alt="Platform Banner"
-                className="w-full h-32 md:h-48 lg:h-64 object-cover bg-app-bg"
+                className="w-full h-40 sm:h-48 md:h-56 lg:h-64 xl:h-72 object-cover bg-app-bg"
               />
               {siteSettings.bannerOverlayText && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="text-center text-white px-4">
-                    <h2 className="text-xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4">{siteSettings.bannerOverlayText}</h2>
+                <div className="absolute inset-0 bg-black/50 md:bg-black/40 flex items-center justify-center">
+                  <div className="text-center text-white px-4 max-w-4xl">
+                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold mb-2 md:mb-4 leading-tight">
+                      {siteSettings.bannerOverlayText}
+                    </h2>
                     {siteSettings.bannerOverlaySubtext && (
-                      <p className="text-sm md:text-lg lg:text-xl text-white/90">{siteSettings.bannerOverlaySubtext}</p>
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed">
+                        {siteSettings.bannerOverlaySubtext}
+                      </p>
                     )}
                   </div>
                 </div>

@@ -113,24 +113,24 @@ const SiteEditorPage = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <div className="app-surface rounded-3xl p-6 border border-app-border max-h-[80vh] overflow-y-auto">
-            <h3 className="font-semibold text-text-primary mb-4">Landing Page Sections</h3>
+          <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border max-h-[60vh] lg:max-h-[80vh] overflow-y-auto">
+            <h3 className="font-semibold text-text-primary mb-4 text-sm lg:text-base">Landing Page Sections</h3>
             <div className="space-y-2">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-colors ${
+                  className={`w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2 lg:py-3 rounded-xl lg:rounded-2xl text-left transition-colors ${
                     activeTab === tab.id
                       ? 'bg-blue-50 text-blue-600 border border-blue-200'
                       : 'hover:bg-app-bg text-text-secondary'
                   }`}
                 >
-                  <tab.icon size={18} />
-                  <span className="font-medium text-sm">{tab.label}</span>
+                  <tab.icon size={16} className="lg:w-[18px] lg:h-[18px]" />
+                  <span className="font-medium text-xs lg:text-sm">{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -139,20 +139,20 @@ const SiteEditorPage = () => {
 
         {/* Content */}
         <div className="lg:col-span-3">
-          <div className="app-surface rounded-3xl p-8 border border-app-border max-h-[80vh] overflow-y-auto">
+          <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-8 border border-app-border max-h-[70vh] lg:max-h-[80vh] overflow-y-auto">
             {activeTab === 'general' && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-text-primary">General Settings</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h2 className="text-lg lg:text-xl font-bold text-text-primary mb-4">General Settings</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-2">
+                    <label className="block text-xs lg:text-sm font-medium text-text-secondary mb-2">
                       Site Name
                     </label>
                     <input
                       type="text"
                       value={siteData.siteName || 'HNV Property Management'}
                       onChange={(e) => updateSiteData('siteName', e.target.value)}
-                      className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                      className="w-full p-2 lg:p-3 text-sm lg:text-base border border-app-border rounded-xl lg:rounded-2xl bg-app-surface"
                     />
                   </div>
                   <div>
