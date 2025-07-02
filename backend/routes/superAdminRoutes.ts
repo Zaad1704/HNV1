@@ -35,6 +35,11 @@ router.use((req, res, next) => {
   next();
 });
 
+// Test route without auth
+router.get('/test', (req, res) => {
+  res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
+});
+
 router.use(protect, authorize(['Super Admin', 'Super Moderator']));
 
 router.get('/dashboard-stats', asyncHandler(getDashboardStats));
