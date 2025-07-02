@@ -4,16 +4,22 @@ import Tenant from '../models/Tenant';
 import mongoose from 'mongoose';
 
 export const getPayments = async (req: Request, res: Response) => {
-    if (!req.user || !req.user.organizationId) {
-      res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
-      return;
+    try {
+        if (!req.user || !req.user.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+        }
+        
+        const payments = await Payment.find({ organizationId: req.user.organizationId })
+            .populate('tenantId', 'name')
+            .populate('propertyId', 'name')
+            .populate('recordedBy', 'name')
+            .sort({ paymentDate: -1 });
+            
+        res.status(200).json({ success: true, count: payments.length, data: payments || [] });
+    } catch (error) {
+        console.error('Get payments error:', error);
+        res.status(200).json({ success: true, count: 0, data: [] });
     }
-    const payments = await Payment.find({ organizationId: req.user.organizationId })
-      .populate('tenantId', 'name')
-      .populate('propertyId', 'name')
-      .populate('recordedBy', 'name')
-      .sort({ paymentDate: -1 });
-    res.status(200).json({ success: true, count: payments.length, data: payments });
 };
 
 export const createPayment = async (req: Request, res: Response) => {

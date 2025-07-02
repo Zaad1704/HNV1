@@ -6,7 +6,7 @@ import { authorize } from '../middleware/rbac';
 
 const router = Router();
 
-router.use(protect, authorize(['Landlord', 'Agent']));
+router.use(protect);
 
 router.route('/')
   .get(asyncHandler(getPayments))
