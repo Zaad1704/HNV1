@@ -54,7 +54,8 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
     console.log('Stats route called, user:', req.user?._id);
     
     if (!req.user) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
+      res.status(401).json({ success: false, message: 'User not authenticated' });
+      return;
     }
     
     const userId = req.user._id;
@@ -78,7 +79,7 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
     console.error('Dashboard stats error:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'Failed to fetch dashboard stats: ' + error.message
+      message: 'Failed to fetch dashboard stats: ' + (error as Error).message
     });
   }
 }));
