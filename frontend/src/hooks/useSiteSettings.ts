@@ -1,13 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 
+const fetchSiteSettings = async () => {
+  try {
+    const { data } = await apiClient.get('/api/public/site-settings');
+    return data.data;
+  } catch (error) {
+    return {
+      logos: {
+        companyName: 'HNV Property Management',
+        faviconUrl: '/logo-min.png'
+      }
+    };
+  }
+};
+
 export const useSiteSettings = () => {
   return useQuery({
     queryKey: ['siteSettings'],
-    queryFn: async () => {
-      const { data } = await apiClient.get('/api/site-settings');
-      return data.data;
-    },
+    queryFn: fetchSiteSettings,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
   });
 };

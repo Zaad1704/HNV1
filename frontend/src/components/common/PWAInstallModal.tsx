@@ -1,18 +1,13 @@
 import React from 'react';
-import { X, Download, Smartphone, Monitor, Tablet } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { X, Download, Smartphone } from 'lucide-react';
 
 interface PWAInstallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  platform: 'android' | 'ios' | 'desktop' | 'unknown';
+  platform: string;
   canDirectInstall: boolean;
   onInstall: () => void;
-  instructions: {
-    title: string;
-    steps: string[];
-  };
+  instructions: string;
 }
 
 const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
@@ -23,87 +18,50 @@ const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
   onInstall,
   instructions
 }) => {
-  const { t } = useTranslation();
-
-  const getPlatformIcon = () => {
-    switch (platform) {
-      case 'ios': return <Tablet size={48} className="text-brand-blue" />;
-      case 'android': return <Smartphone size={48} className="text-brand-orange" />;
-      case 'desktop': return <Monitor size={48} className="text-brand-blue" />;
-      default: return <Download size={48} className="text-brand-orange" />;
-    }
-  };
+  if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="app-surface rounded-3xl shadow-app-xl w-full max-w-md border border-app-border"
-          >
-            <div className="flex justify-between items-center p-6 border-b border-app-border">
-              <h2 className="text-xl font-bold text-text-primary">Install HNV App</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-app-bg transition-all"
-              >
-                <X size={20} />
-              </button>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="app-surface rounded-3xl p-6 max-w-md w-full border border-app-border">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+              <Smartphone size={24} className="text-white" />
             </div>
-
-            <div className="p-6 text-center">
-              <div className="mb-6">
-                {getPlatformIcon()}
-              </div>
-              
-              <h3 className="text-lg font-semibold text-text-primary mb-4">
-                {instructions.title}
-              </h3>
-
-              {canDirectInstall ? (
-                <div className="space-y-4">
-                  <p className="text-text-secondary">
-                    Install HNV as a native app for the best experience
-                  </p>
-                  <button
-                    onClick={onInstall}
-                    className="w-full btn-gradient py-3 rounded-2xl font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Download size={20} />
-                    Install Now
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-text-secondary mb-4">
-                    Follow these steps to install:
-                  </p>
-                  <div className="text-left space-y-3">
-                    {instructions.steps.map((step, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-6 h-6 bg-brand-blue text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 mt-0.5">
-                          {index + 1}
-                        </div>
-                        <p className="text-text-secondary text-sm">{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-6 p-4 bg-app-bg rounded-2xl">
-                <p className="text-xs text-text-muted">
-                  Installing the app gives you faster access, offline capabilities, and native notifications.
-                </p>
-              </div>
-            </div>
-          </motion.div>
+            <h2 className="text-xl font-bold text-text-primary">Install App</h2>
+          </div>
+          <button onClick={onClose} className="p-2 text-text-secondary hover:text-text-primary">
+            <X size={20} />
+          </button>
         </div>
-      )}
-    </AnimatePresence>
+        
+        <p className="text-text-secondary mb-6">
+          Get the native app experience with offline access and push notifications.
+        </p>
+        
+        {canDirectInstall ? (
+          <button
+            onClick={onInstall}
+            className="w-full btn-gradient py-3 rounded-2xl font-semibold flex items-center justify-center gap-2"
+          >
+            <Download size={20} />
+            Install Now
+          </button>
+        ) : (
+          <div className="text-center">
+            <p className="text-sm text-text-secondary mb-4">
+              {instructions}
+            </p>
+            <button
+              onClick={onClose}
+              className="btn-gradient px-6 py-2 rounded-xl font-semibold"
+            >
+              Got it
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -35,7 +35,7 @@ const RegisterPage: React.FC = () => {
     setError('');
     
     try {
-      const response = await apiClient.post('/auth/register', {
+      const response = await apiClient.post('/api/auth/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -53,7 +53,7 @@ const RegisterPage: React.FC = () => {
 
   const handleGoogleSignup = () => {
     const baseURL = apiClient.defaults.baseURL;
-    window.location.href = `${baseURL}/auth/google?signup=true&role=${formData.role}`;
+    window.location.href = `${baseURL}/api/auth/google?signup=true&role=${formData.role}`;
   };
 
   if (success) {
