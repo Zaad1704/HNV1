@@ -23,6 +23,8 @@ const fetchPlans = async (): Promise<IPlan[]> => {
 
 const AdminOrganizationsPage = () => {
     const queryClient = useQueryClient();
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    const [selectedOrg, setSelectedOrg] = useState<IOrganization | null>(null);
     const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
         queryKey:['allOrganizations'], 
         queryFn: fetchOrganizations,
@@ -150,7 +152,10 @@ const AdminOrganizationsPage = () => {
                                             </button>
                                         )}
                                         <button 
-                                            onClick={() => alert(`Manage subscription for ${org.name}\nFeature coming soon!`)}
+                                            onClick={() => {
+                                                setSelectedOrg(org);
+                                                setShowSubscriptionModal(true);
+                                            }}
                                             className="p-2 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" 
                                             title="Manage Subscription"
                                         >
@@ -170,6 +175,53 @@ const AdminOrganizationsPage = () => {
                     </tbody>
                 </table>
             </div>
+            
+            {/* Subscription Management Modal */}
+            {showSubscriptionModal && selectedOrg && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+                    <div className="app-surface rounded-3xl shadow-app-xl w-full max-w-md border border-app-border">
+                        <div className="flex justify-between items-center p-6 border-b border-app-border">
+                            <h2 className="text-xl font-bold text-text-primary">Manage Subscription</h2>
+                            <button 
+                                onClick={() => setShowSubscriptionModal(false)} 
+                                className="text-text-secondary hover:text-text-primary"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <h3 className="font-semibold text-text-primary mb-2">{selectedOrg.name}</h3>
+                                <p className="text-sm text-text-secondary mb-4">Current Plan: {selectedOrg.subscription?.planId?.name || 'No Plan'}</p>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Change Plan</label>
+                                <select className="w-full p-3 border border-app-border rounded-2xl bg-app-surface">
+                                    <option value="">Select a plan</option>
+                                    {availablePlans.map(plan => (
+                                        <option key={plan._id} value={plan._id}>
+                                            {plan.name} - ${plan.price/100}/{plan.duration}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div className="flex justify-end gap-4 pt-4">
+                                <button
+                                    onClick={() => setShowSubscriptionModal(false)}
+                                    className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary"
+                                >
+                                    Cancel
+                                </button>
+                                <button className="btn-gradient px-6 py-3 rounded-2xl">
+                                    Update Subscription
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

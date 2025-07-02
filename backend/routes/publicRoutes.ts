@@ -64,13 +64,22 @@ router.get('/site-settings', async (req, res) => {
   }
 });
 
-// Public plans
-router.get('/plans/public', asyncHandler(async (req, res) => {
-  const landingData = await masterDataService.getLandingPageData();
-  res.json({
-    success: true,
-    data: landingData.plans
-  });
+// Public plans - connects to super admin plans
+router.get('/plans', asyncHandler(async (req, res) => {
+  try {
+    const Plan = require('../models/Plan');
+    const plans = await Plan.find({ isPublic: true }).sort({ price: 1 });
+    res.json({
+      success: true,
+      data: plans || []
+    });
+  } catch (error) {
+    console.error('Public plans error:', error);
+    res.json({
+      success: true,
+      data: []
+    });
+  }
 }));
 
 // Public stats for landing page

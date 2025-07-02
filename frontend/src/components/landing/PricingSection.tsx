@@ -19,8 +19,8 @@ interface Plan {
 
 const fetchPlans = async (): Promise<Plan[]> => {
   try {
-    const { data } = await apiClient.get('/api/public/plans/public');
-    return data.data;
+    const { data } = await apiClient.get('/public/plans');
+    return data.data || [];
   } catch (error) {
     console.warn('Plans API failed, using defaults');
     return [];
