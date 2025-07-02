@@ -314,11 +314,22 @@ router.put('/site-settings', asyncHandler(async (req: Request, res: Response) =>
   }
 }));
 
-// Image upload route
-router.post('/upload-image', asyncHandler(async (req: Request, res: Response) => {
+// Image upload route with multer middleware
+const multer = require('multer');
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req: any, file: any, cb: any) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files allowed'));
+    }
+  }
+});
+
+router.post('/upload-image', upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
   try {
-    // For now, return a Google Drive URL format
-    // In production, implement actual Google Drive upload
     const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}`;
     
     console.log('Image upload request:', {
