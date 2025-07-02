@@ -14,12 +14,12 @@ class EmailService {
     
     try {
       this.transporter = nodemailer.createTransport({
-        host: 'smtp.resend.com',
-        port: 587,
+        host: process.env.SMTP_HOST || 'smtp.resend.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
         secure: false,
         auth: {
-          user: 'zaad4041@gmail.com',
-          pass: 're_XvHZC6Yu_9ooAM3EzTPUcujUjXJx72zNX'
+          user: process.env.SMTP_USER || 'resend',
+          pass: process.env.SMTP_PASS || process.env.RESEND_API_KEY
         }
       });
       console.log('✅ SMTP email service initialized');
@@ -84,7 +84,7 @@ class EmailService {
 
       await this.transporter.sendMail({
         from: this.fromEmail,
-        to: 'zaad4041@gmail.com',
+        to: process.env.CONTACT_EMAIL || 'contact@hnvpm.com',
         subject: `Contact Form: ${formData.subject}`,
         html: htmlContent,
         replyTo: formData.email
