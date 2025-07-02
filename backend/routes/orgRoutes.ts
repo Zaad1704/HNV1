@@ -12,7 +12,7 @@ import { authorize } from '../middleware/rbac';
 const router = Router();
 
 // Apply protect middleware to all routes in this file
-router.use(protect);
+// Routes are protected by app.ts middleware
 
 // @route   GET /api/orgs/me
 // @desc    Get details for the logged-in user's organization

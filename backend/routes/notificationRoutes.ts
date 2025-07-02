@@ -4,8 +4,7 @@ import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// All routes are protected
-router.use(protect);
+// Routes are protected by app.ts middleware
 
 router.get('/', getNotifications);
 router.post('/mark-as-read', markNotificationsAsRead);

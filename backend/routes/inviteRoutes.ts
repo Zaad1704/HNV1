@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
+// Using try-catch instead of asyncHandler
 import emailService from '../services/emailService';
 
 const router = Router();
 
 // Invite agent
-router.post('/agent', asyncHandler(async (req, res) => {
+router.post('/agent', async (req, res) => {
   const { email, name, role = 'agent' } = req.body;
   
   try {
@@ -31,10 +31,10 @@ router.post('/agent', asyncHandler(async (req, res) => {
       message: 'Failed to send invitation'
     });
   }
-}));
+});
 
 // Invite tenant
-router.post('/tenant', asyncHandler(async (req, res) => {
+router.post('/tenant', async (req, res) => {
   const { email, name, propertyName } = req.body;
   
   try {
@@ -60,6 +60,6 @@ router.post('/tenant', asyncHandler(async (req, res) => {
       message: 'Failed to send invitation'
     });
   }
-}));
+});
 
 export default router;
