@@ -20,7 +20,7 @@ interface ICashFlowRecord {
 }
 
 const fetchCashFlowRecords = async (): Promise<ICashFlowRecord[]> => {
-    const { data } = await apiClient.get('/cashflow');
+    const { data } = await apiClient.get('/api/cashflow');
     return data.data;
 };
 
