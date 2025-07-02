@@ -68,6 +68,25 @@ const LandingPage = () => {
   const stats = realStats || {};
   const siteSettings = landingData || {};
 
+  // Convert Google Drive URLs to direct image URLs
+  const convertGoogleDriveUrl = (url: string) => {
+    if (!url) return url;
+    
+    // Convert Google Drive share URLs to direct image URLs
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch) {
+      return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+    }
+    
+    // Fix existing uc URLs that might be malformed
+    const ucMatch = url.match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
+    if (ucMatch) {
+      return `https://drive.google.com/uc?export=view&id=${ucMatch[1]}`;
+    }
+    
+    return url;
+  };
+
   useEffect(() => {
     // Handle hash navigation from URL
     if (location.hash) {
@@ -131,12 +150,17 @@ const LandingPage = () => {
           <div className="container mx-auto px-4">
             <div className="relative rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-app-lg">
               <img
-                src={siteSettings.bannerImage}
+                src={convertGoogleDriveUrl(siteSettings.bannerImage)}
                 alt="Platform Banner"
                 className="w-full h-40 sm:h-48 md:h-56 lg:h-64 xl:h-72 object-cover bg-app-bg"
                 onError={(e) => {
                   console.error('Banner image failed to load:', siteSettings.bannerImage);
-                  e.currentTarget.style.display = 'none';
+                  // Try original URL as fallback
+                  if (e.currentTarget.src !== siteSettings.bannerImage) {
+                    e.currentTarget.src = siteSettings.bannerImage;
+                  } else {
+                    e.currentTarget.style.display = 'none';
+                  }
                 }}
               />
               {siteSettings.bannerOverlayText && (
