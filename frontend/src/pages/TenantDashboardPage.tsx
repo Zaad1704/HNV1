@@ -10,7 +10,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 
 const fetchTenantData = async () => {
-  const { data } = await apiClient.get('/tenant/dashboard');
+  const { data } = await apiClient.get('/api/tenant/dashboard');
   return data.data;
 };
 
