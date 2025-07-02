@@ -45,6 +45,8 @@ const SiteEditorPage = () => {
     setIsSaving(true);
     try {
       await apiClient.put('/super-admin/site-settings', siteData);
+      // Force refresh of site settings on landing page
+      window.dispatchEvent(new Event('siteSettingsUpdated'));
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Failed to save:', error);

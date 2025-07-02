@@ -34,12 +34,27 @@ const LandingPage = () => {
   const { data: landingData } = useQuery({
     queryKey: ['landingData'],
     queryFn: fetchLandingData,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000, // 30 seconds instead of 5 minutes
     retry: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: true // Enable refetch on focus
   });
 
-  const stats = landingData?.stats || {};
+  // Fetch real stats from dashboard
+  const { data: realStats } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/dashboard/stats');
+        return data.data;
+      } catch (error) {
+        return null;
+      }
+    },
+    staleTime: 60 * 1000,
+    retry: false
+  });
+
+  const stats = realStats || {};
   const siteSettings = landingData || {};
 
   useEffect(() => {
@@ -73,21 +88,21 @@ const LandingPage = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
             <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-blue mb-2 md:mb-3">
-                {stats?.totalProperties?.toLocaleString() || '2,847'}
+                {stats?.totalProperties?.toLocaleString() || '0'}
               </div>
               <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.properties_managed', 'Properties Managed')}</div>
             </div>
             <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-orange mb-2 md:mb-3">
-                {stats?.totalUsers?.toLocaleString() || '5,234'}
+                {stats?.totalTenants?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.active_users', 'Active Users')}</div>
+              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.active_users', 'Active Tenants')}</div>
             </div>
             <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-blue mb-2 md:mb-3">
-                {stats?.countriesServed || '47'}
+                {Math.round(stats?.occupancyRate || 0)}%
               </div>
-              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.countries_served', 'Countries Served')}</div>
+              <div className="text-xs md:text-sm lg:text-base text-text-secondary font-medium">{t('landing.occupancy_rate', 'Occupancy Rate')}</div>
             </div>
             <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-2xl md:text-3xl lg:text-5xl font-bold text-brand-orange mb-2 md:mb-3">
