@@ -45,7 +45,7 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
   }
 }));
 
-// Protected routes - auth already applied in app.ts
+// Protected routes - auth already applied in app.ts, but we need authorize for role checking
 // router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
 // Main dashboard stats route
