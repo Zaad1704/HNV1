@@ -149,7 +149,11 @@ const AdminOrganizationsPage = () => {
                                                 <Crown size={16}/>
                                             </button>
                                         )}
-                                        <button className="p-2 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="Manage Subscription">
+                                        <button 
+                                            onClick={() => alert(`Manage subscription for ${org.name}\nFeature coming soon!`)}
+                                            className="p-2 rounded-md text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" 
+                                            title="Manage Subscription"
+                                        >
                                             <Settings size={16}/>
                                         </button>
                                         <button 

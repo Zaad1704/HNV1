@@ -1,10 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Save, Eye, Globe } from 'lucide-react';
+import apiClient from '../../api/client';
 
 const SiteEditorPage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [isSaving, setIsSaving] = useState(false);
+  const [siteData, setSiteData] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSiteData();
+  }, []);
+
+  const fetchSiteData = async () => {
+    try {
+      const { data } = await apiClient.get('/public/site-settings');
+      setSiteData(data.data || {});
+    } catch (error) {
+      console.error('Failed to fetch site data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'general', label: 'General Settings', icon: Settings },
@@ -24,11 +42,29 @@ const SiteEditorPage = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Mock save functionality
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    alert('Settings saved successfully!');
+    try {
+      await apiClient.put(`/super-admin/site-content/${activeTab}`, siteData);
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Failed to save:', error);
+      alert('Failed to save settings. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const updateSiteData = (field: string, value: any) => {
+    setSiteData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading site data...</span>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -88,7 +124,8 @@ const SiteEditorPage = () => {
                     </label>
                     <input
                       type="text"
-                      defaultValue="HNV Property Management"
+                      value={siteData.siteName || 'HNV Property Management'}
+                      onChange={(e) => updateSiteData('siteName', e.target.value)}
                       className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                     />
                   </div>
@@ -98,7 +135,8 @@ const SiteEditorPage = () => {
                     </label>
                     <input
                       type="email"
-                      defaultValue="support@hnvpm.com"
+                      value={siteData.contactEmail || 'support@hnvpm.com'}
+                      onChange={(e) => updateSiteData('contactEmail', e.target.value)}
                       className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                     />
                   </div>
@@ -109,7 +147,8 @@ const SiteEditorPage = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue="Professional Property Management Solutions"
+                    value={siteData.siteDescription || 'Professional Property Management Solutions'}
+                    onChange={(e) => updateSiteData('siteDescription', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
