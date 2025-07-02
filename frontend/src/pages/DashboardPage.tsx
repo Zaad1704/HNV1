@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useLang } from '../contexts/LanguageContext';
-// Currency services temporarily disabled
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -47,8 +47,7 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 };
 
 const DashboardPage = () => {
-  const currencyCode = 'USD';
-  const exchangeRates = {};
+  const { currency } = useCurrency();
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
@@ -149,7 +148,7 @@ const DashboardPage = () => {
           </div>
           <h2 className="text-2xl font-bold text-text-primary">Monthly Revenue</h2>
           <p className="text-3xl font-bold text-brand-orange mt-2">
-            ${dashboardStats.monthlyRevenue.toLocaleString()}
+            {currency}{dashboardStats.monthlyRevenue.toLocaleString()}
           </p>
           <p className="text-text-secondary text-sm mt-2 flex-grow">Total revenue this month</p>
         </motion.div>

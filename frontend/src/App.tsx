@@ -9,6 +9,7 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -33,6 +34,7 @@ const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage')
 const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 
 // Dashboard pages - ensure these are correctly imported and accessible
+const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
 const TenantsPage = React.lazy(() => import('./pages/TenantsPage'));
@@ -95,7 +97,8 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <ErrorBoundary>
+        <CurrencyProvider>
+          <ErrorBoundary>
           <OfflineIndicator />
           <PWAInstallPrompt />
           <Suspense fallback={<FullScreenLoader />}>
@@ -122,7 +125,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             {/* General User Dashboards */}
-            <Route index element={<Navigate to="overview" replace />} />
+            <Route index element={<DashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<TenantProfilePage />} /> {/* Assuming a generic profile page */}
@@ -168,7 +171,8 @@ function App() {
         <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
-        </ErrorBoundary>
+          </ErrorBoundary>
+        </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

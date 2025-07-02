@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface CurrencyContextType {
   currency: string;
@@ -8,28 +8,9 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-const currencyMap: { [key: string]: string } = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  CAD: 'C$',
-  AUD: 'A$',
-  JPY: '¥',
-  INR: '₹',
-  BRL: 'R$'
-};
-
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currencyCode, setCurrencyCode] = useState(() => {
-    return localStorage.getItem('currency') || 'USD';
-  });
-
-  const currency = currencyMap[currencyCode] || '$';
-
-  const setCurrency = (newCurrencyCode: string) => {
-    setCurrencyCode(newCurrencyCode);
-    localStorage.setItem('currency', newCurrencyCode);
-  };
+  const [currency, setCurrency] = useState('$');
+  const [currencyCode] = useState('USD');
 
   return (
     <CurrencyContext.Provider value={{ currency, currencyCode, setCurrency }}>
@@ -40,8 +21,8 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useCurrency = () => {
   const context = useContext(CurrencyContext);
-  if (context === undefined) {
-    throw new Error('useCurrency must be used within a CurrencyProvider');
+  if (!context) {
+    return { currency: '$', currencyCode: 'USD', setCurrency: () => {} };
   }
   return context;
 };
