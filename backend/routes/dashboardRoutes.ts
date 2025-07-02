@@ -86,8 +86,11 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
     const tenants = await Tenant.find({ propertyId: { $in: propertyIds } });
     
     // Calculate occupancy rate
-    const totalUnits = properties.reduce((sum, prop) => sum + (prop.units || 1), 0);
-    const occupiedUnits = tenants.filter(t => t.status === 'active').length;
+    const totalUnits = properties.reduce((sum, prop) => {
+      const units = Array.isArray(prop.units) ? prop.units.length : (prop.units || 1);
+      return sum + units;
+    }, 0);
+    const occupiedUnits = tenants.filter(t => t.status === 'Active').length;
     const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
     
     // Calculate monthly revenue (mock for now)
