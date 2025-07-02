@@ -87,6 +87,22 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         'emailVerification',
         { userName: user.name, verificationUrl }
       );
+      
+      // Send welcome email
+      try {
+        await emailService.sendEmail(
+          user.email,
+          'Welcome to HNV Property Management!',
+          'welcome',
+          {
+            name: user.name,
+            dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`
+          }
+        );
+      } catch (welcomeError) {
+        console.error('Welcome email failed:', welcomeError);
+      }
+      
       res.status(201).json({ 
         success: true, 
         message: 'Registration successful! Please check your email to verify your account.' 
