@@ -39,12 +39,12 @@ const LandingPage = () => {
     refetchOnWindowFocus: true // Enable refetch on focus
   });
 
-  // Fetch real stats from super admin dashboard
+  // Fetch real stats from public endpoint
   const { data: realStats } = useQuery({
-    queryKey: ['superAdminStats'],
+    queryKey: ['publicStats'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/super-admin/dashboard-stats');
+        const { data } = await apiClient.get('/public/stats');
         return data.data;
       } catch (error) {
         return null;

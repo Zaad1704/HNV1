@@ -170,7 +170,7 @@ const HeroSection = () => {
               </button>
             </div>
 
-            {/* Mobile Feature Preview */}
+            {/* Mobile Feature Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -178,22 +178,22 @@ const HeroSection = () => {
               className="mt-12 grid grid-cols-2 gap-4 px-6"
             >
               {[
-                { icon: Building2, title: 'Properties', count: '500+' },
-                { icon: Users, title: 'Tenants', count: '2K+' },
-                { icon: CreditCard, title: 'Payments', count: '$1M+' },
-                { icon: BarChart3, title: 'Reports', count: '24/7' }
+                { icon: Building2, title: 'Properties', section: 'features' },
+                { icon: Users, title: 'Services', section: 'services' },
+                { icon: CreditCard, title: 'Pricing', section: 'pricing' },
+                { icon: BarChart3, title: 'About', section: 'about' }
               ].map((item, index) => (
-                <motion.div
+                <motion.button
                   key={item.title}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
-                  className="app-surface p-4 rounded-2xl border border-app-border text-center"
+                  onClick={() => scrollToSection(item.section)}
+                  className="app-surface p-4 rounded-2xl border border-app-border text-center hover:shadow-app-lg hover:scale-105 transition-all active:scale-95"
                 >
                   <item.icon size={24} className="text-brand-orange mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-text-primary">{item.count}</p>
-                  <p className="text-xs text-text-secondary">{item.title}</p>
-                </motion.div>
+                  <p className="text-sm font-semibold text-text-primary">{item.title}</p>
+                </motion.button>
               ))}
             </motion.div>
           </motion.div>
