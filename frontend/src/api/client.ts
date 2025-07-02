@@ -26,7 +26,7 @@ const getApiUrl = () => {
 };
 
 const apiClient = axios.create({
-  baseURL: getApiUrl(),
+  baseURL: getApiUrl() + '/api',
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
