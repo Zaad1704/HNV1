@@ -6,7 +6,7 @@ import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign } from 'lucide-r
 
 const fetchTenants = async () => {
   try {
-    const { data } = await apiClient.get('/api/tenants');
+    const { data } = await apiClient.get('/tenants');
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch tenants:', error);

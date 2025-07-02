@@ -13,7 +13,7 @@ import ExportModal from '../components/common/ExportModal';
 
 const fetchProperties = async () => {
   try {
-    const { data } = await apiClient.get('/api/properties');
+    const { data } = await apiClient.get('/properties');
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch properties:', error);
