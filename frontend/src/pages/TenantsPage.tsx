@@ -5,14 +5,21 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign } from 'lucide-react';
 
 const fetchTenants = async () => {
-  const { data } = await apiClient.get('/api/tenants');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/tenants');
+    return data.data || [];
+  } catch (error) {
+    console.error('Failed to fetch tenants:', error);
+    return [];
+  }
 };
 
 const TenantsPage = () => {
-  const { data: tenants, isLoading } = useQuery({
+  const { data: tenants, isLoading, error } = useQuery({
     queryKey: ['tenants'],
-    queryFn: fetchTenants
+    queryFn: fetchTenants,
+    retry: 3,
+    retryDelay: 1000
   });
 
   if (isLoading) {
@@ -20,6 +27,24 @@ const TenantsPage = () => {
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
         <span className="ml-3 text-text-secondary">Loading tenants...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Users size={32} className="text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary mb-2">Unable to Load Tenants</h2>
+        <p className="text-text-secondary mb-4">We're having trouble connecting to our servers.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

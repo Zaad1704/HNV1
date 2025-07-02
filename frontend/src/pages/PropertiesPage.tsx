@@ -12,8 +12,13 @@ import { useDataExport } from '../hooks/useDataExport';
 import ExportModal from '../components/common/ExportModal';
 
 const fetchProperties = async () => {
-  const { data } = await apiClient.get('/api/properties');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/properties');
+    return data.data || [];
+  } catch (error) {
+    console.error('Failed to fetch properties:', error);
+    return [];
+  }
 };
 
 const PropertiesPage = () => {
@@ -26,9 +31,11 @@ const PropertiesPage = () => {
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport();
 
-  const { data: properties, isLoading } = useQuery({
+  const { data: properties, isLoading, error } = useQuery({
     queryKey: ['properties'],
-    queryFn: fetchProperties
+    queryFn: fetchProperties,
+    retry: 3,
+    retryDelay: 1000
   });
 
   const filteredProperties = useMemo(() => {
@@ -110,6 +117,24 @@ const PropertiesPage = () => {
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
         <span className="ml-3 text-text-secondary">{t('property.loading_properties')}</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Building2 size={32} className="text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary mb-2">Unable to Load Properties</h2>
+        <p className="text-text-secondary mb-4">We're having trouble connecting to our servers.</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

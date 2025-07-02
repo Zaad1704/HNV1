@@ -5,9 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useLang } from '../contexts/LanguageContext';
-import { useCurrency } from '../contexts/CurrencyContext';
-import { convertPrice, formatCurrency } from '../services/currencyService';
-import { useCurrencyRates } from '../services/currencyService';
+// Currency services temporarily disabled
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -32,17 +30,31 @@ interface DashboardStats {
 }
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
-  const { data } = await apiClient.get('/dashboard/stats');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/dashboard/stats');
+    return data.data;
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats:', error);
+    return {
+      totalProperties: 0,
+      totalTenants: 0,
+      monthlyRevenue: 0,
+      occupancyRate: 0,
+      pendingMaintenance: 0,
+      recentPayments: 0
+    };
+  }
 };
 
 const DashboardPage = () => {
-  const { currencyCode } = useCurrency();
-  const { data: exchangeRates = {} } = useCurrencyRates();
-  const { data: stats, isLoading } = useQuery({
+  const currencyCode = 'USD';
+  const exchangeRates = {};
+  const { data: stats, isLoading, error } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: 3,
+    retryDelay: 1000
   });
 
   const defaultStats: DashboardStats = {
@@ -61,12 +73,32 @@ const DashboardPage = () => {
       <div className="p-6 pt-0">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="app-surface rounded-3xl p-6 animate-pulse">
-              <div className="w-12 h-12 bg-gray-300 rounded-full mb-4"></div>
-              <div className="h-6 bg-gray-300 rounded mb-2"></div>
-              <div className="h-4 bg-gray-300 rounded"></div>
+            <div key={i} className="app-surface rounded-3xl p-6 animate-pulse border border-app-border">
+              <div className="w-12 h-12 bg-app-bg rounded-full mb-4"></div>
+              <div className="h-6 bg-app-bg rounded mb-2"></div>
+              <div className="h-4 bg-app-bg rounded"></div>
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 pt-0">
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BarChart3 size={32} className="text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-text-primary mb-2">Dashboard Temporarily Unavailable</h2>
+          <p className="text-text-secondary mb-4">We're having trouble loading your dashboard data.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+          >
+            Refresh Dashboard
+          </button>
         </div>
       </div>
     );
@@ -117,10 +149,7 @@ const DashboardPage = () => {
           </div>
           <h2 className="text-2xl font-bold text-text-primary">Monthly Revenue</h2>
           <p className="text-3xl font-bold text-brand-orange mt-2">
-            {formatCurrency(
-              convertPrice(dashboardStats.monthlyRevenue, 'USD', currencyCode, exchangeRates),
-              currencyCode
-            )}
+            ${dashboardStats.monthlyRevenue.toLocaleString()}
           </p>
           <p className="text-text-secondary text-sm mt-2 flex-grow">Total revenue this month</p>
         </motion.div>

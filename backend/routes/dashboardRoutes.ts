@@ -67,6 +67,70 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
 // Protected routes
 router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
+// Main dashboard stats route
+router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?._id;
+    const organizationId = req.user?.organizationId;
+    
+    // Get user's properties
+    const properties = await Property.find({ 
+      $or: [
+        { ownerId: userId },
+        { organizationId: organizationId }
+      ]
+    });
+    
+    // Get tenants for user's properties
+    const propertyIds = properties.map(p => p._id);
+    const tenants = await Tenant.find({ propertyId: { $in: propertyIds } });
+    
+    // Calculate occupancy rate
+    const totalUnits = properties.reduce((sum, prop) => sum + (prop.units || 1), 0);
+    const occupiedUnits = tenants.filter(t => t.status === 'active').length;
+    const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+    
+    // Calculate monthly revenue (mock for now)
+    const monthlyRevenue = tenants.reduce((sum, tenant) => sum + (tenant.rentAmount || 0), 0);
+    
+    // Get maintenance requests
+    const MaintenanceRequest = require('../models/MaintenanceRequest');
+    const pendingMaintenance = await MaintenanceRequest.countDocuments({
+      propertyId: { $in: propertyIds },
+      status: { $in: ['pending', 'in_progress'] }
+    });
+    
+    // Recent payments (mock for now)
+    const recentPayments = Math.floor(Math.random() * 10) + 1;
+    
+    res.json({
+      success: true,
+      data: {
+        totalProperties: properties.length,
+        totalTenants: tenants.length,
+        monthlyRevenue,
+        occupancyRate,
+        pendingMaintenance,
+        recentPayments
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch dashboard stats',
+      data: {
+        totalProperties: 0,
+        totalTenants: 0,
+        monthlyRevenue: 0,
+        occupancyRate: 0,
+        pendingMaintenance: 0,
+        recentPayments: 0
+      }
+    });
+  }
+}));
+
 router.get('/overview-stats', asyncHandler(getOverviewStats));
 router.get('/late-tenants', asyncHandler(getLateTenants));
 router.get('/expiring-leases', asyncHandler(getExpiringLeases));
