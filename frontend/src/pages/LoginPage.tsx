@@ -137,20 +137,21 @@ const LoginPage: React.FC = () => {
         className="w-full max-w-md"
       >
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Lock size={32} className="text-white" />
+        <div className="text-center mb-6 md:mb-8">
+          <div className="w-16 h-16 md:w-20 md:h-20 app-gradient rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-4 md:mb-6">
+            <Lock size={24} className="text-white md:hidden" />
+            <Lock size={32} className="text-white hidden md:block" />
           </div>
-          <h1 className="text-4xl font-bold text-text-primary mb-2">
+          <h1 className="text-2xl md:text-4xl font-bold text-text-primary mb-2">
             {t('auth.welcome_back')}
           </h1>
-          <p className="text-text-secondary">
+          <p className="text-sm md:text-base text-text-secondary">
             {t('auth.sign_in_subtitle')}
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="app-surface rounded-3xl p-8 border border-app-border shadow-app-lg">
+        <div className="app-surface rounded-2xl md:rounded-3xl p-6 md:p-8 border border-app-border shadow-app-lg">
           {error && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -181,7 +182,7 @@ const LoginPage: React.FC = () => {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  className="w-full pl-12 pr-4 py-3 md:py-4 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
                   placeholder={t('auth.enter_email')}
                   aria-describedby="email-error"
                 />
@@ -217,7 +218,7 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-gradient py-4 text-lg font-semibold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-gradient py-3 md:py-4 text-base md:text-lg font-semibold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -243,7 +244,7 @@ const LoginPage: React.FC = () => {
           {/* Google Login */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex justify-center items-center gap-3 py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app"
+            className="w-full flex justify-center items-center gap-3 py-3 md:py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app touch-target"
           >
             <Chrome size={20} />
             {t('auth.continue_google')}
