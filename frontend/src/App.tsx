@@ -78,7 +78,7 @@ function App() {
     const checkUserSession = async () => {
       if (token && !user) {
         try {
-          const response = await apiClient.get('/auth/me');
+          const response = await apiClient.get('/api/auth/me');
           setUser(response.data.data);
         } catch (error) {
           console.error("Session check failed, logging out.", error);

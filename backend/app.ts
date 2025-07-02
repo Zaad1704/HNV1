@@ -179,6 +179,13 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
   }
 };
 
+// Debug middleware for all API routes - MUST BE FIRST
+app.use('/api', (req, res, next) => {
+  console.log(`API Request: ${req.method} ${req.originalUrl}`);
+  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
+  next();
+});
+
 // Public routes with error handling
 app.use('/api/auth', authRoutes, routeErrorHandler);
 app.use('/api/setup', setupRoutes, routeErrorHandler);
@@ -194,15 +201,6 @@ app.use('/api/rent-collection', rentCollectionRoutes, routeErrorHandler);
 app.use('/api/analytics', analyticsRoutes, routeErrorHandler);
 app.use('/api/integrations', integrationRoutes, routeErrorHandler);
 app.use('/api/subscription', subscriptionRoutes, routeErrorHandler);
-
-// Debug middleware for all API routes
-app.use('/api', (req, res, next) => {
-  console.log(`API Request: ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
-  next();
-});
-
-// Public routes BEFORE protected routes
 app.use('/api/public', publicRoutes, routeErrorHandler);
 app.use('/api/contact', contactRoutes, routeErrorHandler);
 
