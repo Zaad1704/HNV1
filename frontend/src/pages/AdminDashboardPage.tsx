@@ -99,6 +99,20 @@ const AdminDashboardPage = () => {
     retryDelay: 1000
   });
 
+  const { data: emailStatus } = useQuery({
+    queryKey: ['emailServiceStatus'],
+    queryFn: async () => {
+      try {
+        await apiClient.post('/contact/test-email');
+        return { status: 'operational', message: 'Email service running' };
+      } catch (error) {
+        return { status: 'degraded', message: 'Email service issues' };
+      }
+    },
+    refetchInterval: 60000,
+    retry: false
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -259,9 +273,13 @@ const AdminDashboardPage = () => {
             <p className="text-xs text-text-secondary">Healthy</p>
           </div>
           <div className="text-center">
-            <div className="w-4 h-4 bg-yellow-500 rounded-full mx-auto mb-2"></div>
+            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+              emailStatus?.status === 'operational' ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
             <p className="text-sm font-medium text-text-primary">Email Service</p>
-            <p className="text-xs text-text-secondary">Degraded</p>
+            <p className="text-xs text-text-secondary">
+              {emailStatus?.status === 'operational' ? 'Operational' : 'Offline'}
+            </p>
           </div>
         </div>
       </motion.div>
