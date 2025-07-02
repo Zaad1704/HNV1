@@ -59,18 +59,26 @@ const AdminUsersPage: React.FC = () => {
     );
   }, [users, searchTerm]);
 
-  if (isLoading) return <div className="p-4 text-center text-dark-text dark:text-dark-text-dark">Loading users...</div>;
-  if (isError) return <div className="p-4 text-center text-red-400 dark:text-red-400">Failed to fetch users.</div>;
+  if (isLoading) return <div className="p-4 text-center text-text-secondary">Loading users...</div>;
+  if (isError) return <div className="p-4 text-center text-red-500">Failed to fetch users.</div>;
 
   return (
-    <div className="text-dark-text dark:text-dark-text-dark">
-      <h1 className="text-3xl font-bold mb-4">Manage All Users</h1>
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Users</h1>
+          <p className="text-text-secondary mt-1">Manage all platform users</p>
+        </div>
+        <div className="text-sm text-text-secondary">
+          Total: {filteredUsers.length} users
+        </div>
+      </div>
       <input
         type="text"
         placeholder="Search by name or email..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-6 p-3 border border-border-color rounded-lg w-full bg-light-card text-dark-text focus:ring-brand-primary focus:border-brand-primary transition-all dark:bg-dark-card dark:border-border-color-dark dark:text-dark-text-dark"
+        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
       />
       <div className="bg-light-card p-6 rounded-xl shadow-lg border border-border-color overflow-x-auto dark:bg-dark-card dark:border-border-color-dark">
         <table className="w-full">

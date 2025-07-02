@@ -131,6 +131,18 @@ const SiteEditorPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Hero Background Image
+                  </label>
+                  <div className="border-2 border-dashed border-app-border rounded-2xl p-6 text-center">
+                    <input type="file" accept="image/*" className="hidden" id="hero-bg" />
+                    <label htmlFor="hero-bg" className="cursor-pointer">
+                      <div className="text-text-muted mb-2">Click to upload hero background</div>
+                      <div className="text-sm text-text-secondary">PNG, JPG up to 5MB</div>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Hero Subtitle
                   </label>
                   <textarea
@@ -235,13 +247,22 @@ const SiteEditorPage = () => {
                 <h2 className="text-xl font-bold text-text-primary">Banner Section</h2>
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Banner Image URL
+                    Banner Image
                   </label>
-                  <input
-                    type="url"
-                    placeholder="https://example.com/banner.jpg"
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
-                  />
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-app-border rounded-2xl p-6 text-center">
+                      <input type="file" accept="image/*" className="hidden" id="banner-img" />
+                      <label htmlFor="banner-img" className="cursor-pointer">
+                        <div className="text-text-muted mb-2">Click to upload banner image</div>
+                        <div className="text-sm text-text-secondary">PNG, JPG up to 5MB</div>
+                      </label>
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="Or enter image URL"
+                      className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-2">
@@ -318,7 +339,7 @@ const SiteEditorPage = () => {
                 <div className="space-y-4">
                   {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="p-4 border border-app-border rounded-2xl">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                           <label className="block text-sm font-medium text-text-secondary mb-2">
                             Feature {i} Title
@@ -338,6 +359,17 @@ const SiteEditorPage = () => {
                             defaultValue={`Description for feature ${i}`}
                             className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                           />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">
+                          Feature {i} Icon/Image
+                        </label>
+                        <div className="border-2 border-dashed border-app-border rounded-xl p-4 text-center">
+                          <input type="file" accept="image/*" className="hidden" id={`feature-${i}`} />
+                          <label htmlFor={`feature-${i}`} className="cursor-pointer">
+                            <div className="text-text-muted text-sm">Upload feature icon</div>
+                          </label>
                         </div>
                       </div>
                     </div>
@@ -420,6 +452,46 @@ const SiteEditorPage = () => {
                     defaultValue="The experts behind our success"
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-text-primary">Team Members</h4>
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-4 border border-app-border rounded-2xl">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">
+                            Member {i} Name
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={`Team Member ${i}`}
+                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">
+                            Position
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={`Position ${i}`}
+                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">
+                            Profile Photo
+                          </label>
+                          <div className="border-2 border-dashed border-app-border rounded-xl p-3 text-center">
+                            <input type="file" accept="image/*" className="hidden" id={`member-${i}`} />
+                            <label htmlFor={`member-${i}`} className="cursor-pointer text-sm text-text-muted">
+                              Upload photo
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

@@ -47,12 +47,20 @@ const AdminOrganizationsPage = () => {
         }
     };
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading organizations...</div>;
-    if (isError) return <div className="text-center text-red-400 p-8">Failed to fetch organizations.</div>;
+    if (isLoading) return <div className="text-center p-8 text-text-secondary">Loading organizations...</div>;
+    if (isError) return <div className="text-center text-red-500 p-8">Failed to fetch organizations.</div>;
 
     return (
-        <div className="text-text-primary">
-            <h1 className="text-3xl font-bold mb-8">Manage All Organizations</h1>
+        <div className="space-y-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold text-text-primary">Organizations</h1>
+                    <p className="text-text-secondary mt-1">Manage all platform organizations</p>
+                </div>
+                <div className="text-sm text-text-secondary">
+                    Total: {organizations.length} organizations
+                </div>
+            </div>
             <div className="app-surface rounded-xl border border-app-border overflow-hidden shadow-lg">
                 <table className="w-full text-left">
                     <thead className="bg-app-bg border-b border-app-border">
