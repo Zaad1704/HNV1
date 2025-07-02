@@ -21,7 +21,7 @@ router.put('/update-password', asyncHandler(updatePassword));
 router.post('/request-deletion', asyncHandler(requestAccountDeletion));
 
 router.route('/')
-  .get(authorize('Super Admin'), asyncHandler(getUsers));
+  .get(authorize('Super Admin', 'Landlord', 'Agent'), asyncHandler(getUsers));
 
 router
   .route('/:id')
