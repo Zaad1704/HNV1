@@ -157,7 +157,7 @@ router.get('/billing', async (req: Request, res: Response) => {
     const allSubscriptions = await Subscription.find({ status: 'active' }).populate('planId');
     
     const totalRevenue = allSubscriptions.reduce((sum, sub) => {
-      return sum + (sub.planId?.price || 0);
+      return sum + ((sub.planId as any)?.price || 0);
     }, 0);
     
     const monthlyRevenue = Math.round(totalRevenue * 0.75); // Estimate
@@ -169,11 +169,11 @@ router.get('/billing', async (req: Request, res: Response) => {
       .limit(10)
       .then(subs => subs.map(sub => ({
         _id: sub._id,
-        organizationName: sub.organizationId?.name || 'Unknown',
-        amount: sub.planId?.price || 0,
+        organizationName: (sub.organizationId as any)?.name || 'Unknown',
+        amount: (sub.planId as any)?.price || 0,
         status: 'completed',
-        date: sub.createdAt || new Date(),
-        planName: sub.planId?.name || 'Unknown Plan'
+        date: (sub as any).createdAt || new Date(),
+        planName: (sub.planId as any)?.name || 'Unknown Plan'
       })));
     
     const revenueChart = [
