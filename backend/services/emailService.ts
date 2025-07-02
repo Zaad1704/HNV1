@@ -13,7 +13,7 @@ class EmailService {
     console.log('EMAIL_FROM:', this.fromEmail);
     
     try {
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: 'smtp.resend.com',
         port: 587,
         secure: false,
