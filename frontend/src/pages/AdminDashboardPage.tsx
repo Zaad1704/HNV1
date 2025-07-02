@@ -99,17 +99,38 @@ const AdminDashboardPage = () => {
     retryDelay: 1000
   });
 
-  const { data: emailStatus } = useQuery({
-    queryKey: ['emailServiceStatus'],
+  const { data: systemStatus } = useQuery({
+    queryKey: ['systemStatus'],
     queryFn: async () => {
+      const status = { api: 'offline', database: 'offline', email: 'offline' };
+      
+      // Test API
+      try {
+        await apiClient.get('/public/stats');
+        status.api = 'operational';
+      } catch (error) {
+        status.api = 'offline';
+      }
+      
+      // Test Database
+      try {
+        await apiClient.get('/super-admin/dashboard-stats');
+        status.database = 'operational';
+      } catch (error) {
+        status.database = 'offline';
+      }
+      
+      // Test Email
       try {
         await apiClient.post('/contact/test-email');
-        return { status: 'operational', message: 'Email service running' };
+        status.email = 'operational';
       } catch (error) {
-        return { status: 'degraded', message: 'Email service issues' };
+        status.email = 'offline';
       }
+      
+      return status;
     },
-    refetchInterval: 60000,
+    refetchInterval: 30000,
     retry: false
   });
 
@@ -263,22 +284,30 @@ const AdminDashboardPage = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2"></div>
+            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+              systemStatus?.api === 'operational' ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
             <p className="text-sm font-medium text-text-primary">API Status</p>
-            <p className="text-xs text-text-secondary">Operational</p>
-          </div>
-          <div className="text-center">
-            <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-2"></div>
-            <p className="text-sm font-medium text-text-primary">Database</p>
-            <p className="text-xs text-text-secondary">Healthy</p>
+            <p className="text-xs text-text-secondary">
+              {systemStatus?.api === 'operational' ? 'Operational' : 'Offline'}
+            </p>
           </div>
           <div className="text-center">
             <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
-              emailStatus?.status === 'operational' ? 'bg-green-500' : 'bg-red-500'
+              systemStatus?.database === 'operational' ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
+            <p className="text-sm font-medium text-text-primary">Database</p>
+            <p className="text-xs text-text-secondary">
+              {systemStatus?.database === 'operational' ? 'Operational' : 'Offline'}
+            </p>
+          </div>
+          <div className="text-center">
+            <div className={`w-4 h-4 rounded-full mx-auto mb-2 ${
+              systemStatus?.email === 'operational' ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
             <p className="text-sm font-medium text-text-primary">Email Service</p>
             <p className="text-xs text-text-secondary">
-              {emailStatus?.status === 'operational' ? 'Operational' : 'Offline'}
+              {systemStatus?.email === 'operational' ? 'Operational' : 'Offline'}
             </p>
           </div>
         </div>

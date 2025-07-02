@@ -117,9 +117,9 @@ const LandingPage = () => {
             </div>
             <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-orange mb-1 sm:mb-2 md:mb-3">
-                99.9%
+                {stats?.uptime ? `${stats.uptime}%` : '{stats?.uptime ? `${stats.uptime}%` : '99.9%'}'}
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.uptime_guarantee', 'Uptime Guarantee')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.uptime_guarantee', 'System Uptime')}</div>
             </div>
           </div>
         </div>
