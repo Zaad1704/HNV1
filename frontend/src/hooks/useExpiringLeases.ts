@@ -3,9 +3,14 @@ export interface IExpiringLease {
   name: string;
   propertyId: {
     name: string;
-    _id: string;
   };
   leaseEndDate: string;
-  unit: string;
-  email: string;
 }
+
+export const useExpiringLeases = () => {
+  return {
+    data: [],
+    isLoading: false,
+    error: null
+  };
+};

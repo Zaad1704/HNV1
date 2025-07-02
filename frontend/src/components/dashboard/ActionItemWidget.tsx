@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Loader2 } from 'lucide-react';
 
 interface ActionItem {
   id: string;
@@ -26,48 +26,48 @@ const ActionItemWidget: React.FC<ActionItemWidgetProps> = ({
   emptyText,
   linkTo,
   onActionClick,
-  isActionLoading,
-  loadingItemId
+  isActionLoading = false,
+  loadingItemId = null
 }) => {
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
-        <Link
+        <Link 
           to={linkTo}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+          className="text-brand-blue hover:text-brand-blue/80 text-sm font-medium flex items-center gap-1"
         >
-          View All
-          <ExternalLink size={14} />
+          View All <ExternalLink size={14} />
         </Link>
       </div>
-
-      {items.length > 0 ? (
+      
+      {items.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-text-secondary">{emptyText}</p>
+        </div>
+      ) : (
         <div className="space-y-3">
-          {items.slice(0, 5).map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between p-4 bg-app-bg rounded-2xl"
-            >
-              <div>
-                <p className="font-medium text-text-primary">{item.primaryText}</p>
-                <p className="text-sm text-text-secondary">{item.secondaryText}</p>
+          {items.slice(0, 3).map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-3 bg-app-bg rounded-xl">
+              <div className="flex-1">
+                <p className="font-medium text-text-primary text-sm">{item.primaryText}</p>
+                <p className="text-text-secondary text-xs mt-1">{item.secondaryText}</p>
               </div>
               {onActionClick && (
                 <button
                   onClick={() => onActionClick(item.id)}
                   disabled={isActionLoading && loadingItemId === item.id}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
+                  className="px-3 py-1 bg-brand-blue text-white text-xs rounded-lg hover:bg-brand-blue/90 disabled:opacity-50 flex items-center gap-1"
                 >
-                  {isActionLoading && loadingItemId === item.id ? 'Loading...' : actionText}
+                  {isActionLoading && loadingItemId === item.id ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : (
+                    actionText
+                  )}
                 </button>
               )}
             </div>
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-text-secondary">{emptyText}</p>
         </div>
       )}
     </div>

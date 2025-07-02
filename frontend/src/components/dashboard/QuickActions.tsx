@@ -1,62 +1,69 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Users, Building2, CreditCard, FileText } from 'lucide-react';
+import { Building2, Users, DollarSign, Wrench, Plus, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const QuickActions: React.FC = () => {
+const QuickActions = () => {
   const actions = [
     {
-      title: 'Add Property',
-      description: 'Add a new property to your portfolio',
       icon: Building2,
-      to: '/dashboard/properties',
-      color: 'bg-blue-500'
+      label: 'Add Property',
+      to: '/dashboard/properties/new',
+      color: 'gradient-dark-orange-blue'
     },
     {
-      title: 'Add Tenant',
-      description: 'Register a new tenant',
       icon: Users,
-      to: '/dashboard/tenants',
-      color: 'bg-green-500'
+      label: 'Add Tenant',
+      to: '/dashboard/tenants/new',
+      color: 'gradient-orange-blue'
     },
     {
-      title: 'Record Payment',
-      description: 'Log a rent payment',
-      icon: CreditCard,
-      to: '/dashboard/payments',
-      color: 'bg-purple-500'
+      icon: DollarSign,
+      label: 'Record Payment',
+      to: '/dashboard/payments/new',
+      color: 'gradient-dark-orange-blue'
     },
     {
-      title: 'Generate Report',
-      description: 'Create financial reports',
+      icon: Wrench,
+      label: 'Maintenance',
+      to: '/dashboard/maintenance/new',
+      color: 'gradient-orange-blue'
+    },
+    {
       icon: FileText,
-      to: '/dashboard/reports',
-      color: 'bg-orange-500'
+      label: 'Add Expense',
+      to: '/dashboard/expenses/new',
+      color: 'gradient-dark-orange-blue'
+    },
+    {
+      icon: Plus,
+      label: 'Quick Add',
+      to: '/dashboard/quick-add',
+      color: 'gradient-orange-blue'
     }
   ];
 
   return (
-    <div className="app-surface rounded-3xl p-8 border border-app-border">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.5 }}
+      className="app-surface rounded-3xl p-8 border border-app-border"
+    >
       <h2 className="text-xl font-bold text-text-primary mb-6">Quick Actions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {actions.map((action) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {actions.map((action, index) => (
           <Link
-            key={action.title}
+            key={action.label}
             to={action.to}
-            className="flex flex-col items-center p-6 bg-app-bg rounded-2xl hover:bg-app-surface hover:shadow-app transition-all duration-300 group"
+            className={`${action.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all text-center`}
           >
-            <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-              <action.icon size={20} className="text-white" />
-            </div>
-            <h3 className="font-semibold text-text-primary text-center mb-1">
-              {action.title}
-            </h3>
-            <p className="text-sm text-text-secondary text-center">
-              {action.description}
-            </p>
+            <action.icon size={24} />
+            <span className="text-sm font-semibold">{action.label}</span>
           </Link>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
