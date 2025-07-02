@@ -1,30 +1,24 @@
-const CACHE_NAME = 'hnv-property-v2';
-const STATIC_CACHE = 'hnv-static-v2';
-const DYNAMIC_CACHE = 'hnv-dynamic-v2';
+const CACHE_NAME = 'hnv-property-v3';
+const STATIC_CACHE = 'hnv-static-v3';
+const DYNAMIC_CACHE = 'hnv-dynamic-v3';
 
 const urlsToCache = [
   '/',
-  '/dashboard',
-  '/login',
-  '/register',
+  '/manifest.webmanifest',
   '/logo-min.png',
   '/pwa-192x192.png',
   '/pwa-512x512.png',
-  '/apple-touch-icon.png',
-  '/manifest.webmanifest'
+  '/apple-touch-icon.png'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('Caching static assets');
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('Service Worker installed successfully');
         return self.skipWaiting();
       })
   );
@@ -73,21 +67,17 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
   event.waitUntil(
     Promise.all([
-      // Clean up old caches
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (![STATIC_CACHE, DYNAMIC_CACHE].includes(cacheName)) {
-              console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       }),
-      // Take control of all clients
       self.clients.claim()
     ])
   );

@@ -21,16 +21,19 @@
     <link rel="apple-touch-startup-image" href="/pwa-512x512.png">
     <link rel="manifest" href="/manifest.webmanifest" />
     
-    <!-- TWA specific meta tags -->
-    <meta name="twa-display-mode" content="standalone">
-    <meta name="twa-theme-color" content="#1E3A8A">
-    <meta name="twa-background-color" content="#FAFBFC">
-    <meta name="twa-start-url" content="/">
+    <!-- Samsung Internet PWA support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-title" content="HNV PM">
     
     <!-- Additional PWA meta tags -->
     <meta name="application-name" content="HNV PM">
     <meta name="msapplication-TileColor" content="#1E3A8A">
     <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/pwa-192x192.png" as="image">
+    <link rel="preload" href="/manifest.webmanifest" as="fetch" crossorigin>
     
     <!-- iOS PWA optimizations -->
     <style>
