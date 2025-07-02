@@ -40,7 +40,7 @@ const fetchRentStatus = async () => {
 };
 
 const sendRentReminder = async (tenantId: string) => {
-  const { data } = await apiClient.post('/api/communication/send-rent-reminder', { tenantId });
+  const { data } = await apiClient.post('/communication/send-rent-reminder', { tenantId });
   return data;
 };
 

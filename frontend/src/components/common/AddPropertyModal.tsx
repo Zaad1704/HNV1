@@ -27,7 +27,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
     setIsSubmitting(true);
     
     try {
-      const { data } = await apiClient.post('/api/properties', formData);
+      const { data } = await apiClient.post('/properties', formData);
       onPropertyAdded(data.data);
       onClose();
       setFormData({

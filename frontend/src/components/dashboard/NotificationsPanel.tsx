@@ -32,13 +32,13 @@ const NotificationsPanel = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+    // TODO: Implement mark as read functionality
+    console.log('Mark as read:', id);
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    // TODO: Implement mark all as read functionality
+    console.log('Mark all as read');
   };
 
   const getIcon = (type: string) => {
