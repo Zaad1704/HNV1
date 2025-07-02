@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import MobileHeader from './MobileHeader';
+import PublicMobileHeader from './PublicMobileHeader';
 import MobileBottomNav from './MobileBottomNav';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 
@@ -12,11 +12,10 @@ const PublicLayout = () => {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-app-bg">
-        <MobileHeader />
-        <main className="pt-16 pb-20">
+        <PublicMobileHeader />
+        <main className="pt-16 pb-4">
           <Outlet />
         </main>
-        <MobileBottomNav type="public" />
       </div>
     );
   }

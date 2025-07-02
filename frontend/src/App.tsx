@@ -9,7 +9,6 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
-import { CurrencyProvider } from './contexts/CurrencyContext';
 
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -96,11 +95,10 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <CurrencyProvider>
-          <ErrorBoundary>
-            <OfflineIndicator />
-            <PWAInstallPrompt />
-            <Suspense fallback={<FullScreenLoader />}>
+        <ErrorBoundary>
+          <OfflineIndicator />
+          <PWAInstallPrompt />
+          <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
@@ -168,10 +166,9 @@ function App() {
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
-            </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </CurrencyProvider>
+          </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </LanguageProvider>
     </ThemeProvider>
   );

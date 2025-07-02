@@ -255,7 +255,7 @@ const DashboardLayout = () => {
         </header>
         
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-24 lg:pb-8 scroll-container">
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-4 lg:pb-8 scroll-container">
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <Outlet />
