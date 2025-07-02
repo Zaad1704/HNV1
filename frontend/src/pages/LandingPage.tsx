@@ -39,12 +39,12 @@ const LandingPage = () => {
     refetchOnWindowFocus: true // Enable refetch on focus
   });
 
-  // Fetch real stats from dashboard
+  // Fetch real stats from super admin dashboard
   const { data: realStats } = useQuery({
-    queryKey: ['dashboardStats'],
+    queryKey: ['superAdminStats'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/dashboard/stats');
+        const { data } = await apiClient.get('/super-admin/dashboard-stats');
         return data.data;
       } catch (error) {
         return null;
@@ -94,15 +94,15 @@ const LandingPage = () => {
             </div>
             <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-orange mb-1 sm:mb-2 md:mb-3">
-                {stats?.totalTenants?.toLocaleString() || '0'}
+                {stats?.totalUsers?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.active_users', 'Active Tenants')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.active_users', 'Active Users')}</div>
             </div>
             <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-blue mb-1 sm:mb-2 md:mb-3">
-                {Math.round(stats?.occupancyRate || 0)}%
+                {stats?.totalOrganizations?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.occupancy_rate', 'Occupancy Rate')}</div>
+              <div className="text-xs sm:text-sm md:text-base text-text-secondary font-medium leading-tight">{t('landing.organizations', 'Organizations')}</div>
             </div>
             <div className="app-surface rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">
               <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-brand-orange mb-1 sm:mb-2 md:mb-3">

@@ -73,8 +73,15 @@ const SiteEditorPage = () => {
       const { data } = await apiClient.post('/super-admin/upload-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      updateSiteData(field, data.imageUrl);
-      alert('Image uploaded successfully!');
+      
+      // Update the site data with the new image URL
+      const newSiteData = { ...siteData, [field]: data.imageUrl };
+      setSiteData(newSiteData);
+      
+      // Automatically save the settings
+      await apiClient.put('/super-admin/site-settings', newSiteData);
+      
+      alert('Image uploaded and saved successfully!');
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Failed to upload image. Please try again.');
@@ -348,6 +355,8 @@ const SiteEditorPage = () => {
                     </div>
                     <input
                       type="url"
+                      value={siteData.bannerImage || ''}
+                      onChange={(e) => updateSiteData('bannerImage', e.target.value)}
                       placeholder="Or enter image URL"
                       className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                     />
