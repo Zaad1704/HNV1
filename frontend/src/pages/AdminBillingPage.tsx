@@ -31,7 +31,7 @@ interface ChartData {
 
 const fetchBillingData = async (): Promise<BillingData> => {
   try {
-    const { data } = await apiClient.get('/api/super-admin/billing');
+    const { data } = await apiClient.get('/super-admin/billing');
     return data.data;
   } catch (error) {
     console.error('Failed to fetch billing data:', error);
