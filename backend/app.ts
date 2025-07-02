@@ -160,6 +160,9 @@ app.options('*', (req, res) => {
   res.sendStatus(204);
 });
 
+// Test routes (no auth required)
+app.use('/api/test', require('./routes/testRoutes').default);
+
 // Health check routes (no auth required)
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes);

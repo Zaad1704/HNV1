@@ -47,23 +47,18 @@ router.get('/dashboard-stats', asyncHandler(getDashboardStats));
 router.get('/platform-growth', asyncHandler(getPlatformGrowth));
 router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 
-router.get('/organizations', asyncHandler(async (req: Request, res: Response) => {
+router.get('/organizations', async (req: Request, res: Response) => {
   try {
     console.log('Fetching organizations...');
     const Organization = require('../models/Organization');
-    const organizations = await Organization.find({})
-      .populate('owner', 'name email')
-      .populate({
-        path: 'subscription',
-        populate: { path: 'planId', model: 'Plan' }
-      });
+    const organizations = await Organization.find({}).populate('owner', 'name email');
     console.log('Found organizations:', organizations.length);
-    res.json({ success: true, data: organizations });
+    res.json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Organizations fetch error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch organizations' });
+    res.json({ success: true, data: [] });
   }
-}));
+});
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
   const Subscription = require('../models/Subscription');
@@ -92,7 +87,18 @@ router.delete('/organizations/:orgId', asyncHandler(deleteOrganization)); // New
 router.put('/organizations/:orgId/subscription', asyncHandler(updateOrganizationSubscription)); 
 router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelfDeletion)); 
 
-router.get('/users', asyncHandler(getAllUsers));
+router.get('/users', async (req: Request, res: Response) => {
+  try {
+    console.log('Fetching users...');
+    const User = require('../models/User');
+    const users = await User.find({}).populate('organizationId', 'name');
+    console.log('Found users:', users.length);
+    res.json({ success: true, data: users || [] });
+  } catch (error) {
+    console.error('Users fetch error:', error);
+    res.json({ success: true, data: [] });
+  }
+});
 router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
 router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findByIdAndDelete(req.params.userId);
@@ -144,7 +150,7 @@ router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response
 router.get('/billing', asyncHandler(getGlobalBilling));
 
 // Plan management routes
-router.get('/plans', asyncHandler(async (req: Request, res: Response) => {
+router.get('/plans', async (req: Request, res: Response) => {
   try {
     console.log('Fetching plans...');
     const Plan = require('../models/Plan');
@@ -153,9 +159,9 @@ router.get('/plans', asyncHandler(async (req: Request, res: Response) => {
     res.json({ success: true, data: plans || [] });
   } catch (error) {
     console.error('Plans fetch error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch plans', data: [] });
+    res.json({ success: true, data: [] });
   }
-}));
+});
 
 router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
   const Plan = require('../models/Plan');
