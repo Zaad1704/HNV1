@@ -167,7 +167,7 @@ const DashboardLayout = () => {
           </div>
         </main>
         
-        <MobileBottomNav type="dashboard" />
+        <MobileBottomNav />
       </div>
     );
   }

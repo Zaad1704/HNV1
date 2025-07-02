@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import AdminSidebar from '../admin/AdminSidebar';
+import MobileBottomNav from './MobileBottomNav';
 
 const AdminLayout = () => {
   const { user } = useAuthStore();
@@ -28,6 +29,7 @@ const AdminLayout = () => {
           <Outlet /> 
         </div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 };

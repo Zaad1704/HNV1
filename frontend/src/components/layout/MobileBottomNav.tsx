@@ -1,61 +1,54 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building, Users, CreditCard, Settings } from 'lucide-react';
+import { Home, Building2, Users, DollarSign, Settings, Shield } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
-interface MobileBottomNavProps {
-  type?: 'dashboard' | 'public';
-}
-
-const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ type = 'dashboard' }) => {
+const MobileBottomNav = () => {
   const location = useLocation();
   const { user } = useAuthStore();
 
-  const dashboardNavItems = [
-    { href: '/dashboard', icon: Home, label: 'Overview' },
-    { href: '/dashboard/properties', icon: Building, label: 'Properties' },
-    { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-    { href: '/dashboard/payments', icon: CreditCard, label: 'Payments' },
-    { href: '/dashboard/settings', icon: Settings, label: 'Settings' }
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const userTabs = [
+    { icon: Home, label: 'Dashboard', path: '/dashboard' },
+    { icon: Building2, label: 'Properties', path: '/dashboard/properties' },
+    { icon: Users, label: 'Tenants', path: '/dashboard/tenants' },
+    { icon: DollarSign, label: 'Payments', path: '/dashboard/payments' },
+    { icon: Settings, label: 'Settings', path: '/dashboard/settings' }
   ];
 
-  const tenantNavItems = [
-    { href: '/dashboard/tenant', icon: Home, label: 'Portal' },
-    { href: '/dashboard/payments', icon: CreditCard, label: 'Payments' },
-    { href: '/dashboard/maintenance', icon: Settings, label: 'Requests' },
-    { href: '/dashboard/settings', icon: Settings, label: 'Settings' }
+  const adminTabs = [
+    { icon: Shield, label: 'Admin', path: '/admin' },
+    { icon: Building2, label: 'Organizations', path: '/admin/organizations' },
+    { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: DollarSign, label: 'Billing', path: '/admin/billing' },
+    { icon: Settings, label: 'Settings', path: '/admin/profile' }
   ];
 
-  const navItems = user?.role === 'Tenant' ? tenantNavItems : dashboardNavItems;
-
-  const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/dashboard' || location.pathname === '/dashboard/overview';
-    }
-    return location.pathname.startsWith(path);
-  };
-
-  if (type === 'public') return null;
+  const tabs = user?.role === 'Super Admin' || user?.role === 'Super Moderator' ? adminTabs : userTabs;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-app-surface/95 backdrop-blur-md border-t border-app-border z-30 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-app-surface border-t border-app-border z-40 md:hidden">
       <div className="flex items-center justify-around py-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors min-w-0 flex-1 ${
-              isActive(item.href)
-                ? 'text-brand-blue'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <item.icon size={20} />
-            <span className="text-xs font-medium truncate">{item.label}</span>
-          </Link>
-        ))}
+        {tabs.map((tab) => {
+          const active = isActive(tab.path);
+          return (
+            <Link
+              key={tab.path}
+              to={tab.path}
+              className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all ${
+                active 
+                  ? 'text-brand-blue bg-brand-blue/10' 
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <tab.icon size={20} />
+              <span className="text-xs font-medium mt-1">{tab.label}</span>
+            </Link>
+          );
+        })}
       </div>
-    </nav>
+    </div>
   );
 };
 
