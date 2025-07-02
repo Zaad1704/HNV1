@@ -31,16 +31,12 @@ const SiteEditorPage = () => {
     { id: 'general', label: 'General Settings', icon: Settings },
     { id: 'hero', label: 'Hero Section', icon: Globe },
     { id: 'stats', label: 'Stats Section', icon: Eye },
-    { id: 'landscape', label: 'Landscape Section', icon: Settings },
-    { id: 'transform', label: 'Transform Section', icon: Globe },
-    { id: 'banner', label: 'Banner Section', icon: Eye },
-    { id: 'about', label: 'About Section', icon: Settings },
-    { id: 'features', label: 'Features Section', icon: Globe },
-    { id: 'services', label: 'Services Section', icon: Eye },
-    { id: 'pricing', label: 'Pricing Section', icon: Settings },
-    { id: 'leadership', label: 'Leadership Section', icon: Globe },
-    { id: 'install', label: 'Install App Section', icon: Eye },
-    { id: 'contact', label: 'Contact Section', icon: Settings }
+    { id: 'banner', label: 'Banner Section', icon: Settings },
+    { id: 'about', label: 'About Section', icon: Globe },
+    { id: 'features', label: 'Features Section', icon: Eye },
+    { id: 'services', label: 'Services Section', icon: Settings },
+    { id: 'pricing', label: 'Pricing Section', icon: Globe },
+    { id: 'contact', label: 'Contact Section', icon: Eye }
   ];
 
   const handleSave = async () => {
@@ -206,7 +202,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="The All-in-One Platform for Modern Property Management"
+                    value={siteData.heroTitle || 'The All-in-One Platform for Modern Property Management'}
+                    onChange={(e) => updateSiteData('heroTitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -240,7 +237,8 @@ const SiteEditorPage = () => {
                   </label>
                   <textarea
                     rows={3}
-                    defaultValue="Streamline your property management with our comprehensive solution"
+                    value={siteData.heroSubtitle || 'Streamline your property management with our comprehensive solution'}
+                    onChange={(e) => updateSiteData('heroSubtitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -266,7 +264,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Trusted by Property Managers Worldwide"
+                    value={siteData.statsTitle || 'Trusted by Property Managers Worldwide'}
+                    onChange={(e) => updateSiteData('statsTitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -276,7 +275,8 @@ const SiteEditorPage = () => {
                   </label>
                   <textarea
                     rows={2}
-                    defaultValue="Join thousands of property managers who trust our platform"
+                    value={siteData.statsSubtitle || 'Join thousands of property managers who trust our platform'}
+                    onChange={(e) => updateSiteData('statsSubtitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>

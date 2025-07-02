@@ -125,16 +125,8 @@ const LandingPage = () => {
         </div>
       </section>
       
-      <section id="landscape">
-        <LandscapeSection />
-      </section>
-      
-      <section id="transform">
-        <TransformSection />
-      </section>
-      
       {/* Banner Section - Editable by Super Admin */}
-      {siteSettings?.bannerImage && (
+      {siteSettings?.bannerImage && siteSettings.bannerImage.trim() !== '' && (
         <section id="banner" className="py-4 md:py-8 lg:py-12">
           <div className="container mx-auto px-4">
             <div className="relative rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-app-lg">
@@ -142,6 +134,10 @@ const LandingPage = () => {
                 src={siteSettings.bannerImage}
                 alt="Platform Banner"
                 className="w-full h-40 sm:h-48 md:h-56 lg:h-64 xl:h-72 object-cover bg-app-bg"
+                onError={(e) => {
+                  console.error('Banner image failed to load:', siteSettings.bannerImage);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
               {siteSettings.bannerOverlayText && (
                 <div className="absolute inset-0 bg-black/50 md:bg-black/40 flex items-center justify-center">
@@ -176,14 +172,6 @@ const LandingPage = () => {
       
       <section id="pricing" className="scroll-mt-16">
         <PricingSection />
-      </section>
-      
-      <section id="leadership" className="scroll-mt-16">
-        <LeadershipSection />
-      </section>
-      
-      <section id="install" className="scroll-mt-16">
-        <InstallAppSection />
       </section>
       
       <section id="contact" className="scroll-mt-16">
