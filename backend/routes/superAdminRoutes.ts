@@ -1,6 +1,9 @@
 // backend/routes/superAdminRoutes.ts
 import { Router, Request, Response } from 'express';
 import User from '../models/User';
+import Organization from '../models/Organization';
+import Subscription from '../models/Subscription';
+import Plan from '../models/Plan';
 import asyncHandler from 'express-async-handler';
 import { 
     getDashboardStats, 
@@ -51,7 +54,6 @@ router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 router.get('/organizations', async (req: Request, res: Response) => {
   try {
     console.log('Fetching organizations...');
-    const Organization = require('../models/Organization');
     const organizations = await Organization.find({}).populate('owner', 'name email');
     console.log('Found organizations:', organizations.length);
     console.log('Sample org:', organizations[0] ? { name: organizations[0].name, status: organizations[0].status } : 'No orgs');
@@ -63,7 +65,6 @@ router.get('/organizations', async (req: Request, res: Response) => {
 });
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
-  const Subscription = require('../models/Subscription');
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'active' },
@@ -73,7 +74,6 @@ router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, re
 }));
 
 router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => {
-  const Subscription = require('../models/Subscription');
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'inactive' },
@@ -92,7 +92,6 @@ router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelf
 router.get('/users', async (req: Request, res: Response) => {
   try {
     console.log('Fetching users...');
-    const User = require('../models/User');
     const users = await User.find({}).populate('organizationId', 'name');
     console.log('Found users:', users.length);
     console.log('Sample user:', users[0] ? { name: users[0].name, email: users[0].email, role: users[0].role } : 'No users');
@@ -152,9 +151,7 @@ router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response
 }));
 router.get('/billing', async (req: Request, res: Response) => {
   try {
-    const Subscription = require('../models/Subscription');
-    const Plan = require('../models/Plan');
-    const Organization = require('../models/Organization');
+    // Models already imported at top
     
     const activeSubscriptions = await Subscription.countDocuments({ status: 'active' });
     const allSubscriptions = await Subscription.find({ status: 'active' }).populate('planId');
@@ -218,7 +215,6 @@ router.get('/billing', async (req: Request, res: Response) => {
 router.get('/plans', async (req: Request, res: Response) => {
   try {
     console.log('Fetching plans...');
-    const Plan = require('../models/Plan');
     const plans = await Plan.find({}).sort({ price: 1 });
     console.log('Found plans:', plans.length);
     res.json({ success: true, data: plans || [] });
@@ -229,13 +225,11 @@ router.get('/plans', async (req: Request, res: Response) => {
 });
 
 router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
-  const Plan = require('../models/Plan');
   const plan = await Plan.create(req.body);
   res.status(201).json({ success: true, data: plan });
 }));
 
 router.put('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
-  const Plan = require('../models/Plan');
   const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!plan) {
     res.status(404).json({ success: false, message: 'Plan not found' });
@@ -245,7 +239,6 @@ router.put('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
-  const Plan = require('../models/Plan');
   const plan = await Plan.findByIdAndDelete(req.params.id);
   if (!plan) {
     res.status(404).json({ success: false, message: 'Plan not found' });
@@ -257,8 +250,7 @@ router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => 
 // User billing management
 router.put('/users/:userId/plan', asyncHandler(async (req: Request, res: Response) => {
   const { planId } = req.body;
-  const Subscription = require('../models/Subscription');
-  const User = require('../models/User');
+  // Models already imported at top
   
   const user = await User.findById(req.params.userId);
   if (!user) {
