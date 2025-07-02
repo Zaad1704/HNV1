@@ -12,26 +12,7 @@ import {
   getRecentActivity,   
 } from '../controllers/dashboardController';
 
-// Mock implementations for missing controllers
-const mockFinancialSummary = async (req: Request, res: Response) => {
-  const mockData = [
-    { name: 'Jan', Revenue: 4000, Expenses: 2400 },
-    { name: 'Feb', Revenue: 3000, Expenses: 1398 },
-    { name: 'Mar', Revenue: 2000, Expenses: 9800 },
-    { name: 'Apr', Revenue: 2780, Expenses: 3908 },
-    { name: 'May', Revenue: 1890, Expenses: 4800 },
-    { name: 'Jun', Revenue: 2390, Expenses: 3800 }
-  ];
-  res.json({ success: true, data: mockData });
-};
 
-const mockRentStatus = async (req: Request, res: Response) => {
-  const mockData = [
-    { name: 'Paid', value: 75 },
-    { name: 'Overdue', value: 25 }
-  ];
-  res.json({ success: true, data: mockData });
-};
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 
@@ -134,36 +115,19 @@ router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
   }
 }));
 
-router.get('/overview-stats', async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?._id;
-    const properties = await Property.find({ ownerId: userId });
-    const tenants = await Tenant.find({ propertyId: { $in: properties.map(p => p._id) } });
-    res.json({ success: true, data: { properties: properties.length, tenants: tenants.length } });
-  } catch (error) {
-    res.json({ success: true, data: { properties: 0, tenants: 0 } });
-  }
-});
+router.get('/overview-stats', asyncHandler(getOverviewStats));
 
-router.get('/late-tenants', async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-});
+router.get('/late-tenants', asyncHandler(getLateTenants));
 
-router.get('/expiring-leases', async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-});
+router.get('/expiring-leases', asyncHandler(getExpiringLeases));
 
-router.get('/financial-summary', mockFinancialSummary);
+router.get('/financial-summary', asyncHandler(getFinancialSummary));
 
-router.get('/occupancy-summary', async (req: Request, res: Response) => {
-  res.json({ success: true, data: { occupied: 75, vacant: 25 } });
-});
+router.get('/occupancy-summary', asyncHandler(getOccupancySummary));
 
-router.get('/rent-status', mockRentStatus);
+router.get('/rent-status', asyncHandler(getRentStatus));
 
-router.get('/recent-activity', async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-});
+router.get('/recent-activity', asyncHandler(getRecentActivity));
 
 // Tenant portal endpoint
 router.get('/tenant-portal', protect, authorize(['Tenant']), asyncHandler(async (req: Request, res: Response) => {
