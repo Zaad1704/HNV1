@@ -108,21 +108,21 @@ const LandingPage = () => {
       </section>
       
       {/* Banner Section - Editable by Super Admin */}
-      {siteSettings?.bannerSection?.imageUrl && (
+      {siteSettings?.bannerImage && (
         <section id="banner" className="py-6 md:py-12">
           <div className="container mx-auto px-4">
             <div className="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-app-lg">
               <img
-                src={siteSettings.bannerSection.imageUrl}
-                alt={siteSettings.bannerSection.altText || 'Platform Banner'}
+                src={siteSettings.bannerImage}
+                alt="Platform Banner"
                 className="w-full h-32 md:h-48 lg:h-64 object-cover bg-app-bg"
               />
-              {siteSettings.bannerSection.overlayText && (
+              {siteSettings.bannerOverlayText && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center text-white px-4">
-                    <h2 className="text-xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4">{siteSettings.bannerSection.overlayText}</h2>
-                    {siteSettings.bannerSection.overlaySubtext && (
-                      <p className="text-sm md:text-lg lg:text-xl text-white/90">{siteSettings.bannerSection.overlaySubtext}</p>
+                    <h2 className="text-xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4">{siteSettings.bannerOverlayText}</h2>
+                    {siteSettings.bannerOverlaySubtext && (
+                      <p className="text-sm md:text-lg lg:text-xl text-white/90">{siteSettings.bannerOverlaySubtext}</p>
                     )}
                   </div>
                 </div>

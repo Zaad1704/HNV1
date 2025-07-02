@@ -357,6 +357,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
+                    value={siteData.bannerOverlayText || ''}
+                    onChange={(e) => updateSiteData('bannerOverlayText', e.target.value)}
                     placeholder="Optional overlay text"
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
@@ -367,6 +369,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
+                    value={siteData.bannerOverlaySubtext || ''}
+                    onChange={(e) => updateSiteData('bannerOverlaySubtext', e.target.value)}
                     placeholder="Optional overlay subtext"
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
