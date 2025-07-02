@@ -33,13 +33,30 @@ class EmailService {
     
     if (!this.transporter) {
       console.log(`❌ Email service disabled - would send to ${to}: ${subject}`);
-      return;
+      throw new Error('Email service not configured');
     }
 
     try {
-      const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.html`);
-      let htmlContent = fs.readFileSync(templatePath, 'utf-8');
+      let htmlContent = '';
+      
+      try {
+        const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.html`);
+        htmlContent = fs.readFileSync(templatePath, 'utf-8');
+      } catch (templateError) {
+        console.warn(`Template ${templateName} not found, using fallback`);
+        // Fallback template
+        htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1f2937;">${subject}</h2>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              ${Object.entries(templateData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">This message was sent from HNV Property Management.</p>
+          </div>
+        `;
+      }
 
+      // Replace template variables
       for (const key in templateData) {
         const regex = new RegExp(`{{${key}}}`, 'g');
         htmlContent = htmlContent.replace(regex, templateData[key]);
@@ -53,9 +70,10 @@ class EmailService {
       });
       
       console.log('✅ Email sent successfully:', result.messageId);
+      return result;
     } catch (error) {
       console.error(`Error sending email to ${to}:`, error);
-      throw new Error('Failed to send email.');
+      throw new Error(`Failed to send email: ${error.message}`);
     }
   }
 
