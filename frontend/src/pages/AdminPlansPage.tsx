@@ -28,12 +28,32 @@ const AdminPlansPage = () => {
     name: '',
     price: 0,
     duration: 'monthly',
-    features: [''],
+    features: [],
     isPopular: false,
     isPublic: true,
     maxProperties: 10,
-    maxUsers: 5
+    maxUsers: 5,
+    maxTenants: 50,
+    maxAgents: 3
   });
+
+  const availableFeatures = [
+    { id: 'property_management', name: 'Property Management', category: 'core' },
+    { id: 'tenant_portal', name: 'Tenant Portal', category: 'core' },
+    { id: 'payment_processing', name: 'Payment Processing', category: 'core' },
+    { id: 'maintenance_requests', name: 'Maintenance Requests', category: 'core' },
+    { id: 'financial_reporting', name: 'Financial Reporting', category: 'reports' },
+    { id: 'advanced_analytics', name: 'Advanced Analytics', category: 'reports' },
+    { id: 'custom_reports', name: 'Custom Reports', category: 'reports' },
+    { id: 'multi_user_access', name: 'Multi-User Access', category: 'collaboration' },
+    { id: 'agent_management', name: 'Agent Management', category: 'collaboration' },
+    { id: 'role_permissions', name: 'Role & Permissions', category: 'collaboration' },
+    { id: 'api_access', name: 'API Access', category: 'integration' },
+    { id: 'third_party_integrations', name: 'Third-Party Integrations', category: 'integration' },
+    { id: 'white_label', name: 'White Label Branding', category: 'premium' },
+    { id: 'priority_support', name: 'Priority Support', category: 'premium' },
+    { id: 'custom_domain', name: 'Custom Domain', category: 'premium' }
+  ];
 
   const queryClient = useQueryClient();
   const { data: plans = [], isLoading } = useQuery({
@@ -70,11 +90,13 @@ const AdminPlansPage = () => {
       name: '',
       price: 0,
       duration: 'monthly',
-      features: [''],
+      features: [],
       isPopular: false,
       isPublic: true,
       maxProperties: 10,
-      maxUsers: 5
+      maxUsers: 5,
+      maxTenants: 50,
+      maxAgents: 3
     });
     setEditingPlan(null);
   };
@@ -83,13 +105,15 @@ const AdminPlansPage = () => {
     setEditingPlan(plan);
     setFormData({
       name: plan.name,
-      price: plan.price / 100, // Convert cents to dollars
+      price: plan.price / 100,
       duration: plan.duration,
       features: plan.features,
       isPopular: plan.isPopular,
       isPublic: plan.isPublic,
       maxProperties: plan.maxProperties,
-      maxUsers: plan.maxUsers
+      maxUsers: plan.maxUsers,
+      maxTenants: (plan as any).maxTenants || 50,
+      maxAgents: (plan as any).maxAgents || 3
     });
     setShowModal(true);
   };
@@ -98,8 +122,7 @@ const AdminPlansPage = () => {
     e.preventDefault();
     const planData = {
       ...formData,
-      price: formData.price * 100, // Convert to cents
-      features: formData.features.filter(f => f.trim() !== '')
+      price: formData.price * 100
     };
 
     if (editingPlan) {
@@ -109,22 +132,21 @@ const AdminPlansPage = () => {
     }
   };
 
-  const addFeature = () => {
-    setFormData(prev => ({ ...prev, features: [...prev.features, ''] }));
-  };
-
-  const updateFeature = (index: number, value: string) => {
+  const toggleFeature = (featureId: string) => {
     setFormData(prev => ({
       ...prev,
-      features: prev.features.map((f, i) => i === index ? value : f)
+      features: prev.features.includes(featureId)
+        ? prev.features.filter(f => f !== featureId)
+        : [...prev.features, featureId]
     }));
   };
 
-  const removeFeature = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.filter((_, i) => i !== index)
-    }));
+  const getFeatureName = (featureId: string) => {
+    return availableFeatures.find(f => f.id === featureId)?.name || featureId;
+  };
+
+  const getFeaturesByCategory = (category: string) => {
+    return availableFeatures.filter(f => f.category === category);
   };
 
   if (isLoading) {
@@ -175,14 +197,22 @@ const AdminPlansPage = () => {
                 </span>
                 <span className="text-text-secondary">/{plan.duration}</span>
               </div>
-              <div className="flex justify-center gap-4 text-sm text-text-secondary">
+              <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
                 <div className="flex items-center gap-1">
-                  <Users size={14} />
+                  <Users size={12} />
                   {plan.maxUsers} users
                 </div>
                 <div className="flex items-center gap-1">
-                  <DollarSign size={14} />
+                  <DollarSign size={12} />
                   {plan.maxProperties} properties
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users size={12} />
+                  {(plan as any).maxTenants || 50} tenants
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users size={12} />
+                  {(plan as any).maxAgents || 3} agents
                 </div>
               </div>
             </div>
@@ -191,7 +221,7 @@ const AdminPlansPage = () => {
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm text-text-secondary">
                   <Check size={14} className="text-green-500 flex-shrink-0" />
-                  {feature}
+                  {getFeatureName(feature)}
                 </li>
               ))}
             </ul>
@@ -280,7 +310,9 @@ const AdminPlansPage = () => {
                     <option value="daily">Daily</option>
                   </select>
                 </div>
-                
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-2">
                     Max Properties
@@ -308,38 +340,64 @@ const AdminPlansPage = () => {
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Max Tenants
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={formData.maxTenants}
+                    onChange={(e) => setFormData(prev => ({ ...prev, maxTenants: parseInt(e.target.value) }))}
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Max Agents
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={formData.maxAgents}
+                    onChange={(e) => setFormData(prev => ({ ...prev, maxAgents: parseInt(e.target.value) }))}
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
-                  Features
+                <label className="block text-sm font-medium text-text-secondary mb-4">
+                  Select Features
                 </label>
-                <div className="space-y-2">
-                  {formData.features.map((feature, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={feature}
-                        onChange={(e) => updateFeature(index, e.target.value)}
-                        className="flex-1 p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                        placeholder="Enter feature description"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(index)}
-                        className="px-3 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                <div className="space-y-6">
+                  {['core', 'reports', 'collaboration', 'integration', 'premium'].map(category => (
+                    <div key={category}>
+                      <h4 className="font-medium text-text-primary mb-3 capitalize">
+                        {category === 'core' ? 'Core Features' : 
+                         category === 'reports' ? 'Reporting & Analytics' :
+                         category === 'collaboration' ? 'Team Collaboration' :
+                         category === 'integration' ? 'Integrations' : 'Premium Features'}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {getFeaturesByCategory(category).map(feature => (
+                          <label key={feature.id} className="flex items-center gap-3 p-3 border border-app-border rounded-xl hover:bg-app-bg cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.features.includes(feature.id)}
+                              onChange={() => toggleFeature(feature.id)}
+                              className="w-4 h-4 text-brand-blue"
+                            />
+                            <span className="text-sm text-text-primary">{feature.name}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={addFeature}
-                    className="w-full p-3 border-2 border-dashed border-app-border rounded-2xl text-text-secondary hover:border-brand-blue hover:text-brand-blue transition-colors"
-                  >
-                    + Add Feature
-                  </button>
                 </div>
               </div>
 
