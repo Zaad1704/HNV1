@@ -36,7 +36,8 @@ const SiteEditorPage = () => {
     { id: 'features', label: 'Features Section', icon: Eye },
     { id: 'services', label: 'Services Section', icon: Settings },
     { id: 'pricing', label: 'Pricing Section', icon: Globe },
-    { id: 'contact', label: 'Contact Section', icon: Eye }
+    { id: 'leadership', label: 'Leadership Section', icon: Eye },
+    { id: 'contact', label: 'Contact Section', icon: Settings }
   ];
 
   const handleSave = async () => {

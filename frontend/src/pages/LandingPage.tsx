@@ -126,7 +126,7 @@ const LandingPage = () => {
       </section>
       
       {/* Banner Section - Editable by Super Admin */}
-      {siteSettings?.bannerImage && siteSettings.bannerImage.trim() !== '' && (
+      {siteSettings?.bannerImage && (
         <section id="banner" className="py-4 md:py-8 lg:py-12">
           <div className="container mx-auto px-4">
             <div className="relative rounded-xl md:rounded-2xl lg:rounded-3xl overflow-hidden shadow-app-lg">
@@ -172,6 +172,10 @@ const LandingPage = () => {
       
       <section id="pricing" className="scroll-mt-16">
         <PricingSection />
+      </section>
+      
+      <section id="leadership" className="scroll-mt-16">
+        <LeadershipSection />
       </section>
       
       <section id="contact" className="scroll-mt-16">
