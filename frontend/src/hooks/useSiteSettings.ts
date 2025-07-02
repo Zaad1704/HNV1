@@ -3,7 +3,7 @@ import apiClient from '../api/client';
 
 const fetchSiteSettings = async () => {
   try {
-    const { data } = await apiClient.get('/api/public/site-settings');
+    const { data } = await apiClient.get('/public/site-settings');
     return data.data;
   } catch (error) {
     return {

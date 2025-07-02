@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
     }
     
     try {
-      const response = await apiClient.post('/api/auth/login', { 
+      const response = await apiClient.post('/auth/login', { 
         email: email.trim().toLowerCase(), 
         password 
       });
@@ -107,7 +107,7 @@ const LoginPage: React.FC = () => {
 
   const handleResendVerification = async () => {
     try {
-      await apiClient.post('/api/auth/resend-verification', { email });
+      await apiClient.post('/auth/resend-verification', { email });
       setError('Verification email sent! Please check your inbox.');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to resend verification email');
@@ -118,7 +118,7 @@ const LoginPage: React.FC = () => {
     try {
       const baseURL = apiClient.defaults.baseURL;
       const role = 'Landlord'; // Default role for Google login
-      const googleAuthUrl = `${baseURL}/api/auth/google?role=${role}`;
+      const googleAuthUrl = `${baseURL}/auth/google?role=${role}`;
       
       // Direct redirect in the same window
       window.location.href = googleAuthUrl;
