@@ -195,19 +195,21 @@ app.use('/api/analytics', analyticsRoutes, routeErrorHandler);
 app.use('/api/integrations', integrationRoutes, routeErrorHandler);
 app.use('/api/subscription', subscriptionRoutes, routeErrorHandler);
 
-// Apply subscription middleware to protected routes
-app.use('/api/properties', checkSubscriptionStatus);
-app.use('/api/tenants', checkSubscriptionStatus);
-app.use('/api/payments', checkSubscriptionStatus);
-app.use('/api', publicRoutes, routeErrorHandler);
-app.use('/api/contact', contactRoutes, routeErrorHandler);
-
 // Debug middleware for all API routes
 app.use('/api', (req, res, next) => {
   console.log(`API Request: ${req.method} ${req.originalUrl}`);
   console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
   next();
 });
+
+// Public routes BEFORE protected routes
+app.use('/api/public', publicRoutes, routeErrorHandler);
+app.use('/api/contact', contactRoutes, routeErrorHandler);
+
+// Apply subscription middleware to protected routes
+app.use('/api/properties', checkSubscriptionStatus);
+app.use('/api/tenants', checkSubscriptionStatus);
+app.use('/api/payments', checkSubscriptionStatus);
 
 // Protected routes (require authentication)
 app.use('/api/dashboard', protect, dashboardRoutes);
