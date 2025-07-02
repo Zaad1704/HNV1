@@ -6,6 +6,20 @@ const router = Router();
 
 router.post('/submit', submitContactForm);
 
+// Email status endpoint
+router.get('/email-status', async (req, res) => {
+  try {
+    const configured = !!process.env.SMTP_HOST || !!emailService.transporter;
+    res.json({ 
+      success: true, 
+      configured,
+      message: configured ? 'Email service is configured' : 'Email service not configured'
+    });
+  } catch (error) {
+    res.json({ success: false, configured: false, message: 'Email service unavailable' });
+  }
+});
+
 // Test email endpoint
 router.post('/test-email', async (req, res) => {
   try {

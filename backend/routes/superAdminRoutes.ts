@@ -295,6 +295,25 @@ router.post('/plans-enhanced', asyncHandler(createPlan));
 router.put('/plans-enhanced/:planId', asyncHandler(updatePlan));
 router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
 
+// Email service status route
+router.get('/email-status', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const configured = !!(process.env.SMTP_HOST || process.env.RESEND_API_KEY);
+    res.json({ 
+      success: true, 
+      data: { 
+        configured,
+        status: configured ? 'operational' : 'not_configured'
+      }
+    });
+  } catch (error) {
+    res.json({ 
+      success: false, 
+      data: { configured: false, status: 'error' }
+    });
+  }
+}));
+
 // Site settings save route
 router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
   try {

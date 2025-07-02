@@ -120,10 +120,10 @@ const AdminDashboardPage = () => {
         status.database = 'offline';
       }
       
-      // Test Email
+      // Test Email - check if service is configured
       try {
-        await apiClient.post('/contact/test-email');
-        status.email = 'operational';
+        const response = await apiClient.get('/super-admin/email-status');
+        status.email = response.data.configured ? 'operational' : 'offline';
       } catch (error) {
         status.email = 'offline';
       }
