@@ -14,7 +14,8 @@ const PWAInstallPrompt = () => {
 
   useEffect(() => {
     // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        (window.navigator as any).standalone === true) {
       setIsInstalled(true);
       return;
     }
@@ -29,35 +30,48 @@ const PWAInstallPrompt = () => {
       setDeviceType('desktop');
     }
 
-    // Listen for beforeinstallprompt event
+    // Listen for beforeinstallprompt event (Chrome, Edge, Samsung Internet)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowPrompt(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    // Listen for appinstalled event
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setShowPrompt(false);
+    };
 
-    // Show prompt after 30 seconds if no native prompt
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Show prompt immediately for better visibility
     const timer = setTimeout(() => {
-      if (!deferredPrompt && !isInstalled) {
+      if (!isInstalled) {
         setShowPrompt(true);
       }
-    }, 30000);
+    }, 5000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
       clearTimeout(timer);
     };
-  }, [deferredPrompt, isInstalled]);
+  }, [isInstalled]);
 
   const handleInstall = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setIsInstalled(true);
+        }
         setDeferredPrompt(null);
         setShowPrompt(false);
+      } catch (error) {
+        console.log('Install prompt failed:', error);
       }
     }
   };
@@ -99,9 +113,9 @@ const PWAInstallPrompt = () => {
           icon: <Download className="w-6 h-6" />,
           title: 'Install App',
           steps: [
-            'Look for install options in your browser menu',
-            'Add to home screen or install as app',
-            'Enjoy the native app experience'
+            'Look for the install icon in your browser',
+            'Or check browser menu for "Install" option',
+            'Add to home screen for native experience'
           ]
         };
     }
@@ -113,7 +127,7 @@ const PWAInstallPrompt = () => {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50">
-      <div className="app-surface rounded-2xl p-4 border border-app-border shadow-app-xl">
+      <div className="app-surface rounded-2xl p-4 border border-app-border shadow-app-xl backdrop-blur-sm">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             {instructions.icon}
@@ -121,33 +135,45 @@ const PWAInstallPrompt = () => {
           </div>
           <button
             onClick={() => setShowPrompt(false)}
-            className="text-text-muted hover:text-text-primary"
+            className="text-text-muted hover:text-text-primary transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
-        <p className="text-sm text-text-secondary mb-3">
-          Get the full app experience with offline access and notifications.
+        <p className="text-sm text-text-secondary mb-4">
+          Get the native app experience with offline access and push notifications.
         </p>
 
         {deferredPrompt ? (
-          <button
-            onClick={handleInstall}
-            className="w-full btn-gradient py-2 px-4 rounded-xl text-sm font-medium"
-          >
-            Install Now
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleInstall}
+              className="w-full btn-gradient py-3 px-4 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              📱 Install App
+            </button>
+            <p className="text-xs text-center text-text-muted">
+              One-click install • Works offline • Native experience
+            </p>
+          </div>
         ) : (
-          <div className="space-y-2">
-            {instructions.steps.map((step, index) => (
-              <div key={index} className="flex items-start gap-2 text-xs text-text-secondary">
-                <span className="w-4 h-4 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                  {index + 1}
-                </span>
-                <span>{step}</span>
-              </div>
-            ))}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              {instructions.steps.map((step, index) => (
+                <div key={index} className="flex items-start gap-2 text-xs text-text-secondary">
+                  <span className="w-5 h-5 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    {index + 1}
+                  </span>
+                  <span className="leading-relaxed">{step}</span>
+                </div>
+              ))}
+            </div>
+            <div className="text-center pt-2 border-t border-app-border">
+              <p className="text-xs text-text-muted">
+                Install for the best experience
+              </p>
+            </div>
           </div>
         )}
       </div>

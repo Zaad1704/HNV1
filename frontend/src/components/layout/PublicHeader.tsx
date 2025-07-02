@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, Sun, Moon, Globe } from 'lucide-react';
+import { Menu, X, Sun, Moon, Globe, Download } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLang } from '../../contexts/LanguageContext';
 import SmartLanguageSwitcher from '../common/SmartLanguageSwitcher';
@@ -12,9 +12,53 @@ const PublicHeader = () => {
     const { data: settings } = useSiteSettings();
     const { t } = useTranslation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [showInstallButton, setShowInstallButton] = useState(false);
     const { theme, toggleTheme } = useTheme();
     const { setLang, getNextToggleLanguage } = useLang();
     const location = useLocation();
+
+    useEffect(() => {
+        // Check if app is already installed
+        const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                           (window.navigator as any).standalone === true;
+        
+        if (!isInstalled) {
+            // Listen for install prompt
+            const handleBeforeInstallPrompt = (e: Event) => {
+                e.preventDefault();
+                setDeferredPrompt(e);
+                setShowInstallButton(true);
+            };
+
+            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            
+            // Show install button for all browsers after 2 seconds
+            const timer = setTimeout(() => {
+                setShowInstallButton(true);
+            }, 2000);
+
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+                clearTimeout(timer);
+            };
+        }
+    }, []);
+
+    const handleInstall = async () => {
+        if (deferredPrompt) {
+            try {
+                await deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    setShowInstallButton(false);
+                }
+                setDeferredPrompt(null);
+            } catch (error) {
+                console.log('Install failed:', error);
+            }
+        }
+    };
 
     const navLinks = [
         { name: t('header.about', 'About'), href: '#about' },
@@ -59,6 +103,16 @@ const PublicHeader = () => {
                     {/* Action Buttons */}
                     <div className="hidden md:flex items-center space-x-4">
                         <SmartLanguageSwitcher />
+                        {showInstallButton && (
+                            <button
+                                onClick={handleInstall}
+                                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+                                title="Install App"
+                            >
+                                <Download size={16} />
+                                Install
+                            </button>
+                        )}
                         <Link to="/login" className="font-semibold text-white/90 hover:text-white transition-colors">
                             {t('header.login', 'Log In')}
                         </Link>
