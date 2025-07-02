@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Shield, Mail, Calendar } from 'lucide-react';
 
 const fetchModerators = async () => {
-  const { data } = await apiClient.get('/api/super-admin/moderators');
+  const { data } = await apiClient.get('/super-admin/moderators');
   return data.data;
 };
 
@@ -18,7 +18,7 @@ const AdminModeratorsPage = () => {
 
   const addModeratorMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiClient.post('/api/super-admin/moderators', data);
+      const response = await apiClient.post('/super-admin/moderators', data);
       return response.data;
     },
     onSuccess: () => {
@@ -30,7 +30,7 @@ const AdminModeratorsPage = () => {
 
   const editModeratorMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await apiClient.put(`/api/super-admin/moderators/${id}`, data);
+      const response = await apiClient.put(`/super-admin/moderators/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -42,7 +42,7 @@ const AdminModeratorsPage = () => {
 
   const removeModeratorMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/api/super-admin/moderators/${id}`);
+      const response = await apiClient.delete(`/super-admin/moderators/${id}`);
       return response.data;
     },
     onSuccess: () => {
