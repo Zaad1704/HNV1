@@ -9,16 +9,23 @@ class EmailService {
   constructor() {
     this.fromEmail = process.env.EMAIL_FROM || 'HNV Property Management <noreply@hnvpm.com>';
     
+    console.log('Email service initializing...');
+    console.log('EMAIL_FROM:', this.fromEmail);
+    console.log('RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
+    
     if (process.env.RESEND_API_KEY) {
       this.resend = new Resend(process.env.RESEND_API_KEY);
+      console.log('✅ Resend email service initialized');
     } else {
-      console.warn("RESEND_API_KEY not configured. Email service will be disabled.");
+      console.warn("❌ RESEND_API_KEY not configured. Email service will be disabled.");
     }
   }
 
   async sendEmail(to: string, subject: string, templateName: string, templateData: Record<string, string>) {
+    console.log(`📧 Attempting to send email to ${to}: ${subject}`);
+    
     if (!this.resend) {
-      console.log(`Email would be sent to ${to}: ${subject}`);
+      console.log(`❌ Email service disabled - would send to ${to}: ${subject}`);
       return;
     }
 
@@ -31,12 +38,14 @@ class EmailService {
         htmlContent = htmlContent.replace(regex, templateData[key]);
       }
 
-      await this.resend.emails.send({
+      const result = await this.resend.emails.send({
         from: this.fromEmail,
         to: [to],
         subject,
         html: htmlContent,
       });
+      
+      console.log('✅ Email sent successfully:', result);
     } catch (error) {
       console.error(`Error sending email to ${to}:`, error);
       throw new Error('Failed to send email.');
