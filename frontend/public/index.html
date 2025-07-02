@@ -15,10 +15,22 @@
     <meta name="format-detection" content="telephone=no">
     <title>HNV Property Management Solutions</title>
     <meta name="description" content="HNV Property Management Solutions" />
-    <meta name="theme-color" content="#4A69E2" />
+    <meta name="theme-color" content="#1E3A8A" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1E3A8A" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
     <link rel="apple-touch-startup-image" href="/pwa-512x512.png">
     <link rel="manifest" href="/manifest.webmanifest" />
+    
+    <!-- TWA specific meta tags -->
+    <meta name="twa-display-mode" content="standalone">
+    <meta name="twa-theme-color" content="#1E3A8A">
+    <meta name="twa-background-color" content="#FAFBFC">
+    <meta name="twa-start-url" content="/">
+    
+    <!-- Additional PWA meta tags -->
+    <meta name="application-name" content="HNV PM">
+    <meta name="msapplication-TileColor" content="#1E3A8A">
+    <meta name="msapplication-config" content="/browserconfig.xml">
     
     <!-- iOS PWA optimizations -->
     <style>
@@ -41,6 +53,21 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script> 
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

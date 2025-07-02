@@ -1,45 +1,95 @@
-const CACHE_NAME = 'hnv-property-v1';
+const CACHE_NAME = 'hnv-property-v2';
+const STATIC_CACHE = 'hnv-static-v2';
+const DYNAMIC_CACHE = 'hnv-dynamic-v2';
+
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
+  '/dashboard',
+  '/login',
+  '/register',
   '/logo-min.png',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/apple-touch-icon.png',
   '/manifest.webmanifest'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(STATIC_CACHE)
       .then((cache) => {
+        console.log('Caching static assets');
         return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('Service Worker installed successfully');
+        return self.skipWaiting();
       })
   );
 });
 
-// Fetch event
+// Fetch event with network-first strategy for API calls
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // API requests - network first
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(DYNAMIC_CACHE)
+            .then(cache => cache.put(request, responseClone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Static assets - cache first
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
+    caches.match(request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(request)
+          .then(response => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+            return response;
+          });
       })
   );
 });
 
 // Activate event
 self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (![STATIC_CACHE, DYNAMIC_CACHE].includes(cacheName)) {
+              console.log('Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients
+      self.clients.claim()
+    ])
   );
 });
 

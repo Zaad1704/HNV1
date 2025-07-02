@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Shield, Edit, Save, X, Key } from 'lucide-react';
+import { User, Mail, Shield, Edit, Save, X, Key, CheckCircle, XCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
 
 const AdminProfilePage = () => {
   const { user } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+
+  const { data: emailStatus } = useQuery({
+    queryKey: ['emailServiceStatus'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.post('/contact/test-email');
+        return { status: 'running', message: 'Email service is operational' };
+      } catch (error) {
+        return { status: 'error', message: 'Email service unavailable' };
+      }
+    },
+    refetchInterval: 60000,
+    retry: false
+  });
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -72,6 +88,20 @@ const AdminProfilePage = () => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Shield size={16} className="text-purple-600" />
             <p className="text-purple-600 font-semibold">{user?.role}</p>
+          </div>
+          
+          {/* Email Service Status */}
+          <div className="flex items-center justify-center gap-2 mb-4 p-2 rounded-lg bg-app-bg">
+            {emailStatus?.status === 'running' ? (
+              <CheckCircle size={16} className="text-green-500" />
+            ) : (
+              <XCircle size={16} className="text-red-500" />
+            )}
+            <span className={`text-sm font-medium ${
+              emailStatus?.status === 'running' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              Email Service: {emailStatus?.status === 'running' ? 'Running' : 'Offline'}
+            </span>
           </div>
           {isEditing && (
             <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
