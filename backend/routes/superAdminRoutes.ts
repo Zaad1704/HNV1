@@ -4,6 +4,7 @@ import User from '../models/User';
 import Organization from '../models/Organization';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
+import SiteSettings from '../models/SiteSettings';
 import asyncHandler from 'express-async-handler';
 import { 
     getDashboardStats, 
@@ -297,7 +298,6 @@ router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
 // Site settings save route
 router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
   try {
-    const SiteSettings = require('../models/SiteSettings');
     console.log('Saving site settings:', req.body);
     
     let settings = await SiteSettings.findOne({});
