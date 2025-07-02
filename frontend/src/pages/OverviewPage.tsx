@@ -8,7 +8,6 @@ import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import QuickActions from '../components/dashboard/QuickActions';
 import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLang } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useAuthStore } from '../store/authStore';
 import { IExpiringLease } from '../hooks/useExpiringLeases';
@@ -16,27 +15,27 @@ import { motion } from 'framer-motion';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 const fetchOverviewStats = async () => {
-  const { data } = await apiClient.get('/api/dashboard/overview-stats');
+  const { data } = await apiClient.get('/dashboard/overview-stats');
   return data.data;
 };
 
 const fetchLateTenants = async () => {
-  const { data } = await apiClient.get('/api/dashboard/late-tenants');
+  const { data } = await apiClient.get('/dashboard/late-tenants');
   return data.data;
 };
 
 const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => {
-  const { data } = await apiClient.get('/api/dashboard/expiring-leases');
+  const { data } = await apiClient.get('/dashboard/expiring-leases');
   return data.data;
 };
 
 const fetchFinancialSummary = async () => {
-  const { data } = await apiClient.get('/api/dashboard/financial-summary');
+  const { data } = await apiClient.get('/dashboard/financial-summary');
   return data.data;
 };
 
 const fetchRentStatus = async () => {
-  const { data } = await apiClient.get('/api/dashboard/rent-status');
+  const { data } = await apiClient.get('/dashboard/rent-status');
   return data.data;
 };
 
