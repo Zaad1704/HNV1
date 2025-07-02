@@ -17,7 +17,7 @@ interface Plan {
 
 const fetchPlans = async (): Promise<Plan[]> => {
   try {
-    const { data } = await apiClient.get('/api/public/plans/public');
+    const { data } = await apiClient.get('/public/plans');
     return data.data;
   } catch (error) {
     return [];

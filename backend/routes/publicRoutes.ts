@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
 import masterDataService from '../services/masterDataService';
+import SiteSettings from '../models/SiteSettings';
+import Plan from '../models/Plan';
 
 const router = Router();
 
@@ -28,12 +30,9 @@ router.get('/landing-data', async (req, res) => {
 // Public site settings - connects to super admin editor
 router.get('/site-settings', async (req, res) => {
   try {
-    // Get site settings from database (saved by super admin)
-    const SiteSettings = require('../models/SiteSettings');
     let settings = await SiteSettings.findOne({});
     
     if (!settings) {
-      // Create default settings if none exist
       settings = await SiteSettings.create({
         siteName: 'HNV Property Management',
         contactEmail: 'support@hnvpm.com',
@@ -67,8 +66,7 @@ router.get('/site-settings', async (req, res) => {
 // Public plans - connects to super admin plans
 router.get('/plans', asyncHandler(async (req, res) => {
   try {
-    const Plan = require('../models/Plan');
-    const plans = await Plan.find({ isPublic: true }).sort({ price: 1 });
+    const plans = await Plan.find({}).sort({ price: 1 });
     res.json({
       success: true,
       data: plans || []
