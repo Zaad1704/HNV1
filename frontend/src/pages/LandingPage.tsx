@@ -31,13 +31,24 @@ const LandingPage = () => {
   const { t } = useTranslation();
   const { data: settings } = useSiteSettings();
   
-  const { data: landingData } = useQuery({
+  const { data: landingData, refetch: refetchLandingData } = useQuery({
     queryKey: ['landingData'],
     queryFn: fetchLandingData,
-    staleTime: 30 * 1000, // 30 seconds instead of 5 minutes
+    staleTime: 10 * 1000, // 10 seconds for faster updates
     retry: false,
     refetchOnWindowFocus: true // Enable refetch on focus
   });
+
+  // Listen for site settings updates
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      console.log('Site settings updated, refreshing...');
+      refetchLandingData();
+    };
+    
+    window.addEventListener('siteSettingsUpdated', handleSettingsUpdate);
+    return () => window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate);
+  }, [refetchLandingData]);
 
   // Fetch real stats from public endpoint
   const { data: realStats } = useQuery({

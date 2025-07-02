@@ -15,7 +15,9 @@ const SiteEditorPage = () => {
 
   const fetchSiteData = async () => {
     try {
-      const { data } = await apiClient.get('/public/site-settings');
+      // Add timestamp to prevent caching
+      const { data } = await apiClient.get(`/public/site-settings?t=${Date.now()}`);
+      console.log('Fetched site data:', data.data);
       setSiteData(data.data || {});
     } catch (error) {
       console.error('Failed to fetch site data:', error);
@@ -44,9 +46,16 @@ const SiteEditorPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await apiClient.put('/super-admin/site-settings', siteData);
-      // Force refresh of site settings on landing page
+      console.log('Saving site data:', siteData);
+      const response = await apiClient.put('/super-admin/site-settings', siteData);
+      console.log('Save response:', response.data);
+      
+      // Force refresh of site settings cache
+      await fetchSiteData();
+      
+      // Trigger landing page refresh
       window.dispatchEvent(new Event('siteSettingsUpdated'));
+      
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Failed to save:', error);

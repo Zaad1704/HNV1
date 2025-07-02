@@ -298,20 +298,27 @@ router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
 router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
   try {
     const SiteSettings = require('../models/SiteSettings');
+    console.log('Saving site settings:', req.body);
+    
     let settings = await SiteSettings.findOne({});
     
     if (settings) {
-      Object.assign(settings, req.body);
+      // Update existing settings
+      Object.keys(req.body).forEach(key => {
+        settings[key] = req.body[key];
+      });
       await settings.save();
+      console.log('Settings updated:', settings._id);
     } else {
+      // Create new settings
       settings = await SiteSettings.create(req.body);
+      console.log('Settings created:', settings._id);
     }
     
-    console.log('Settings saved successfully:', settings._id);
-    res.json({ success: true, data: settings });
+    res.json({ success: true, data: settings, message: 'Settings saved successfully' });
   } catch (error) {
     console.error('Save settings error:', error);
-    res.json({ success: true, message: 'Settings saved with fallback' });
+    res.status(500).json({ success: false, message: 'Failed to save settings', error: error.message });
   }
 }));
 
