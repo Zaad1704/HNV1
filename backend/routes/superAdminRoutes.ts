@@ -54,6 +54,7 @@ router.get('/organizations', async (req: Request, res: Response) => {
     const Organization = require('../models/Organization');
     const organizations = await Organization.find({}).populate('owner', 'name email');
     console.log('Found organizations:', organizations.length);
+    console.log('Sample org:', organizations[0] ? { name: organizations[0].name, status: organizations[0].status } : 'No orgs');
     res.json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Organizations fetch error:', error);
@@ -94,6 +95,7 @@ router.get('/users', async (req: Request, res: Response) => {
     const User = require('../models/User');
     const users = await User.find({}).populate('organizationId', 'name');
     console.log('Found users:', users.length);
+    console.log('Sample user:', users[0] ? { name: users[0].name, email: users[0].email, role: users[0].role } : 'No users');
     res.json({ success: true, data: users || [] });
   } catch (error) {
     console.error('Users fetch error:', error);
