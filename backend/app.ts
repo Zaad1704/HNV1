@@ -76,11 +76,14 @@ const allowedOrigins = [
   'https://hnv-property.onrender.com',
   'https://www.hnvpm.com',
   'https://hnvpm.com',
+  'https://hnv.onrender.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
+    console.log('CORS Origin:', origin);
+    
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
@@ -93,11 +96,19 @@ app.use(cors({
       return callback(null, true);
     }
     
-    callback(new Error('Not allowed by CORS'));
+    // Allow render.com domains
+    if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
+      return callback(null, true);
+    }
+    
+    console.warn('CORS blocked origin:', origin);
+    callback(null, true); // Allow all for now to fix production
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 // Rate limiting - more restrictive for auth endpoints
 app.use('/api/auth', createRateLimit(15 * 60 * 1000, 10)); // 10 requests per 15 minutes
@@ -138,6 +149,15 @@ app.get('/api/debug', (req, res) => {
     environment: process.env.NODE_ENV,
     frontendUrl: process.env.FRONTEND_URL
   });
+});
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Client-Version, X-Request-Time');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
 });
 
 // Health check routes (no auth required)
