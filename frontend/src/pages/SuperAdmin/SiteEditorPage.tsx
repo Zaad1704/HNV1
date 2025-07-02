@@ -19,6 +19,7 @@ const SiteEditorPage = () => {
       setSiteData(data.data || {});
     } catch (error) {
       console.error('Failed to fetch site data:', error);
+      setSiteData({}); // Set empty object as fallback
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +44,7 @@ const SiteEditorPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await apiClient.put(`/super-admin/site-content/${activeTab}`, siteData);
+      await apiClient.put('/super-admin/site-settings', siteData);
       alert('Settings saved successfully!');
     } catch (error) {
       console.error('Failed to save:', error);
@@ -55,6 +56,29 @@ const SiteEditorPage = () => {
 
   const updateSiteData = (field: string, value: any) => {
     setSiteData((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = async (file: File, field: string) => {
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('section', activeTab);
+    formData.append('field', field);
+    
+    try {
+      setIsSaving(true);
+      const { data } = await apiClient.post('/super-admin/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      updateSiteData(field, data.imageUrl);
+      alert('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -173,10 +197,22 @@ const SiteEditorPage = () => {
                     Hero Background Image
                   </label>
                   <div className="border-2 border-dashed border-app-border rounded-2xl p-6 text-center">
-                    <input type="file" accept="image/*" className="hidden" id="hero-bg" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      id="hero-bg"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file, 'heroBackgroundImage');
+                      }}
+                    />
                     <label htmlFor="hero-bg" className="cursor-pointer">
                       <div className="text-text-muted mb-2">Click to upload hero background</div>
                       <div className="text-sm text-text-secondary">PNG, JPG up to 5MB</div>
+                      {siteData.heroBackgroundImage && (
+                        <div className="mt-2 text-green-600 text-sm">✓ Image uploaded</div>
+                      )}
                     </label>
                   </div>
                 </div>
@@ -290,10 +326,22 @@ const SiteEditorPage = () => {
                   </label>
                   <div className="space-y-4">
                     <div className="border-2 border-dashed border-app-border rounded-2xl p-6 text-center">
-                      <input type="file" accept="image/*" className="hidden" id="banner-img" />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        id="banner-img"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file, 'bannerImage');
+                        }}
+                      />
                       <label htmlFor="banner-img" className="cursor-pointer">
                         <div className="text-text-muted mb-2">Click to upload banner image</div>
                         <div className="text-sm text-text-secondary">PNG, JPG up to 5MB</div>
+                        {siteData.bannerImage && (
+                          <div className="mt-2 text-green-600 text-sm">✓ Image uploaded</div>
+                        )}
                       </label>
                     </div>
                     <input
@@ -452,7 +500,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Simple, Transparent Pricing"
+                    value={siteData.pricingTitle || 'Simple, Transparent Pricing'}
+                    onChange={(e) => updateSiteData('pricingTitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -462,7 +511,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Choose the plan that fits your needs"
+                    value={siteData.pricingSubtitle || 'Choose the plan that fits your needs'}
+                    onChange={(e) => updateSiteData('pricingSubtitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -478,7 +528,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Meet Our Team"
+                    value={siteData.leadershipTitle || 'Meet Our Team'}
+                    onChange={(e) => updateSiteData('leadershipTitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>
@@ -488,7 +539,8 @@ const SiteEditorPage = () => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="The experts behind our success"
+                    value={siteData.leadershipSubtitle || 'The experts behind our success'}
+                    onChange={(e) => updateSiteData('leadershipSubtitle', e.target.value)}
                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                   />
                 </div>

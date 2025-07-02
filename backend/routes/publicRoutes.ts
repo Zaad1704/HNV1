@@ -25,13 +25,29 @@ router.get('/landing-data', async (req, res) => {
   }
 });
 
-// Public site settings
+// Public site settings - connects to super admin editor
 router.get('/site-settings', async (req, res) => {
   try {
-    const landingData = await masterDataService.getLandingPageData();
+    // Get site settings from database (saved by super admin)
+    const SiteSettings = require('../models/SiteSettings');
+    let settings = await SiteSettings.findOne({});
+    
+    if (!settings) {
+      // Create default settings if none exist
+      settings = await SiteSettings.create({
+        siteName: 'HNV Property Management',
+        contactEmail: 'support@hnvpm.com',
+        siteDescription: 'Professional Property Management Solutions',
+        heroTitle: 'The All-in-One Platform for Modern Property Management',
+        heroSubtitle: 'Streamline your property management with our comprehensive solution',
+        statsTitle: 'Trusted by Property Managers Worldwide',
+        statsSubtitle: 'Join thousands of property managers who trust our platform'
+      });
+    }
+    
     res.json({
       success: true,
-      data: landingData.siteSettings || { siteName: 'HNV Property Management' }
+      data: settings
     });
   } catch (error) {
     console.error('Site settings error:', error);
@@ -39,7 +55,10 @@ router.get('/site-settings', async (req, res) => {
       success: true,
       data: {
         siteName: 'HNV Property Management',
-        logos: { companyName: 'HNV Solutions', faviconUrl: '/logo-min.png' }
+        contactEmail: 'support@hnvpm.com',
+        siteDescription: 'Professional Property Management Solutions',
+        heroTitle: 'The All-in-One Platform for Modern Property Management',
+        statsTitle: 'Trusted by Property Managers Worldwide'
       }
     });
   }

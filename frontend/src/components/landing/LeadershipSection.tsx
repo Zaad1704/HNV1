@@ -13,14 +13,14 @@ interface Executive {
 }
 
 const LeadershipSection = () => {
-  const { data: landingData } = useQuery({
-    queryKey: ['landingData'],
+  const { data: siteSettings } = useQuery({
+    queryKey: ['siteSettings'],
     queryFn: async () => {
       try {
-        const response = await apiClient.get('/api/public/landing-data');
+        const response = await apiClient.get('/public/site-settings');
         return response.data.data;
       } catch (error) {
-        return null;
+        return {};
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -28,8 +28,27 @@ const LeadershipSection = () => {
     refetchOnWindowFocus: false
   });
 
-  const leadershipSection = landingData?.siteSettings?.leadershipSection;
-  const executives = leadershipSection?.leaders || [];
+  // Default executives if none configured
+  const executives = [
+    {
+      name: 'John Smith',
+      position: 'CEO & Founder',
+      bio: 'Leading the vision for modern property management solutions.',
+      imageUrl: ''
+    },
+    {
+      name: 'Sarah Johnson',
+      position: 'CTO',
+      bio: 'Driving technical innovation and platform development.',
+      imageUrl: ''
+    },
+    {
+      name: 'Mike Davis',
+      position: 'Head of Operations',
+      bio: 'Ensuring seamless operations and customer success.',
+      imageUrl: ''
+    }
+  ];
 
   return (
     <section className="py-20 bg-app-surface">
@@ -41,10 +60,10 @@ const LeadershipSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            {leadershipSection?.title || 'Meet Our Leadership'}
+            {siteSettings?.leadershipTitle || 'Meet Our Leadership'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            {leadershipSection?.subtitle || 'Our experienced team is dedicated to revolutionizing property management.'}
+            {siteSettings?.leadershipSubtitle || 'Our experienced team is dedicated to revolutionizing property management.'}
           </p>
         </motion.div>
 

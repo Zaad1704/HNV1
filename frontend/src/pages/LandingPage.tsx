@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 
 const fetchLandingData = async () => {
   try {
-    const { data } = await apiClient.get('/api/public/landing-data');
+    const { data } = await apiClient.get('/public/site-settings');
     return data.data;
   } catch (error) {
     console.warn('Landing data API failed, using defaults');
@@ -39,8 +39,8 @@ const LandingPage = () => {
     refetchOnWindowFocus: false
   });
 
-  const stats = landingData?.stats;
-  const siteSettings = landingData?.siteSettings;
+  const stats = landingData?.stats || {};
+  const siteSettings = landingData || {};
 
   useEffect(() => {
     // Handle hash navigation from URL
@@ -65,10 +65,10 @@ const LandingPage = () => {
       <section id="stats" className="py-12 md:py-24 bg-app-bg">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-text-primary mb-4 md:mb-6">
-            {t('landing.real_stats_title', 'Trusted by Property Managers Worldwide')}
+            {siteSettings.statsTitle || t('landing.real_stats_title', 'Trusted by Property Managers Worldwide')}
           </h2>
           <p className="text-base md:text-lg lg:text-xl text-text-secondary mb-8 md:mb-12 max-w-3xl mx-auto">
-            Join thousands of property managers who trust our platform for their daily operations
+            {siteSettings.statsSubtitle || 'Join thousands of property managers who trust our platform for their daily operations'}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
             <div className="app-surface rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 shadow-app hover:shadow-app-lg transition-all duration-300 border border-app-border">

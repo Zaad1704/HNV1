@@ -294,4 +294,48 @@ router.post('/plans-enhanced', asyncHandler(createPlan));
 router.put('/plans-enhanced/:planId', asyncHandler(updatePlan));
 router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
 
+// Site settings save route
+router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const SiteSettings = require('../models/SiteSettings');
+    let settings = await SiteSettings.findOne({});
+    
+    if (settings) {
+      Object.assign(settings, req.body);
+      await settings.save();
+    } else {
+      settings = await SiteSettings.create(req.body);
+    }
+    
+    res.json({ success: true, data: settings });
+  } catch (error) {
+    console.error('Save settings error:', error);
+    res.status(500).json({ success: false, message: 'Failed to save settings' });
+  }
+}));
+
+// Image upload route
+router.post('/upload-image', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    // For now, return a Google Drive URL format
+    // In production, implement actual Google Drive upload
+    const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}`;
+    
+    console.log('Image upload request:', {
+      section: req.body.section,
+      field: req.body.field,
+      fileSize: req.file?.size
+    });
+    
+    res.json({ 
+      success: true, 
+      imageUrl: mockImageUrl,
+      message: 'Image uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ success: false, message: 'Image upload failed' });
+  }
+}));
+
 export default router;

@@ -27,6 +27,15 @@ const fetchPlans = async (): Promise<Plan[]> => {
   }
 };
 
+const fetchSiteSettings = async () => {
+  try {
+    const { data } = await apiClient.get('/public/site-settings');
+    return data.data;
+  } catch (error) {
+    return {};
+  }
+};
+
 const PricingSection = () => {
   const { currencyCode } = useCurrency();
   const { data: plans = [], isLoading } = useQuery({
@@ -34,6 +43,11 @@ const PricingSection = () => {
     queryFn: fetchPlans,
     retry: false,
     refetchOnWindowFocus: false
+  });
+  const { data: siteSettings = {} } = useQuery({
+    queryKey: ['siteSettings'],
+    queryFn: fetchSiteSettings,
+    retry: false
   });
   const { data: exchangeRates = {}, isLoading: ratesLoading } = useCurrencyRates();
 
@@ -77,10 +91,10 @@ const PricingSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            Simple, Transparent Pricing
+            {siteSettings.pricingTitle || 'Simple, Transparent Pricing'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            Choose the plan that fits your portfolio size and needs.
+            {siteSettings.pricingSubtitle || 'Choose the plan that fits your portfolio size and needs.'}
           </p>
         </motion.div>
 
