@@ -6,7 +6,7 @@ import apiClient from './api/client';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
-import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
