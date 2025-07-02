@@ -61,14 +61,14 @@ const AdminOrganizationsPage = () => {
                     Total: {organizations.length} organizations
                 </div>
             </div>
-            <div className="app-surface rounded-xl border border-app-border overflow-hidden shadow-lg">
+            <div className="app-surface rounded-3xl border border-app-border overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-app-bg border-b border-app-border">
                         <tr>
-                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Organization</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Plan</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary">Status</th>
-                            <th className="p-4 uppercase text-sm font-semibold text-text-secondary text-right">Actions</th>
+                            <th className="p-4 text-sm font-semibold text-text-secondary">Organization</th>
+                            <th className="p-4 text-sm font-semibold text-text-secondary">Plan</th>
+                            <th className="p-4 text-sm font-semibold text-text-secondary">Status</th>
+                            <th className="p-4 text-sm font-semibold text-text-secondary text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-app-border">

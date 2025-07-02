@@ -14,16 +14,16 @@ const AdminSidebar: React.FC = () => {
     };
 
     const getLinkClass = (path: string) => {
-        const base = 'flex items-center gap-3 px-4 py-2.5 rounded-lg font-semibold transition-colors duration-150';
+        const base = 'flex items-center gap-3 px-4 py-3 rounded-2xl font-medium transition-all duration-300';
         return location.pathname.startsWith(path)
-          ? `${base} bg-gradient-to-r from-orange-500 to-blue-600 text-white`
-          : `${base} text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700`;
+          ? `${base} app-gradient text-white shadow-app`
+          : `${base} text-text-secondary hover:text-text-primary hover:bg-app-bg`;
     };
 
     return (
-        <aside className="w-64 h-screen bg-light-card dark:bg-dark-card text-dark-text dark:text-dark-text-dark flex flex-col flex-shrink-0 border-r border-border-color dark:border-border-color-dark transition-colors duration-300">
-            <div className="h-20 flex items-center justify-center border-b border-border-color dark:border-border-color-dark">
-                <h2 className="text-xl font-bold text-center flex items-center gap-2"><ShieldCheck className="text-brand-primary dark:text-brand-secondary"/> Admin Panel</h2>
+        <aside className="w-64 h-screen app-surface text-text-primary flex flex-col flex-shrink-0">
+            <div className="h-20 flex items-center justify-center border-b border-app-border">
+                <h2 className="text-xl font-bold text-center flex items-center gap-2"><ShieldCheck className="text-brand-blue"/> Admin Panel</h2>
             </div>
             <nav className="flex-1 px-4 py-6 space-y-2">
                 <Link to="/admin/dashboard" className={getLinkClass('/admin/dashboard')}><LayoutDashboard size={18}/> Dashboard</Link>
@@ -34,11 +34,11 @@ const AdminSidebar: React.FC = () => {
                 <Link to="/admin/site-editor" className={getLinkClass('/admin/site-editor')}><Brush size={18}/> Site Editor</Link>
                 <Link to="/admin/billing" className={getLinkClass('/admin/billing')}><LifeBuoy size={18}/> Billing</Link>
             </nav>
-            <div className="p-4 border-t border-border-color dark:border-border-color-dark space-y-2">
-                <Link to="/dashboard" className="flex items-center justify-center gap-2 w-full text-center px-4 py-2.5 rounded-lg font-semibold text-light-text dark:text-light-text-dark bg-light-bg dark:bg-dark-bg/50 hover:bg-border-color dark:hover:bg-border-color-dark transition-colors">
+            <div className="p-4 border-t border-app-border space-y-2">
+                <Link to="/dashboard" className="flex items-center justify-center gap-2 w-full text-center px-4 py-3 rounded-2xl font-medium text-text-secondary bg-app-bg hover:bg-app-border transition-colors">
                   <ArrowLeft size={16} /> Exit Admin
                 </Link>
-                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 mt-2 font-semibold rounded-lg text-light-text dark:text-light-text-dark hover:bg-red-500/20 hover:text-red-400 transition-colors">
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 mt-2 font-medium rounded-2xl text-text-secondary hover:bg-red-50 hover:text-red-600 transition-colors">
                     <LogOut size={18} /> Logout
                 </button>
             </div>

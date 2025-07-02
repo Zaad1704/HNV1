@@ -80,24 +80,24 @@ const AdminUsersPage: React.FC = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
       />
-      <div className="bg-light-card p-6 rounded-xl shadow-lg border border-border-color overflow-x-auto dark:bg-dark-card dark:border-border-color-dark">
+      <div className="app-surface p-6 rounded-3xl border border-app-border overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-light-bg border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
+          <thead className="bg-app-bg border-b border-app-border">
             <tr>
-              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Name</th>
-              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Email</th>
-              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Role</th>
-              <th className="text-left p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Organization</th>
-              <th className="text-right p-4 font-semibold text-light-text uppercase text-sm dark:text-light-text-dark">Actions</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Name</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Email</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Role</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Organization</th>
+              <th className="text-right p-4 font-semibold text-text-secondary text-sm">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
+          <tbody className="divide-y divide-app-border">
             {filteredUsers.map((user: User) => (
-              <tr key={user._id} className="hover:bg-light-bg transition-colors duration-150 dark:hover:bg-dark-bg/40">
-                <td className="p-4 font-medium text-dark-text dark:text-dark-text-dark">{user.name}</td>
-                <td className="p-4 text-light-text dark:text-light-text-dark">{user.email}</td>
-                <td className="p-4 text-light-text dark:text-light-text-dark">{user.role}</td>
-                <td className="p-4 text-light-text dark:text-light-text-dark">{user.organizationId?.name || 'N/A'}</td>
+              <tr key={user._id} className="hover:bg-app-bg transition-colors duration-150">
+                <td className="p-4 font-medium text-text-primary">{user.name}</td>
+                <td className="p-4 text-text-secondary">{user.email}</td>
+                <td className="p-4 text-text-secondary">{user.role}</td>
+                <td className="p-4 text-text-secondary">{user.organizationId?.name || 'N/A'}</td>
                 <td className="p-4 text-right">
                   <div className="flex items-center justify-end gap-2">
                     <button 
@@ -135,9 +135,9 @@ const AdminUsersPage: React.FC = () => {
       {/* User Details Modal */}
       {selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md">
+          <div className="app-surface rounded-3xl p-6 w-full max-w-md border border-app-border shadow-app-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">User Details</h3>
+              <h3 className="text-xl font-bold text-text-primary">User Details</h3>
               <button 
                 onClick={() => setSelectedUser(null)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -147,35 +147,35 @@ const AdminUsersPage: React.FC = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
-                <p className="text-gray-900 dark:text-white font-medium">{selectedUser.name}</p>
+                <label className="text-sm font-medium text-text-secondary">Name</label>
+                <p className="text-text-primary font-medium">{selectedUser.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-                <p className="text-gray-900 dark:text-white">{selectedUser.email}</p>
+                <label className="text-sm font-medium text-text-secondary">Email</label>
+                <p className="text-text-primary">{selectedUser.email}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</label>
-                <p className="text-gray-900 dark:text-white">{selectedUser.role}</p>
+                <label className="text-sm font-medium text-text-secondary">Role</label>
+                <p className="text-text-primary">{selectedUser.role}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Organization</label>
-                <p className="text-gray-900 dark:text-white">{selectedUser.organizationId?.name || 'No Organization'}</p>
+                <label className="text-sm font-medium text-text-secondary">Organization</label>
+                <p className="text-text-primary">{selectedUser.organizationId?.name || 'No Organization'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email Verified</label>
-                <p className="text-gray-900 dark:text-white">{selectedUser.isEmailVerified ? 'Yes' : 'No'}</p>
+                <label className="text-sm font-medium text-text-secondary">Email Verified</label>
+                <p className="text-text-primary">{selectedUser.isEmailVerified ? 'Yes' : 'No'}</p>
               </div>
               {selectedUser.createdAt && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</label>
-                  <p className="text-gray-900 dark:text-white">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                  <label className="text-sm font-medium text-text-secondary">Created</label>
+                  <p className="text-text-primary">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
                 </div>
               )}
               {selectedUser.lastLogin && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Login</label>
-                  <p className="text-gray-900 dark:text-white">{new Date(selectedUser.lastLogin).toLocaleDateString()}</p>
+                  <label className="text-sm font-medium text-text-secondary">Last Login</label>
+                  <p className="text-text-primary">{new Date(selectedUser.lastLogin).toLocaleDateString()}</p>
                 </div>
               )}
             </div>
@@ -198,7 +198,7 @@ const AdminUsersPage: React.FC = () => {
               </button>
               <button 
                 onClick={() => setSelectedUser(null)}
-                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-app-bg text-text-primary rounded-2xl hover:bg-app-border transition-colors"
               >
                 Close
               </button>
