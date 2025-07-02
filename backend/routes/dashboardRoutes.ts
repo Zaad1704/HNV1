@@ -45,8 +45,8 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
   }
 }));
 
-// Protected routes
-router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
+// Protected routes - auth already applied in app.ts
+// router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
 // Main dashboard stats route
 router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
@@ -130,7 +130,7 @@ router.get('/rent-status', asyncHandler(getRentStatus));
 router.get('/recent-activity', asyncHandler(getRecentActivity));
 
 // Tenant portal endpoint
-router.get('/tenant-portal', protect, authorize(['Tenant']), asyncHandler(async (req: Request, res: Response) => {
+router.get('/tenant-portal', authorize(['Tenant']), asyncHandler(async (req: Request, res: Response) => {
   const Tenant = require('../models/Tenant');
   const Payment = require('../models/Payment');
   
