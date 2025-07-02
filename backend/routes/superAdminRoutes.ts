@@ -54,9 +54,22 @@ router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 router.get('/organizations', async (req: Request, res: Response) => {
   try {
     console.log('Fetching organizations...');
-    const organizations = await Organization.find({}).populate('owner', 'name email');
+    const organizations = await Organization.find({})
+      .populate('owner', 'name email')
+      .populate({
+        path: 'subscription',
+        populate: {
+          path: 'planId',
+          select: 'name price duration'
+        }
+      });
     console.log('Found organizations:', organizations.length);
-    console.log('Sample org:', organizations[0] ? { name: organizations[0].name, status: organizations[0].status } : 'No orgs');
+    console.log('Sample org:', organizations[0] ? { 
+      name: organizations[0].name, 
+      status: organizations[0].status,
+      owner: organizations[0].owner,
+      subscription: organizations[0].subscription
+    } : 'No orgs');
     res.json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Organizations fetch error:', error);
@@ -65,20 +78,24 @@ router.get('/organizations', async (req: Request, res: Response) => {
 });
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
+  console.log('Activating organization:', req.params.id);
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'active' },
     { new: true, upsert: true }
   );
+  console.log('Subscription updated:', subscription);
   res.json({ success: true, data: subscription });
 }));
 
 router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => {
+  console.log('Deactivating organization:', req.params.id);
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'inactive' },
     { new: true }
   );
+  console.log('Subscription updated:', subscription);
   res.json({ success: true, data: subscription });
 }));
 
