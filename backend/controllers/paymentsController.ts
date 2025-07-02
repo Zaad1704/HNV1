@@ -6,7 +6,8 @@ import mongoose from 'mongoose';
 export const getPayments = async (req: Request, res: Response) => {
     try {
         if (!req.user || !req.user.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            return;
         }
         
         const payments = await Payment.find({ organizationId: req.user.organizationId })

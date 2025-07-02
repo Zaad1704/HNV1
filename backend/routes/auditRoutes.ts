@@ -13,7 +13,8 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     try {
         const authenticatedUser = req.user;
         if (!authenticatedUser) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+            res.status(401).json({ success: false, message: 'Not authenticated' });
+            return;
         }
 
         const { userId, action, startDate, endDate } = req.query;
