@@ -193,6 +193,7 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
 app.use('/api/auth', authRoutes, routeErrorHandler);
 app.use('/api/setup', setupRoutes, routeErrorHandler);
 app.use('/api/password-reset', passwordResetRoutes, routeErrorHandler);
+app.use('/api/forgot-password', passwordResetRoutes, routeErrorHandler);
 app.use('/api/feedback', feedbackRoutes, routeErrorHandler);
 app.use('/api/site-settings', siteSettingsRoutes, routeErrorHandler);
 app.use('/api/localization', localizationRoutes, routeErrorHandler);
