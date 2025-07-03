@@ -1,10 +1,14 @@
 // frontend/src/pages/MaintenanceRequestsPage.tsx
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { useWindowSize } from '../hooks/useWindowSize';
-import { Wrench, Calendar, Home, AlertCircle, Users } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDataExport } from '../hooks/useDataExport';
 
 const fetchRequests = async () => {
     const { data } = await apiClient.get('/maintenance'); 
@@ -18,8 +22,63 @@ const updateRequestStatus = async ({ id, status }: { id: string, status: string 
 
 const MaintenanceRequestsPage = () => {
     const queryClient = useQueryClient();
+    const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState<any>({});
+    const [showExportModal, setShowExportModal] = useState(false);
+    const { exportData } = useDataExport();
     const { data: requests = [], isLoading, isError } = useQuery(['maintenanceRequests'], fetchRequests);
     const { width } = useWindowSize();
+
+    const filteredRequests = useMemo(() => {
+        if (!requests) return [];
+        
+        return requests.filter((request: any) => {
+            const matchesSearch = !searchQuery || 
+                request.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                request.requestedBy?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                request.propertyId?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            const matchesStatus = !filters.status || request.status === filters.status;
+            
+            return matchesSearch && matchesStatus;
+        });
+    }, [requests, searchQuery, filters]);
+
+    const filterOptions = [
+        {
+            key: 'status',
+            label: 'Status',
+            type: 'select' as const,
+            options: [
+                { value: 'Open', label: 'Open' },
+                { value: 'In Progress', label: 'In Progress' },
+                { value: 'Resolved', label: 'Resolved' },
+                { value: 'Closed', label: 'Closed' }
+            ]
+        }
+    ];
+
+    const bulkActions = [
+        {
+            key: 'export',
+            label: 'Export',
+            icon: Download,
+            color: 'bg-blue-500 hover:bg-blue-600 text-white',
+            action: async (ids: string[]) => {
+                await exportData('maintenance', 'maintenance-requests', { format: 'xlsx', filters: { ids } });
+            }
+        },
+        {
+            key: 'close',
+            label: 'Mark Closed',
+            icon: AlertCircle,
+            color: 'bg-gray-500 hover:bg-gray-600 text-white',
+            action: (ids: string[]) => {
+                ids.forEach(id => handleStatusChange(id, 'Closed'));
+            }
+        }
+    ];
 
     const mutation = useMutation({
         mutationFn: updateRequestStatus,
@@ -60,6 +119,7 @@ const MaintenanceRequestsPage = () => {
                 <table className="w-full text-left">
                     <thead className="bg-light-bg/50 border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                         <tr>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Select</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Date</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Tenant</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Property</th>
@@ -68,9 +128,23 @@ const MaintenanceRequestsPage = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
-                        {requests.length > 0 ? (
-                            requests.map((req: any) => (
+                        {filteredRequests.length > 0 ? (
+                            filteredRequests.map((req: any) => (
                             <tr key={req._id} className="hover:bg-light-bg/50 transition-colors duration-150 dark:hover:bg-dark-bg/40">
+                                <td className="p-4">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedRequests.includes(req._id)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedRequests(prev => [...prev, req._id]);
+                                            } else {
+                                                setSelectedRequests(prev => prev.filter(id => id !== req._id));
+                                            }
+                                        }}
+                                        className="w-4 h-4 rounded border-2"
+                                    />
+                                </td>
                                 <td className="p-4 text-light-text dark:text-light-text-dark">{new Date(req.createdAt).toLocaleDateString()}</td>
                                 <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{req.requestedBy?.name || 'N/A'}</td>
                                 <td className="p-4 text-light-text dark:text-light-text-dark">{req.propertyId?.name || 'N/A'}</td>
@@ -104,7 +178,7 @@ const MaintenanceRequestsPage = () => {
 
     const MobileView = () => (
         <div className="grid grid-cols-1 gap-4">
-            {requests.map((req: any, index: number) => (
+            {filteredRequests.map((req: any, index: number) => (
                 <motion.div 
                     key={req._id} 
                     className="bg-light-card p-4 rounded-3xl border border-border-color shadow-sm"
@@ -152,7 +226,33 @@ const MaintenanceRequestsPage = () => {
             transition={{ duration: 0.4 }}
             className="text-dark-text dark:text-dark-text-dark"
         >
-            <h1 className="text-3xl font-bold mb-8">Maintenance Requests</h1>
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold">Maintenance Requests</h1>
+                    <p className="text-text-secondary mt-1">Manage property maintenance requests</p>
+                </div>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowExportModal(true)}
+                        className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+                    >
+                        <Download size={16} />
+                        Export
+                    </button>
+                    <button className="btn-primary flex items-center gap-2">
+                        <Plus size={18} />
+                        Add Request
+                    </button>
+                </div>
+            </div>
+
+            <SearchFilter
+                onSearch={setSearchQuery}
+                onFilter={setFilters}
+                filters={filters}
+                placeholder="Search maintenance requests..."
+                filterOptions={filterOptions}
+            />
             {requests.length > 0 ? (
                 width < 768 ? <MobileView /> : <DesktopView />
             ) : (
@@ -161,6 +261,21 @@ const MaintenanceRequestsPage = () => {
                     <p className="text-light-text mt-2 mb-4 dark:text-light-text-dark">You can submit requests from your tenant portal or properties page.</p>
                 </div>
             )}
+
+            <BulkActions
+                selectedItems={selectedRequests}
+                totalItems={filteredRequests?.length || 0}
+                onSelectAll={() => setSelectedRequests(filteredRequests?.map((r: any) => r._id) || [])}
+                onClearSelection={() => setSelectedRequests([])}
+                actions={bulkActions}
+            />
+
+            <ExportModal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                section="maintenance"
+                title="Maintenance Requests"
+            />
         </motion.div>
     );
 };

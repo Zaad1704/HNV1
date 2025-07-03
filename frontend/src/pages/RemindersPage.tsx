@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import apiClient from '../api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusCircle, Bell, Edit, Trash2, Mail, MessageSquare, Smartphone } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import { PlusCircle, Bell, Edit, Trash2, Mail, MessageSquare, Smartphone, Download } from 'lucide-react';
 import ReminderFormModal from '../components/common/ReminderFormModal';
+import { useDataExport } from '../hooks/useDataExport';
 
 interface IReminderRecord {
     _id: string;
@@ -22,6 +26,11 @@ const RemindersPage: React.FC = () => {
     const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reminderToEdit, setReminderToEdit] = useState<IReminderRecord | undefined>(undefined);
+    const [selectedReminders, setSelectedReminders] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState<any>({});
+    const [showExportModal, setShowExportModal] = useState(false);
+    const { exportData } = useDataExport();
 
     const { data: reminders = [], isLoading, isError, refetch } = useQuery({
         queryKey: ['reminders'],

@@ -1,9 +1,13 @@
 // frontend/src/pages/CashFlowPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import apiClient from '../api/client';
 import { useQuery } from '@tanstack/react-query';
-import { PlusCircle, DollarSign, ArrowRight, Edit, Trash2 } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import { PlusCircle, DollarSign, ArrowRight, Edit, Trash2, Download } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useDataExport } from '../hooks/useDataExport';
 
 interface ICashFlowRecord {
     _id: string;
@@ -31,12 +35,66 @@ const CashFlowPage: React.FC = () => {
     const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     const [itemToRequest, setItemToRequest] = useState<ICashFlowRecord | null>(null);
+    const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filters, setFilters] = useState<any>({});
+    const [showExportModal, setShowExportModal] = useState(false);
+    const { exportData } = useDataExport();
 
     const { data: records = [], isLoading, isError, error, refetch } = useQuery({
         queryKey: ['cashFlowRecords'],
         queryFn: fetchCashFlowRecords,
         retry: 1
     });
+
+    const filteredRecords = useMemo(() => {
+        if (!records) return [];
+        
+        return records.filter((record: ICashFlowRecord) => {
+            const matchesSearch = !searchQuery || 
+                record.fromUser?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                record.toUser?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                record.type?.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            const matchesStatus = !filters.status || record.status === filters.status;
+            const matchesType = !filters.type || record.type === filters.type;
+            
+            return matchesSearch && matchesStatus && matchesType;
+        });
+    }, [records, searchQuery, filters]);
+
+    const filterOptions = [
+        {
+            key: 'status',
+            label: 'Status',
+            type: 'select' as const,
+            options: [
+                { value: 'pending', label: 'Pending' },
+                { value: 'completed', label: 'Completed' }
+            ]
+        },
+        {
+            key: 'type',
+            label: 'Type',
+            type: 'select' as const,
+            options: [
+                { value: 'cash_handover', label: 'Cash Handover' },
+                { value: 'bank_deposit', label: 'Bank Deposit' }
+            ]
+        }
+    ];
+
+    const bulkActions = [
+        {
+            key: 'export',
+            label: 'Export',
+            icon: Download,
+            color: 'bg-blue-500 hover:bg-blue-600 text-white',
+            action: async (ids: string[]) => {
+                await exportData('cashflow', 'cashflow-records', { format: 'xlsx', filters: { ids } });
+            }
+        }
+    ];
 
     const handleRequestEdit = (record: ICashFlowRecord) => {
         setItemToRequest(record);
@@ -87,20 +145,40 @@ const CashFlowPage: React.FC = () => {
     try {
         return (
             <div className="p-6">
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                    <h1 className="text-3xl font-bold">Cash Flow Management</h1>
-                    {user?.role === 'Agent' && (
-                      <button
-                          onClick={() => setIsRecordModalOpen(true)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                      >
-                          <PlusCircle size={18} />
-                          <span>Record Transaction</span>
-                      </button>
-                    )}
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold">Cash Flow Management</h1>
+                        <p className="text-text-secondary mt-1">Track cash transactions and deposits</p>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowExportModal(true)}
+                            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+                        >
+                            <Download size={16} />
+                            Export
+                        </button>
+                        {user?.role === 'Agent' && (
+                          <button
+                              onClick={() => setIsRecordModalOpen(true)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                          >
+                              <PlusCircle size={18} />
+                              <span>Record Transaction</span>
+                          </button>
+                        )}
+                    </div>
                 </div>
 
-            {!records || records.length === 0 ? (
+                <SearchFilter
+                    onSearch={setSearchQuery}
+                    onFilter={setFilters}
+                    filters={filters}
+                    placeholder="Search cash flow records..."
+                    filterOptions={filterOptions}
+                />
+
+            {!filteredRecords || filteredRecords.length === 0 ? (
                 <div className="text-center py-16 bg-gray-100 rounded-3xl border-2 border-dashed">
                     <h3 className="text-xl font-semibold">No Cash Flow Records Found</h3>
                     <p className="text-gray-600 mt-2">No cash flow transactions have been recorded yet.</p>
@@ -111,6 +189,7 @@ const CashFlowPage: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b">
                                 <tr>
+                                    <th className="p-4 text-sm font-semibold text-gray-600 uppercase">Select</th>
                                     <th className="p-4 text-sm font-semibold text-gray-600 uppercase">Date</th>
                                     <th className="p-4 text-sm font-semibold text-gray-600 uppercase">Type</th>
                                     <th className="p-4 text-sm font-semibold text-gray-600 uppercase">From</th>
@@ -120,8 +199,22 @@ const CashFlowPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {records && records.map((record) => record && (
+                                {filteredRecords && filteredRecords.map((record) => record && (
                                     <tr key={record._id} className="hover:bg-gray-50">
+                                        <td className="p-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedRecords.includes(record._id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedRecords(prev => [...prev, record._id]);
+                                                    } else {
+                                                        setSelectedRecords(prev => prev.filter(id => id !== record._id));
+                                                    }
+                                                }}
+                                                className="w-4 h-4 rounded border-2"
+                                            />
+                                        </td>
                                         <td className="p-4 font-semibold">{record.transactionDate ? new Date(record.transactionDate).toLocaleDateString() : 'N/A'}</td>
                                         <td className="p-4 flex items-center gap-2 capitalize">
                                             {getTypeIcon(record.type)} <span className="capitalize">{record.type?.replace(/_/g, ' ') || 'Unknown'}</span>
@@ -144,6 +237,21 @@ const CashFlowPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <BulkActions
+                selectedItems={selectedRecords}
+                totalItems={filteredRecords?.length || 0}
+                onSelectAll={() => setSelectedRecords(filteredRecords?.map((r: ICashFlowRecord) => r._id) || [])}
+                onClearSelection={() => setSelectedRecords([])}
+                actions={bulkActions}
+            />
+
+            <ExportModal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                section="cashflow"
+                title="Cash Flow Records"
+            />
             </div>
         );
     } catch (renderError) {
