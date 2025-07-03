@@ -4,62 +4,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const authMiddleware_1 = require("../middleware/authMiddleware");
-const pdfkit_1 = __importDefault(require("pdfkit"));
-const { Parser } = require('json2csv');
+const express_async_handler_1 = __importDefault(require("express-async-handler"));
+const Tenant_1 = __importDefault(require("../models/Tenant"));
+const Payment_1 = __importDefault(require("../models/Payment"));
+const date_fns_1 = require("date-fns");
 const router = (0, express_1.Router)();
-router.get('/monthly-collection', authMiddleware_1.protect, async (req, res) => {
-    try {
-        const { month, year } = req.query;
-        const collectionData = [
-            {
-                _id: '1',
-                tenantName: 'John Doe',
-                unitNo: 'A101',
-                rentAmount: 1200,
-                rentStartMonth: `${month}/${year}`,
-                overdueMonths: [],
-                isCollected: false,
-                propertyName: 'Sunset Apartments'
-            }
-        ];
-        res.json({ success: true, data: collectionData });
+router.get('/monthly-collection', (0, express_async_handler_1.default)(async (req, res) => {
+    if (!req.user?.organizationId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
     }
-    catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to fetch collection data' });
-    }
-});
-router.post('/export', authMiddleware_1.protect, async (req, res) => {
-    try {
-        const { section, dateRange, format, startDate, endDate } = req.body;
-        const data = [
-            { name: 'Sample Data', date: new Date().toISOString(), amount: 1000 }
-        ];
-        if (format === 'csv') {
-            const parser = new Parser();
-            const csv = parser.parse(data);
-            res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', `attachment; filename="${section}-export.csv"`);
-            res.send(csv + '\n\nPowered by HNV Property Management Solutions');
-        }
-        else if (format === 'pdf') {
-            const doc = new pdfkit_1.default();
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="${section}-export.pdf"`);
-            doc.pipe(res);
-            doc.fontSize(20).text(`${section.toUpperCase()} Export`, 100, 100);
-            doc.fontSize(12).text(`Generated on: ${new Date().toLocaleDateString()}`, 100, 130);
-            let yPosition = 160;
-            data.forEach((item, index) => {
-                doc.text(`${index + 1}. ${JSON.stringify(item)}`, 100, yPosition);
-                yPosition += 20;
-            });
-            doc.fontSize(10).text('Powered by HNV Property Management Solutions', 100, doc.page.height - 50);
-            doc.end();
-        }
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: 'Export failed' });
-    }
-});
+    const { month, year } = req.query;
+    const targetDate = new Date(Number(year), Number(month) - 1, 1);
+    const monthStart = (0, date_fns_1.startOfMonth)(targetDate);
+    const monthEnd = (0, date_fns_1.endOfMonth)(targetDate);
+    const tenants = await Tenant_1.default.find({
+        organizationId: req.user.organizationId,
+        status: 'Active'
+    }).populate('propertyId', 'name');
+    const collectionData = await Promise.all(tenants.map(async (tenant) => {
+        const payment = await Payment_1.default.findOne({
+            tenantId: tenant._id,
+            paymentDate: { $gte: monthStart, $lte: monthEnd },
+            status: 'Paid'
+        });
+        const overduePayments = await Payment_1.default.find({
+            tenantId: tenant._id,
+            paymentDate: { $lt: monthStart },
+            status: { $ne: 'Paid' }
+        });
+        return {
+            _id: tenant._id,
+            tenantName: tenant.name,
+            unitNo: tenant.unit,
+            propertyName: tenant.propertyId?.name || 'N/A',
+            rentAmount: tenant.rentAmount || 0,
+            rentStartMonth: `${month}/${year}`,
+            overdueMonths: overduePayments.map(p => new Date(p.paymentDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
+            isCollected: !!payment
+        };
+    }));
+    res.json({ success: true, data: collectionData });
+}));
 exports.default = router;

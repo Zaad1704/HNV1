@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign } from 'lucide-react';
+import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
+import { useDataExport } from '../hooks/useDataExport';
 
 const fetchTenants = async () => {
   try {
@@ -15,12 +20,69 @@ const fetchTenants = async () => {
 };
 
 const TenantsPage = () => {
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<any>({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showCollectionSheet, setShowCollectionSheet] = useState(false);
+  const { exportTenants, isExporting } = useDataExport();
+
   const { data: tenants, isLoading, error } = useQuery({
     queryKey: ['tenants'],
     queryFn: fetchTenants,
     retry: 3,
     retryDelay: 1000
   });
+
+  const filteredTenants = useMemo(() => {
+    if (!tenants) return [];
+    
+    return tenants.filter((tenant: any) => {
+      const matchesSearch = !searchQuery || 
+        tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tenant.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tenant.unit.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesStatus = !filters.status || tenant.status === filters.status;
+      const matchesProperty = !filters.property || tenant.propertyId?._id === filters.property;
+      
+      return matchesSearch && matchesStatus && matchesProperty;
+    });
+  }, [tenants, searchQuery, filters]);
+
+  const filterOptions = [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select' as const,
+      options: [
+        { value: 'Active', label: 'Active' },
+        { value: 'Inactive', label: 'Inactive' },
+        { value: 'Late', label: 'Late' }
+      ]
+    }
+  ];
+
+  const bulkActions = [
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      color: 'bg-blue-500 hover:bg-blue-600 text-white',
+      action: async (ids: string[]) => {
+        await exportTenants({ format: 'xlsx', filters: { ids } });
+      }
+    },
+    {
+      key: 'contact',
+      label: 'Send Notice',
+      icon: Mail,
+      color: 'bg-green-500 hover:bg-green-600 text-white',
+      action: (ids: string[]) => {
+        console.log('Send notice to tenants:', ids);
+      }
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -55,27 +117,67 @@ const TenantsPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">Tenants</h1>
           <p className="text-text-secondary mt-1">Manage your tenant relationships</p>
         </div>
-        <button className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold">
-          <Plus size={20} />
-          Add Tenant
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowCollectionSheet(true)}
+            className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
+          >
+            <FileText size={16} />
+            Collection Sheet
+          </button>
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold">
+            <Plus size={20} />
+            Add Tenant
+          </button>
+        </div>
       </div>
 
-      {tenants && tenants.length > 0 ? (
+      {/* Search & Filter */}
+      <SearchFilter
+        onSearch={setSearchQuery}
+        onFilter={setFilters}
+        filters={filters}
+        placeholder="Search tenants..."
+        filterOptions={filterOptions}
+      />
+
+      {filteredTenants && filteredTenants.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tenants.map((tenant: any, index: number) => (
+          {filteredTenants.map((tenant: any, index: number) => (
             <motion.div
               key={tenant._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all duration-300"
+              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all duration-300 relative"
             >
+              {/* Selection Checkbox */}
+              <div className="absolute top-4 right-4">
+                <input
+                  type="checkbox"
+                  checked={selectedTenants.includes(tenant._id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedTenants(prev => [...prev, tenant._id]);
+                    } else {
+                      setSelectedTenants(prev => prev.filter(id => id !== tenant._id));
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-2"
+                />
+              </div>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
                   {tenant.name.charAt(0).toUpperCase()}
@@ -151,6 +253,26 @@ const TenantsPage = () => {
           </button>
         </motion.div>
       )}
+
+      <BulkActions
+        selectedItems={selectedTenants}
+        totalItems={filteredTenants?.length || 0}
+        onSelectAll={() => setSelectedTenants(filteredTenants?.map((t: any) => t._id) || [])}
+        onClearSelection={() => setSelectedTenants([])}
+        actions={bulkActions}
+      />
+
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        section="tenants"
+        title="Tenants"
+      />
+
+      <MonthlyCollectionSheet
+        isOpen={showCollectionSheet}
+        onClose={() => setShowCollectionSheet(false)}
+      />
     </motion.div>
   );
 };
