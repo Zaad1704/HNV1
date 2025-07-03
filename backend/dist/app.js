@@ -182,7 +182,7 @@ app.use('/api/audit', authMiddleware_1.protect, auditRoutes_1.default);
 app.use('/api/org', authMiddleware_1.protect, orgRoutes_1.default);
 app.use('/api/organization', authMiddleware_1.protect, orgRoutes_1.default);
 app.use('/api/subscriptions', authMiddleware_1.protect, subscriptionsRoutes_1.default);
-app.use('/api/super-admin', superAdminRoutes_1.default);
+app.use('/api/super-admin', authMiddleware_1.protect, superAdminRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.protect, notificationRoutes_1.default);
 app.use('/api/communication', authMiddleware_1.protect, communicationRoutes_1.default);
 app.use('/api/sharing', authMiddleware_1.protect, sharingRoutes_1.default);

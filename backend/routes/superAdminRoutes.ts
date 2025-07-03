@@ -28,7 +28,7 @@ import {
     deletePlan
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac';
+// import { authorize } from '../middleware/rbac'; // Using direct role check instead
 
 const router = Router();
 
@@ -44,9 +44,15 @@ router.get('/test', (req, res) => {
   res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
 });
 
-router.use(protect, authorize(['Super Admin', 'Super Moderator']));
+router.use(protect, (req, res, next) => {
+  if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
+    return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
+  }
+  next();
+});
 
 router.get('/dashboard-stats', asyncHandler(getDashboardStats));
+router.get('/stats', asyncHandler(getDashboardStats)); // Alias for dashboard-stats
 
 router.get('/platform-growth', asyncHandler(getPlatformGrowth));
 

@@ -12,7 +12,6 @@ const SiteSettings_1 = __importDefault(require("../models/SiteSettings"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const superAdminController_1 = require("../controllers/superAdminController");
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const rbac_1 = require("../middleware/rbac");
 const router = (0, express_1.Router)();
 router.use((req, res, next) => {
     console.log(`Super Admin Route: ${req.method} ${req.originalUrl}`);
@@ -22,8 +21,14 @@ router.use((req, res, next) => {
 router.get('/test', (req, res) => {
     res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
 });
-router.use(authMiddleware_1.protect, (0, rbac_1.authorize)(['Super Admin', 'Super Moderator']));
+router.use(authMiddleware_1.protect, (req, res, next) => {
+    if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
+        return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
+    }
+    next();
+});
 router.get('/dashboard-stats', (0, express_async_handler_1.default)(superAdminController_1.getDashboardStats));
+router.get('/stats', (0, express_async_handler_1.default)(superAdminController_1.getDashboardStats));
 router.get('/platform-growth', (0, express_async_handler_1.default)(superAdminController_1.getPlatformGrowth));
 router.get('/plan-distribution', (0, express_async_handler_1.default)(superAdminController_1.getPlanDistribution));
 router.get('/organizations', async (req, res) => {
