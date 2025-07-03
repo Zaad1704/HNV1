@@ -55,11 +55,23 @@ export const protect = async (
                 message: 'Subscription has been canceled. Please contact support.' 
               });
             }
-            // For other statuses, add warning but don't block access
-            (req as any).subscriptionWarning = {
-              status: subscription?.status || 'none',
-              message: 'Subscription may be inactive. Some features may be limited.'
-            };
+          }
+          
+          // Check if subscription has expired
+          if (subscription && subscription.currentPeriodEndsAt && new Date() > subscription.currentPeriodEndsAt) {
+            // Allow Super Admin and Super Moderator regardless of expiration
+            if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
+              return next();
+            }
+            // Auto-cancel expired subscription
+            await Subscription.findByIdAndUpdate(subscription._id, {
+              status: 'expired',
+              expiredAt: new Date()
+            });
+            return res.status(403).json({ 
+              success: false, 
+              message: 'Subscription has expired. Please renew to continue using the service.' 
+            });
           }
         } catch (subscriptionError) {
           console.warn('Subscription check failed:', subscriptionError);

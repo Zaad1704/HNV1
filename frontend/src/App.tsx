@@ -31,6 +31,7 @@ const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const ResubscribePage = React.lazy(() => import('./pages/ResubscribePage'));
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
+const PlansPage = React.lazy(() => import('./pages/PlansPage'));
 const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage'));
 const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 
@@ -116,6 +117,7 @@ function App() {
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="pricing" element={<PricingPage />} />
+          <Route path="plans" element={<PlansPage />} />
           <Route path="payment-summary/:planId" element={<PaymentSummaryPage />} />
           <Route path="verify-email/:token" element={<VerifyEmailPage />} />
           {/* Tenant Public Portal routes */}
@@ -145,6 +147,7 @@ function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="resubscribe" element={<PlansPage />} />
             
             {/* Tenant Specific Dashboard */}
             <Route path="tenant" element={<TenantDashboardPage />} />
