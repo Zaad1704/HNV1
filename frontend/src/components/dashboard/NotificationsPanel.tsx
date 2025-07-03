@@ -20,7 +20,7 @@ const NotificationsPanel = () => {
     queryKey: ['notifications'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/api/notifications');
+        const { data } = await apiClient.get('/notifications');
         return data.data || [];
       } catch (error) {
         return [];

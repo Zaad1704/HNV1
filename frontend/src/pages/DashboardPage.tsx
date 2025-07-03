@@ -30,7 +30,7 @@ interface DashboardStats {
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const { data } = await apiClient.get('/api/dashboard/stats');
+    const { data } = await apiClient.get('/dashboard/stats');
     return data.data;
   } catch (error) {
     console.error('Failed to fetch dashboard stats:', error);
