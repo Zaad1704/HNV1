@@ -13,7 +13,9 @@ const RegisterPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Landlord'
+    role: 'Landlord',
+    organizationCode: '',
+    isIndependentAgent: false
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,11 @@ const RegisterPage: React.FC = () => {
   const { t } = useTranslation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    setFormData({ 
+      ...formData, 
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value 
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +36,11 @@ const RegisterPage: React.FC = () => {
     
     if (!formData.role) {
       setError('Please select your role to continue');
+      return;
+    }
+    
+    if (formData.role === 'Tenant' && !formData.organizationCode) {
+      setError('Organization code is required for tenant signup');
       return;
     }
     
@@ -63,8 +74,20 @@ const RegisterPage: React.FC = () => {
       setError('Please select your role before continuing with Google signup');
       return;
     }
+    
+    if (formData.role === 'Tenant' && !formData.organizationCode) {
+      setError('Organization code is required for tenant signup');
+      return;
+    }
+    
     const baseURL = apiClient.defaults.baseURL;
-    window.location.href = `${baseURL}/auth/google?signup=true&role=${formData.role}`;
+    const params = new URLSearchParams({
+      signup: 'true',
+      role: formData.role,
+      ...(formData.organizationCode && { organizationCode: formData.organizationCode }),
+      ...(formData.isIndependentAgent && { isIndependentAgent: 'true' })
+    });
+    window.location.href = `${baseURL}/auth/google?${params.toString()}`;
   };
 
   if (success) {
@@ -161,6 +184,46 @@ const RegisterPage: React.FC = () => {
               selectedRole={formData.role}
               onRoleChange={(role) => setFormData({ ...formData, role })}
             />
+
+            {(formData.role === 'Tenant' || formData.role === 'Agent') && (
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Organization Code {formData.role === 'Tenant' && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  name="organizationCode"
+                  value={formData.organizationCode}
+                  onChange={handleChange}
+                  required={formData.role === 'Tenant'}
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder={formData.role === 'Tenant' ? 'Enter organization code' : 'Enter organization code (optional)'}
+                />
+                {formData.role === 'Tenant' && (
+                  <p className="text-xs text-text-secondary mt-1">Get this code from your landlord or property manager</p>
+                )}
+              </div>
+            )}
+
+            {formData.role === 'Agent' && !formData.organizationCode && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="isIndependentAgent"
+                    checked={formData.isIndependentAgent}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-yellow-800">I am an independent agent</span>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      I manage properties from multiple landlords and want to create my own organization
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">{t('auth.password')}</label>

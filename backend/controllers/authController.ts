@@ -27,10 +27,20 @@ const sendTokenResponse = async (user: IUser, statusCode: number, res: Response)
     });
 };
 
+// Generate unique organization code
+const generateOrgCode = () => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, organizationCode, isIndependentAgent } = req.body;
   if (!name || !email || !password || !role) {
       return res.status(400).json({ success: false, message: 'Please provide name, email, password, and role' });
+  }
+  
+  // Validate tenant requirements
+  if (role === 'Tenant' && !organizationCode) {
+    return res.status(400).json({ success: false, message: 'Organization code is required for tenant signup' });
   }
   try {
     const userExists = await User.findOne({ email });
@@ -43,39 +53,74 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       return res.status(400).json({ success: false, message: 'User with that email already exists' });
     }
     
-    const trialPlan = await Plan.findOne({ name: 'Free Trial' });
-    if (!trialPlan) {
-        return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
-    }
+    let organization;
+    let user;
     
-    const organization = new Organization({ name: `${name}'s Organization`, members: [] });
-    
-    const user = new User({ 
+    if (role === 'Tenant' || (role === 'Agent' && organizationCode)) {
+      // Join existing organization
+      organization = await Organization.findOne({ organizationCode });
+      if (!organization) {
+        return res.status(400).json({ success: false, message: 'Invalid organization code' });
+      }
+      
+      user = new User({ 
         name, 
         email, 
         password, 
         role, 
         organizationId: organization._id,
-        isEmailVerified: false // Require email verification
-    });
+        isEmailVerified: false
+      });
+      
+      organization.members.push(user._id as Types.ObjectId);
+      await organization.save();
+    } else {
+      // Create new organization (Landlord or Independent Agent)
+      const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+      if (!trialPlan) {
+          return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
+      }
+      
+      let orgCode;
+      do {
+        orgCode = generateOrgCode();
+      } while (await Organization.findOne({ organizationCode: orgCode }));
+      
+      organization = new Organization({ 
+        name: `${name}'s Organization`, 
+        members: [],
+        organizationCode: orgCode
+      });
+      
+      user = new User({ 
+        name, 
+        email, 
+        password, 
+        role, 
+        organizationId: organization._id,
+        isIndependentAgent: role === 'Agent' && isIndependentAgent,
+        isEmailVerified: false
+      });
+      
+      organization.owner = user._id as Types.ObjectId; 
+      organization.members.push(user._id as Types.ObjectId);
+      
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 7);
+      const subscription = new Subscription({
+          organizationId: organization._id as Types.ObjectId, 
+          planId: trialPlan._id as Types.ObjectId, 
+          status: 'trialing',
+          trialExpiresAt: trialEndDate,
+      });
+      organization.subscription = subscription._id as Types.ObjectId;
+      
+      await organization.save();
+      await subscription.save();
+    }
     
     // Generate email verification token
     const verificationToken = user.getEmailVerificationToken();
-
-    organization.owner = user._id as Types.ObjectId; 
-    organization.members.push(user._id as Types.ObjectId); 
-    const trialEndDate = new Date();
-    trialEndDate.setDate(trialEndDate.getDate() + 7);
-    const subscription = new Subscription({
-        organizationId: organization._id as Types.ObjectId, 
-        planId: trialPlan._id as Types.ObjectId, 
-        status: 'trialing',
-        trialExpiresAt: trialEndDate,
-    });
-    organization.subscription = subscription._id as Types.ObjectId; 
-    
-    await organization.save();
-    await subscription.save();
     await user.save({ validateBeforeSave: false });
     
     // Send verification email

@@ -378,6 +378,23 @@ router.get('/email-status', asyncHandler(async (req: Request, res: Response) => 
   }
 }));
 
+// Get organization by code
+router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const organization = await Organization.findOne({ organizationCode: req.params.code })
+      .select('name organizationCode')
+      .populate('owner', 'name email');
+    
+    if (!organization) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+    
+    res.json({ success: true, data: organization });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch organization' });
+  }
+}));
+
 // Site settings save route
 router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
   try {

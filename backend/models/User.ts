@@ -10,6 +10,7 @@ export interface IUser extends Document {
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
   organizationId: mongoose.Types.ObjectId;
+  isIndependentAgent?: boolean;
   createdAt: Date;
   googleId?: string;
   status: 'active' | 'suspended' | 'pending';
@@ -48,6 +49,7 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
+  isIndependentAgent: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   googleId: String,
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },

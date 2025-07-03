@@ -80,6 +80,30 @@ router.get('/plans', asyncHandler(async (req, res) => {
   }
 }));
 
+// Validate organization code
+router.get('/validate-org-code/:code', asyncHandler(async (req, res) => {
+  try {
+    const organization = await Organization.findOne({ organizationCode: req.params.code })
+      .select('name organizationCode')
+      .populate('owner', 'name');
+    
+    if (!organization) {
+      return res.status(404).json({ success: false, message: 'Invalid organization code' });
+    }
+    
+    res.json({ 
+      success: true, 
+      data: { 
+        name: organization.name, 
+        code: organization.organizationCode,
+        owner: organization.owner
+      } 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to validate organization code' });
+  }
+}));
+
 // Public stats for landing page
 router.get('/stats', asyncHandler(async (req, res) => {
   try {

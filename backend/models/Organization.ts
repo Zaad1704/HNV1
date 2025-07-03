@@ -13,6 +13,7 @@ export interface IOrganization extends Document {
   members: mongoose.Types.ObjectId[];
   status: 'active' | 'inactive' | 'pending_deletion';
   subscription: mongoose.Types.ObjectId;
+  organizationCode: string;
   branding?: IBranding;
   dataManagement?: {
     dataExportRequestedAt?: Date;
@@ -28,6 +29,7 @@ const OrganizationSchema: Schema<IOrganization> = new Schema({
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   status: { type: String, enum: ['active', 'inactive', 'pending_deletion'], default: 'active' },
   subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' },
+  organizationCode: { type: String, unique: true, required: true },
   
   branding: {
     companyName: { type: String, default: '' },
