@@ -61,7 +61,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      } ${response.config.url}`);
+      console.log(`API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`);
     }
     return response;
   },
