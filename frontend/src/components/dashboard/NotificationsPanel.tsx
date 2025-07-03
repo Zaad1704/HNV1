@@ -85,7 +85,7 @@ const NotificationsPanel = () => {
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="absolute right-0 top-12 w-80 app-surface rounded-2xl border border-app-border shadow-app-lg z-[60]"
+              className="absolute right-0 top-12 w-80 app-surface rounded-2xl border border-app-border shadow-app-lg z-[130]"
             >
               <div className="p-4 border-b border-app-border flex items-center justify-between">
                 <h3 className="font-semibold text-text-primary">Notifications</h3>

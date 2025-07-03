@@ -176,7 +176,7 @@ const OverviewPage = () => {
       {/* Pull to refresh indicator */}
       {(isPulling || isRefreshing) && (
         <div 
-          className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4"
+          className="fixed top-0 left-0 right-0 z-[90] flex justify-center pt-4"
           style={{ transform: `translateY(${Math.min(pullDistance, 60)}px)` }}
         >
           <div className="bg-app-surface rounded-full p-3 shadow-app-lg border border-app-border">

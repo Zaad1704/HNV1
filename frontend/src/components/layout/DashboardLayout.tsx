@@ -205,7 +205,7 @@ const DashboardLayout = () => {
 
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="h-20 app-surface/95 backdrop-blur-md border-b border-app-border flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-app">
+        <header className="h-20 app-surface/95 backdrop-blur-md border-b border-app-border flex-shrink-0 flex items-center justify-between px-4 lg:px-8 shadow-app relative z-[100]">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -226,11 +226,11 @@ const DashboardLayout = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3 relative z-50">
-            <div className="relative z-[60]">
+          <div className="flex items-center gap-2 md:gap-3 relative z-[110]">
+            <div className="relative z-[120]">
               <LocalLanguageToggle />
             </div>
-            <div className="relative z-[60]">
+            <div className="relative z-[120]">
               <GlobalLanguageSwitcher />
             </div>
             <button 
