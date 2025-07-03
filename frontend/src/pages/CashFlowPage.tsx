@@ -144,11 +144,11 @@ const CashFlowPage: React.FC = () => {
                                                     <button className="text-brand-primary hover:underline p-2 transition-colors duration-150" title="Edit Record"><Edit size={16}/></button>
                                                     <button className="text-red-500 hover:underline p-2 transition-colors duration-150" title="Delete Record"><Trash2 size={16}/></button>
                                                 </>
-                                            ) : ( user?.role === 'Agent' && record.fromUser._id === user?._id &&
+                                            ) : (user?.role === 'Agent' && record.fromUser._id === user?._id) ? (
                                                 <button onClick={() => handleRequestEdit(record)} className="text-brand-secondary hover:underline p-2 transition-colors duration-150" title="Request Permission to Edit">
                                                     <Edit size={16}/>
                                                 </button>
-                                            )}
+                                            ) : null}
                                         </td>
                                     </tr>
                                 ))}
