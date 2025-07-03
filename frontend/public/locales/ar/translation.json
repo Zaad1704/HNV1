@@ -90,6 +90,8 @@
     "profile": "Profile",
     "settings": "Settings",
     "search": "Search...",
+    "search_placeholder": "Search properties, tenants, payments...",
+    "search_placeholder": "Search properties, tenants, payments...",
     "filter": "Filters",
     "clear_all": "Clear All",
     "all": "All",
@@ -331,7 +333,8 @@
     "property_image": "Property Image",
     "save_property": "Save Property",
     "street_address": "Street Address",
-    "units": "Units"
+    "units": "Units",
+    "update_property": "Update Property"
   },
   "tenant": {
     "add_tenant": "Add Tenant",

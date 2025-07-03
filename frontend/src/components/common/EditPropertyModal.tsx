@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface EditPropertyModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
   property, 
   onPropertyUpdated 
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     street: '',
@@ -67,7 +69,7 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
             className="app-surface rounded-3xl shadow-app-xl w-full max-w-lg border border-app-border"
           >
             <div className="flex justify-between items-center p-6 border-b border-app-border">
-              <h2 className="text-xl font-bold text-text-primary">Edit Property</h2>
+              <h2 className="text-xl font-bold text-text-primary">{t('property.edit_property')}</h2>
               <button onClick={onClose} className="p-2 rounded-full text-text-secondary hover:text-text-primary">
                 <X size={20} />
               </button>
@@ -75,7 +77,7 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Property Name</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">{t('property.property_name')}</label>
                 <input
                   type="text"
                   name="name"
@@ -87,30 +89,30 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Address</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">{t('common.address')}</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input
                     name="street"
-                    placeholder="Street Address"
+                    placeholder={t('forms.street_address')}
                     value={formData.street}
                     onChange={handleChange}
                     className="sm:col-span-2"
                   />
                   <input
                     name="city"
-                    placeholder="City"
+                    placeholder={t('common.city')}
                     value={formData.city}
                     onChange={handleChange}
                   />
                   <input
                     name="state"
-                    placeholder="State"
+                    placeholder={t('common.state')}
                     value={formData.state}
                     onChange={handleChange}
                   />
                   <input
                     name="zipCode"
-                    placeholder="Zip Code"
+                    placeholder={t('common.zip_code')}
                     value={formData.zipCode}
                     onChange={handleChange}
                   />
@@ -118,7 +120,7 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">Number of Units</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">{t('property.number_of_units')}</label>
                 <input
                   type="number"
                   min="1"
@@ -136,14 +138,14 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({
                   onClick={onClose}
                   className="px-6 py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2"
                 >
                   <Save size={16} />
-                  Update Property
+                  {t('property.update_property')}
                 </button>
               </div>
             </form>
