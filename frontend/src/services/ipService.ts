@@ -9,38 +9,37 @@ interface IPResponse {
 
 export const detectUserLocation = async (): Promise<IPResponse | null> => {
   try {
-    // Try multiple IP detection services for reliability
-    const services = [
-      'https://ipapi.co/json/',
-      'https://api.ipgeolocation.io/ipgeo?apiKey=free',
-      'https://ipinfo.io/json'
-    ];
+    // Use ipinfo.io as primary service
+    const response = await fetch('https://ipinfo.io/json?token=YOUR_TOKEN');
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        country: data.country,
+        countryCode: data.country,
+        region: data.region,
+        city: data.city,
+        currency: 'USD', // Will be mapped from country
+        timezone: data.timezone
+      };
+    }
     
-    for (const service of services) {
-      try {
-        const response = await fetch(service);
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Normalize response format
-          return {
-            country: data.country_name || data.country || data.country_name,
-            countryCode: data.country_code || data.country || data.country_code,
-            region: data.region || data.region_name || data.region,
-            city: data.city || data.city,
-            currency: data.currency || data.currency_code || 'USD',
-            timezone: data.timezone || data.time_zone || 'UTC'
-          };
-        }
-      } catch (error) {
-        console.warn(`IP service ${service} failed:`, error);
-        continue;
-      }
+    // Fallback to free service
+    const fallback = await fetch('https://ipapi.co/json/');
+    if (fallback.ok) {
+      const data = await fallback.json();
+      return {
+        country: data.country_name,
+        countryCode: data.country_code,
+        region: data.region,
+        city: data.city,
+        currency: data.currency,
+        timezone: data.timezone
+      };
     }
     
     return null;
   } catch (error) {
-    console.error('All IP detection services failed:', error);
+    console.error('IP detection failed:', error);
     return null;
   }
 };

@@ -3,11 +3,7 @@
   "app_name_short": "HNV Solutions",
   "header": {
     "login": "Login",
-    "get_started": "Get Started",
-    "about": "About",
-    "services": "Services",
-    "pricing": "Pricing",
-    "contact": "Contact"
+    "get_started": "Get Started"
   },
   "nav": {
     "home": "Home",
@@ -109,11 +105,7 @@
     "select_language": "Select Language",
     "toggle_language": "Toggle Language",
     "switch_to": "Switch to",
-    "current_language": "Current Language",
-    "theme_dark": "Dark",
-    "theme_light": "Light",
-    "mode": "Mode",
-    "security": "Security"
+    "current_language": "Current Language"
   },
   "dashboard": {
     "overview": "Overview",
@@ -130,6 +122,7 @@
     "billing": "Billing",
     "audit_log": "Audit Log",
     "admin_panel": "Admin Panel",
+    "tenant_portal": "My Portal",
     "monthly_revenue": "Monthly Revenue",
     "total_properties": "Total Properties",
     "active_tenants": "Active Tenants",
@@ -165,7 +158,7 @@
   },
   "hero": {
     "title": "The All-in-One Platform for Modern Property Management",
-    "subtitle": "Automate tasks, track finances, and manage tenants with ease. Join thousands of property managers who trust our platform.",
+    "subtitle": "Streamline your property management with our comprehensive solution",
     "cta_primary": "Start Your Free Trial",
     "cta_secondary": "Watch Demo",
     "trusted_by": "Trusted by property managers worldwide"
@@ -180,14 +173,9 @@
     "countries_served": "Countries Served",
     "uptime_guarantee": "Uptime Guarantee"
   },
-  "landscape": {
-    "title": "Transform Your Property Management",
-    "subtitle": "Experience the future of property management with our comprehensive platform",
-    "image_alt": "Property Management Platform"
-  },
   "about": {
-    "title": "About Us",
-    "subtitle": "Revolutionizing property management with innovative technology",
+    "title": "Why Choose Our Platform?",
+    "subtitle": "Built for modern property managers who demand efficiency, security, and growth.",
     "description": "We are dedicated to providing the most comprehensive and user-friendly property management solution. Our platform helps landlords, agents, and property managers streamline their operations and grow their business.",
     "mission_title": "Our Mission",
     "mission_description": "To empower property managers with cutting-edge technology that simplifies complex tasks and drives business growth.",
@@ -209,7 +197,12 @@
     "automated_reminders_desc": "Never miss important dates and payments",
     "mobile_access": "Mobile Access",
     "mobile_access_desc": "Manage your properties on the go",
-    "security_desc": "Enterprise-grade security for your data"
+    "secure_reliable": "Secure & Reliable",
+    "secure_reliable_desc": "Bank-level security with 99.9% uptime guarantee",
+    "financial_insights": "Financial Insights",
+    "financial_insights_desc": "Track revenue, expenses, and profitability in real-time",
+    "support_247": "24/7 Support",
+    "support_247_desc": "Round-the-clock customer support when you need it"
   },
   "pricing": {
     "title": "Simple, Transparent Pricing",
@@ -266,10 +259,28 @@
   "install_app": {
     "title": "Install Our App",
     "subtitle": "Get the native mobile experience",
-    "description": "Download our mobile app for the best property management experience on the go.",
+    "description": "Get the native app experience with offline access and push notifications.",
     "download_ios": "Download for iOS",
     "download_android": "Download for Android",
-    "scan_qr": "Scan QR Code"
+    "scan_qr": "Scan QR Code",
+    "install_android": "Install HNV App",
+    "add_to_home": "Add to Home Screen",
+    "install_desktop": "Install Desktop App",
+    "install_button": "Install App",
+    "features": "One-click install • Works offline • Native experience",
+    "best_experience": "Install for the best experience",
+    "android_step1": "Tap the menu (⋮) in your browser",
+    "android_step2": "Select Add to Home screen or Install app",
+    "android_step3": "Tap Add or Install",
+    "ios_step1": "Tap the Share button (□↗) in Safari",
+    "ios_step2": "Scroll down and tap Add to Home Screen",
+    "ios_step3": "Tap Add in the top right corner",
+    "desktop_step1": "Look for the install icon (⊕) in your address bar",
+    "desktop_step2": "Click it and select Install",
+    "desktop_step3": "Or use browser menu → Install HNV Property Management",
+    "generic_step1": "Look for the install icon in your browser",
+    "generic_step2": "Or check browser menu for Install option",
+    "generic_step3": "Add to home screen for native experience"
   },
   "leadership": {
     "title": "Meet Our Team",
@@ -345,10 +356,14 @@
     "advertising": "Advertising",
     "legal_professional": "Legal & Professional",
     "travel": "Travel",
-    "office_supplies": "Office Supplies"
+    "office_supplies": "Office Supplies",
+    "repairs": "Repairs",
+    "management_fees": "Management Fees",
+    "other": "Other"
   },
   "footer": {
     "company_description": "The leading property management platform trusted by thousands of property managers worldwide.",
+    "company_address": "123 Property Lane, Suite 400, Management City, MC 54321",
     "quick_links": "Quick Links",
     "support": "Support",
     "legal": "Legal",
@@ -357,6 +372,7 @@
     "newsletter_subtitle": "Subscribe to our newsletter for the latest updates",
     "enter_email": "Enter your email",
     "subscribe": "Subscribe",
-    "all_rights_reserved": "All rights reserved"
+    "all_rights_reserved": "All rights reserved",
+    "privacy_policy": "Privacy Policy"
   }
 }
