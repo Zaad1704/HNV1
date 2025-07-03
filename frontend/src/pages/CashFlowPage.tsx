@@ -121,8 +121,6 @@ const CashFlowPage: React.FC = () => {
             )}
         </div>
     );
-
-    );
 };
 
 export default CashFlowPage;
