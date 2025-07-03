@@ -9,13 +9,15 @@ interface GoogleRoleModalProps {
   isSignup?: boolean;
 }
 
-const GoogleRoleModal: React.FC<GoogleRoleModalProps> = ({ isOpen, onClose, isSignup = false }) => {
-  const [selectedRole, setSelectedRole] = useState('Landlord');
+const GoogleRoleModal: React.FC<GoogleRoleModalProps> = ({ isOpen, onClose, isSignup = true }) => {
+  const [selectedRole, setSelectedRole] = useState('');
 
   const handleGoogleAuth = () => {
+    if (!selectedRole) {
+      return;
+    }
     const baseURL = apiClient.defaults.baseURL;
-    const params = isSignup ? `?signup=true&role=${selectedRole}` : `?role=${selectedRole}`;
-    window.location.href = `${baseURL}/auth/google${params}`;
+    window.location.href = `${baseURL}/auth/google?signup=true&role=${selectedRole}`;
   };
 
   if (!isOpen) return null;
@@ -25,7 +27,7 @@ const GoogleRoleModal: React.FC<GoogleRoleModalProps> = ({ isOpen, onClose, isSi
       <div className="bg-app-surface rounded-2xl w-full max-w-md border border-app-border shadow-app-lg">
         <div className="p-6 border-b border-app-border flex items-center justify-between">
           <h2 className="text-xl font-bold text-text-primary">
-            {isSignup ? 'Choose Your Role' : 'Select Role for Login'}
+            Choose Your Role
           </h2>
           <button onClick={onClose} className="text-text-secondary hover:text-text-primary">
             <X size={20} />
@@ -33,9 +35,12 @@ const GoogleRoleModal: React.FC<GoogleRoleModalProps> = ({ isOpen, onClose, isSi
         </div>
         
         <div className="p-6">
-          <p className="text-text-secondary mb-6">
-            Please select your role to continue with Google {isSignup ? 'signup' : 'login'}.
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+            <p className="text-blue-800 text-sm font-medium mb-2">⚠️ Role Selection Required</p>
+            <p className="text-blue-700 text-sm">
+              Please select your role to continue with Google signup. This cannot be changed later.
+            </p>
+          </div>
           
           <RoleSelector
             selectedRole={selectedRole}
@@ -52,7 +57,8 @@ const GoogleRoleModal: React.FC<GoogleRoleModalProps> = ({ isOpen, onClose, isSi
             </button>
             <button
               onClick={handleGoogleAuth}
-              className="flex-1 px-4 py-3 btn-gradient rounded-xl"
+              disabled={!selectedRole}
+              className="flex-1 px-4 py-3 btn-gradient rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue with Google
             </button>

@@ -35,7 +35,7 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onRoleChange,
   return (
     <div className={`space-y-3 ${className}`}>
       <label className="block text-sm font-medium text-text-secondary mb-3">
-        Select Your Role
+        Select Your Role <span className="text-red-500">*</span>
       </label>
       <div className="grid grid-cols-1 gap-3">
         {roles.map((role) => {

@@ -27,6 +27,12 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.role) {
+      setError('Please select your role to continue');
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -53,6 +59,10 @@ const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
+    if (!formData.role) {
+      setError('Please select your role before continuing with Google signup');
+      return;
+    }
     const baseURL = apiClient.defaults.baseURL;
     window.location.href = `${baseURL}/auth/google?signup=true&role=${formData.role}`;
   };
@@ -140,6 +150,13 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
 
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
+              <p className="text-blue-800 text-sm font-medium mb-2">⚠️ Role Selection Required</p>
+              <p className="text-blue-700 text-sm">
+                Please select your role carefully. This determines your access level and cannot be changed after signup.
+              </p>
+            </div>
+            
             <RoleSelector
               selectedRole={formData.role}
               onRoleChange={(role) => setFormData({ ...formData, role })}

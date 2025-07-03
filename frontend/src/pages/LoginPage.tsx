@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import GoogleRoleModal from '../components/auth/GoogleRoleModal';
+
 import { Chrome, Mail, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showRoleModal, setShowRoleModal] = useState(false);
+
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { t } = useTranslation();
@@ -117,7 +117,8 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    setShowRoleModal(true);
+    const baseURL = apiClient.defaults.baseURL;
+    window.location.href = `${baseURL}/auth/google`;
   };
 
   return (
@@ -257,11 +258,7 @@ const LoginPage: React.FC = () => {
         </div>
       </motion.div>
       
-      <GoogleRoleModal
-        isOpen={showRoleModal}
-        onClose={() => setShowRoleModal(false)}
-        isSignup={false}
-      />
+
     </div>
   );
 };
