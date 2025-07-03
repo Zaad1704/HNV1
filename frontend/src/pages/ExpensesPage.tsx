@@ -1,10 +1,14 @@
 // frontend/src/pages/ExpensesPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import LogExpenseModal from '../components/common/LogExpenseModal';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import { PlusCircle, Edit, Trash2, Download, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDataExport } from '../hooks/useDataExport';
 
 const fetchExpenses = async (filters: any) => {
     const { data } = await apiClient.get('/expenses', { params: filters });
@@ -14,12 +18,68 @@ const fetchExpenses = async (filters: any) => {
 const ExpensesPage = () => {
   const queryClient = useQueryClient();
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const [filters] = useState({ propertyId: '', startDate: '', endDate: '' });
+  const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<any>({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { exportExpenses } = useDataExport();
 
   const { data: expenses = [], isLoading, isError } = useQuery({ 
-      queryKey: ['expenses', filters], 
-      queryFn: () => fetchExpenses(filters) 
+      queryKey: ['expenses'], 
+      queryFn: () => fetchExpenses({})
   });
+
+  const filteredExpenses = useMemo(() => {
+    if (!expenses) return [];
+    
+    return expenses.filter((expense: any) => {
+      const matchesSearch = !searchQuery || 
+        expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        expense.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        expense.propertyId?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = !filters.category || expense.category === filters.category;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [expenses, searchQuery, filters]);
+
+  const filterOptions = [
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'select' as const,
+      options: [
+        { value: 'Maintenance', label: 'Maintenance' },
+        { value: 'Utilities', label: 'Utilities' },
+        { value: 'Insurance', label: 'Insurance' },
+        { value: 'Other', label: 'Other' }
+      ]
+    }
+  ];
+
+  const bulkActions = [
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      color: 'bg-blue-500 hover:bg-blue-600 text-white',
+      action: async (ids: string[]) => {
+        await exportExpenses({ format: 'xlsx', filters: { ids } });
+      }
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      color: 'bg-red-500 hover:bg-red-600 text-white',
+      action: (ids: string[]) => {
+        if (confirm('Delete selected expenses?')) {
+          ids.forEach(id => deleteMutation.mutate(id));
+        }
+      }
+    }
+  ];
 
   const deleteMutation = useMutation({
       mutationFn: (expenseId: string) => apiClient.delete(`/expenses/${expenseId}`),
@@ -46,12 +106,32 @@ const ExpensesPage = () => {
     >
       <LogExpenseModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} />
       
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-dark-text dark:text-dark-text-dark">Manage Expenses</h1>
-        <button onClick={() => setIsLogModalOpen(true)} className="btn-primary flex items-center space-x-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-dark-text dark:text-dark-text-dark">Manage Expenses</h1>
+          <p className="text-text-secondary mt-1">Track and manage property expenses</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button onClick={() => setIsLogModalOpen(true)} className="btn-primary flex items-center space-x-2">
             <PlusCircle size={18} /><span>Log Expense</span>
-        </button>
+          </button>
+        </div>
       </div>
+
+      <SearchFilter
+        onSearch={setSearchQuery}
+        onFilter={setFilters}
+        filters={filters}
+        placeholder="Search expenses..."
+        filterOptions={filterOptions}
+      />
       
        {isLoading ? <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading expenses...</div> : (
             <div className="bg-light-card rounded-3xl shadow-lg border border-border-color overflow-hidden dark:bg-dark-card dark:border-border-color-dark">
@@ -59,6 +139,7 @@ const ExpensesPage = () => {
                 <table className="w-full text-left">
                     <thead className="bg-light-bg/50 border-b border-border-color dark:bg-dark-bg/50 dark:border-border-color-dark">
                         <tr>
+                            <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Select</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Description</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Property</th>
                             <th className="p-4 text-sm font-semibold text-light-text uppercase dark:text-light-text-dark">Date</th>
@@ -68,8 +149,22 @@ const ExpensesPage = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border-color dark:divide-border-color-dark">
-                    {expenses.map((expense: any) => (
+                    {filteredExpenses.map((expense: any) => (
                         <tr key={expense._id} className="hover:bg-light-bg/50 dark:hover:bg-dark-bg/40">
+                            <td className="p-4">
+                              <input
+                                type="checkbox"
+                                checked={selectedExpenses.includes(expense._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedExpenses(prev => [...prev, expense._id]);
+                                  } else {
+                                    setSelectedExpenses(prev => prev.filter(id => id !== expense._id));
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-2"
+                              />
+                            </td>
                             <td className="p-4 font-semibold text-dark-text dark:text-dark-text-dark">{expense.description}</td>
                             <td className="p-4 text-light-text dark:text-light-text-dark">{expense.propertyId?.name || 'N/A'}</td>
                             <td className="p-4 text-light-text dark:text-light-text-dark">{formatDate(expense.date)}</td>
@@ -88,6 +183,21 @@ const ExpensesPage = () => {
                 </div>
             </div>
        )}
+
+      <BulkActions
+        selectedItems={selectedExpenses}
+        totalItems={filteredExpenses?.length || 0}
+        onSelectAll={() => setSelectedExpenses(filteredExpenses?.map((e: any) => e._id) || [])}
+        onClearSelection={() => setSelectedExpenses([])}
+        actions={bulkActions}
+      />
+
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        section="expenses"
+        title="Expenses"
+      />
     </motion.div>
   );
 };

@@ -7,6 +7,7 @@ import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
+import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchTenants = async () => {
@@ -25,6 +26,7 @@ const TenantsPage = () => {
   const [filters, setFilters] = useState<any>({});
   const [showExportModal, setShowExportModal] = useState(false);
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
+  const [showQuickPayment, setShowQuickPayment] = useState(false);
   const { exportTenants, isExporting } = useDataExport();
 
   const { data: tenants, isLoading, error } = useQuery({
@@ -123,6 +125,13 @@ const TenantsPage = () => {
           <p className="text-text-secondary mt-1">Manage your tenant relationships</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => setShowQuickPayment(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
+          >
+            <DollarSign size={16} />
+            Quick Payment
+          </button>
           <button
             onClick={() => setShowCollectionSheet(true)}
             className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
@@ -272,6 +281,11 @@ const TenantsPage = () => {
       <MonthlyCollectionSheet
         isOpen={showCollectionSheet}
         onClose={() => setShowCollectionSheet(false)}
+      />
+
+      <QuickPaymentModal
+        isOpen={showQuickPayment}
+        onClose={() => setShowQuickPayment(false)}
       />
     </motion.div>
   );
