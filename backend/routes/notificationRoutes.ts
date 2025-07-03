@@ -1,12 +1,10 @@
 import { Router } from 'express';
-import { getNotifications, markNotificationsAsRead } from '../controllers/notificationController';
-import { protect } from '../middleware/authMiddleware';
+import { getNotifications, markNotificationAsReadHandler, markAllNotificationsAsReadHandler } from '../controllers/notificationController';
 
 const router = Router();
 
-// Routes are protected by app.ts middleware
-
 router.get('/', getNotifications);
-router.post('/mark-as-read', markNotificationsAsRead);
+router.post('/mark-as-read', markNotificationAsReadHandler);
+router.post('/mark-all-as-read', markAllNotificationsAsReadHandler);
 
 export default router;

@@ -4,5 +4,6 @@ const express_1 = require("express");
 const notificationController_1 = require("../controllers/notificationController");
 const router = (0, express_1.Router)();
 router.get('/', notificationController_1.getNotifications);
-router.post('/mark-as-read', notificationController_1.markNotificationsAsRead);
+router.post('/mark-as-read', notificationController_1.markNotificationAsReadHandler);
+router.post('/mark-all-as-read', notificationController_1.markAllNotificationsAsReadHandler);
 exports.default = router;

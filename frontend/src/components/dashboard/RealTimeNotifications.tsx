@@ -14,35 +14,27 @@ const RealTimeNotifications = () => {
   const [notifications, setNotifications] = useState<RealTimeNotification[]>([]);
 
   useEffect(() => {
-    // Simulate real-time notifications
-    const interval = setInterval(() => {
-      if (Math.random() > 0.8) { // 20% chance every 10 seconds
-        const mockNotifications = [
-          {
-            type: 'success' as const,
-            title: 'Payment Received',
-            message: 'Rent payment received from tenant'
-          },
-          {
-            type: 'warning' as const,
-            title: 'Maintenance Request',
-            message: 'New maintenance request submitted'
-          },
-          {
-            type: 'info' as const,
-            title: 'Lease Expiring',
-            message: 'Lease expires in 30 days'
-          }
-        ];
-
-        const randomNotification = mockNotifications[Math.floor(Math.random() * mockNotifications.length)];
-        addNotification({
-          id: Date.now().toString(),
-          ...randomNotification,
-          duration: 5000
-        });
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await fetch('/api/notifications').then(r => r.json());
+        const unreadNotifications = data.filter((n: any) => !n.read);
+        
+        // Show only the most recent unread notification as a toast
+        if (unreadNotifications.length > 0) {
+          const latest = unreadNotifications[0];
+          addNotification({
+            id: latest.id,
+            type: latest.type,
+            title: latest.title,
+            message: latest.message,
+            duration: 5000
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
       }
-    }, 10000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);

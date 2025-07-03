@@ -7,7 +7,7 @@ exports.rejectEditRequest = exports.approveEditRequest = exports.getEditRequests
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const EditRequest_1 = __importDefault(require("../models/EditRequest"));
 const CashFlow_1 = __importDefault(require("../models/CashFlow"));
-const notificationService_1 = __importDefault(require("../services/notificationService"));
+const notificationService_1 = require("../services/notificationService");
 const mongoose_1 = require("mongoose");
 exports.createEditRequest = (0, express_async_handler_1.default)(async (req, res) => {
     const { resourceId, resourceModel, reason, approverId } = req.body;
@@ -33,7 +33,14 @@ exports.createEditRequest = (0, express_async_handler_1.default)(async (req, res
         status: 'pending',
     });
     const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
-    await notificationService_1.default.createNotification(new mongoose_1.Types.ObjectId(approverId), requester.organizationId, message, '/dashboard/approvals');
+    await (0, notificationService_1.createNotification)({
+        userId: new mongoose_1.Types.ObjectId(approverId),
+        organizationId: requester.organizationId,
+        type: 'info',
+        title: 'Edit Request',
+        message,
+        link: '/dashboard/approvals'
+    });
     res.status(201).json({ success: true, data: newRequest });
 });
 exports.getEditRequests = (0, express_async_handler_1.default)(async (req, res) => {
@@ -55,7 +62,14 @@ exports.approveEditRequest = (0, express_async_handler_1.default)(async (req, re
     request.status = 'approved';
     await request.save();
     const message = `Your request to edit a ${request.resourceModel} record has been approved.`;
-    await notificationService_1.default.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
+    await (0, notificationService_1.createNotification)({
+        userId: request.requester,
+        organizationId: request.organizationId,
+        type: 'success',
+        title: 'Request Approved',
+        message,
+        link: '/dashboard/cashflow'
+    });
     res.status(200).json({ success: true, data: request });
 });
 exports.rejectEditRequest = (0, express_async_handler_1.default)(async (req, res) => {
@@ -66,6 +80,13 @@ exports.rejectEditRequest = (0, express_async_handler_1.default)(async (req, res
     }
     await request.deleteOne();
     const message = `Your request to edit a ${request.resourceModel} record has been rejected.`;
-    await notificationService_1.default.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
+    await (0, notificationService_1.createNotification)({
+        userId: request.requester,
+        organizationId: request.organizationId,
+        type: 'error',
+        title: 'Request Rejected',
+        message,
+        link: '/dashboard/cashflow'
+    });
     res.status(200).json({ success: true, message: 'Request rejected successfully.' });
 });

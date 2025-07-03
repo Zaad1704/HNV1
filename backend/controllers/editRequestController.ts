@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import EditRequest from '../models/EditRequest';
 import CashFlow from '../models/CashFlow';
-import notificationService from '../services/notificationService';
+import { createNotification } from '../services/notificationService';
 import { Types } from 'mongoose'; 
 
 export const createEditRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -33,7 +33,14 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
     });
     
     const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`;
-    await notificationService.createNotification(new Types.ObjectId(approverId as string), requester.organizationId!, message, '/dashboard/approvals');
+    await createNotification({
+        userId: new Types.ObjectId(approverId as string),
+        organizationId: requester.organizationId!,
+        type: 'info',
+        title: 'Edit Request',
+        message,
+        link: '/dashboard/approvals'
+    });
 
     res.status(201).json({ success: true, data: newRequest });
 });
@@ -62,7 +69,14 @@ export const approveEditRequest = asyncHandler(async (req: Request, res: Respons
     await request.save();
 
     const message = `Your request to edit a ${request.resourceModel} record has been approved.`;
-    await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
+    await createNotification({
+        userId: request.requester,
+        organizationId: request.organizationId,
+        type: 'success',
+        title: 'Request Approved',
+        message,
+        link: '/dashboard/cashflow'
+    });
 
     res.status(200).json({ success: true, data: request });
 });
@@ -78,7 +92,14 @@ export const rejectEditRequest = asyncHandler(async (req: Request, res: Response
     await request.deleteOne();
     
     const message = `Your request to edit a ${request.resourceModel} record has been rejected.`;
-    await notificationService.createNotification(request.requester, request.organizationId, message, '/dashboard/cashflow');
+    await createNotification({
+        userId: request.requester,
+        organizationId: request.organizationId,
+        type: 'error',
+        title: 'Request Rejected',
+        message,
+        link: '/dashboard/cashflow'
+    });
 
     res.status(200).json({ success: true, message: 'Request rejected successfully.' });
 });

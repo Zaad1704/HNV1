@@ -31,14 +31,24 @@ const NotificationsPanel = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
-    // TODO: Implement mark as read functionality
-    console.log('Mark as read:', id);
+  const markAsRead = async (id: string) => {
+    try {
+      await apiClient.post('/notifications/mark-as-read', { notificationId: id });
+      // Refetch notifications to update the UI
+      window.location.reload(); // Simple refresh for now
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const markAllAsRead = () => {
-    // TODO: Implement mark all as read functionality
-    console.log('Mark all as read');
+  const markAllAsRead = async () => {
+    try {
+      await apiClient.post('/notifications/mark-all-as-read');
+      // Refetch notifications to update the UI
+      window.location.reload(); // Simple refresh for now
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
   const getIcon = (type: string) => {
@@ -122,7 +132,7 @@ const NotificationsPanel = () => {
                             {notification.message}
                           </p>
                           <p className="text-text-muted text-xs mt-2">
-                            {notification.timestamp.toLocaleTimeString()}
+                            {new Date(notification.timestamp).toLocaleString()}
                           </p>
                         </div>
                       </div>
