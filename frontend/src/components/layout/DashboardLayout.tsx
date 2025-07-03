@@ -71,7 +71,7 @@ const DashboardLayout = () => {
             <Building size={20} className="text-white" />
           </div>
           <span className="truncate">
-            {user?.organizationId?.branding?.companyName || 'HNV Dashboard'}
+            {user?.organizationId?.name || user?.organizationId?.branding?.companyName || 'HNV Dashboard'}
           </span>
         </Link>
         {isMobile && (
@@ -220,9 +220,9 @@ const DashboardLayout = () => {
           </div>
 
           {/* Center: Company Name - Hidden on mobile */}
-          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            <span className="text-lg font-bold text-text-primary text-center">
-              {user?.organizationId?.branding?.companyName || 'HNV Solutions'}
+          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 max-w-xs">
+            <span className="text-lg font-bold text-text-primary text-center truncate">
+              {user?.organizationId?.name || user?.organizationId?.branding?.companyName || 'HNV Solutions'}
             </span>
           </div>
 

@@ -1,20 +1,81 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { CheckCircle, CreditCard, Settings, Trash2 } from 'lucide-react';
+import SearchFilter from '../components/common/SearchFilter';
+import BulkActions from '../components/common/BulkActions';
+import ExportModal from '../components/common/ExportModal';
+import { CheckCircle, CreditCard, Settings, Trash2, Download, History } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDataExport } from '../hooks/useDataExport';
 
 const fetchBillingInfo = async () => {
   const { data } = await apiClient.get("/billing");
   return data.data;
 };
 
+const fetchBillingHistory = async () => {
+  const { data } = await apiClient.get("/billing/history");
+  return data.data || [];
+};
+
 const BillingPage: React.FC = () => {
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedHistory, setSelectedHistory] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState<any>({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { exportData } = useDataExport();
+
   const { data: billingInfo, isLoading, isError, error } = useQuery({
       queryKey: ['billingInfo'],
       queryFn: fetchBillingInfo,
       retry: false
   });
+
+  const { data: billingHistory = [] } = useQuery({
+      queryKey: ['billingHistory'],
+      queryFn: fetchBillingHistory,
+      enabled: showHistory
+  });
+
+  const filteredHistory = useMemo(() => {
+    if (!billingHistory) return [];
+    
+    return billingHistory.filter((item: any) => {
+      const matchesSearch = !searchQuery || 
+        item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.amount?.toString().includes(searchQuery);
+      
+      const matchesStatus = !filters.status || item.status === filters.status;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [billingHistory, searchQuery, filters]);
+
+  const filterOptions = [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select' as const,
+      options: [
+        { value: 'paid', label: 'Paid' },
+        { value: 'pending', label: 'Pending' },
+        { value: 'failed', label: 'Failed' }
+      ]
+    }
+  ];
+
+  const bulkActions = [
+    {
+      key: 'export',
+      label: 'Export',
+      icon: Download,
+      color: 'bg-blue-500 hover:bg-blue-600 text-white',
+      action: async (ids: string[]) => {
+        await exportData('billing', 'billing-history', { format: 'xlsx', filters: { ids } });
+      }
+    }
+  ];
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
@@ -25,12 +86,12 @@ const BillingPage: React.FC = () => {
       if (!status) return null;
       const baseClasses = 'px-3 py-1 text-sm font-semibold rounded-full capitalize';
       const statusMap = {
-          active: `${baseClasses} bg-green-500/20 text-green-300`,
-          trialing: `${baseClasses} bg-blue-500/20 text-blue-300`,
-          canceled: `${baseClasses} bg-red-500/20 text-red-400`,
-          past_due: `${baseClasses} bg-yellow-500/20 text-yellow-300`,
+          active: `${baseClasses} bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300`,
+          trialing: `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300`,
+          canceled: `${baseClasses} bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400`,
+          past_due: `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300`,
       };
-      return statusMap[status as keyof typeof statusMap] || `${baseClasses} bg-gray-500/20 text-gray-300`;
+      return statusMap[status as keyof typeof statusMap] || `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300`;
   };
 
   if (isLoading) return <div className="text-center p-8 text-dark-text">Loading Billing Information...</div>;
@@ -51,7 +112,98 @@ const BillingPage: React.FC = () => {
 
   return (
     <div className="text-dark-text">
-      <h1 className="text-3xl font-bold mb-8">Billing & Subscription</h1>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Billing & Subscription</h1>
+          <p className="text-text-secondary mt-1">Manage your subscription and billing history</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export History
+          </button>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
+          >
+            <History size={16} />
+            {showHistory ? 'Hide History' : 'View History'}
+          </button>
+        </div>
+      </div>
+
+      {showHistory && (
+        <div className="mb-8">
+          <SearchFilter
+            onSearch={setSearchQuery}
+            onFilter={setFilters}
+            filters={filters}
+            placeholder="Search billing history..."
+            filterOptions={filterOptions}
+          />
+          
+          <div className="bg-light-card rounded-xl shadow-lg border border-border-color overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-light-bg/50 border-b border-border-color">
+                  <tr>
+                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Select</th>
+                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Date</th>
+                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Description</th>
+                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Amount</th>
+                    <th className="p-4 text-sm font-semibold text-light-text uppercase">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-color">
+                  {filteredHistory.length > 0 ? (
+                    filteredHistory.map((item: any) => (
+                      <tr key={item._id} className="hover:bg-light-bg/50">
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedHistory.includes(item._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedHistory(prev => [...prev, item._id]);
+                              } else {
+                                setSelectedHistory(prev => prev.filter(id => id !== item._id));
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-2"
+                          />
+                        </td>
+                        <td className="p-4 text-light-text">{formatDate(item.date)}</td>
+                        <td className="p-4 font-semibold text-dark-text">{item.description}</td>
+                        <td className="p-4 font-semibold text-dark-text">${(item.amount / 100).toFixed(2)}</td>
+                        <td className="p-4">
+                          <span className={getStatusChip(item.status)}>
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-light-text">No billing history found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <BulkActions
+            selectedItems={selectedHistory}
+            totalItems={filteredHistory?.length || 0}
+            onSelectAll={() => setSelectedHistory(filteredHistory?.map((h: any) => h._id) || [])}
+            onClearSelection={() => setSelectedHistory([])}
+            actions={bulkActions}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-light-card p-8 rounded-xl shadow-lg border border-border-color">
           <h2 className="text-2xl font-bold text-dark-text mb-1">Your Current Plan</h2>
@@ -118,6 +270,13 @@ const BillingPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        section="billing"
+        title="Billing History"
+      />
     </div>
   );
 };
