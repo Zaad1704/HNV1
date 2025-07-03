@@ -13,7 +13,7 @@ export interface IUser extends Document {
   isIndependentAgent?: boolean;
   createdAt: Date;
   googleId?: string;
-  status: 'active' | 'suspended' | 'pending';
+  status: 'active' | 'suspended' | 'pending' | 'inactive';
   permissions: string[];
   managedAgentIds?: mongoose.Types.ObjectId[];
   
@@ -52,7 +52,7 @@ const UserSchema: Schema<IUser> = new Schema({
   isIndependentAgent: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   googleId: String,
-  status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
+  status: { type: String, enum: ['active', 'suspended', 'pending', 'inactive'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 
