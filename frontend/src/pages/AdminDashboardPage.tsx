@@ -17,33 +17,18 @@ import PlatformGrowthChart from '../components/admin/charts/PlatformGrowthChart'
 import PlanDistributionChart from '../components/admin/charts/PlanDistributionChart';
 
 const fetchAdminStats = async () => {
-  try {
-    const { data } = await apiClient.get('/api/super-admin/dashboard-stats');
-    return data.data;
-  } catch (error) {
-    console.error('Failed to fetch admin stats:', error);
-    return { totalUsers: 0, totalOrgs: 0, activeSubscriptions: 0, totalRevenue: 0 };
-  }
+  const { data } = await apiClient.get('/super-admin/dashboard-stats');
+  return data.data;
 };
 
 const fetchPlatformGrowth = async () => {
-  try {
-    const { data } = await apiClient.get('/api/super-admin/platform-growth');
-    return data.data;
-  } catch (error) {
-    console.error('Failed to fetch platform growth:', error);
-    return [];
-  }
+  const { data } = await apiClient.get('/super-admin/platform-growth');
+  return data.data;
 };
 
 const fetchPlanDistribution = async () => {
-  try {
-    const { data } = await apiClient.get('/api/super-admin/plan-distribution');
-    return data.data;
-  } catch (error) {
-    console.error('Failed to fetch plan distribution:', error);
-    return [];
-  }
+  const { data } = await apiClient.get('/super-admin/plan-distribution');
+  return data.data;
 };
 
 const StatCard = ({ 
@@ -106,7 +91,7 @@ const AdminDashboardPage = () => {
       
       // Test API
       try {
-        await apiClient.get('/api/public/stats');
+        await apiClient.get('/public/stats');
         status.api = 'operational';
       } catch (error) {
         status.api = 'offline';
@@ -114,7 +99,7 @@ const AdminDashboardPage = () => {
       
       // Test Database
       try {
-        await apiClient.get('/api/super-admin/dashboard-stats');
+        await apiClient.get('/super-admin/dashboard-stats');
         status.database = 'operational';
       } catch (error) {
         status.database = 'offline';
@@ -122,8 +107,8 @@ const AdminDashboardPage = () => {
       
       // Test Email - check if service is configured
       try {
-        const response = await apiClient.get('/api/super-admin/email-status');
-        status.email = response.data.configured ? 'operational' : 'offline';
+        const response = await apiClient.get('/super-admin/email-status');
+        status.email = response.data.data?.configured ? 'operational' : 'offline';
       } catch (error) {
         status.email = 'offline';
       }

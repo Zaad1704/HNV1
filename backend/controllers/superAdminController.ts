@@ -282,6 +282,7 @@ export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: 
 
 export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.log('Fetching platform growth data...');
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const currentYear = new Date().getFullYear();
         const data = [];
@@ -305,16 +306,20 @@ export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response
             });
         }
         
+        console.log('Platform growth data fetched successfully:', data.length, 'months');
         res.status(200).json({ success: true, data });
     } catch (error) {
         console.error('Platform growth error:', error);
-        res.status(500).json({ success: false, message: 'Failed to fetch platform growth data' });
+        res.status(500).json({ success: false, message: 'Failed to fetch platform growth data', error: error.message });
     }
 });
 
 export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
+        console.log('Fetching plan distribution data...');
         const subscriptions = await Subscription.find({ status: 'active' }).populate('planId');
+        console.log('Found active subscriptions:', subscriptions.length);
+        
         const planCounts = subscriptions.reduce((acc: any, sub: any) => {
             const planName = sub.planId?.name || 'Unknown';
             acc[planName] = (acc[planName] || 0) + 1;
@@ -325,9 +330,11 @@ export const getPlanDistribution = asyncHandler(async (req: Request, res: Respon
         
 
         
+        console.log('Plan distribution data:', data);
         res.status(200).json({ success: true, data });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to fetch plan distribution data' });
+        console.error('Plan distribution error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch plan distribution data', error: error.message });
     }
 });
 

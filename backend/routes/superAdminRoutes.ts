@@ -44,12 +44,33 @@ router.get('/test', (req, res) => {
   res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
 });
 
-// Apply auth to all routes except test
+// Health check route without auth
+router.get('/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Super admin service healthy',
+    timestamp: new Date(),
+    endpoints: {
+      'dashboard-stats': 'Requires auth',
+      'platform-growth': 'Requires auth', 
+      'plan-distribution': 'Requires auth',
+      'email-status': 'Requires auth'
+    }
+  });
+});
+
+// Apply auth to all routes except test and health
 router.use((req, res, next) => {
-  if (req.path === '/test') return next();
+  if (req.path === '/test' || req.path === '/health') return next();
   protect(req, res, () => {
     if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
-      return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
+      console.log('Access denied for user:', req.user?.email, 'Role:', req.user?.role);
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Access denied. Super Admin role required.',
+        userRole: req.user?.role || 'No role',
+        requiredRoles: ['Super Admin', 'Super Moderator']
+      });
     }
     next();
   });
@@ -61,6 +82,23 @@ router.get('/stats', asyncHandler(getDashboardStats)); // Alias for dashboard-st
 router.get('/platform-growth', asyncHandler(getPlatformGrowth));
 
 router.get('/plan-distribution', asyncHandler(getPlanDistribution));
+
+// Add debug route to test endpoints
+router.get('/debug-routes', (req, res) => {
+  res.json({
+    success: true,
+    availableRoutes: [
+      'GET /dashboard-stats',
+      'GET /platform-growth', 
+      'GET /plan-distribution',
+      'GET /email-status',
+      'GET /organizations',
+      'GET /users',
+      'GET /billing'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
 
 router.get('/organizations', async (req: Request, res: Response) => {
   try {

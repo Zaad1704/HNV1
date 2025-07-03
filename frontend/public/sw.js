@@ -29,21 +29,9 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API requests - network first
+  // Skip service worker for API requests to prevent FetchEvent errors
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          // Only cache successful responses
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE)
-              .then(cache => cache.put(request, responseClone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
+    // Let the browser handle API requests directly
     return;
   }
 

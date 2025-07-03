@@ -232,7 +232,7 @@ app.use('/api/audit', protect, auditRoutes);
 app.use('/api/org', protect, orgRoutes);
 app.use('/api/organization', protect, orgRoutes);
 app.use('/api/subscriptions', protect, subscriptionsRoutes);
-app.use('/api/super-admin', superAdminRoutes);
+app.use('/api/super-admin', superAdminRoutes, routeErrorHandler);
 app.use('/api/notifications', protect, notificationRoutes);
 app.use('/api/communication', protect, communicationRoutes);
 app.use('/api/sharing', protect, sharingRoutes);
