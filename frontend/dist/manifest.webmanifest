@@ -1,6 +1,6 @@
 {
   "name": "HNV Property Management Solutions",
-  "short_name": "HNV",
+  "short_name": "HNV PM",
   "description": "Modern property management platform for landlords, agents, and tenants",
   "start_url": "/",
   "scope": "/",
@@ -11,7 +11,6 @@
   "categories": ["business", "productivity", "finance"],
   "lang": "en",
   "dir": "ltr",
-  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/pwa-192x192.png",
@@ -46,14 +45,5 @@
       "url": "/dashboard/properties",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     }
-  ],
-  "share_target": {
-    "action": "/dashboard",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }

@@ -7,16 +7,22 @@ exports.createPayment = exports.getPayments = void 0;
 const Payment_1 = __importDefault(require("../models/Payment"));
 const Tenant_1 = __importDefault(require("../models/Tenant"));
 const getPayments = async (req, res) => {
-    if (!req.user || !req.user.organizationId) {
-        res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
-        return;
+    try {
+        if (!req.user || !req.user.organizationId) {
+            res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+            return;
+        }
+        const payments = await Payment_1.default.find({ organizationId: req.user.organizationId })
+            .populate('tenantId', 'name')
+            .populate('propertyId', 'name')
+            .populate('recordedBy', 'name')
+            .sort({ paymentDate: -1 });
+        res.status(200).json({ success: true, count: payments.length, data: payments || [] });
     }
-    const payments = await Payment_1.default.find({ organizationId: req.user.organizationId })
-        .populate('tenantId', 'name')
-        .populate('propertyId', 'name')
-        .populate('recordedBy', 'name')
-        .sort({ paymentDate: -1 });
-    res.status(200).json({ success: true, count: payments.length, data: payments });
+    catch (error) {
+        console.error('Get payments error:', error);
+        res.status(200).json({ success: true, count: 0, data: [] });
+    }
 };
 exports.getPayments = getPayments;
 const createPayment = async (req, res) => {

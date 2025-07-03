@@ -3,46 +3,78 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const resend_1 = require("resend");
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 class EmailService {
+    isConfigured() {
+        return !!this.transporter;
+    }
     constructor() {
-        this.resend = null;
-        this.fromEmail = process.env.EMAIL_FROM || 'HNV Property Management <noreply@hnvpm.com>';
-        if (process.env.RESEND_API_KEY) {
-            this.resend = new resend_1.Resend(process.env.RESEND_API_KEY);
+        this.transporter = null;
+        this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
+        console.log('Email service initializing with SMTP...');
+        console.log('EMAIL_FROM:', this.fromEmail);
+        try {
+            this.transporter = nodemailer_1.default.createTransport({
+                host: process.env.SMTP_HOST || 'smtp.resend.com',
+                port: parseInt(process.env.SMTP_PORT || '587'),
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USER || 'resend',
+                    pass: process.env.SMTP_PASS || process.env.RESEND_API_KEY
+                }
+            });
+            console.log('✅ SMTP email service initialized');
         }
-        else {
-            console.warn("RESEND_API_KEY not configured. Email service will be disabled.");
+        catch (error) {
+            console.error('❌ Failed to initialize email service:', error);
         }
     }
     async sendEmail(to, subject, templateName, templateData) {
-        if (!this.resend) {
-            console.log(`Email would be sent to ${to}: ${subject}`);
-            return;
+        console.log(`📧 Attempting to send email to ${to}: ${subject}`);
+        if (!this.transporter) {
+            console.log(`❌ Email service disabled - would send to ${to}: ${subject}`);
+            throw new Error('Email service not configured');
         }
         try {
-            const templatePath = path_1.default.join(__dirname, '..', 'templates', `${templateName}.html`);
-            let htmlContent = fs_1.default.readFileSync(templatePath, 'utf-8');
+            let htmlContent = '';
+            try {
+                const templatePath = path_1.default.join(__dirname, '..', 'templates', `${templateName}.html`);
+                htmlContent = fs_1.default.readFileSync(templatePath, 'utf-8');
+            }
+            catch (templateError) {
+                console.warn(`Template ${templateName} not found, using fallback`);
+                htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1f2937;">${subject}</h2>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              ${Object.entries(templateData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">This message was sent from HNV Property Management.</p>
+          </div>
+        `;
+            }
             for (const key in templateData) {
                 const regex = new RegExp(`{{${key}}}`, 'g');
                 htmlContent = htmlContent.replace(regex, templateData[key]);
             }
-            await this.resend.emails.send({
+            const result = await this.transporter.sendMail({
                 from: this.fromEmail,
-                to: [to],
+                to: to,
                 subject,
                 html: htmlContent,
             });
+            console.log('✅ Email sent successfully:', result.messageId);
+            return result;
         }
         catch (error) {
             console.error(`Error sending email to ${to}:`, error);
-            throw new Error('Failed to send email.');
+            throw new Error(`Failed to send email: ${error.message}`);
         }
     }
     async sendContactForm(formData) {
-        if (!this.resend) {
+        if (!this.transporter) {
             console.log(`Contact form would be sent: ${formData.subject}`);
             return;
         }
@@ -62,9 +94,9 @@ class EmailService {
           <p style="color: #6b7280; font-size: 14px;">This message was sent from the HNV Property Management contact form.</p>
         </div>
       `;
-            await this.resend.emails.send({
+            await this.transporter.sendMail({
                 from: this.fromEmail,
-                to: [process.env.CONTACT_EMAIL || 'contact@hnvpm.com'],
+                to: process.env.CONTACT_EMAIL || 'contact@hnvpm.com',
                 subject: `Contact Form: ${formData.subject}`,
                 html: htmlContent,
                 replyTo: formData.email

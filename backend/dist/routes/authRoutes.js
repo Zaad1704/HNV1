@@ -7,6 +7,7 @@ const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const authController_1 = require("../controllers/authController");
+const passwordResetController_1 = require("../controllers/passwordResetController");
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const twoFactorAuth_1 = require("../middleware/twoFactorAuth");
 const validateMiddleware_1 = require("../middleware/validateMiddleware");
@@ -17,6 +18,8 @@ router.post('/login', authController_1.loginUser);
 router.get('/me', authMiddleware_1.protect, authController_1.getMe);
 router.get('/verify-email/:token', authController_1.verifyEmail);
 router.post('/resend-verification', authController_1.resendVerification);
+router.post('/forgot-password', passwordResetController_1.forgotPassword);
+router.put('/reset-password/:resetToken', passwordResetController_1.resetPassword);
 router.put('/profile', authMiddleware_1.protect, authController_1.updateProfile);
 router.get('/google', (req, res, next) => {
     const role = req.query.role || 'Landlord';

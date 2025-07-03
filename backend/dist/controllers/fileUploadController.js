@@ -8,27 +8,38 @@ const googleapis_1 = require("googleapis");
 const path_1 = __importDefault(require("path"));
 const stream_1 = require("stream");
 let auth;
+let drive;
+const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
+let isGoogleDriveConfigured = false;
 try {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON || '{}');
-    auth = new googleapis_1.google.auth.GoogleAuth({
-        credentials: {
-            client_email: credentials.client_email,
-            private_key: credentials.private_key,
-        },
-        scopes: ['https://www.googleapis.com/auth/drive'],
-    });
+    if (credentials.client_email && credentials.private_key && UPLOAD_FOLDER_ID) {
+        auth = new googleapis_1.google.auth.GoogleAuth({
+            credentials: {
+                client_email: credentials.client_email,
+                private_key: credentials.private_key,
+            },
+            scopes: ['https://www.googleapis.com/auth/drive'],
+        });
+        drive = googleapis_1.google.drive({ version: 'v3', auth });
+        isGoogleDriveConfigured = true;
+        console.log('✅ Google Drive upload service configured');
+    }
+    else {
+        console.warn('⚠️ Google Drive upload service not configured - file uploads will be disabled');
+    }
 }
 catch (e) {
-    console.error("FATAL ERROR: Failed to parse Google credentials. Please check the environment variable.", e);
-    throw new Error("Google Drive credentials are not correctly configured.");
-}
-const drive = googleapis_1.google.drive({ version: 'v3', auth });
-const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
-if (!UPLOAD_FOLDER_ID) {
-    console.error("FATAL ERROR: GOOGLE_DRIVE_UPLOAD_FOLDER_ID environment variable is not defined.");
-    throw new Error("Google Drive upload folder ID is not configured.");
+    console.warn("Google Drive credentials parsing failed - file uploads will be disabled:", e);
 }
 const uploadImage = async (req, res) => {
+    if (!isGoogleDriveConfigured) {
+        res.status(503).json({
+            success: false,
+            message: 'File upload service is not configured. Please contact administrator.'
+        });
+        return;
+    }
     if (!req.file || !req.file.buffer) {
         res.status(400).json({ success: false, message: 'No file uploaded.' });
         return;

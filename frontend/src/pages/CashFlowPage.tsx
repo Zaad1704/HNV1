@@ -17,8 +17,13 @@ interface ICashFlowRecord {
 }
 
 const fetchCashFlowRecords = async (): Promise<ICashFlowRecord[]> => {
-    const { data } = await apiClient.get('/cashflow');
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/cashflow');
+        return data.data || [];
+    } catch (error) {
+        console.error('Failed to fetch cash flow records:', error);
+        throw error;
+    }
 };
 
 const CashFlowPage: React.FC = () => {
@@ -27,9 +32,10 @@ const CashFlowPage: React.FC = () => {
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     const [itemToRequest, setItemToRequest] = useState<ICashFlowRecord | null>(null);
 
-    const { data: records = [], isLoading, isError, refetch } = useQuery({
+    const { data: records = [], isLoading, isError, error, refetch } = useQuery({
         queryKey: ['cashFlowRecords'],
         queryFn: fetchCashFlowRecords,
+        retry: 1
     });
 
     const handleRequestEdit = (record: ICashFlowRecord) => {
@@ -57,25 +63,44 @@ const CashFlowPage: React.FC = () => {
         out: { opacity: 0, y: -20 },
     };
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading cash flow records...</div>;
-    if (isError) return <div className="text-center p-8 text-red-400 dark:text-red-400">Failed to fetch cash flow records.</div>;
-
-    return (
-        <div className="p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h1 className="text-3xl font-bold">Cash Flow Management</h1>
-                {user?.role === 'Agent' && (
-                  <button
-                      onClick={() => setIsRecordModalOpen(true)}
-                      className="btn-primary flex items-center space-x-2"
-                  >
-                      <PlusCircle size={18} />
-                      <span>Record Transaction</span>
-                  </button>
-                )}
+    if (isLoading) {
+        return <div className="text-center p-8 text-text-primary">Loading cash flow records...</div>;
+    }
+    
+    if (isError) {
+        return (
+            <div className="text-center p-8">
+                <div className="text-red-500 mb-4">Failed to fetch cash flow records.</div>
+                <div className="text-sm text-gray-500">
+                    {error instanceof Error ? error.message : 'Unknown error occurred'}
+                </div>
+                <button 
+                    onClick={() => refetch()} 
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Retry
+                </button>
             </div>
+        );
+    }
 
-            {records.length === 0 ? (
+    try {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <h1 className="text-3xl font-bold">Cash Flow Management</h1>
+                    {user?.role === 'Agent' && (
+                      <button
+                          onClick={() => setIsRecordModalOpen(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                      >
+                          <PlusCircle size={18} />
+                          <span>Record Transaction</span>
+                      </button>
+                    )}
+                </div>
+
+            {!records || records.length === 0 ? (
                 <div className="text-center py-16 bg-gray-100 rounded-3xl border-2 border-dashed">
                     <h3 className="text-xl font-semibold">No Cash Flow Records Found</h3>
                     <p className="text-gray-600 mt-2">No cash flow transactions have been recorded yet.</p>
@@ -95,17 +120,17 @@ const CashFlowPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {records.map((record) => (
+                                {records && records.map((record) => record && (
                                     <tr key={record._id} className="hover:bg-gray-50">
-                                        <td className="p-4 font-semibold">{new Date(record.transactionDate).toLocaleDateString()}</td>
+                                        <td className="p-4 font-semibold">{record.transactionDate ? new Date(record.transactionDate).toLocaleDateString() : 'N/A'}</td>
                                         <td className="p-4 flex items-center gap-2 capitalize">
-                                            {getTypeIcon(record.type)} <span className="capitalize">{record.type.replace(/_/g, ' ')}</span>
+                                            {getTypeIcon(record.type)} <span className="capitalize">{record.type?.replace(/_/g, ' ') || 'Unknown'}</span>
                                         </td>
-                                        <td className="p-4">{record.fromUser.name}</td>
+                                        <td className="p-4">{record.fromUser?.name || 'Unknown'}</td>
                                         <td className="p-4">{record.toUser?.name || 'Bank'}</td>
                                         <td className="p-4 font-semibold">
-                                            <DollarSign size={14} className="inline-block mr-1 text-green-400" />
-                                            {record.amount.toFixed(2)}
+                                            <DollarSign size={14} className="inline-block mr-1 text-green-500" />
+                                            {record.amount?.toFixed(2) || '0.00'}
                                         </td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadge(record.status)}`}>
@@ -119,8 +144,25 @@ const CashFlowPage: React.FC = () => {
                     </div>
                 </div>
             )}
-        </div>
-    );
+            </div>
+        );
+    } catch (renderError) {
+        console.error('Cash flow page render error:', renderError);
+        return (
+            <div className="p-6">
+                <div className="text-center py-16 bg-red-50 rounded-3xl border-2 border-red-200">
+                    <h3 className="text-xl font-semibold text-red-600">Cash Flow Page Error</h3>
+                    <p className="text-red-500 mt-2">An error occurred while loading the cash flow page.</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                        Reload Page
+                    </button>
+                </div>
+            </div>
+        );
+    }
 };
 
 export default CashFlowPage;

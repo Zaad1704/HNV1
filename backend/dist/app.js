@@ -52,7 +52,6 @@ const rentCollectionRoutes_1 = __importDefault(require("./routes/rentCollectionR
 const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
 const integrationRoutes_1 = __importDefault(require("./routes/integrationRoutes"));
 const subscriptionRoutes_1 = __importDefault(require("./routes/subscriptionRoutes"));
-const subscriptionMiddleware_1 = require("./middleware/subscriptionMiddleware");
 const masterDataService_1 = __importDefault(require("./services/masterDataService"));
 const authMiddleware_1 = require("./middleware/authMiddleware");
 const passport_1 = __importDefault(require("passport"));
@@ -68,10 +67,13 @@ const allowedOrigins = [
     'https://hnv-property.onrender.com',
     'https://www.hnvpm.com',
     'https://hnvpm.com',
+    'https://hnv.onrender.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
+console.log('Allowed CORS origins:', allowedOrigins);
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
+        console.log('CORS Origin:', origin || 'undefined (direct API call)');
         if (!origin)
             return callback(null, true);
         if (allowedOrigins.includes(origin)) {
@@ -80,11 +82,17 @@ app.use((0, cors_1.default)({
         if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
             return callback(null, true);
         }
-        callback(new Error('Not allowed by CORS'));
+        if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
+            return callback(null, true);
+        }
+        console.warn('CORS blocked origin:', origin);
+        callback(null, true);
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 app.use('/api/auth', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 10));
 app.use('/api', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 100));
@@ -114,6 +122,19 @@ app.get('/api/debug', (req, res) => {
         frontendUrl: process.env.FRONTEND_URL
     });
 });
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Client-Version, X-Request-Time');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(204);
+});
+app.use('/api', (req, res, next) => {
+    console.log(`API Request: ${req.method} ${req.originalUrl}`);
+    console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
+    next();
+});
+app.use('/api/test', require('./routes/testRoutes').default);
 app.use('/api/health', healthRoutes_1.default);
 app.use('/health', healthRoutes_1.default);
 const routeErrorHandler = (err, req, res, next) => {
@@ -129,6 +150,7 @@ const routeErrorHandler = (err, req, res, next) => {
 app.use('/api/auth', authRoutes_1.default, routeErrorHandler);
 app.use('/api/setup', setupRoutes_1.default, routeErrorHandler);
 app.use('/api/password-reset', passwordResetRoutes_1.default, routeErrorHandler);
+app.use('/api/forgot-password', passwordResetRoutes_1.default, routeErrorHandler);
 app.use('/api/feedback', feedbackRoutes_1.default, routeErrorHandler);
 app.use('/api/site-settings', siteSettingsRoutes_1.default, routeErrorHandler);
 app.use('/api/localization', localizationRoutes_1.default, routeErrorHandler);
@@ -140,18 +162,17 @@ app.use('/api/rent-collection', rentCollectionRoutes_1.default, routeErrorHandle
 app.use('/api/analytics', analyticsRoutes_1.default, routeErrorHandler);
 app.use('/api/integrations', integrationRoutes_1.default, routeErrorHandler);
 app.use('/api/subscription', subscriptionRoutes_1.default, routeErrorHandler);
-app.use('/api/properties', subscriptionMiddleware_1.checkSubscriptionStatus);
-app.use('/api/tenants', subscriptionMiddleware_1.checkSubscriptionStatus);
-app.use('/api/payments', subscriptionMiddleware_1.checkSubscriptionStatus);
-app.use('/api', publicRoutes_1.default, routeErrorHandler);
+app.use('/api/public', publicRoutes_1.default, routeErrorHandler);
 app.use('/api/contact', contactRoutes_1.default, routeErrorHandler);
-app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default);
+app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default, routeErrorHandler);
 app.use('/api/properties', authMiddleware_1.protect, propertiesRoutes_1.default);
 app.use('/api/tenants', authMiddleware_1.protect, tenantsRoutes_1.default);
 app.use('/api/payments', authMiddleware_1.protect, paymentsRoutes_1.default);
 app.use('/api/expenses', authMiddleware_1.protect, expenseRoutes_1.default);
 app.use('/api/maintenance', authMiddleware_1.protect, maintenanceRoutes_1.default);
-app.use('/api/cashflow', authMiddleware_1.protect, cashFlowRoutes_1.default);
+app.use('/api/cashflow', authMiddleware_1.protect, cashFlowRoutes_1.default, routeErrorHandler);
+app.use('/api/invites', authMiddleware_1.protect, require('./routes/inviteRoutes').default);
+app.use('/api/invite', authMiddleware_1.protect, require('./routes/inviteRoutes').default);
 app.use('/api/reminders', authMiddleware_1.protect, reminderRoutes_1.default);
 app.use('/api/edit-requests', authMiddleware_1.protect, editRequestRoutes_1.default);
 app.use('/api/users', authMiddleware_1.protect, userRoutes_1.default);
@@ -159,8 +180,9 @@ app.use('/api/invitations', authMiddleware_1.protect, invitationRoutes_1.default
 app.use('/api/billing', authMiddleware_1.protect, billingRoutes_1.default);
 app.use('/api/audit', authMiddleware_1.protect, auditRoutes_1.default);
 app.use('/api/org', authMiddleware_1.protect, orgRoutes_1.default);
+app.use('/api/organization', authMiddleware_1.protect, orgRoutes_1.default);
 app.use('/api/subscriptions', authMiddleware_1.protect, subscriptionsRoutes_1.default);
-app.use('/api/super-admin', authMiddleware_1.protect, superAdminRoutes_1.default);
+app.use('/api/super-admin', superAdminRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.protect, notificationRoutes_1.default);
 app.use('/api/communication', authMiddleware_1.protect, communicationRoutes_1.default);
 app.use('/api/sharing', authMiddleware_1.protect, sharingRoutes_1.default);

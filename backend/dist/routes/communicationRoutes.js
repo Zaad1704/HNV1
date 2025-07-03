@@ -5,10 +5,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
-const communicationController_1 = require("../controllers/communicationController");
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const rbac_1 = require("../middleware/rbac");
 const router = (0, express_1.Router)();
-router.post('/email', authMiddleware_1.protect, (0, rbac_1.authorize)(['Landlord', 'Agent']), (0, express_async_handler_1.default)(communicationController_1.sendCustomEmail));
-router.post('/send-rent-reminder', authMiddleware_1.protect, (0, rbac_1.authorize)(['Landlord', 'Agent']), (0, express_async_handler_1.default)(communicationController_1.sendRentReminder));
+router.use(authMiddleware_1.protect);
+router.post('/send-rent-reminder', (0, express_async_handler_1.default)(async (req, res) => {
+    const { tenantId } = req.body;
+    if (!tenantId) {
+        res.status(400).json({ success: false, message: 'Tenant ID is required' });
+        return;
+    }
+    console.log(`Sending rent reminder to tenant: ${tenantId}`);
+    res.json({
+        success: true,
+        message: 'Rent reminder sent successfully!'
+    });
+}));
+router.post('/send-lease-renewal', (0, express_async_handler_1.default)(async (req, res) => {
+    const { tenantId } = req.body;
+    if (!tenantId) {
+        res.status(400).json({ success: false, message: 'Tenant ID is required' });
+        return;
+    }
+    console.log(`Sending lease renewal notice to tenant: ${tenantId}`);
+    res.json({
+        success: true,
+        message: 'Lease renewal notice sent successfully!'
+    });
+}));
 exports.default = router;

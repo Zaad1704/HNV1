@@ -1,40 +1,24 @@
 import { Router } from 'express';
-import { Request, Response } from 'express';
+import {
+  createCashFlowRecord,
+  getCashFlowRecords,
+  updateCashFlowRecord,
+  deleteCashFlowRecord
+} from '../controllers/cashFlowController';
+import uploadMiddleware from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Get cash flow data
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    res.json({
-      success: true,
-      data: {
-        income: [],
-        expenses: [],
-        netCashFlow: 0,
-        monthlyData: []
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch cash flow data' });
-  }
-});
+// Get all cash flow records
+router.get('/', getCashFlowRecords);
 
-// Get cash flow summary
-router.get('/summary', async (req: Request, res: Response) => {
-  try {
-    res.json({
-      success: true,
-      data: {
-        totalIncome: 0,
-        totalExpenses: 0,
-        netCashFlow: 0,
-        profitMargin: 0
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch cash flow summary' });
-  }
-});
+// Create new cash flow record
+router.post('/', uploadMiddleware.single('document'), createCashFlowRecord);
+
+// Update cash flow record
+router.put('/:id', updateCashFlowRecord);
+
+// Delete cash flow record
+router.delete('/:id', deleteCashFlowRecord);
 
 export default router;

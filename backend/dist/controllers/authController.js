@@ -50,8 +50,9 @@ const registerUser = async (req, res, next) => {
             password,
             role,
             organizationId: organization._id,
-            isEmailVerified: true
+            isEmailVerified: false
         });
+        const verificationToken = user.getEmailVerificationToken();
         organization.owner = user._id;
         organization.members.push(user._id);
         const trialEndDate = new Date();
@@ -65,8 +66,31 @@ const registerUser = async (req, res, next) => {
         organization.subscription = subscription._id;
         await organization.save();
         await subscription.save();
-        await user.save();
-        res.status(201).json({ success: true, message: 'Registration successful! You can now log in.' });
+        await user.save({ validateBeforeSave: false });
+        try {
+            const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+            await emailService_1.default.sendEmail(user.email, 'Verify Your Email Address', 'emailVerification', { userName: user.name, verificationUrl });
+            try {
+                await emailService_1.default.sendEmail(user.email, 'Welcome to HNV Property Management!', 'welcome', {
+                    name: user.name,
+                    dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`
+                });
+            }
+            catch (welcomeError) {
+                console.error('Welcome email failed:', welcomeError);
+            }
+            res.status(201).json({
+                success: true,
+                message: 'Registration successful! Please check your email to verify your account.'
+            });
+        }
+        catch (emailError) {
+            console.error('Email sending failed:', emailError);
+            res.status(201).json({
+                success: true,
+                message: 'Registration successful! Email verification temporarily unavailable - you can log in directly.'
+            });
+        }
     }
     catch (error) {
         console.error(error);
@@ -112,9 +136,11 @@ const loginUser = async (req, res) => {
             });
         }
         if (!user.isEmailVerified) {
-            user.isEmailVerified = true;
-            user.status = 'active';
-            await user.save();
+            return res.status(401).json({
+                success: false,
+                message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+                code: 'EMAIL_NOT_VERIFIED'
+            });
         }
         try {
             auditService_1.default.recordAction(user._id, user.organizationId, 'USER_LOGIN', { loginTime: new Date(), userAgent: req.get('User-Agent') });

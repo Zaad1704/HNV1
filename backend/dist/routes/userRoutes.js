@@ -12,7 +12,7 @@ router.use(authMiddleware_1.protect);
 router.put('/update-password', (0, express_async_handler_1.default)(userController_1.updatePassword));
 router.post('/request-deletion', (0, express_async_handler_1.default)(userController_1.requestAccountDeletion));
 router.route('/')
-    .get((0, authMiddleware_1.authorize)('Super Admin'), (0, express_async_handler_1.default)(userController_1.getUsers));
+    .get((0, authMiddleware_1.authorize)('Super Admin', 'Landlord', 'Agent'), (0, express_async_handler_1.default)(userController_1.getUsers));
 router
     .route('/:id')
     .get((0, authMiddleware_1.authorize)('Super Admin'), (0, express_async_handler_1.default)(userController_1.getUser))

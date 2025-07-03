@@ -52,7 +52,14 @@ exports.getLateTenants = (0, express_async_handler_1.default)(async (req, res) =
         throw new Error('User or organization not found');
     }
     const { organizationId } = req.user;
-    const lateTenants = await Tenant_1.default.find({ organizationId, status: 'Late' })
+    const lateTenants = await Tenant_1.default.find({
+        organizationId,
+        $or: [
+            { status: 'Late' },
+            { status: 'Overdue' },
+            { rentStatus: 'overdue' }
+        ]
+    })
         .populate('propertyId', 'name unit')
         .select('name email unit propertyId')
         .limit(5);

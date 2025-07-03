@@ -1,107 +1,77 @@
-const CACHE_NAME = 'hnv-pwa-v2';
-const STATIC_CACHE = 'hnv-static-v2';
-const DYNAMIC_CACHE = 'hnv-dynamic-v2';
+const CACHE_NAME = 'hnv-property-v3';
+const STATIC_CACHE = 'hnv-static-v3';
+const DYNAMIC_CACHE = 'hnv-dynamic-v3';
 
 const urlsToCache = [
   '/',
   '/manifest.webmanifest',
+  '/logo-min.png',
   '/pwa-192x192.png',
   '/pwa-512x512.png',
-  '/logo-min.png',
   '/apple-touch-icon.png'
 ];
 
-const SECURE_ORIGINS = [
-  'https://hnv.onrender.com',
-  'https://www.hnvpm.com',
-  'https://api.exchangerate-api.com',
-  'https://fonts.googleapis.com',
-  'https://fonts.gstatic.com'
-];
-
-// Install event with enhanced caching
+// Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => cache.addAll(urlsToCache)),
-      self.skipWaiting()
-    ])
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        return self.skipWaiting();
+      })
   );
 });
 
-// Fetch event with security checks
+// Fetch event with network-first strategy for API calls
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  // Security check - only cache secure origins
-  if (!SECURE_ORIGINS.some(origin => request.url.startsWith(origin)) && 
-      !request.url.startsWith(self.location.origin)) {
+
+  // API requests - network first
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // Only cache successful responses
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
     return;
   }
-  
-  // Handle different types of requests
-  if (request.destination === 'document') {
-    event.respondWith(handleDocumentRequest(request));
-  } else if (request.destination === 'image') {
-    event.respondWith(handleImageRequest(request));
-  } else {
-    event.respondWith(handleOtherRequest(request));
-  }
+
+  // Static assets - cache first
+  event.respondWith(
+    caches.match(request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(request)
+          .then(response => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+            return response;
+          });
+      })
+  );
 });
 
-// Handle document requests (HTML pages)
-async function handleDocumentRequest(request) {
-  try {
-    const networkResponse = await fetch(request);
-    const cache = await caches.open(DYNAMIC_CACHE);
-    cache.put(request, networkResponse.clone());
-    return networkResponse;
-  } catch (error) {
-    const cachedResponse = await caches.match(request);
-    return cachedResponse || caches.match('/');
-  }
-}
-
-// Handle image requests
-async function handleImageRequest(request) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) return cachedResponse;
-  
-  try {
-    const networkResponse = await fetch(request);
-    const cache = await caches.open(DYNAMIC_CACHE);
-    cache.put(request, networkResponse.clone());
-    return networkResponse;
-  } catch (error) {
-    // Return placeholder image for failed requests
-    return new Response('', { status: 404 });
-  }
-}
-
-// Handle other requests
-async function handleOtherRequest(request) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) return cachedResponse;
-  
-  try {
-    const networkResponse = await fetch(request);
-    // Only cache successful responses
-    if (networkResponse.status === 200) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (error) {
-    return new Response('Network error', { status: 503 });
-  }
-}
-
-// Activate event with cleanup
+// Activate event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     Promise.all([
-      // Clean up old caches
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
@@ -111,30 +81,17 @@ self.addEventListener('activate', (event) => {
           })
         );
       }),
-      // Take control of all clients
       self.clients.claim()
     ])
   );
 });
 
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-function doBackgroundSync() {
-  // Handle offline actions when back online
-  return Promise.resolve();
-}
-
-// Push notifications
+// Push notification event
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New notification',
-    icon: '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
+    icon: '/logo-min.png',
+    badge: '/logo-min.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -144,12 +101,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'View',
-        icon: '/pwa-192x192.png'
+        icon: '/logo-min.png'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/pwa-192x192.png'
+        icon: '/logo-min.png'
       }
     ]
   };
@@ -159,7 +116,7 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click
+// Notification click event
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 

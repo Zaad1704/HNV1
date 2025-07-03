@@ -3,32 +3,41 @@ import { google } from 'googleapis';
 import path from 'path';
 import { Readable } from 'stream';
 
-// --- Google Drive API Setup (no changes here) ---
+// --- Google Drive API Setup (optional configuration) ---
 let auth;
+let drive;
+const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
+let isGoogleDriveConfigured = false;
+
 try {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON || '{}');
-    auth = new google.auth.GoogleAuth({
-        credentials: {
-            client_email: credentials.client_email,
-            private_key: credentials.private_key,
-        },
-        scopes: ['https://www.googleapis.com/auth/drive'],
-    });
+    if (credentials.client_email && credentials.private_key && UPLOAD_FOLDER_ID) {
+        auth = new google.auth.GoogleAuth({
+            credentials: {
+                client_email: credentials.client_email,
+                private_key: credentials.private_key,
+            },
+            scopes: ['https://www.googleapis.com/auth/drive'],
+        });
+        drive = google.drive({ version: 'v3', auth });
+        isGoogleDriveConfigured = true;
+        console.log('✅ Google Drive upload service configured');
+    } else {
+        console.warn('⚠️ Google Drive upload service not configured - file uploads will be disabled');
+    }
 } catch (e) {
-    console.error("FATAL ERROR: Failed to parse Google credentials. Please check the environment variable.", e);
-    throw new Error("Google Drive credentials are not correctly configured.");
+    console.warn("Google Drive credentials parsing failed - file uploads will be disabled:", e);
 }
 
-const drive = google.drive({ version: 'v3', auth });
-const UPLOAD_FOLDER_ID = process.env.GOOGLE_DRIVE_UPLOAD_FOLDER_ID;
-
-if (!UPLOAD_FOLDER_ID) {
-    console.error("FATAL ERROR: GOOGLE_DRIVE_UPLOAD_FOLDER_ID environment variable is not defined.");
-    throw new Error("Google Drive upload folder ID is not configured.");
-}
-
-// FIX: Changed from 'AuthenticatedRequest' to the standard 'Request'
 export const uploadImage = async (req: Request, res: Response) => {
+    if (!isGoogleDriveConfigured) {
+        res.status(503).json({ 
+            success: false, 
+            message: 'File upload service is not configured. Please contact administrator.' 
+        });
+        return;
+    }
+
     if (!req.file || !req.file.buffer) {
         res.status(400).json({ success: false, message: 'No file uploaded.' });
         return;
