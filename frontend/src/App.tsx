@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import TranslationDebug from './components/debug/TranslationDebug';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import './i18n'; // Initialize i18n
@@ -103,6 +104,7 @@ function App() {
           <ErrorBoundary>
           <OfflineIndicator />
           <PWAInstallPrompt />
+          <TranslationDebug />
           <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}

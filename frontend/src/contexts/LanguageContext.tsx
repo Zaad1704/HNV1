@@ -26,6 +26,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const initializeLanguage = async () => {
       try {
+        // Wait for i18n to be ready
+        if (!i18n.isInitialized) {
+          await new Promise(resolve => {
+            i18n.on('initialized', resolve);
+          });
+        }
+        
         // Check if user has previously selected a language
         const savedLanguage = localStorage.getItem('selectedLanguage');
         
@@ -33,16 +40,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const language = getLanguageByCode(savedLanguage);
           setCurrentLanguage(language);
           await i18n.changeLanguage(language.code);
+          console.log('Loaded saved language:', language.code);
         } else {
           // Detect user location and set language accordingly
           const location = await detectUserLocation();
           
           if (location?.countryCode) {
             const detectedLanguage = getLanguageByCountry(location.countryCode);
+            console.log('Detected language:', detectedLanguage);
             setCurrentLanguage(detectedLanguage);
+            
+            // Force language change and wait for it
             await i18n.changeLanguage(detectedLanguage.code);
+            console.log('Language changed to:', detectedLanguage.code);
+            
             localStorage.setItem('selectedLanguage', detectedLanguage.code);
             localStorage.setItem('selectedCurrency', detectedLanguage.currency);
+          } else {
+            // Fallback to English if no location detected
+            setCurrentLanguage(languages[0]);
+            await i18n.changeLanguage('en');
           }
         }
       } catch (error) {
@@ -61,12 +78,20 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const changeLanguage = async (languageCode: string) => {
     try {
       const language = getLanguageByCode(languageCode);
+      console.log('Changing language to:', language);
+      
       setCurrentLanguage(language);
+      
+      // Force language change
       await i18n.changeLanguage(language.code);
+      console.log('i18n language changed to:', i18n.language);
       
       // Save preferences
       localStorage.setItem('selectedLanguage', language.code);
       localStorage.setItem('selectedCurrency', language.currency);
+      
+      // Force re-render by updating state
+      setCurrentLanguage({...language});
       
       // Dispatch event for other components to react
       window.dispatchEvent(new CustomEvent('languageChanged', { 
