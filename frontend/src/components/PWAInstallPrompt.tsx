@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Monitor, Apple } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -7,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const PWAInstallPrompt = () => {
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -81,41 +83,41 @@ const PWAInstallPrompt = () => {
       case 'android':
         return {
           icon: <Smartphone className="w-6 h-6" />,
-          title: 'Install HNV App',
+          title: t('install_app.install_android'),
           steps: [
-            'Tap the menu (⋮) in your browser',
-            'Select "Add to Home screen" or "Install app"',
-            'Tap "Add" or "Install"'
+            t('install_app.android_step1'),
+            t('install_app.android_step2'),
+            t('install_app.android_step3')
           ]
         };
       case 'ios':
         return {
           icon: <Apple className="w-6 h-6" />,
-          title: 'Add to Home Screen',
+          title: t('install_app.add_to_home'),
           steps: [
-            'Tap the Share button (□↗) in Safari',
-            'Scroll down and tap "Add to Home Screen"',
-            'Tap "Add" in the top right corner'
+            t('install_app.ios_step1'),
+            t('install_app.ios_step2'),
+            t('install_app.ios_step3')
           ]
         };
       case 'desktop':
         return {
           icon: <Monitor className="w-6 h-6" />,
-          title: 'Install Desktop App',
+          title: t('install_app.install_desktop'),
           steps: [
-            'Look for the install icon (⊕) in your address bar',
-            'Click it and select "Install"',
-            'Or use browser menu → "Install HNV Property Management"'
+            t('install_app.desktop_step1'),
+            t('install_app.desktop_step2'),
+            t('install_app.desktop_step3')
           ]
         };
       default:
         return {
           icon: <Download className="w-6 h-6" />,
-          title: 'Install App',
+          title: t('install_app.title'),
           steps: [
-            'Look for the install icon in your browser',
-            'Or check browser menu for "Install" option',
-            'Add to home screen for native experience'
+            t('install_app.generic_step1'),
+            t('install_app.generic_step2'),
+            t('install_app.generic_step3')
           ]
         };
     }
@@ -142,7 +144,7 @@ const PWAInstallPrompt = () => {
         </div>
 
         <p className="text-sm text-text-secondary mb-4">
-          Get the native app experience with offline access and push notifications.
+          {t('install_app.description')}
         </p>
 
         {deferredPrompt ? (
@@ -151,10 +153,10 @@ const PWAInstallPrompt = () => {
               onClick={handleInstall}
               className="w-full btn-gradient py-3 px-4 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
-              📱 Install App
+              📱 {t('install_app.install_button')}
             </button>
             <p className="text-xs text-center text-text-muted">
-              One-click install • Works offline • Native experience
+              {t('install_app.features')}
             </p>
           </div>
         ) : (
@@ -171,7 +173,7 @@ const PWAInstallPrompt = () => {
             </div>
             <div className="text-center pt-2 border-t border-app-border">
               <p className="text-xs text-text-muted">
-                Install for the best experience
+                {t('install_app.best_experience')}
               </p>
             </div>
           </div>

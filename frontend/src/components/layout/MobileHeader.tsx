@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Bell, Search } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useTranslation } from 'react-i18next';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
 
 interface MobileHeaderProps {
@@ -12,9 +13,10 @@ interface MobileHeaderProps {
 const MobileHeader: React.FC<MobileHeaderProps> = ({ 
   onMenuToggle, 
   showNotifications = false,
-  title = "Dashboard"
+  title
 }) => {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-app-surface/95 backdrop-blur-md border-b border-app-border z-[100] flex items-center justify-between px-4">
@@ -26,7 +28,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
         >
           <Menu size={20} />
         </button>
-        <h1 className="font-semibold text-text-primary">{title}</h1>
+        <h1 className="font-semibold text-text-primary">{title || t('nav.dashboard')}</h1>
       </div>
 
       <div className="flex items-center gap-2">

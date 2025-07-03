@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import apiClient from '../../api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
+import { useTranslation } from 'react-i18next';
 import { X, UploadCloud } from 'lucide-react';
 
 const fetchManagedAgents = async () => {
@@ -21,6 +22,7 @@ const createExpense = async (formData: FormData) => {
 };
 
 const LogExpenseModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -73,7 +75,7 @@ const LogExpenseModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
       <div className="bg-light-card dark:bg-dark-card rounded-3xl shadow-xl w-full max-w-lg border border-border-color dark:border-border-color-dark">
         <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
-          <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">Log New Expense</h2>
+          <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">{t('expense.add_expense')}</h2>
           <button onClick={onClose} className="text-light-text dark:text-light-text-dark hover:text-dark-text dark:hover:text-dark-text-dark text-2xl">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
@@ -99,8 +101,13 @@ const LogExpenseModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-light-text dark:text-light-text-dark">Category</label>
                 <select name="category" id="category" required value={formData.category} onChange={handleChange}>
-                    <option>Repairs</option> <option>Utilities</option> <option>Management Fees</option>
-                    <option>Insurance</option> <option>Taxes</option> <option value="Salary">Salary</option> <option>Other</option>
+                    <option value="Repairs">{t('expense.repairs')}</option>
+                    <option value="Utilities">{t('expense.utilities')}</option>
+                    <option value="Management Fees">{t('expense.management_fees')}</option>
+                    <option value="Insurance">{t('expense.insurance')}</option>
+                    <option value="Taxes">{t('expense.taxes')}</option>
+                    <option value="Salary">{t('expense.salary')}</option>
+                    <option value="Other">{t('expense.other')}</option>
                 </select>
               </div>
               <div>

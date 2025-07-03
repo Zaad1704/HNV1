@@ -47,10 +47,10 @@ const DashboardLayout = () => {
 
   const mainNavLinks = [
     { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
-    { href: "/dashboard/tenant", icon: Home, label: 'My Portal', roles: ['Tenant'] },
+    { href: "/dashboard/tenant", icon: Home, label: t('dashboard.tenant_portal'), roles: ['Tenant'] },
     { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
-    { href: "/dashboard/payments", icon: CreditCard, label: 'Payments', roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/payments", icon: CreditCard, label: t('dashboard.payments'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/expenses", icon: DollarSign, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },
@@ -71,7 +71,7 @@ const DashboardLayout = () => {
             <Building size={20} className="text-white" />
           </div>
           <span className="truncate">
-            {user?.organizationId?.name || user?.organizationId?.branding?.companyName || 'HNV Dashboard'}
+            {user?.organizationId?.name || user?.organizationId?.branding?.companyName || t('app_name_short')}
           </span>
         </Link>
         {isMobile && (
@@ -215,14 +215,14 @@ const DashboardLayout = () => {
               <Menu size={20} />
             </button>
             <h1 className="text-xl font-semibold text-text-primary hidden lg:block">
-              Dashboard
+              {t('nav.dashboard')}
             </h1>
           </div>
 
           {/* Center: Company Name - Hidden on mobile */}
           <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 max-w-xs">
             <span className="text-lg font-bold text-text-primary text-center truncate">
-              {user?.organizationId?.name || user?.organizationId?.branding?.companyName || 'HNV Solutions'}
+              {user?.organizationId?.name || user?.organizationId?.branding?.companyName || t('app_name')}
             </span>
           </div>
 
