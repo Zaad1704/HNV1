@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
+import GoogleRoleModal from '../components/auth/GoogleRoleModal';
 import { Chrome, Mail, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { t } = useTranslation();
@@ -115,17 +117,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    try {
-      const baseURL = apiClient.defaults.baseURL;
-      const role = 'Landlord'; // Default role for Google login
-      const googleAuthUrl = `${baseURL}/auth/google?role=${role}`;
-      
-      // Direct redirect in the same window
-      window.location.href = googleAuthUrl;
-    } catch (error) {
-      console.error('Google login error:', error);
-      setError('Google login is temporarily unavailable. Please try again.');
-    }
+    setShowRoleModal(true);
   };
 
   return (
@@ -264,6 +256,12 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       </motion.div>
+      
+      <GoogleRoleModal
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        isSignup={false}
+      />
     </div>
   );
 };

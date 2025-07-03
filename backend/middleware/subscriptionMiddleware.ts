@@ -59,9 +59,18 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
 export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Skip for super admin
+      if (req.user?.role === 'Super Admin' || req.user?.role === 'Super Moderator') {
+        return next();
+      }
+
       const subscription = (req as any).subscription;
       if (!subscription || !subscription.planId) {
-        return next();
+        return res.status(403).json({
+          success: false,
+          message: 'No active subscription',
+          code: 'NO_SUBSCRIPTION'
+        });
       }
 
       const plan = subscription.planId;
@@ -72,12 +81,12 @@ export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') 
         case 'properties':
           const Property = require('../models/Property');
           currentCount = await Property.countDocuments({ organizationId: req.user?.organizationId });
-          limit = plan.limits?.maxProperties || 0;
+          limit = plan.limits?.maxProperties || 1;
           break;
         case 'tenants':
           const Tenant = require('../models/Tenant');
           currentCount = await Tenant.countDocuments({ organizationId: req.user?.organizationId });
-          limit = plan.limits?.maxTenants || 0;
+          limit = plan.limits?.maxTenants || 5;
           break;
         case 'agents':
           const User = require('../models/User');
@@ -92,10 +101,11 @@ export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') 
       if (currentCount >= limit) {
         return res.status(403).json({
           success: false,
-          message: `${resource} limit reached`,
+          message: `You've reached your ${resource} limit (${limit}). Upgrade your plan to add more.`,
           code: 'USAGE_LIMIT_EXCEEDED',
           current: currentCount,
           limit: limit,
+          planName: plan.name,
           action: 'UPGRADE_PLAN'
         });
       }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
+import RoleSelector from '../components/auth/RoleSelector';
 import { Chrome, Mail, Lock, User, UserCheck, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -139,19 +140,10 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">{t('auth.role')}</label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-2xl border border-app-border bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
-              >
-                <option value="Landlord">{t('auth.landlord')}</option>
-                <option value="Agent">{t('auth.agent')}</option>
-                <option value="Tenant">{t('auth.tenant')}</option>
-              </select>
-            </div>
+            <RoleSelector
+              selectedRole={formData.role}
+              onRoleChange={(role) => setFormData({ ...formData, role })}
+            />
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">{t('auth.password')}</label>

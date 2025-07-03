@@ -1,0 +1,80 @@
+import React from 'react';
+import { Building, Users, Home } from 'lucide-react';
+
+interface RoleSelectorProps {
+  selectedRole: string;
+  onRoleChange: (role: string) => void;
+  className?: string;
+}
+
+const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onRoleChange, className = '' }) => {
+  const roles = [
+    {
+      value: 'Landlord',
+      label: 'Landlord',
+      description: 'Property owner managing rentals',
+      icon: Building,
+      color: 'bg-blue-500'
+    },
+    {
+      value: 'Agent',
+      label: 'Property Agent',
+      description: 'Managing properties for landlords',
+      icon: Users,
+      color: 'bg-green-500'
+    },
+    {
+      value: 'Tenant',
+      label: 'Tenant',
+      description: 'Renting a property',
+      icon: Home,
+      color: 'bg-purple-500'
+    }
+  ];
+
+  return (
+    <div className={`space-y-3 ${className}`}>
+      <label className="block text-sm font-medium text-text-secondary mb-3">
+        Select Your Role
+      </label>
+      <div className="grid grid-cols-1 gap-3">
+        {roles.map((role) => {
+          const Icon = role.icon;
+          return (
+            <button
+              key={role.value}
+              type="button"
+              onClick={() => onRoleChange(role.value)}
+              className={`p-4 rounded-2xl border-2 transition-all text-left ${
+                selectedRole === role.value
+                  ? 'border-brand-blue bg-brand-blue/5'
+                  : 'border-app-border hover:border-brand-blue/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 ${role.color} rounded-xl flex items-center justify-center`}>
+                  <Icon size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-text-primary">{role.label}</h3>
+                  <p className="text-sm text-text-secondary">{role.description}</p>
+                </div>
+                <div className={`w-4 h-4 rounded-full border-2 ${
+                  selectedRole === role.value
+                    ? 'bg-brand-blue border-brand-blue'
+                    : 'border-app-border'
+                }`}>
+                  {selectedRole === role.value && (
+                    <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                  )}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default RoleSelector;
