@@ -49,10 +49,10 @@ app.get('/api/auth/me', (req, res) => {
 // Connect to MongoDB if URI provided
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log('MongoDB connection error:', err));
+    .then(() => )
+    .catch(err => );
 }
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
 });

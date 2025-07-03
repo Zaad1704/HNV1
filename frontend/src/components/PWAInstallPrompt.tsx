@@ -73,7 +73,7 @@ const PWAInstallPrompt = () => {
         setDeferredPrompt(null);
         setShowPrompt(false);
       } catch (error) {
-        console.log('Install prompt failed:', error);
+
       }
     }
   };

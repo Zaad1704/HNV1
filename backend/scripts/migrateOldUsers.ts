@@ -13,13 +13,12 @@ const runMigration = async () => {
     }
 
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB Connected for migration...');
 
     // IMPORTANT: Set this to the exact date and time (in UTC) when the email verification feature went live.
     // All user accounts created BEFORE this date will have their isEmailVerified flag set to true.
     const FEATURE_ROLLOUT_DATE = new Date('2025-06-26T00:00:00.000Z'); // <<< REPLACE WITH YOUR ACTUAL ROLLOUT DATE
 
-    console.log(`Migrating users created before: ${FEATURE_ROLLOUT_DATE.toISOString()}`);
+    }`);
 
     const result = await User.updateMany(
       {
@@ -31,13 +30,11 @@ const runMigration = async () => {
       }
     );
 
-    console.log(`Migration complete: ${result.matchedCount} users matched, ${result.modifiedCount} users updated.`);
-
   } catch (error) {
     console.error('Migration failed:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('MongoDB Disconnected.');
+
   }
 };
 

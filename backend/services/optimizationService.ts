@@ -31,7 +31,6 @@ class OptimizationService {
       'period.month': 1 
     }, { unique: true });
 
-    console.log('Database indexes created successfully');
   }
 
   async optimizeQueries(): Promise<any> {
@@ -120,7 +119,6 @@ class OptimizationService {
       }).select('_id amount status').lean()
     ]);
 
-    console.log(`Cache warmed up for organization ${organizationId}`);
   }
 
   async cleanupOldData(): Promise<any> {

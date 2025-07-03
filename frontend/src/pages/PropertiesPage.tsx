@@ -92,7 +92,7 @@ const PropertiesPage = () => {
       icon: Mail,
       color: 'bg-green-500 hover:bg-green-600 text-white',
       action: (ids: string[]) => {
-        console.log('Contact tenants for properties:', ids);
+
       }
     },
     {
@@ -102,7 +102,7 @@ const PropertiesPage = () => {
       color: 'bg-red-500 hover:bg-red-600 text-white',
       action: (ids: string[]) => {
         if (confirm('Delete selected properties?')) {
-          console.log('Delete properties:', ids);
+
         }
       }
     }

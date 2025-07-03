@@ -52,7 +52,7 @@ class MasterDataService {
       ];
 
       await Plan.insertMany(defaultPlans);
-      console.log('✅ Default plans created');
+
     }
   }
 
@@ -143,7 +143,7 @@ class MasterDataService {
       };
 
       await SiteSettings.create(defaultSettings);
-      console.log('✅ Default site settings created');
+
     }
   }
 
@@ -181,7 +181,6 @@ class MasterDataService {
         isLifetime: true
       });
 
-      console.log('✅ Super Admin created with credentials: admin@hnvpm.com / SuperAdmin123!');
     }
   }
 

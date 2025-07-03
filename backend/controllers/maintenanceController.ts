@@ -140,7 +140,6 @@ export const updateMaintenanceRequest = async (req: Request, res: Response) => {
         }
     }
 
-
     request = await MaintenanceRequest.findByIdAndUpdate(req.params.id, req.body, {
       new: true, 
       runValidators: true, 
@@ -154,7 +153,6 @@ export const updateMaintenanceRequest = async (req: Request, res: Response) => {
             { requestId: (request._id as Types.ObjectId).toString(), status: request.status, description: request.description }
         );
     }
-
 
     res.status(200).json({ success: true, data: request });
 

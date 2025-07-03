@@ -39,8 +39,7 @@ const isGoogleOAuthConfigured = () => {
 
 // Only configure Google OAuth if properly set up
 if (isGoogleOAuthConfigured()) {
-    console.log('Configuring Google OAuth with callback URL:', callbackURL);
-    
+
     passport.use(new GoogleStrategy(
         {
             clientID: process.env.GOOGLE_CLIENT_ID!,
@@ -64,7 +63,7 @@ if (isGoogleOAuthConfigured()) {
                     user.status = 'active';
                     user.isEmailVerified = true;
                     await user.save();
-                    console.log('Google OAuth: Existing user logged in:', user.email);
+
                     return done(null, user);
                 }
 
@@ -76,13 +75,12 @@ if (isGoogleOAuthConfigured()) {
                     user.isEmailVerified = true;
                     user.status = 'active';
                     await user.save();
-                    console.log('Google OAuth: Linked existing user:', user.email);
+
                     return done(null, user);
                 }
 
                 // Create new user with organization and subscription
-                console.log('Google OAuth: Creating new user for:', userEmail);
-                
+
                 // Find or create default plan
                 let defaultPlan = await Plan.findOne({ name: 'Free Trial' }) || await Plan.findOne({ price: 0 });
                 if (!defaultPlan) {
@@ -93,7 +91,7 @@ if (isGoogleOAuthConfigured()) {
                         maxProperties: 5,
                         maxTenants: 10
                     });
-                    console.log('Created default free trial plan');
+
                 }
 
                 // Create organization
@@ -134,7 +132,6 @@ if (isGoogleOAuthConfigured()) {
                 organization.members.push(newUser._id);
                 await organization.save();
 
-                console.log('Google OAuth: Created new user successfully:', newUser.email);
                 return done(null, newUser);
 
             } catch (err) {

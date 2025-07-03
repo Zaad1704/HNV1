@@ -81,7 +81,7 @@ const TenantsPage = () => {
       icon: Mail,
       color: 'bg-green-500 hover:bg-green-600 text-white',
       action: (ids: string[]) => {
-        console.log('Send notice to tenants:', ids);
+
       }
     }
   ];

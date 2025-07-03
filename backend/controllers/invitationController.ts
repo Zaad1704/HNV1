@@ -138,7 +138,6 @@ export const acceptInvitation = async (req: Request, res: Response) => {
     }
 };
 
-
 export const getPendingInvitations = async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });

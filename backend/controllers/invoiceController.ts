@@ -33,7 +33,7 @@ export const generateInvoices = async (req: Request, res: Response) => {
             });
 
             if (existingInvoice) {
-                console.log(`Invoice already exists for lease ${lease._id} for ${format(invoiceMonthStart, 'MMM yyyy')}, skipping.`);
+                }, skipping.`);
                 continue;
             }
 

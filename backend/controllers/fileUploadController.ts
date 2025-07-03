@@ -21,7 +21,7 @@ try {
         });
         drive = google.drive({ version: 'v3', auth });
         isGoogleDriveConfigured = true;
-        console.log('✅ Google Drive upload service configured');
+
     } else {
         console.warn('⚠️ Google Drive upload service not configured - file uploads will be disabled');
     }

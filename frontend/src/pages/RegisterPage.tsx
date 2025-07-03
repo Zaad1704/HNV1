@@ -59,7 +59,7 @@ const RegisterPage: React.FC = () => {
         password: formData.password,
         role: formData.role
       });
-      console.log('Registration response:', response.data);
+
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);

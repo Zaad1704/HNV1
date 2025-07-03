@@ -49,12 +49,12 @@ export const useRealTime = (options: UseRealTimeOptions = {}) => {
     socket.on('connect', () => {
       setIsConnected(true);
       setConnectionError(null);
-      console.log('Connected to real-time server');
+
     });
 
     socket.on('disconnect', (reason) => {
       setIsConnected(false);
-      console.log('Disconnected from real-time server:', reason);
+
     });
 
     socket.on('connect_error', (error) => {

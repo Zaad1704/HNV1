@@ -37,7 +37,7 @@ class WebSocketService {
       socket.join(`user_${socket.userId}`);
       
       socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.userId);
+
       });
     });
   }

@@ -58,6 +58,6 @@ export const createRentPaymentSession = asyncHandler(async (req: Request, res: R
 });
 
 export const handlePaymentWebhook = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    console.log('Webhook received:', req.body);
+
     res.status(200).send('Webhook processed');
 });

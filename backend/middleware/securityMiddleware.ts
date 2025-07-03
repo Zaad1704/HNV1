@@ -146,9 +146,9 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     };
     
     if (process.env.NODE_ENV === 'production') {
-      console.log(JSON.stringify(logData));
+      );
     } else {
-      console.log(`${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
+
     }
   });
   

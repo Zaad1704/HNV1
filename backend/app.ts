@@ -80,11 +80,9 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
-console.log('Allowed CORS origins:', allowedOrigins);
-
 app.use(cors({
   origin: (origin, callback) => {
-    console.log('CORS Origin:', origin || 'undefined (direct API call)');
+    ');
     
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
@@ -165,8 +163,7 @@ app.options('*', (req, res) => {
 
 // Debug middleware for all API routes - MUST BE FIRST
 app.use('/api', (req, res, next) => {
-  console.log(`API Request: ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', req.headers.authorization ? 'Has Auth' : 'No Auth');
+
   next();
 });
 
@@ -245,7 +242,7 @@ app.use('/api/errors', errorRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
-    console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+
     res.status(404).json({
         success: false,
         message: `Route ${req.originalUrl} not found`,
@@ -261,7 +258,7 @@ app.use(errorHandler);
 setTimeout(async () => {
   try {
     await masterDataService.initializeSystemData();
-    console.log('✅ System data initialized');
+
   } catch (error) {
     console.error('❌ Failed to initialize system data:', error);
   }

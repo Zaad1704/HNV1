@@ -216,7 +216,6 @@ const MaintenanceRequestsPage = () => {
         </div>
     );
 
-
     return (
         <motion.div 
             initial="initial"

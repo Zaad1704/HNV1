@@ -143,13 +143,13 @@ export const processOverdueReminders = asyncHandler(async (req: Request, res: Re
           'customMessage',
           { senderName: 'The Management', messageBody: messageBody.replace(/\n/g, '<br>') }
         );
-        console.log(`Email reminder sent to ${tenant.email} for reminder ${reminder._id}`);
+
       } 
       else if (reminder.type === 'sms_rent_reminder') {
-        console.log(`SMS reminder (mock) for ${tenant.phone} for reminder ${reminder._id}`);
+        for ${tenant.phone} for reminder ${reminder._id}`);
       }
       else if (reminder.type === 'app_rent_reminder') {
-        console.log(`App notification (mock) for tenant ${tenant._id} for reminder ${reminder._id}`);
+        for tenant ${tenant._id} for reminder ${reminder._id}`);
       }
 
       reminder.status = 'active';

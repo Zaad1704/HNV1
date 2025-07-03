@@ -5,7 +5,6 @@ import ServicesSection from "../components/landing/ServicesSection";
 import LeadershipSection from "../components/landing/LeadershipSection";
 import ContactSection from "../components/landing/ContactSection";
 
-
 export default function LandingPage() { // Renamed from HomePage to match common naming
   return (
     <div className="bg-light-bg dark:bg-dark-bg transition-colors duration-300">

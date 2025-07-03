@@ -23,5 +23,4 @@ router.get('/pending', protect, authorize(['Landlord', 'Agent']), asyncHandler(g
 router.post('/:id/revoke', protect, authorize(['Landlord', 'Agent']), asyncHandler(revokeInvitation));
 router.post('/:id/resend', protect, authorize(['Landlord', 'Agent']), asyncHandler(resendInvitation));
 
-
 export default router;

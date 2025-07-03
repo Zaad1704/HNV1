@@ -255,7 +255,7 @@ export const usePerformanceLogger = (enabled = process.env.NODE_ENV === 'develop
     const logPerformanceEntries = () => {
       const entries = performance.getEntriesByType('measure');
       entries.forEach((entry) => {
-        console.log(`Performance: ${entry.name} took ${entry.duration.toFixed(2)}ms`);
+        }ms`);
       });
       
       // Clear entries to prevent memory buildup

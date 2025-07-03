@@ -16,7 +16,6 @@ const AboutPage = () => {
   const { translatedText: translatedTeamTitle } = useDynamicTranslation(settings?.aboutPage?.teamTitle || 'Meet Our Leadership');
   const { translatedText: translatedTeamSubtitle } = useDynamicTranslation(settings?.aboutPage?.teamSubtitle || 'The driving force behind our commitment to excellence.');
 
-
   if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading...</div>; // Added dark mode class
   if (isError || !settings) return <div className="text-red-500 text-center p-8 dark:text-red-500">Error loading content.</div>; // Added dark mode class
 

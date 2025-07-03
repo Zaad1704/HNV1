@@ -13,7 +13,6 @@ const fixSuperAdminEmail = async () => {
     }
 
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB Connected for Super Admin email fix...');
 
     // Find all Super Admin users and set their email as verified
     const result = await User.updateMany(
@@ -29,8 +28,6 @@ const fixSuperAdminEmail = async () => {
       }
     );
 
-    console.log(`Super Admin email fix complete: ${result.matchedCount} users matched, ${result.modifiedCount} users updated.`);
-
     // Also fix any users created before email verification was implemented
     const oldUsersResult = await User.updateMany(
       {
@@ -42,13 +39,11 @@ const fixSuperAdminEmail = async () => {
       }
     );
 
-    console.log(`Old users fix complete: ${oldUsersResult.matchedCount} users matched, ${oldUsersResult.modifiedCount} users updated.`);
-
   } catch (error) {
     console.error('Fix failed:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('MongoDB Disconnected.');
+
   }
 };
 

@@ -55,7 +55,7 @@ const PublicHeader = () => {
                 }
                 setDeferredPrompt(null);
             } catch (error) {
-                console.log('Install failed:', error);
+
             }
         }
     };

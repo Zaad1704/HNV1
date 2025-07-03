@@ -80,7 +80,6 @@ const LandscapeSection = () => {
           ))}
         </div>
 
-
       </div>
     </section>
   );

@@ -180,7 +180,7 @@ class OfflineService {
 
         if (response.ok) {
           processedIds.push(request.id);
-          console.log(`Successfully synced request: ${request.id}`);
+
         } else {
           request.retryCount++;
           if (request.retryCount >= maxRetries) {
@@ -231,7 +231,6 @@ class OfflineService {
       // Update last sync timestamp
       await this.setMetadata('lastSync', Date.now());
 
-      console.log('Data sync completed successfully');
     } catch (error) {
       console.error('Failed to sync data:', error);
     }

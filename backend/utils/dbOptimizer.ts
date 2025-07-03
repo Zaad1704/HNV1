@@ -27,8 +27,7 @@ export const createIndexes = async () => {
   // Audit log indexes
   await db.collection('auditlogs').createIndex({ organizationId: 1, timestamp: -1 });
   await db.collection('auditlogs').createIndex({ userId: 1, timestamp: -1 });
-  
-  console.log('Database indexes created successfully');
+
 };
 
 export const optimizeQueries = {

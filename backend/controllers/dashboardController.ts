@@ -160,7 +160,6 @@ export const getOccupancySummary = asyncHandler(async (req: Request, res: Respon
     res.status(200).json({ success: true, data: monthlyData });
 });
 
-
 export const getRentStatus = asyncHandler(async (req: Request, res: Response) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');

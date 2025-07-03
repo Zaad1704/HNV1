@@ -42,7 +42,7 @@ const LandingPage = () => {
   // Listen for site settings updates
   useEffect(() => {
     const handleSettingsUpdate = () => {
-      console.log('Site settings updated, refreshing...');
+
       refetchLandingData();
     };
     

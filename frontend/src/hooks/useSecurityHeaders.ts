@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 export const useSecurityHeaders = () => {
   useEffect(() => {
     // Only add non-conflicting security measures
-    console.log('Security headers initialized');
-    
+
     // Add security event listeners
     const handleContextMenu = (e: Event) => {
       if (import.meta.env.PROD) {

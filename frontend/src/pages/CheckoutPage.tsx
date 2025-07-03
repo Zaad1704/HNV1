@@ -36,7 +36,7 @@ const CheckoutPage: React.FC = () => {
         window.location.href = data.data.url;
       } else {
         // Handle payment intent client secret for custom checkout
-        console.log('Payment intent created:', data.data.clientSecret);
+
       }
     },
     onError: (error: any) => {

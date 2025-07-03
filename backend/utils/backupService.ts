@@ -19,8 +19,7 @@ export class BackupService {
       // Create MongoDB dump
       const command = `mongodump --uri="${mongoUri}" --out=backups/${backupName}`;
       await execAsync(command);
-      
-      console.log(`Backup created: ${backupName}`);
+
       return { success: true, backupName };
     } catch (error) {
       console.error('Backup failed:', error);
@@ -33,15 +32,14 @@ export class BackupService {
     setInterval(async () => {
       await this.createBackup();
     }, 24 * 60 * 60 * 1000);
-    
-    console.log('Backup scheduler initialized');
+
   }
   
   static async cleanOldBackups(daysToKeep: number = 7) {
     try {
       const command = `find backups -type d -mtime +${daysToKeep} -exec rm -rf {} +`;
       await execAsync(command);
-      console.log(`Cleaned backups older than ${daysToKeep} days`);
+
     } catch (error) {
       console.error('Cleanup failed:', error);
     }

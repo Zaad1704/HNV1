@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "build:prod": "NODE_ENV=production vite build",
     "build:safe": "vite build --mode production",

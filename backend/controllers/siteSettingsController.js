@@ -9,7 +9,7 @@ const getSiteSettings = async (req, res) => {
     try {
         let settings = await SiteSettings_1.default.findOne();
         if (!settings) {
-            console.log('No site settings found, creating default document.');
+
             settings = new SiteSettings_1.default({});
             await settings.save();
         }

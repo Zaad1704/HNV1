@@ -16,8 +16,7 @@ router.post('/send-rent-reminder', asyncHandler(async (req, res) => {
   }
 
   // Mock implementation - in real app, this would send email/SMS
-  console.log(`Sending rent reminder to tenant: ${tenantId}`);
-  
+
   res.json({ 
     success: true, 
     message: 'Rent reminder sent successfully!' 
@@ -33,8 +32,6 @@ router.post('/send-lease-renewal', asyncHandler(async (req, res) => {
     return;
   }
 
-  console.log(`Sending lease renewal notice to tenant: ${tenantId}`);
-  
   res.json({ 
     success: true, 
     message: 'Lease renewal notice sent successfully!' 

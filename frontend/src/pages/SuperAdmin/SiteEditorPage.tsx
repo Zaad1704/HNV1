@@ -17,7 +17,7 @@ const SiteEditorPage = () => {
     try {
       // Add timestamp to prevent caching
       const { data } = await apiClient.get(`/public/site-settings?t=${Date.now()}`);
-      console.log('Fetched site data:', data.data);
+
       setSiteData(data.data || {});
     } catch (error) {
       console.error('Failed to fetch site data:', error);
@@ -43,10 +43,9 @@ const SiteEditorPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      console.log('Saving site data:', siteData);
+
       const response = await apiClient.put('/super-admin/site-settings', siteData);
-      console.log('Save response:', response.data);
-      
+
       // Force refresh of site settings cache
       await fetchSiteData();
       

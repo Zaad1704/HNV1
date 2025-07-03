@@ -23,8 +23,7 @@ router.get('/email-status', async (req, res) => {
 // Test email endpoint
 router.post('/test-email', async (req, res) => {
   try {
-    console.log('Testing email service...');
-    
+
     await emailService.sendContactForm({
       name: 'Test User',
       email: 'test@example.com',

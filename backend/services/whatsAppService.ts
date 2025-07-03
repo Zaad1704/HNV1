@@ -30,7 +30,7 @@ class WhatsAppService {
       //   from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`, // Your Twilio WhatsApp number
       //   to: `whatsapp:${to}`,
       // });
-      console.log(`WhatsApp Service: (MOCK) Sent WhatsApp message to ${to}: "${message.substring(0, 50)}..."`);
+      Sent WhatsApp message to ${to}: "${message.substring(0, 50)}..."`);
     } catch (error) {
       console.error('WhatsApp Service: Failed to send WhatsApp message:', error);
       throw new Error('Failed to send WhatsApp message.');

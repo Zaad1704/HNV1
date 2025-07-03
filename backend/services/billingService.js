@@ -13,7 +13,7 @@ exports.billingPlans = [
  * In a real application, this function would make an API call.
  */
 async function createSubscription2CO(orgId, planId, userEmail) {
-    console.log(`Creating subscription for org ${orgId} with plan ${planId} for user ${userEmail}`);
+
     const planDetails = exports.billingPlans.find(p => p.id === planId);
     if (!planDetails) {
         throw new Error('Invalid plan ID provided.');

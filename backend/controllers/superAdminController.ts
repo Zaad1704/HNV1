@@ -10,7 +10,6 @@ import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
 import { Types } from 'mongoose';
 import masterDataService from '../services/masterDataService';
 
-
 export const deleteOrganization = asyncHandler(async (req: Request, res: Response) => {
     const { orgId } = req.params;
 
@@ -30,7 +29,6 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
 
     res.status(200).json({ success: true, message: `Organization '${organization.name}' and all associated data has been deleted.` });
 });
-
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -296,7 +294,7 @@ export const getAllMaintenanceRequests = asyncHandler(async (req: Request, res: 
 
 export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log('Fetching platform growth data...');
+
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const currentYear = new Date().getFullYear();
         const data = [];
@@ -319,8 +317,7 @@ export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response
                 'New Organizations': newOrgs
             });
         }
-        
-        console.log('Platform growth data fetched successfully:', data.length, 'months');
+
         res.status(200).json({ success: true, data });
     } catch (error) {
         console.error('Platform growth error:', error);
@@ -330,10 +327,9 @@ export const getPlatformGrowth = asyncHandler(async (req: Request, res: Response
 
 export const getPlanDistribution = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log('Fetching plan distribution data...');
+
         const subscriptions = await Subscription.find({ status: 'active' }).populate('planId');
-        console.log('Found active subscriptions:', subscriptions.length);
-        
+
         const planCounts = subscriptions.reduce((acc: any, sub: any) => {
             const planName = sub.planId?.name || 'Unknown';
             acc[planName] = (acc[planName] || 0) + 1;
@@ -341,10 +337,7 @@ export const getPlanDistribution = asyncHandler(async (req: Request, res: Respon
         }, {});
         
         let data = Object.entries(planCounts).map(([name, value]) => ({ name, value }));
-        
 
-        
-        console.log('Plan distribution data:', data);
         res.status(200).json({ success: true, data });
     } catch (error) {
         console.error('Plan distribution error:', error);

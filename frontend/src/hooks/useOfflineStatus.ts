@@ -15,14 +15,14 @@ export const useOfflineStatus = (): OfflineStatus => {
       setIsOnline(true);
       if (wasOffline) {
         // Show reconnection notification
-        console.log('Connection restored');
+
       }
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       setWasOffline(true);
-      console.log('Connection lost');
+
     };
 
     window.addEventListener('online', handleOnline);

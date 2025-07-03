@@ -23,8 +23,6 @@ export async function createSubscription2CO(
   planId: string,
   userEmail: string
 ): Promise<SubscriptionData> { // It's good practice to define the return type
-  
-  console.log(`Creating subscription for org ${orgId} with plan ${planId} for user ${userEmail}`);
 
   const planDetails = billingPlans.find(p => p.id === planId);
   if (!planDetails) {

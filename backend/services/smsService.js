@@ -27,7 +27,7 @@ class SmsService {
             //   from: process.env.TWILIO_PHONE_NUMBER,
             //   to: to,
             // });
-            console.log(`SMS Service: (MOCK) Sent SMS to ${to}: "${message.substring(0, 50)}..."`);
+            Sent SMS to ${to}: "${message.substring(0, 50)}..."`);
         }
         catch (error) {
             console.error('SMS Service: Failed to send SMS:', error);

@@ -39,10 +39,10 @@ const InstallAppSection = () => {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                console.log('User accepted the PWA install prompt');
+
                 setShowInstallButton(false); // Hide button if user installs
             } else {
-                console.log('User dismissed the PWA install prompt');
+
             }
             setDeferredPrompt(null);
         } else {

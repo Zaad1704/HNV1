@@ -14,7 +14,7 @@ export const useWebSocket = () => {
     });
 
     socketRef.current.on('connect', () => {
-      console.log('Connected to WebSocket');
+
     });
 
     socketRef.current.on('notification', (data) => {

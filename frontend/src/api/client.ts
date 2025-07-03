@@ -7,21 +7,20 @@ const getApiUrl = () => {
   // Check environment variable first
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl) {
-    console.log('🔧 Using API URL from environment:', viteApiUrl);
+
     return viteApiUrl;
   }
   
   // Force production URL when not on localhost
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     const prodUrl = 'https://hnv.onrender.com/api';
-    console.log('🌐 Production mode - Using API URL:', prodUrl);
-    console.log('🌐 Current hostname:', window.location.hostname);
+
     return prodUrl;
   }
   
   // Development fallback
   const devUrl = 'http://localhost:5001/api';
-  console.log('🛠️ Development mode - Using API URL:', devUrl);
+
   return devUrl;
 };
 
@@ -39,9 +38,7 @@ const apiClient = axios.create({
 // Request interceptor with security enhancements
 apiClient.interceptors.request.use((config) => {
   // Debug logging
-  console.log('API Request URL:', config.url);
-  console.log('Full URL:', config.baseURL + config.url);
-  
+
   // Rate limiting check
   const url = config.url || '';
   if (!rateLimiter.isAllowed(url, 30, 60000)) {
@@ -64,7 +61,7 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) {
-      console.log(`API Success: ${response.config.method?.toUpperCase()} ${response.config.url}`);
+      } ${response.config.url}`);
     }
     return response;
   },
@@ -83,7 +80,7 @@ apiClient.interceptors.response.use(
       const { token, isAuthenticated } = useAuthStore.getState();
       // Only auto-logout if user was previously authenticated
       if (token && isAuthenticated) {
-        console.log('Authentication expired, logging out');
+
         useAuthStore.getState().logout();
         // Don't redirect immediately, let the component handle it
         setTimeout(() => {

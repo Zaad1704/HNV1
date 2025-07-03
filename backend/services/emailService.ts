@@ -12,10 +12,7 @@ class EmailService {
 
   constructor() {
     this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
-    
-    console.log('Email service initializing with SMTP...');
-    console.log('EMAIL_FROM:', this.fromEmail);
-    
+
     try {
       this.transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtp.resend.com',
@@ -26,17 +23,16 @@ class EmailService {
           pass: process.env.SMTP_PASS || process.env.RESEND_API_KEY
         }
       });
-      console.log('✅ SMTP email service initialized');
+
     } catch (error) {
       console.error('❌ Failed to initialize email service:', error);
     }
   }
 
   async sendEmail(to: string, subject: string, templateName: string, templateData: Record<string, string>) {
-    console.log(`📧 Attempting to send email to ${to}: ${subject}`);
-    
+
     if (!this.transporter) {
-      console.log(`❌ Email service disabled - would send to ${to}: ${subject}`);
+
       throw new Error('Email service not configured');
     }
 
@@ -72,8 +68,7 @@ class EmailService {
         subject,
         html: htmlContent,
       });
-      
-      console.log('✅ Email sent successfully:', result.messageId);
+
       return result;
     } catch (error) {
       console.error(`Error sending email to ${to}:`, error);
@@ -83,7 +78,7 @@ class EmailService {
 
   async sendContactForm(formData: { name: string; email: string; subject: string; message: string }) {
     if (!this.transporter) {
-      console.log(`Contact form would be sent: ${formData.subject}`);
+
       return;
     }
 

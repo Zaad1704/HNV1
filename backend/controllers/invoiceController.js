@@ -32,7 +32,7 @@ const generateInvoices = async (req, res) => {
                 status: { $in: ['pending', 'overdue'] }
             });
             if (existingInvoice) {
-                console.log(`Invoice already exists for lease ${lease._id} for ${(0, date_fns_1.format)(invoiceMonthStart, 'MMM yyyy')}, skipping.`);
+                (invoiceMonthStart, 'MMM yyyy')}, skipping.`);
                 continue;
             }
             const countForMonth = await Invoice_1.default.countDocuments({

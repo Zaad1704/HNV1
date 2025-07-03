@@ -32,6 +32,4 @@ router
 router.get('/organization', authorize('Super Admin', 'Landlord', 'Agent'), asyncHandler(getOrgUsers)); 
 router.get('/my-agents', authorize('Super Admin', 'Landlord'), asyncHandler(getManagedAgents));
 
-
-
 export default router;

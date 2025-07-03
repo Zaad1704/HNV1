@@ -20,7 +20,7 @@ class NotificationService {
                 message,
                 link,
             });
-            console.log(`Notification created for user ${userId}: "${message}"`);
+
         }
         catch (error) {
             console.error('Failed to create notification:', error);

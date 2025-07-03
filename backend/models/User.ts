@@ -84,12 +84,12 @@ UserSchema.pre<IUser>('save', async function(next) {
 
 UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
   if (!this.password || !enteredPassword) {
-    console.log('Password matching failed: missing password or entered password');
+
     return false;
   }
   try {
     const result = await bcrypt.compare(enteredPassword, this.password);
-    console.log('Password match result:', result);
+
     return result;
   } catch (error) {
     console.error('Password comparison error:', error);

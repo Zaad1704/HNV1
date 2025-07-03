@@ -7,8 +7,6 @@ const SmartLanguageSwitcher = () => {
   const { currentLanguage, changeLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-
-
   return (
     <div className="relative">
       <button

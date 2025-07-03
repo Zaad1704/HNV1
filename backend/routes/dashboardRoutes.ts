@@ -12,7 +12,6 @@ import {
   getRecentActivity,   
 } from '../controllers/dashboardController';
 
-
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
 

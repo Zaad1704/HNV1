@@ -34,8 +34,7 @@ const router = Router();
 
 // Debug middleware
 router.use((req, res, next) => {
-  console.log(`Super Admin Route: ${req.method} ${req.originalUrl}`);
-  console.log('User:', req.user?.role);
+
   next();
 });
 
@@ -64,7 +63,7 @@ router.use((req, res, next) => {
   if (req.path === '/test' || req.path === '/health') return next();
   protect(req, res, () => {
     if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
-      console.log('Access denied for user:', req.user?.email, 'Role:', req.user?.role);
+
       return res.status(403).json({ 
         success: false, 
         message: 'Access denied. Super Admin role required.',
@@ -102,7 +101,7 @@ router.get('/debug-routes', (req, res) => {
 
 router.get('/organizations', async (req: Request, res: Response) => {
   try {
-    console.log('Fetching organizations...');
+
     const organizations = await Organization.find({})
       .populate('owner', 'name email')
       .populate({
@@ -112,13 +111,7 @@ router.get('/organizations', async (req: Request, res: Response) => {
           select: 'name price duration'
         }
       });
-    console.log('Found organizations:', organizations.length);
-    console.log('Sample org:', organizations[0] ? { 
-      name: organizations[0].name, 
-      status: organizations[0].status,
-      owner: organizations[0].owner,
-      subscription: organizations[0].subscription
-    } : 'No orgs');
+
     res.json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Organizations fetch error:', error);
@@ -127,24 +120,24 @@ router.get('/organizations', async (req: Request, res: Response) => {
 });
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
-  console.log('Activating organization:', req.params.id);
+
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'active' },
     { new: true, upsert: true }
   );
-  console.log('Subscription updated:', subscription);
+
   res.json({ success: true, data: subscription });
 }));
 
 router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => {
-  console.log('Deactivating organization:', req.params.id);
+
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'inactive' },
     { new: true }
   );
-  console.log('Subscription updated:', subscription);
+
   res.json({ success: true, data: subscription });
 }));
 
@@ -157,10 +150,9 @@ router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelf
 
 router.get('/users', async (req: Request, res: Response) => {
   try {
-    console.log('Fetching users...');
+
     const users = await User.find({}).populate('organizationId', 'name');
-    console.log('Found users:', users.length);
-    console.log('Sample user:', users[0] ? { name: users[0].name, email: users[0].email, role: users[0].role } : 'No users');
+
     res.json({ success: true, data: users || [] });
   } catch (error) {
     console.error('Users fetch error:', error);
@@ -280,9 +272,9 @@ router.get('/billing', async (req: Request, res: Response) => {
 // Plan management routes
 router.get('/plans', async (req: Request, res: Response) => {
   try {
-    console.log('Fetching plans...');
+
     const plans = await Plan.find({}).sort({ price: 1 });
-    console.log('Found plans:', plans.length);
+
     res.json({ success: true, data: plans || [] });
   } catch (error) {
     console.error('Plans fetch error:', error);
@@ -399,8 +391,7 @@ router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res:
 // Site settings save route
 router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
   try {
-    console.log('Saving site settings:', req.body);
-    
+
     const settings = await SiteSettings.findOneAndUpdate(
       {}, // Find any document
       req.body, // Update with new data
@@ -410,8 +401,7 @@ router.put('/site-settings', asyncHandler(async (req: Request, res: Response) =>
         runValidators: false // Skip validation for flexibility
       }
     );
-    
-    console.log('Settings saved successfully:', settings._id);
+
     res.json({ success: true, data: settings, message: 'Settings saved successfully' });
   } catch (error) {
     console.error('Save settings error:', error);
@@ -436,13 +426,7 @@ const upload = multer({
 router.post('/upload-image', upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
   try {
     const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}`;
-    
-    console.log('Image upload request:', {
-      section: req.body.section,
-      field: req.body.field,
-      fileSize: req.file?.size
-    });
-    
+
     res.json({ 
       success: true, 
       imageUrl: mockImageUrl,
