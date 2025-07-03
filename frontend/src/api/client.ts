@@ -38,6 +38,10 @@ const apiClient = axios.create({
 
 // Request interceptor with security enhancements
 apiClient.interceptors.request.use((config) => {
+  // Debug logging
+  console.log('API Request URL:', config.url);
+  console.log('Full URL:', config.baseURL + config.url);
+  
   // Rate limiting check
   const url = config.url || '';
   if (!rateLimiter.isAllowed(url, 30, 60000)) {
