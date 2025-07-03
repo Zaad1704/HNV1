@@ -122,14 +122,10 @@ export const getFinancialSummary = asyncHandler(async (req: Request, res: Respon
             { $group: { _id: null, totalExpenses: { $sum: '$amount' } }}
         ]);
 
-        // Add sample data if no real data exists
-        const revenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : Math.floor(Math.random() * 5000) + 1000;
-        const expenses = expensesResult.length > 0 ? expensesResult[0].totalExpenses : Math.floor(Math.random() * 2000) + 500;
-
         monthlyData.push({
             name: monthName,
-            Revenue: revenue,
-            Expenses: expenses,
+            Revenue: revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0,
+            Expenses: expensesResult.length > 0 ? expensesResult[0].totalExpenses : 0,
         });
     }
 
@@ -174,13 +170,9 @@ export const getRentStatus = asyncHandler(async (req: Request, res: Response) =>
     const activeCount = await Tenant.countDocuments({ organizationId, status: 'Active' });
     const lateCount = await Tenant.countDocuments({ organizationId, status: 'Late' });
 
-    // Add sample data if no real data exists
-    const paidCount = activeCount > 0 ? activeCount : 8;
-    const overdueCount = lateCount > 0 ? lateCount : 2;
-
     const data = [
-        { name: 'Paid / Current', value: paidCount },
-        { name: 'Overdue', value: overdueCount },
+        { name: 'Paid / Current', value: activeCount },
+        { name: 'Overdue', value: lateCount },
     ];
 
     res.status(200).json({ success: true, data });
