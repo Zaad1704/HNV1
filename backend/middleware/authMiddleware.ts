@@ -32,7 +32,7 @@ export const protect = async (
       }
 
       // Check user's individual status (e.g., suspended by admin)
-      if (req.user.status === "suspended" || req.user.status === "pending") {
+      if (req.user.status === "suspended" || req.user.status === "pending" || req.user.status === "inactive") {
         return res
           .status(401)
           .json({ success: false, message: "User account is not active." });
@@ -48,7 +48,14 @@ export const protect = async (
             if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
               return next();
             }
-            // For other roles, add warning but don't block access
+            // Block access for canceled/inactive subscriptions
+            if (subscription?.status === 'canceled' || subscription?.status === 'inactive') {
+              return res.status(403).json({ 
+                success: false, 
+                message: 'Subscription has been canceled. Please contact support.' 
+              });
+            }
+            // For other statuses, add warning but don't block access
             (req as any).subscriptionWarning = {
               status: subscription?.status || 'none',
               message: 'Subscription may be inactive. Some features may be limited.'

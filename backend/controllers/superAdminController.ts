@@ -196,7 +196,21 @@ export const updateUserByAdmin = asyncHandler(async (req: Request, res: Response
     }
 
     if (role) user.role = role;
-    if (status) user.status = status;
+    if (status) {
+        user.status = status;
+        
+        // If user is being deactivated, cancel their organization's subscription
+        if (status === 'inactive' && user.organizationId) {
+            await Subscription.findOneAndUpdate(
+                { organizationId: user.organizationId },
+                { 
+                    status: 'canceled',
+                    canceledAt: new Date(),
+                    currentPeriodEndsAt: new Date() // End immediately
+                }
+            );
+        }
+    }
 
     await user.save();
     res.status(200).json({ success: true, message: 'User updated successfully.', data: user });
