@@ -89,7 +89,8 @@ router.get('/validate-org-code/:code', asyncHandler(async (req, res, next) => {
       .populate('owner', 'name');
     
     if (!organization) {
-      return res.status(404).json({ success: false, message: 'Invalid organization code' });
+      res.status(404).json({ success: false, message: 'Invalid organization code' });
+      return;
     }
     
     res.json({ 

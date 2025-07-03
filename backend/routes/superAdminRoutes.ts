@@ -386,7 +386,8 @@ router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res:
       .populate('owner', 'name email');
     
     if (!organization) {
-      return res.status(404).json({ success: false, message: 'Organization not found' });
+      res.status(404).json({ success: false, message: 'Organization not found' });
+      return;
     }
     
     res.json({ success: true, data: organization });
