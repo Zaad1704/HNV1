@@ -8,6 +8,12 @@ interface LanguageContextType {
   availableLanguages: LanguageConfig[];
   changeLanguage: (languageCode: string) => void;
   isLoading: boolean;
+  // Legacy properties for backward compatibility
+  lang: string;
+  setLang: (languageCode: string) => void;
+  detectedLang?: string;
+  toggleLanguage?: () => void;
+  getNextToggleLanguage?: () => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -76,7 +82,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       currentLanguage,
       availableLanguages: languages,
       changeLanguage,
-      isLoading
+      isLoading,
+      // Legacy properties
+      lang: currentLanguage.code,
+      setLang: changeLanguage,
+      detectedLang: currentLanguage.code,
+      toggleLanguage: () => changeLanguage(currentLanguage.code === 'en' ? 'bn' : 'en'),
+      getNextToggleLanguage: () => currentLanguage.code === 'en' ? 'bn' : 'en'
     }}>
       {children}
     </LanguageContext.Provider>
@@ -90,3 +102,9 @@ export const useLanguage = () => {
   }
   return context;
 };
+
+// Legacy alias for backward compatibility
+export const useLang = useLanguage;
+
+// Export languages for backward compatibility
+export { languages } from '../utils/languageConfig';

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Globe, ChevronDown } from 'lucide-react';
-import { useLang, languages } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { languages } from '../../utils/languageConfig';
 
 const SmartLanguageSwitcher = () => {
-  const { lang, setLang } = useLang();
+  const { currentLanguage, changeLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentLanguage = languages.find(l => l.code === lang) || languages[0];
+
 
   return (
     <div className="relative">
@@ -25,11 +26,11 @@ const SmartLanguageSwitcher = () => {
             <button
               key={language.code}
               onClick={() => {
-                setLang(language.code);
+                changeLanguage(language.code);
                 setIsOpen(false);
               }}
               className={`w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-app-bg transition-colors ${
-                lang === language.code ? 'bg-app-bg text-brand-blue' : 'text-text-primary'
+                currentLanguage.code === language.code ? 'bg-app-bg text-brand-blue' : 'text-text-primary'
               }`}
             >
               <span className="text-lg">{language.flag}</span>
