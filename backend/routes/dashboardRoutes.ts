@@ -49,69 +49,15 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
 // router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
 // Main dashboard stats route
-router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
-  try {
-    console.log('Stats route called, user:', req.user?._id);
-    
-    if (!req.user) {
-      res.status(401).json({ success: false, message: 'User not authenticated' });
-      return;
-    }
-    
-    const userId = req.user._id;
-    const organizationId = req.user.organizationId;
-    
-    console.log('User ID:', userId, 'Org ID:', organizationId);
-    
-    // Simple response for now to avoid model issues
-    res.json({
-      success: true,
-      data: {
-        totalProperties: 0,
-        totalTenants: 0,
-        monthlyRevenue: 0,
-        occupancyRate: 0,
-        pendingMaintenance: 0,
-        recentPayments: 0
-      }
-    });
-  } catch (error) {
-    console.error('Dashboard stats error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch dashboard stats: ' + (error as Error).message
-    });
-  }
-}));
+router.get('/stats', getOverviewStats);
 
-router.get('/overview-stats', asyncHandler(async (req: Request, res: Response) => {
-  console.log('Overview-stats route hit');
-  res.json({ success: true, data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' } });
-}));
-
-router.get('/late-tenants', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
-
-router.get('/expiring-leases', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
-
-router.get('/financial-summary', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
-
-router.get('/occupancy-summary', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
-
-router.get('/rent-status', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
-
-router.get('/recent-activity', asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [] });
-}));
+router.get('/overview-stats', getOverviewStats);
+router.get('/late-tenants', getLateTenants);
+router.get('/expiring-leases', getExpiringLeases);
+router.get('/financial-summary', getFinancialSummary);
+router.get('/occupancy-summary', getOccupancySummary);
+router.get('/rent-status', getRentStatus);
+router.get('/recent-activity', getRecentActivity);
 
 // Tenant portal endpoint
 router.get('/tenant-portal', authorize(['Tenant']), asyncHandler(async (req: Request, res: Response) => {

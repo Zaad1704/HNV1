@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const Property_1 = __importDefault(require("../models/Property"));
 const Tenant_1 = __importDefault(require("../models/Tenant"));
+const dashboardController_1 = require("../controllers/dashboardController");
 const rbac_1 = require("../middleware/rbac");
 const router = express_1.default.Router();
 router.get('/landing-stats', (0, express_async_handler_1.default)(async (req, res) => {
@@ -34,58 +35,14 @@ router.get('/landing-stats', (0, express_async_handler_1.default)(async (req, re
         });
     }
 }));
-router.get('/stats', (0, express_async_handler_1.default)(async (req, res) => {
-    try {
-        console.log('Stats route called, user:', req.user?._id);
-        if (!req.user) {
-            res.status(401).json({ success: false, message: 'User not authenticated' });
-            return;
-        }
-        const userId = req.user._id;
-        const organizationId = req.user.organizationId;
-        console.log('User ID:', userId, 'Org ID:', organizationId);
-        res.json({
-            success: true,
-            data: {
-                totalProperties: 0,
-                totalTenants: 0,
-                monthlyRevenue: 0,
-                occupancyRate: 0,
-                pendingMaintenance: 0,
-                recentPayments: 0
-            }
-        });
-    }
-    catch (error) {
-        console.error('Dashboard stats error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch dashboard stats: ' + error.message
-        });
-    }
-}));
-router.get('/overview-stats', (0, express_async_handler_1.default)(async (req, res) => {
-    console.log('Overview-stats route hit');
-    res.json({ success: true, data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' } });
-}));
-router.get('/late-tenants', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
-router.get('/expiring-leases', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
-router.get('/financial-summary', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
-router.get('/occupancy-summary', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
-router.get('/rent-status', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
-router.get('/recent-activity', (0, express_async_handler_1.default)(async (req, res) => {
-    res.json({ success: true, data: [] });
-}));
+router.get('/stats', dashboardController_1.getOverviewStats);
+router.get('/overview-stats', dashboardController_1.getOverviewStats);
+router.get('/late-tenants', dashboardController_1.getLateTenants);
+router.get('/expiring-leases', dashboardController_1.getExpiringLeases);
+router.get('/financial-summary', dashboardController_1.getFinancialSummary);
+router.get('/occupancy-summary', dashboardController_1.getOccupancySummary);
+router.get('/rent-status', dashboardController_1.getRentStatus);
+router.get('/recent-activity', dashboardController_1.getRecentActivity);
 router.get('/tenant-portal', (0, rbac_1.authorize)(['Tenant']), (0, express_async_handler_1.default)(async (req, res) => {
     const Tenant = require('../models/Tenant');
     const Payment = require('../models/Payment');
