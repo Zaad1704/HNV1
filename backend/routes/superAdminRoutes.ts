@@ -44,11 +44,15 @@ router.get('/test', (req, res) => {
   res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
 });
 
-router.use(protect, (req, res, next) => {
-  if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
-    return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
-  }
-  next();
+// Apply auth to all routes except test
+router.use((req, res, next) => {
+  if (req.path === '/test') return next();
+  protect(req, res, () => {
+    if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
+      return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
+    }
+    next();
+  });
 });
 
 router.get('/dashboard-stats', asyncHandler(getDashboardStats));
@@ -300,6 +304,22 @@ router.put('/site-content/:section', asyncHandler(updateSiteContent));
 router.post('/plans-enhanced', asyncHandler(createPlan));
 router.put('/plans-enhanced/:planId', asyncHandler(updatePlan));
 router.delete('/plans-enhanced/:planId', asyncHandler(deletePlan));
+
+// Missing routes
+router.get('/invites', asyncHandler(async (req: Request, res: Response) => {
+  const invites = await User.find({ status: 'pending' }).populate('organizationId', 'name');
+  res.json({ success: true, data: invites });
+}));
+
+router.get('/history', asyncHandler(async (req: Request, res: Response) => {
+  const history = [];
+  res.json({ success: true, data: history });
+}));
+
+router.get('/organization', asyncHandler(async (req: Request, res: Response) => {
+  const orgs = await Organization.find({}).populate('owner', 'name email');
+  res.json({ success: true, data: orgs });
+}));
 
 // Email service status route
 router.get('/email-status', asyncHandler(async (req: Request, res: Response) => {

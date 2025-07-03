@@ -191,7 +191,12 @@ const getMe = async (req, res) => {
         populate: {
             path: 'subscription',
             model: 'Subscription',
-            select: 'planId status trialExpiresAt currentPeriodEndsAt'
+            select: 'planId status trialExpiresAt currentPeriodEndsAt',
+            populate: {
+                path: 'planId',
+                model: 'Plan',
+                select: 'name price duration features limits'
+            }
         }
     });
     res.status(200).json({ success: true, data: user });

@@ -21,11 +21,15 @@ router.use((req, res, next) => {
 router.get('/test', (req, res) => {
     res.json({ success: true, message: 'Super admin routes working', timestamp: new Date() });
 });
-router.use(authMiddleware_1.protect, (req, res, next) => {
-    if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
-        return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
-    }
-    next();
+router.use((req, res, next) => {
+    if (req.path === '/test')
+        return next();
+    (0, authMiddleware_1.protect)(req, res, () => {
+        if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
+            return res.status(403).json({ success: false, message: 'Access denied. Super Admin role required.' });
+        }
+        next();
+    });
 });
 router.get('/dashboard-stats', (0, express_async_handler_1.default)(superAdminController_1.getDashboardStats));
 router.get('/stats', (0, express_async_handler_1.default)(superAdminController_1.getDashboardStats));
@@ -229,6 +233,18 @@ router.put('/site-content/:section', (0, express_async_handler_1.default)(superA
 router.post('/plans-enhanced', (0, express_async_handler_1.default)(superAdminController_1.createPlan));
 router.put('/plans-enhanced/:planId', (0, express_async_handler_1.default)(superAdminController_1.updatePlan));
 router.delete('/plans-enhanced/:planId', (0, express_async_handler_1.default)(superAdminController_1.deletePlan));
+router.get('/invites', (0, express_async_handler_1.default)(async (req, res) => {
+    const invites = await User_1.default.find({ status: 'pending' }).populate('organizationId', 'name');
+    res.json({ success: true, data: invites });
+}));
+router.get('/history', (0, express_async_handler_1.default)(async (req, res) => {
+    const history = [];
+    res.json({ success: true, data: history });
+}));
+router.get('/organization', (0, express_async_handler_1.default)(async (req, res) => {
+    const orgs = await Organization_1.default.find({}).populate('owner', 'name email');
+    res.json({ success: true, data: orgs });
+}));
 router.get('/email-status', (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const configured = !!(process.env.SMTP_HOST || process.env.RESEND_API_KEY);
