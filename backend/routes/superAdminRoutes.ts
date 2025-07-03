@@ -379,7 +379,7 @@ router.get('/email-status', asyncHandler(async (req: Request, res: Response) => 
 }));
 
 // Get organization by code
-router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res: Response) => {
+router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res: Response, next) => {
   try {
     const organization = await Organization.findOne({ organizationCode: req.params.code })
       .select('name organizationCode')

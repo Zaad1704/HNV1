@@ -3,6 +3,7 @@ import asyncHandler from 'express-async-handler';
 import masterDataService from '../services/masterDataService';
 import SiteSettings from '../models/SiteSettings';
 import Plan from '../models/Plan';
+import Organization from '../models/Organization';
 
 const router = Router();
 
@@ -81,7 +82,7 @@ router.get('/plans', asyncHandler(async (req, res) => {
 }));
 
 // Validate organization code
-router.get('/validate-org-code/:code', asyncHandler(async (req, res) => {
+router.get('/validate-org-code/:code', asyncHandler(async (req, res, next) => {
   try {
     const organization = await Organization.findOne({ organizationCode: req.params.code })
       .select('name organizationCode')
