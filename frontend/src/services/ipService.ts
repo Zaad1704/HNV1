@@ -10,7 +10,9 @@ interface IPResponse {
 export const detectUserLocation = async (): Promise<IPResponse | null> => {
   try {
     // Use ipinfo.io as primary service
-    const response = await fetch(`https://ipinfo.io/json?token=${import.meta.env.VITE_IPINFO_TOKEN || ''}`);
+    const token = import.meta.env.VITE_IPINFO_TOKEN;
+    const url = token ? `https://ipinfo.io/json?token=${token}` : 'https://ipinfo.io/json';
+    const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
       return {

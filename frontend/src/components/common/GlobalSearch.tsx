@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import apiClient from '../../api/client';
 
 interface GlobalSearchProps {
@@ -8,6 +9,8 @@ interface GlobalSearchProps {
 }
 
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ onResults }) => {
+  const { t } = useTranslation();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({

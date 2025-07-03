@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Crown, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 interface Plan {
   _id: string;
@@ -23,7 +23,7 @@ const fetchPlans = async (): Promise<Plan[]> => {
 
 const PlansPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
   const { data: plans = [], isLoading } = useQuery({
