@@ -9,6 +9,7 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import './i18n'; // Initialize i18n
 import { CurrencyProvider } from './contexts/CurrencyContext';
 
 import PublicLayout from './components/layout/PublicLayout';

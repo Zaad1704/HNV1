@@ -1,20 +1,22 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import HttpApi from 'i18next-http-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
+
+const supportedLanguages = [
+  'en', 'zh', 'ja', 'ko', 'hi', 'th', 'vi', 'id', 'ms', 'tl', 'ur', 'bn',
+  'de', 'fr', 'es', 'it', 'pt', 'ru', 'nl', 'sv', 'no', 'da', 'fi', 'pl', 'tr', 'el',
+  'ar', 'sw', 'am', 'ha', 'yo', 'zu', 'af',
+  'pt-BR', 'es-MX', 'es-AR', 'fr-CA',
+  'en-AU', 'en-NZ'
+];
 
 i18n
   .use(HttpApi)
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    supportedLngs: ['en', 'ar', 'bn', 'de', 'es', 'fr', 'hi', 'ja', 'pt', 'zh', 'ko', 'it', 'ru', 'tr', 'nl', 'sv', 'th', 'vi', 'id', 'ms'],
+    supportedLngs: supportedLanguages,
     fallbackLng: 'en',
     debug: false,
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
       requestOptions: {

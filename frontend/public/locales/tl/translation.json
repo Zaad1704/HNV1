@@ -1,0 +1,55 @@
+{
+  "app_name": "HNV Property Management Solutions",
+  "app_name_short": "HNV Solutions",
+  "header": {
+    "login": "Mag-login",
+    "get_started": "Magsimula"
+  },
+  "nav": {
+    "home": "Tahanan",
+    "about": "Tungkol",
+    "features": "Mga Tampok",
+    "services": "Mga Serbisyo",
+    "pricing": "Presyo",
+    "contact": "Makipag-ugnayan",
+    "login": "Mag-login",
+    "dashboard": "Dashboard"
+  },
+  "auth": {
+    "welcome_back": "Maligayang Pagbabalik!",
+    "sign_in_subtitle": "Mag-sign in upang magpatuloy sa inyong dashboard",
+    "email_address": "Email Address",
+    "password": "Password",
+    "sign_in": "Mag-sign In",
+    "continue_google": "Magpatuloy gamit ang Google",
+    "no_account": "Walang account?",
+    "sign_up": "Mag-sign Up",
+    "or": "O",
+    "forgot_password": "Nakalimutan ang Password?",
+    "enter_email": "Ilagay ang inyong email address",
+    "enter_password": "Ilagay ang inyong password",
+    "create_account": "Gumawa ng Account",
+    "full_name": "Buong Pangalan",
+    "confirm_password": "Kumpirmahin ang Password"
+  },
+  "common": {
+    "loading": "Naglo-load...",
+    "error": "Error",
+    "success": "Tagumpay",
+    "cancel": "Kanselahin",
+    "save": "I-save",
+    "edit": "I-edit",
+    "delete": "Tanggalin",
+    "add": "Idagdag",
+    "view": "Tingnan",
+    "close": "Isara",
+    "language": "Wika",
+    "currency": "Pera"
+  },
+  "hero": {
+    "title": "Ang All-in-One Platform para sa Modernong Property Management",
+    "subtitle": "I-streamline ang inyong property management gamit ang aming komprehensibong solusyon",
+    "cta_primary": "Simulan ang Inyong Free Trial",
+    "cta_secondary": "Panoorin ang Demo"
+  }
+}

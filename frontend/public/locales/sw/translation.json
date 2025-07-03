@@ -1,0 +1,55 @@
+{
+  "app_name": "HNV Property Management Solutions",
+  "app_name_short": "HNV Solutions",
+  "header": {
+    "login": "Ingia",
+    "get_started": "Anza"
+  },
+  "nav": {
+    "home": "Nyumbani",
+    "about": "Kuhusu",
+    "features": "Vipengele",
+    "services": "Huduma",
+    "pricing": "Bei",
+    "contact": "Wasiliana",
+    "login": "Ingia",
+    "dashboard": "Dashibodi"
+  },
+  "auth": {
+    "welcome_back": "Karibu Tena!",
+    "sign_in_subtitle": "Ingia ili kuendelea kwenye dashibodi yako",
+    "email_address": "Anwani ya Barua Pepe",
+    "password": "Nenosiri",
+    "sign_in": "Ingia",
+    "continue_google": "Endelea na Google",
+    "no_account": "Huna akaunti?",
+    "sign_up": "Jisajili",
+    "or": "AU",
+    "forgot_password": "Umesahau Nenosiri?",
+    "enter_email": "Ingiza anwani yako ya barua pepe",
+    "enter_password": "Ingiza nenosiri lako",
+    "create_account": "Unda Akaunti",
+    "full_name": "Jina Kamili",
+    "confirm_password": "Thibitisha Nenosiri"
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio",
+    "cancel": "Ghairi",
+    "save": "Hifadhi",
+    "edit": "Hariri",
+    "delete": "Futa",
+    "add": "Ongeza",
+    "view": "Ona",
+    "close": "Funga",
+    "language": "Lugha",
+    "currency": "Sarafu"
+  },
+  "hero": {
+    "title": "Jukwaa la Kila Kitu kwa Usimamizi wa Kisasa wa Mali",
+    "subtitle": "Rahisisha usimamizi wako wa mali kwa kutumia suluhisho letu kamili",
+    "cta_primary": "Anza Jaribio Lako la Bure",
+    "cta_secondary": "Tazama Onyesho"
+  }
+}
