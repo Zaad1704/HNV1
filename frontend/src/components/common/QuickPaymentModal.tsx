@@ -122,7 +122,7 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Payment description"
+              placeholder={t('payments.payment_description')}
             />
           </div>
           

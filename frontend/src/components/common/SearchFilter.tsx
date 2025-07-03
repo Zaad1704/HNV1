@@ -42,7 +42,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
               <div key={option.key} className="flex gap-2">
                 <input
                   type="date"
-                  placeholder="Start Date"
+                  placeholder={t('common.start_date')}
                   onChange={(e) => onFilter({ 
                     ...filters, 
                     [option.key]: { 
@@ -54,7 +54,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
                 />
                 <input
                   type="date"
-                  placeholder="End Date"
+                  placeholder={t('common.end_date')}
                   onChange={(e) => onFilter({ 
                     ...filters, 
                     [option.key]: { 

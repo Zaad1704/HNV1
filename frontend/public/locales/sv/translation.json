@@ -107,7 +107,9 @@
     "select_language": "Select Language",
     "toggle_language": "Toggle Language",
     "switch_to": "Switch to",
-    "current_language": "Current Language"
+    "current_language": "Current Language",
+    "start_date": "Start Date",
+    "end_date": "End Date"
   },
   "dashboard": {
     "overview": "Overview",
@@ -346,6 +348,9 @@
     "late": "Late",
     "id_front": "ID Front",
     "id_back": "ID Back"
+  },
+  "payments": {
+    "payment_description": "Payment description"
   },
   "expense": {
     "add_expense": "Add Expense",
