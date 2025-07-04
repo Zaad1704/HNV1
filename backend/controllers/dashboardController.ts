@@ -3,6 +3,7 @@ import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
+import dashboardService from '../services/dashboardService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -145,18 +146,8 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const totalProperties = await Property.countDocuments({ organizationId: req.user.organizationId });
-    const activeTenants = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Active' });
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        totalProperties,
-        activeTenants,
-        monthlyRevenue: 5000,
-        occupancyRate: totalProperties > 0 ? ((activeTenants / totalProperties) * 100).toFixed(2) + '%' : '0%'
-      }
-    });
+    const stats = await dashboardService.getDashboardStats(req.user.organizationId);
+    res.status(200).json({ success: true, data: stats });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }

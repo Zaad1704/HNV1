@@ -7,6 +7,7 @@ const TenantSchema = new mongoose_1.Schema({
     phone: { type: String },
     propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
     organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
+    createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     unit: { type: String, required: true },
     status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
     leaseEndDate: { type: Date },

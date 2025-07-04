@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
+import actionChainService from '../services/actionChainService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -53,6 +54,9 @@ export const createPayment = async (req: AuthRequest, res: Response) => {
       lineItems: lineItems || [],
       paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined
     });
+
+    // Trigger action chain
+    await actionChainService.onPaymentRecorded(newPayment, req.user._id, req.user.organizationId);
 
     res.status(201).json({ success: true, data: newPayment });
   } catch (error) {

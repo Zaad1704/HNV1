@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteTenant = exports.updateTenant = exports.getTenantById = exports.createTenant = exports.getTenants = void 0;
 const Tenant_1 = __importDefault(require("../models/Tenant"));
 const Property_1 = __importDefault(require("../models/Property"));
+const actionChainService_1 = __importDefault(require("../services/actionChainService"));
 const getTenants = async (req, res) => {
     try {
         if (!req.user?.organizationId) {
@@ -39,6 +40,7 @@ const createTenant = async (req, res) => {
             organizationId: req.user.organizationId
         };
         const tenant = await Tenant_1.default.create(tenantData);
+        await actionChainService_1.default.onTenantAdded(tenant, req.user._id, req.user.organizationId);
         res.status(201).json({ success: true, data: tenant });
     }
     catch (error) {

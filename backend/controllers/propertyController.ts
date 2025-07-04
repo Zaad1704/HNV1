@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Property from '../models/Property';
+import actionChainService from '../services/actionChainService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -21,6 +22,9 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       organizationId: user.organizationId,
       createdBy: user._id
     });
+
+    // Trigger action chain
+    await actionChainService.onPropertyAdded(property, user._id, user.organizationId);
 
     res.status(201).json({
       success: true,

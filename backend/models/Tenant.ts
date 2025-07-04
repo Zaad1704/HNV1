@@ -6,6 +6,7 @@ export interface ITenant extends Document {
   phone?: string;
   propertyId: Schema.Types.ObjectId;
   organizationId: Schema.Types.ObjectId;
+  createdBy?: Schema.Types.ObjectId;
   unit: string;
   status: 'Active' | 'Inactive' | 'Late';
   leaseEndDate?: Date;
@@ -45,6 +46,7 @@ const TenantSchema = new Schema<ITenant>({
   phone: { type: String },
   propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   unit: { type: String, required: true },
   status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
   leaseEndDate: { type: Date },

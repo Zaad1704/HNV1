@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteProperty = exports.updateProperty = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const Property_1 = __importDefault(require("../models/Property"));
+const actionChainService_1 = __importDefault(require("../services/actionChainService"));
 const createProperty = async (req, res) => {
     const user = req.user;
     if (!user || !user.organizationId) {
@@ -19,6 +20,7 @@ const createProperty = async (req, res) => {
             organizationId: user.organizationId,
             createdBy: user._id
         });
+        await actionChainService_1.default.onPropertyAdded(property, user._id, user.organizationId);
         res.status(201).json({
             success: true,
             data: property

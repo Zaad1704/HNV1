@@ -18,6 +18,12 @@ export interface IProperty extends Document {
   createdBy: Schema.Types.ObjectId;
   managedByAgentId?: Schema.Types.ObjectId;
   status: 'Active' | 'Inactive' | 'Under Renovation';
+  occupancyRate?: number;
+  cashFlow?: {
+    income: number;
+    expenses: number;
+  };
+  maintenanceStatus?: string;
   imageUrl?: string;
   createdAt: Date;
 }
@@ -68,6 +74,18 @@ const PropertySchema = new Schema<IProperty>({
     type: String,
     enum: ['Active', 'Inactive', 'Under Renovation'],
     default: 'Active',
+  },
+  occupancyRate: {
+    type: Number,
+    default: 0
+  },
+  cashFlow: {
+    income: { type: Number, default: 0 },
+    expenses: { type: Number, default: 0 }
+  },
+  maintenanceStatus: {
+    type: String,
+    default: 'normal'
   },
   imageUrl: { type: String },
   createdAt: {

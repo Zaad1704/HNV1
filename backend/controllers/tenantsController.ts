@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
+import actionChainService from '../services/actionChainService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -44,6 +45,10 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
     };
 
     const tenant = await Tenant.create(tenantData);
+    
+    // Trigger action chain
+    await actionChainService.onTenantAdded(tenant, req.user._id, req.user.organizationId);
+    
     res.status(201).json({ success: true, data: tenant });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });

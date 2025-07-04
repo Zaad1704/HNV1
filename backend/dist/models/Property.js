@@ -48,6 +48,18 @@ const PropertySchema = new mongoose_1.Schema({
         enum: ['Active', 'Inactive', 'Under Renovation'],
         default: 'Active',
     },
+    occupancyRate: {
+        type: Number,
+        default: 0
+    },
+    cashFlow: {
+        income: { type: Number, default: 0 },
+        expenses: { type: Number, default: 0 }
+    },
+    maintenanceStatus: {
+        type: String,
+        default: 'normal'
+    },
     imageUrl: { type: String },
     createdAt: {
         type: Date,
