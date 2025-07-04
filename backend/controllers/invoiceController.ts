@@ -4,6 +4,7 @@ import Lease from '../models/Lease';
 import Tenant from '../models/Tenant';
 import Property from '../models/Property';
 import { addMonths, startOfMonth, format } from 'date-fns';
+import PDFDocument from 'pdfkit';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -146,6 +147,20 @@ export const printInvoice = async (req: AuthRequest, res: Response) => {
       return res.send(thermalReceipt);
     }
 
+    // Generate PDF format
+    if (printFormat === 'pdf') {
+      const doc = new PDFDocument({ size: 'A4', margin: 50 });
+      const filename = `invoice-${invoice.invoiceNumber}.pdf`;
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      doc.pipe(res);
+      generatePDFInvoice(doc, invoice);
+      doc.end();
+      return;
+    }
+
     // Standard format
     res.status(200).json({ success: true, data: invoice });
   } catch (error) {
@@ -199,6 +214,62 @@ Powered by HNV Property
 Management Solutions
 ${doubleLine}
 `;
+};
+
+const generatePDFInvoice = (doc: any, invoice: any) => {
+  const orgName = invoice.organizationId?.name || 'ORGANIZATION';
+  
+  // Header with organization name
+  doc.fontSize(20).font('Helvetica-Bold').text(orgName.toUpperCase(), 50, 50, { align: 'center' });
+  doc.fontSize(16).font('Helvetica').text('RENT INVOICE', 50, 80, { align: 'center' });
+  
+  // Invoice details
+  doc.fontSize(12).font('Helvetica');
+  doc.text(`Invoice #: ${invoice.invoiceNumber}`, 50, 120);
+  doc.text(`Date: ${new Date(invoice.createdAt).toLocaleDateString()}`, 50, 140);
+  doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 50, 160);
+  
+  // Tenant information
+  doc.fontSize(14).font('Helvetica-Bold').text('TENANT INFORMATION', 50, 200);
+  doc.fontSize(12).font('Helvetica');
+  doc.text(`Name: ${invoice.tenantId?.name || 'N/A'}`, 50, 220);
+  doc.text(`Email: ${invoice.tenantId?.email || 'N/A'}`, 50, 240);
+  doc.text(`Phone: ${invoice.tenantId?.phone || 'N/A'}`, 50, 260);
+  
+  // Property information
+  doc.fontSize(14).font('Helvetica-Bold').text('PROPERTY INFORMATION', 50, 300);
+  doc.fontSize(12).font('Helvetica');
+  doc.text(`Property: ${invoice.propertyId?.name || 'N/A'}`, 50, 320);
+  doc.text(`Address: ${invoice.propertyId?.address || 'N/A'}`, 50, 340);
+  
+  // Line items
+  doc.fontSize(14).font('Helvetica-Bold').text('ITEMS', 50, 380);
+  let yPos = 400;
+  
+  if (invoice.lineItems && invoice.lineItems.length > 0) {
+    invoice.lineItems.forEach((item: any) => {
+      doc.fontSize(12).font('Helvetica');
+      doc.text(item.description, 50, yPos);
+      doc.text(`$${item.amount.toFixed(2)}`, 450, yPos, { align: 'right' });
+      yPos += 20;
+    });
+  } else {
+    doc.fontSize(12).font('Helvetica').text('No items', 50, yPos);
+    yPos += 20;
+  }
+  
+  // Total
+  doc.moveTo(50, yPos + 10).lineTo(550, yPos + 10).stroke();
+  doc.fontSize(14).font('Helvetica-Bold');
+  doc.text('TOTAL:', 50, yPos + 20);
+  doc.text(`$${invoice.amount.toFixed(2)}`, 450, yPos + 20, { align: 'right' });
+  doc.text(`Status: ${invoice.status.toUpperCase()}`, 50, yPos + 40);
+  
+  // Thank you message
+  doc.fontSize(12).font('Helvetica').text('Thank you for your payment!', 50, yPos + 80, { align: 'center' });
+  
+  // Footer with HNV branding
+  doc.fontSize(10).font('Helvetica').text('Powered by HNV Property Management Solutions', 50, 750, { align: 'center' });
 };
 
 export const bulkDownloadInvoices = async (req: AuthRequest, res: Response) => {
@@ -303,16 +374,33 @@ export const sendEmailInvoice = async (req: AuthRequest, res: Response) => {
     const emailSubject = subject || `Invoice #${invoice.invoiceNumber} from ${invoice.organizationId?.name}`;
     const emailMessage = message || `Dear ${invoice.tenantId?.name},\n\nPlease find your invoice #${invoice.invoiceNumber} for $${invoice.amount}.\n\nThank you!\n\nPowered by HNV Property Management Solutions`;
     
-    // Return email data for frontend to handle sending
-    res.status(200).json({ 
-      success: true, 
-      data: { 
-        to: recipientEmail,
-        subject: emailSubject,
-        message: emailMessage,
-        invoice: generateThermalReceipt(invoice)
-      }
+    // Generate PDF attachment
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const pdfBuffer: Buffer[] = [];
+    
+    doc.on('data', (chunk) => pdfBuffer.push(chunk));
+    doc.on('end', () => {
+      const pdfData = Buffer.concat(pdfBuffer);
+      
+      // Return email data with PDF attachment
+      res.status(200).json({ 
+        success: true, 
+        data: { 
+          to: recipientEmail,
+          subject: emailSubject,
+          message: emailMessage,
+          attachment: {
+            filename: `invoice-${invoice.invoiceNumber}.pdf`,
+            content: pdfData.toString('base64'),
+            contentType: 'application/pdf'
+          },
+          textInvoice: generateThermalReceipt(invoice)
+        }
+      });
     });
+    
+    generatePDFInvoice(doc, invoice);
+    doc.end();
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
