@@ -85,7 +85,7 @@ UserSchema.methods.getSignedJwtToken = function() {
   };
   const options = {
     expiresIn: process.env.JWT_EXPIRES_IN || '30d',
-  };
+  } as jwt.SignOptions;
   return jwt.sign(payload, secret, options);
 };
 
