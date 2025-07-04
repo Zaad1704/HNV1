@@ -140,6 +140,63 @@ const RegisterPage: React.FC = () => {
             </motion.div>
           )}
 
+          {/* Role Selection - First Step */}
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-text-primary mb-2">Choose Your Account Type</h2>
+              <p className="text-text-secondary text-sm">Select the option that best describes your role. This determines your access level and features.</p>
+            </div>
+            
+            <RoleSelector
+              selectedRole={formData.role}
+              onRoleChange={(role) => setFormData({ ...formData, role })}
+            />
+            
+            {(formData.role === 'Tenant' || formData.role === 'Agent') && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Organization Code {formData.role === 'Tenant' && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  name="organizationCode"
+                  value={formData.organizationCode}
+                  onChange={handleChange}
+                  required={formData.role === 'Tenant'}
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
+                  placeholder={formData.role === 'Tenant' ? 'Enter organization code' : 'Enter organization code (optional)'}
+                />
+                {formData.role === 'Tenant' && (
+                  <p className="text-xs text-text-secondary mt-1">Get this code from your landlord or property manager</p>
+                )}
+              </div>
+            )}
+
+            {formData.role === 'Agent' && !formData.organizationCode && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mt-4">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    name="isIndependentAgent"
+                    checked={formData.isIndependentAgent}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-yellow-800">I am an independent agent</span>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      I manage properties from multiple landlords and want to create my own organization
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-app-border pt-6">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">Account Information</h3>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">{t('auth.full_name')}</label>
@@ -173,57 +230,7 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
-              <p className="text-blue-800 text-sm font-medium mb-2">⚠️ Role Selection Required</p>
-              <p className="text-blue-700 text-sm">
-                Please select your role carefully. This determines your access level and cannot be changed after signup.
-              </p>
-            </div>
-            
-            <RoleSelector
-              selectedRole={formData.role}
-              onRoleChange={(role) => setFormData({ ...formData, role })}
-            />
 
-            {(formData.role === 'Tenant' || formData.role === 'Agent') && (
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
-                  Organization Code {formData.role === 'Tenant' && <span className="text-red-500">*</span>}
-                </label>
-                <input
-                  type="text"
-                  name="organizationCode"
-                  value={formData.organizationCode}
-                  onChange={handleChange}
-                  required={formData.role === 'Tenant'}
-                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all"
-                  placeholder={formData.role === 'Tenant' ? 'Enter organization code' : 'Enter organization code (optional)'}
-                />
-                {formData.role === 'Tenant' && (
-                  <p className="text-xs text-text-secondary mt-1">Get this code from your landlord or property manager</p>
-                )}
-              </div>
-            )}
-
-            {formData.role === 'Agent' && !formData.organizationCode && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="isIndependentAgent"
-                    checked={formData.isIndependentAgent}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue"
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-yellow-800">I am an independent agent</span>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      I manage properties from multiple landlords and want to create my own organization
-                    </p>
-                  </div>
-                </label>
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">{t('auth.password')}</label>

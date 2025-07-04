@@ -11,22 +11,25 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onRoleChange,
   const roles = [
     {
       value: 'Landlord',
-      label: 'Landlord',
-      description: 'Property owner managing rentals',
+      label: 'Property Owner / Landlord',
+      description: 'I own properties and rent them to tenants',
+      features: 'Full property management access',
       icon: Building,
       color: 'bg-blue-500'
     },
     {
       value: 'Agent',
-      label: 'Property Agent',
-      description: 'Managing properties for landlords',
+      label: 'Property Manager / Agent',
+      description: 'I manage properties on behalf of landlords',
+      features: 'Property management with permissions',
       icon: Users,
       color: 'bg-green-500'
     },
     {
       value: 'Tenant',
-      label: 'Tenant',
-      description: 'Renting a property',
+      label: 'Tenant / Renter',
+      description: 'I rent a property and need tenant portal access',
+      features: 'Tenant portal and payment access',
       icon: Home,
       color: 'bg-purple-500'
     }
@@ -56,8 +59,9 @@ const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onRoleChange,
                   <Icon size={20} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-text-primary">{role.label}</h3>
-                  <p className="text-sm text-text-secondary">{role.description}</p>
+                  <h3 className="font-semibold text-text-primary text-base">{role.label}</h3>
+                  <p className="text-sm text-text-secondary mb-1">{role.description}</p>
+                  <p className="text-xs text-brand-blue font-medium">{role.features}</p>
                 </div>
                 <div className={`w-4 h-4 rounded-full border-2 ${
                   selectedRole === role.value
