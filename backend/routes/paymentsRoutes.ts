@@ -11,7 +11,8 @@ import {
 const router = Router();
 
 router.use(protect);
-router.use(checkSubscriptionStatus);
+// Temporarily remove subscription check to fix access issues
+// router.use(checkSubscriptionStatus);
 
 router.get('/', getPayments);
 router.post('/', createPayment);

@@ -14,6 +14,7 @@ const router = Router();
 
 router.use(protect);
 
+router.get('/', getSubscriptionDetails); // Add root billing route
 router.get('/subscription', getSubscriptionDetails);
 router.post('/checkout', createCheckoutSession);
 router.get('/history', getBillingHistory);
