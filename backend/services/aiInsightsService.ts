@@ -29,7 +29,6 @@ class AIInsightsService {
         marketAnalysis
       })
     };
-  }
 
   private async analyzeCollectionTrends(organizationId: string): Promise<any> {
     const periods = await RentCollectionPeriod.find({ organizationId })
@@ -55,9 +54,8 @@ class AIInsightsService {
         currentRate: recentRate,
         change: recentRate - olderRate,
         prediction: this.predictNextMonth(trends)
-      }
+
     };
-  }
 
   private async analyzePropertyPerformance(organizationId: string): Promise<any> {
     const properties = await Property.find({ organizationId }).lean();
@@ -79,7 +77,6 @@ class AIInsightsService {
         tenantCount: tenants.length,
         score: this.calculatePropertyScore(occupancyRate, totalCollected, tenants.length)
       });
-    }
 
     return {
       properties: performance.sort((a, b) => b.score - a.score),
@@ -87,9 +84,8 @@ class AIInsightsService {
         topPerformer: performance[0],
         underperformer: performance[performance.length - 1],
         avgOccupancy: performance.reduce((sum, p) => sum + p.occupancyRate, 0) / performance.length
-      }
+
     };
-  }
 
   private async analyzeTenantBehavior(organizationId: string): Promise<any> {
     const tenants = await Tenant.find({ organizationId }).lean();
@@ -111,7 +107,6 @@ class AIInsightsService {
           latePayments.reduce((sum, p) => sum + this.calculateDaysLate(p.paymentDate), 0) / latePayments.length : 0,
         riskScore: this.calculateTenantRisk(payments, latePayments)
       });
-    }
 
     return {
       tenants: behaviors.sort((a, b) => b.riskScore - a.riskScore),
@@ -119,9 +114,8 @@ class AIInsightsService {
         highRiskCount: behaviors.filter(t => t.riskScore > 70).length,
         avgReliability: behaviors.reduce((sum, t) => sum + t.paymentReliability, 0) / behaviors.length,
         trends: this.analyzeBehaviorTrends(behaviors)
-      }
+
     };
-  }
 
   private async analyzeMarketTrends(organizationId: string): Promise<any> {
     // Mock market analysis - in production, this would integrate with real market data APIs
@@ -142,9 +136,8 @@ class AIInsightsService {
         avgTenantAge: 32,
         avgIncomeRange: '50k-75k',
         preferredAmenities: ['parking', 'laundry', 'pet-friendly']
-      }
+
     };
-  }
 
   private generateRecommendations(data: any): string[] {
     const recommendations = [];
@@ -152,65 +145,11 @@ class AIInsightsService {
     // Collection recommendations
     if (data.collectionTrends.analysis.trend === 'declining') {
       recommendations.push('Collection rate declining - implement automated payment reminders');
-    }
 
     // Property recommendations
     if (data.propertyPerformance.insights.avgOccupancy < 85) {
       recommendations.push('Low occupancy detected - review pricing and marketing strategy');
-    }
 
     // Tenant recommendations
     if (data.tenantBehavior.insights.highRiskCount > 0) {
-      recommendations.push(`${data.tenantBehavior.insights.highRiskCount} high-risk tenants identified - consider payment plans`);
-    }
-
-    // Market recommendations
-    if (data.marketAnalysis.rentTrends.trend === 'increasing') {
-      recommendations.push('Market rents increasing - opportunity for rent adjustments');
-    }
-
-    return recommendations;
-  }
-
-  private predictNextMonth(trends: any[]): number {
-    if (trends.length < 3) return trends[0]?.collectionRate || 0;
-    
-    // Simple linear regression prediction
-    const recent = trends.slice(0, 3);
-    const avg = recent.reduce((sum, t) => sum + t.collectionRate, 0) / recent.length;
-    const trend = (recent[0].collectionRate - recent[2].collectionRate) / 2;
-    
-    return Math.max(0, Math.min(100, avg + trend));
-  }
-
-  private calculatePropertyScore(occupancy: number, revenue: number, tenantCount: number): number {
-    return (occupancy * 0.4) + (Math.min(revenue / 10000, 100) * 0.4) + (tenantCount * 2 * 0.2);
-  }
-
-  private calculateTenantRisk(payments: any[], latePayments: any[]): number {
-    if (payments.length === 0) return 50;
-    
-    const lateRate = (latePayments.length / payments.length) * 100;
-    const recentLate = latePayments.filter(p => 
-      new Date(p.paymentDate) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-    ).length;
-    
-    return Math.min(100, lateRate + (recentLate * 10));
-  }
-
-  private calculateDaysLate(paymentDate: Date): number {
-    const dueDate = new Date(paymentDate);
-    dueDate.setDate(1);
-    return Math.max(0, Math.floor((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
-  }
-
-  private analyzeBehaviorTrends(behaviors: any[]): any {
-    return {
-      improvingTenants: behaviors.filter(t => t.paymentReliability > 90).length,
-      decliningTenants: behaviors.filter(t => t.riskScore > 70).length,
-      stableTenants: behaviors.filter(t => t.riskScore <= 70 && t.paymentReliability >= 80).length
-    };
-  }
-}
-
-export default new AIInsightsService();
+      recommendations.push(`${data.tenantBehavior.insights.highRiskCount} high-risk tenants identified - consider payment plans

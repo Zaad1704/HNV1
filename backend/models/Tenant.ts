@@ -12,7 +12,6 @@ interface IAdditionalAdult {
     govtIdNumber?: string;
     govtIdImageUrl?: string;
     imageUrl?: string;
-}
 
 // Expanded sub-document interface for references
 interface IReference {
@@ -20,7 +19,6 @@ interface IReference {
     phone?: string;
     email?: string;
     idNumber?: string; // New field
-}
 
 export interface ITenant extends Document {
     name: string;
@@ -55,7 +53,6 @@ export interface ITenant extends Document {
     createdAt: Date;
     discountAmount?: number;
     discountExpiresAt?: Date;
-}
 
 const TenantSchema: Schema<ITenant> = new Schema({
     name: { type: String, required: true },

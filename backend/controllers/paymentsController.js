@@ -10,7 +10,7 @@ const getPayments = async (req, res) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
-    }
+
     const payments = await Payment_1.default.find({ organizationId: req.user.organizationId })
         .populate('tenantId', 'name')
         .populate('propertyId', 'name')
@@ -23,18 +23,18 @@ const createPayment = async (req, res) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
-    }
+
     const { tenantId, amount, paymentDate, status, lineItems, paidForMonth } = req.body;
     if (!tenantId || !amount || !paymentDate) {
         res.status(400).json({ success: false, message: 'Tenant, amount, and payment date are required.' });
         return;
-    }
+
     try {
         const tenant = await Tenant_1.default.findById(tenantId);
         if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
             res.status(404).json({ success: false, message: 'Tenant not found in your organization.' });
             return;
-        }
+
         const newPayment = await Payment_1.default.create({
             tenantId,
             amount,
@@ -47,11 +47,11 @@ const createPayment = async (req, res) => {
             paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined,
         });
         res.status(201).json({ success: true, data: newPayment });
-    }
+
     catch (error) {
         console.error('Error creating payment:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.createPayment = createPayment;
 //# sourceMappingURL=paymentsController.js.map

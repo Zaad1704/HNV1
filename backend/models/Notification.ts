@@ -9,7 +9,6 @@ export interface INotification extends Document {
   link?: string;
   isRead: boolean;
   createdAt: Date;
-}
 
 const NotificationSchema: Schema<INotification> = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },

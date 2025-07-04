@@ -25,26 +25,26 @@ const errorHandler = (err, req, res, next) => {
     if (err.name === 'CastError') {
         const message = 'Resource not found';
         error = (0, exports.createError)(message, 404);
-    }
+
     // Mongoose duplicate key
     if (err.name === 'MongoServerError' && err.code === 11000) {
         const message = 'Duplicate field value entered';
         error = (0, exports.createError)(message, 400);
-    }
+
     // Mongoose validation error
     if (err.name === 'ValidationError') {
         const message = Object.values(err.errors).map((val) => val.message).join(', ');
         error = (0, exports.createError)(message, 400);
-    }
+
     // JWT errors
     if (err.name === 'JsonWebTokenError') {
         const message = 'Invalid token';
         error = (0, exports.createError)(message, 401);
-    }
+
     if (err.name === 'TokenExpiredError') {
         const message = 'Token expired';
         error = (0, exports.createError)(message, 401);
-    }
+
     res.status(error.statusCode || 500).json({
         success: false,
         message: error.message || 'Server Error',
@@ -53,10 +53,4 @@ const errorHandler = (err, req, res, next) => {
 };
 exports.errorHandler = errorHandler;
 const notFound = (req, res, next) => {
-    const error = (0, exports.createError)(`Not found - ${req.originalUrl}`, 404);
-    next(error);
-};
-exports.notFound = notFound;
-const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
-exports.asyncHandler = asyncHandler;
-//# sourceMappingURL=errorHandler.js.map
+    const error = (0, exports.createError)(`Not found - ${req.originalUrl}

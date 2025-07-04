@@ -10,7 +10,7 @@ exports.config = {
             maxPoolSize: 10,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
-        }
+
     },
     auth: {
         jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
@@ -46,6 +46,6 @@ exports.config = {
         googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
         stripeSecretKey: process.env.STRIPE_SECRET_KEY,
         stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-    }
+
 };
 //# sourceMappingURL=index.js.map

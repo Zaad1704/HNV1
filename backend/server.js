@@ -22,7 +22,7 @@ app.get('/api/site-settings', (req, res) => {
       siteDescription: 'Professional Property Management Solutions',
       contactEmail: 'support@hnvpm.com',
       maintenanceMode: false
-    }
+
   });
 });
 
@@ -34,7 +34,7 @@ app.post('/api/auth/login', (req, res) => {
     data: {
       user: { id: '1', name: 'Admin User', email: 'admin@hnv.com', role: 'SuperAdmin' },
       token: 'jwt_' + Date.now()
-    }
+
   });
 });
 
@@ -51,7 +51,6 @@ if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)
     .then(() => )
     .catch(err => );
-}
 
 app.listen(PORT, () => {
 

@@ -12,7 +12,6 @@ export interface IPayment extends Document {
   // NEW FIELDS for Payment Breakdown
   lineItems?: { description: string; amount: number; }[]; // e.g., Rent, Maintenance, Utilities
   paidForMonth?: Date; // The month for which this payment applies
-}
 
 const PaymentSchema: Schema<IPayment> = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },

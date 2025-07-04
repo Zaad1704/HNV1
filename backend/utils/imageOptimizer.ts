@@ -19,11 +19,4 @@ export const optimizeImage = async (buffer: Buffer, options: {
 
   return {
     buffer: optimized,
-    filename: `${uuidv4()}.${format}`,
-    size: optimized.length
-  };
-};
-
-export const generateThumbnail = async (buffer: Buffer) => {
-  return buffer.slice(0, Math.floor(buffer.length * 0.3));
-};
+    filename: `${uuidv4()}.${format}

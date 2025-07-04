@@ -71,6 +71,6 @@ export const getDashboardMetrics = asyncHandler(async (req: Request, res: Respon
       trends: trends.slice(-6), // Last 6 months
       topProperties: propertyPerformance.slice(0, 5),
       highRiskTenants: tenantRisks.filter((t: any) => t.riskScore === 'high').slice(0, 10)
-    }
+
   });
 });

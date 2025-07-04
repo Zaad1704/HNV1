@@ -19,7 +19,6 @@ export const getCollectionPeriod = asyncHandler(async (req: Request, res: Respon
       message: 'Invalid year or month'
     });
     return;
-  }
 
   let period = await RentCollectionPeriod.findOne({
     organizationId,
@@ -35,8 +34,7 @@ export const getCollectionPeriod = asyncHandler(async (req: Request, res: Respon
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     if (period.lastUpdated < oneHourAgo) {
       await rentCollectionService.updateCollectionPeriod(period);
-    }
-  }
+
 
   res.json({
     success: true,
@@ -57,7 +55,6 @@ export const generateCollectionPeriod = asyncHandler(async (req: Request, res: R
       message: 'Invalid year or month'
     });
     return;
-  }
 
   const period = await rentCollectionService.generateCollectionPeriod(organizationId, yearNum, monthNum);
 
@@ -82,7 +79,6 @@ export const createCollectionSheet = asyncHandler(async (req: Request, res: Resp
       message: 'Collection period not found'
     });
     return;
-  }
 
   // Create collection sheet record
   const sheet = new CollectionSheet({
@@ -102,156 +98,5 @@ export const createCollectionSheet = asyncHandler(async (req: Request, res: Resp
 
   // Update sheet with result
   sheet.result = {
-    fileUrl: `/api/rent-collection/sheet/${sheet._id}/download`,
-    fileName,
-    generatedAt: new Date()
-  };
-
-  await sheet.save();
-
-  res.json({
-    success: true,
-    data: sheet
-  });
-});
-
-export const downloadCollectionSheet = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-
-  const sheet = await CollectionSheet.findOne({
-    _id: id,
-    organizationId: req.user!.organizationId
-  });
-
-  if (!sheet || !sheet.result?.fileName) {
-    res.status(404).json({
-      success: false,
-      message: 'Collection sheet not found'
-    });
-    return;
-  }
-
-  const filePath = path.join(__dirname, '../uploads/collections', sheet.result.fileName);
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${sheet.result.fileName}"`);
-  res.sendFile(path.resolve(filePath));
-});
-
-export const recordCollectionAction = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const actionData = {
-    ...req.body,
-    userId: req.user!._id,
-    organizationId: req.user!.organizationId
-  };
-
-  await rentCollectionService.recordCollectionAction(actionData);
-
-  res.json({
-    success: true,
-    message: 'Collection action recorded successfully'
-  });
-});
-
-export const getCollectionActions = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { tenantId, periodId } = req.query;
-
-  let query: any = {
-    organizationId: req.user!.organizationId
-  };
-
-  if (tenantId) query.tenantId = tenantId;
-  if (periodId) query.periodId = periodId;
-
-  const actions = await CollectionAction.find(query)
-    .populate('tenantId', 'name')
-    .populate('userId', 'name')
-    .sort({ createdAt: -1 });
-
-  res.json({
-    success: true,
-    data: actions
-  });
-});
-
-export const getCollectionAnalytics = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { startDate, endDate } = req.query;
-  const organizationId = req.user!.organizationId.toString();
-
-  const start = startDate ? new Date(startDate as string) : new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000); // 6 months ago
-  const end = endDate ? new Date(endDate as string) : new Date();
-
-  const analytics = await rentCollectionService.getCollectionAnalytics(organizationId, start, end);
-
-  res.json({
-    success: true,
-    data: analytics
-  });
-});
-
-export const getOverduePayments = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { daysOverdue = 1 } = req.query;
-  const organizationId = req.user!.organizationId;
-
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
-  const currentYear = currentDate.getFullYear();
-
-  const period = await RentCollectionPeriod.findOne({
-    organizationId,
-    'period.year': currentYear,
-    'period.month': currentMonth
-  });
-
-  if (!period) {
-    res.json({
-      success: true,
-      data: []
-    });
-    return;
-  }
-
-  const overdueTenants = period.tenants.filter(tenant => 
-    tenant.status === 'overdue' && tenant.daysLate >= parseInt(daysOverdue as string)
-  );
-
-  res.json({
-    success: true,
-    data: overdueTenants
-  });
-});
-
-export const updateTenantNotes = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const { periodId, tenantId } = req.params;
-  const { notes } = req.body;
-
-  const period = await RentCollectionPeriod.findOne({
-    _id: periodId,
-    organizationId: req.user!.organizationId
-  });
-
-  if (!period) {
-    res.status(404).json({
-      success: false,
-      message: 'Collection period not found'
-    });
-    return;
-  }
-
-  const tenant = period.tenants.find(t => t.tenantId.toString() === tenantId);
-  if (!tenant) {
-    res.status(404).json({
-      success: false,
-      message: 'Tenant not found in collection period'
-    });
-    return;
-  }
-
-  tenant.notes = notes;
-  await period.save();
-
-  res.json({
-    success: true,
-    message: 'Tenant notes updated successfully'
-  });
-});
+    fileUrl: `/api/rent-collection/sheet/${sheet._id}/download
+  res.setHeader('Content-Disposition', `attachment; filename="${sheet.result.fileName}"

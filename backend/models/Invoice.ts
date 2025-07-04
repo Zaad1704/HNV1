@@ -13,7 +13,6 @@ export interface IInvoice extends Document {
   lineItems: { description: string; amount: number; }[];
   paidAt?: Date; // NEW FIELD: When the invoice was paid
   transactionId?: string; // NEW FIELD: Link to payment transaction
-}
 
 const InvoiceSchema: Schema<IInvoice> = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },

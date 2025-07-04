@@ -8,7 +8,6 @@ export interface ILease extends Document {
   endDate: Date;
   rentAmount: number;
   status: 'active' | 'expired' | 'terminated';
-}
 
 const LeaseSchema: Schema<ILease> = new Schema({
   propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },

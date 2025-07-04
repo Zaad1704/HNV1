@@ -14,7 +14,7 @@ export const compressionMiddleware = compression({
   filter: (req, res) => {
     if (req.headers['x-no-compression']) return false;
     return compression.filter(req, res);
-  }
+
 });
 
 // Response time tracking
@@ -23,8 +23,4 @@ export const responseTimeTracker = (req: Request, res: Response, next: NextFunct
   res.on('finish', () => {
     const duration = Date.now() - start;
     if (duration > 1000) {
-      console.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms`);
-    }
-  });
-  next();
-};
+      console.warn(`Slow request: ${req.method} ${req.path} - ${duration}ms

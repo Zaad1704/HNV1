@@ -82,25 +82,22 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    ');
+    console.log('CORS origin check:', origin);
     
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
-    }
-    
+
     // Allow any localhost for development
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
-    }
-    
+
     // Allow render.com domains
     if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
       return callback(null, true);
-    }
-    
+
     console.warn('CORS blocked origin:', origin);
     callback(null, true); // Allow all for now to fix production
   },
@@ -176,93 +173,5 @@ app.use('/health', healthRoutes);
 
 // Route error handler middleware
 const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
-  console.error(`Route error in ${req.originalUrl}:`, err);
-  if (!res.headersSent) {
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-    });
-  }
-};
-
-// Public routes with error handling
-app.use('/api/auth', authRoutes, routeErrorHandler);
-app.use('/api/setup', setupRoutes, routeErrorHandler);
-app.use('/api/password-reset', passwordResetRoutes, routeErrorHandler);
-app.use('/api/forgot-password', passwordResetRoutes, routeErrorHandler);
-app.use('/api/feedback', feedbackRoutes, routeErrorHandler);
-app.use('/api/site-settings', siteSettingsRoutes, routeErrorHandler);
-app.use('/api/localization', localizationRoutes, routeErrorHandler);
-app.use('/api/translation', translationRoutes, routeErrorHandler);
-app.use('/api/plans', planRoutes, routeErrorHandler);
-app.use('/api/errors', errorRoutes, routeErrorHandler);
-app.use('/api/export', exportRoutes, routeErrorHandler);
-app.use('/api/rent-collection', rentCollectionRoutes, routeErrorHandler);
-app.use('/api/analytics', analyticsRoutes, routeErrorHandler);
-app.use('/api/integrations', integrationRoutes, routeErrorHandler);
-app.use('/api/subscription', subscriptionRoutes, routeErrorHandler);
-app.use('/api/public', publicRoutes, routeErrorHandler);
-app.use('/api/contact', contactRoutes, routeErrorHandler);
-
-// Apply subscription middleware to protected routes - temporarily disabled to fix 403 errors
-// app.use('/api/properties', checkSubscriptionStatus);
-// app.use('/api/tenants', checkSubscriptionStatus);
-// app.use('/api/payments', checkSubscriptionStatus);
-
-// Protected routes (require authentication)
-app.use('/api/dashboard', protect, dashboardRoutes, routeErrorHandler);
-app.use('/api/properties', protect, propertiesRoutes);
-app.use('/api/tenants', protect, tenantsRoutes);
-app.use('/api/payments', protect, paymentsRoutes);
-app.use('/api/expenses', protect, expenseRoutes);
-app.use('/api/maintenance', protect, maintenanceRoutes);
-app.use('/api/cashflow', protect, cashFlowRoutes, routeErrorHandler);
-app.use('/api/invites', protect, require('./routes/inviteRoutes').default);
-app.use('/api/invite', protect, require('./routes/inviteRoutes').default);
-app.use('/api/reminders', protect, reminderRoutes);
-app.use('/api/edit-requests', protect, editRequestRoutes);
-app.use('/api/users', protect, userRoutes);
-app.use('/api/invitations', protect, invitationRoutes);
-app.use('/api/billing', protect, billingRoutes);
-app.use('/api/audit', protect, auditRoutes);
-app.use('/api/org', protect, orgRoutes);
-app.use('/api/organization', protect, orgRoutes);
-app.use('/api/subscriptions', protect, subscriptionsRoutes);
-app.use('/api/super-admin', superAdminRoutes, routeErrorHandler);
-app.use('/api/notifications', protect, notificationRoutes);
-app.use('/api/communication', protect, communicationRoutes);
-app.use('/api/sharing', protect, sharingRoutes);
-app.use('/api/upload', protect, uploadRoutes);
-app.use('/api/file-upload', protect, fileUploadRoutes);
-app.use('/api/invoices', protect, invoiceRoutes);
-app.use('/api/receipts', protect, receiptRoutes);
-app.use('/api/reports', protect, reportRoutes);
-app.use('/api/errors', errorRoutes);
-
-// 404 handler
-app.use('*', (req, res) => {
-
-    res.status(404).json({
-        success: false,
-        message: `Route ${req.originalUrl} not found`,
-        timestamp: new Date().toISOString(),
-        method: req.method
-    });
-});
-
-// Error handling middleware (must be last)
-app.use(errorHandler);
-
-// Initialize system data
-setTimeout(async () => {
-  try {
-    await masterDataService.initializeSystemData();
-
-  } catch (error) {
-    console.error('❌ Failed to initialize system data:', error);
-  }
-}, 5000); // Wait 5 seconds for DB connection
-
-// Export the configured app
-export { app };
+  console.error(`Route error in ${req.originalUrl}:
+        message: `Route ${req.originalUrl} not found

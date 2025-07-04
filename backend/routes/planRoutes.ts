@@ -14,7 +14,7 @@ router.get('/public', asyncHandler(async (req: Request, res: Response) => {
     res.status(200).json({ success: true, data: plans });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });
-  }
+
 }));
 
 router.route('/')

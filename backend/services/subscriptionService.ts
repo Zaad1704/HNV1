@@ -9,7 +9,6 @@ class SubscriptionService {
     const trialPlan = await Plan.findOne({ name: 'Free Trial' });
     if (!trialPlan) {
       throw new Error('Trial plan not found');
-    }
 
     const trialEndDate = addDays(new Date(), 14); // 14-day trial
 
@@ -23,13 +22,11 @@ class SubscriptionService {
 
     await subscription.save();
     return subscription;
-  }
 
   async upgradePlan(organizationId: string, planId: string, paymentMethodId?: string): Promise<any> {
     const plan = await Plan.findById(planId);
     if (!plan) {
       throw new Error('Plan not found');
-    }
 
     let subscription = await Subscription.findOne({ organizationId });
     
@@ -37,7 +34,6 @@ class SubscriptionService {
       subscription = new Subscription({ organizationId, planId });
     } else {
       subscription.planId = plan._id;
-    }
 
     // Calculate next billing date
     const now = new Date();
@@ -52,7 +48,6 @@ class SubscriptionService {
         break;
       default:
         nextBillingDate = addMonths(now, 1);
-    }
 
     subscription.status = 'active';
     subscription.currentPeriodEndsAt = nextBillingDate;
@@ -60,13 +55,11 @@ class SubscriptionService {
 
     await subscription.save();
     return subscription;
-  }
 
   async cancelSubscription(organizationId: string): Promise<void> {
     const subscription = await Subscription.findOne({ organizationId });
     if (!subscription) {
       throw new Error('Subscription not found');
-    }
 
     subscription.status = 'canceled';
     await subscription.save();
@@ -75,11 +68,9 @@ class SubscriptionService {
     await Organization.findByIdAndUpdate(organizationId, {
       status: 'inactive'
     });
-  }
 
   async reactivateSubscription(organizationId: string, planId: string): Promise<any> {
     return this.upgradePlan(organizationId, planId);
-  }
 
   async checkExpiredSubscriptions(): Promise<void> {
     const expiredSubscriptions = await Subscription.find({
@@ -104,8 +95,7 @@ class SubscriptionService {
         { organizationId: subscription.organizationId },
         { status: 'suspended' }
       );
-    }
-  }
+
 
   async getUsageStats(organizationId: string): Promise<any> {
     const Property = require('../models/Property');
@@ -136,9 +126,8 @@ class SubscriptionService {
         status: subscription?.status,
         plan: subscription?.planId?.name,
         expiresAt: subscription?.currentPeriodEndsAt || subscription?.trialExpiresAt
-      }
+
     };
-  }
 
   async processPayment(organizationId: string, planId: string, paymentData: any): Promise<any> {
     // Integration with Stripe or other payment processor
@@ -161,7 +150,6 @@ class SubscriptionService {
       subscription,
       message: 'Payment processed successfully'
     };
-  }
-}
+
 
 export default new SubscriptionService();

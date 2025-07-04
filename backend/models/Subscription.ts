@@ -8,7 +8,6 @@ export interface ISubscription extends Document {
   trialExpiresAt?: Date;
   currentPeriodEndsAt?: Date;
   externalId?: string; 
-}
 
 const SubscriptionSchema = new Schema<ISubscription>(
   {

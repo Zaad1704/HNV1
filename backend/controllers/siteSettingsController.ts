@@ -19,7 +19,7 @@ export const getSiteSettings = async (req: Request, res: Response): Promise<void
             subtitle: 'Automate tasks, track finances, and manage tenants with ease.',
             ctaText: 'Start Your Free Trial',
             backgroundImageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop'
-        }
+
     };
 
     try {
@@ -27,15 +27,13 @@ export const getSiteSettings = async (req: Request, res: Response): Promise<void
         if (mongoose.connection.readyState !== 1) {
             res.status(200).json({ success: true, data: defaultSettings });
             return;
-        }
 
         let settings = await SiteSettings.findOne();
 
         if (!settings) {
             settings = new SiteSettings({});
             await settings.save();
-        }
-        
+
         res.status(200).json({ success: true, data: settings });
         return;
 
@@ -44,14 +42,13 @@ export const getSiteSettings = async (req: Request, res: Response): Promise<void
         // Return default settings instead of error
         res.status(200).json({ success: true, data: defaultSettings });
         return;
-    }
+
 };
 
 export const updateSiteSettings = async (req: Request, res: Response): Promise<void> => { 
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     try {
         const settingsData = {
@@ -70,7 +67,7 @@ export const updateSiteSettings = async (req: Request, res: Response): Promise<v
     } catch (error) {
         console.error('Error updating site settings:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 
 // Add specific section update endpoints
@@ -78,7 +75,6 @@ export const updateHeroSection = async (req: Request, res: Response): Promise<vo
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     try {
         const updatedSettings = await SiteSettings.findOneAndUpdate(
@@ -92,14 +88,13 @@ export const updateHeroSection = async (req: Request, res: Response): Promise<vo
         res.status(200).json({ success: true, data: updatedSettings });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 
 export const updateLandscapeSection = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     try {
         const updatedSettings = await SiteSettings.findOneAndUpdate(
@@ -113,14 +108,13 @@ export const updateLandscapeSection = async (req: Request, res: Response): Promi
         res.status(200).json({ success: true, data: updatedSettings });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 
 export const updateBannerSection = async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     try {
         const updatedSettings = await SiteSettings.findOneAndUpdate(
@@ -134,5 +128,5 @@ export const updateBannerSection = async (req: Request, res: Response): Promise<
         res.status(200).json({ success: true, data: updatedSettings });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };

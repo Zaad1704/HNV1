@@ -18,33 +18,4 @@ const detectLocale = async (req, res) => {
     try {
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const testIp = ip === '::1' ? '8.8.8.8' : ip;
-        const geoResponse = await axios_1.default.get(`http://ip-api.com/json/${testIp}`);
-        const countryCode = geoResponse.data.countryCode;
-        if (countryCode && localeMap[countryCode]) {
-            res.status(200).json({
-                success: true,
-                ...localeMap[countryCode]
-            });
-        }
-        else {
-            res.status(200).json({
-                success: true,
-                lang: 'en',
-                currency: 'USD',
-                name: '$', // Default to English/USD
-            });
-        }
-    }
-    catch (error) {
-        console.error("IP detection failed:", error);
-        res.status(500).json({
-            success: true,
-            lang: 'en',
-            currency: 'USD',
-            name: '$',
-            message: 'IP detection failed, defaulting to English.'
-        });
-    }
-};
-exports.detectLocale = detectLocale;
-//# sourceMappingURL=localizationController.js.map
+        const geoResponse = await axios_1.default.get(`http://ip-api.com/json/${testIp}

@@ -41,7 +41,6 @@ export interface ILocation extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
 
 const LocationSchema: Schema<ILocation> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -71,7 +70,7 @@ const LocationSchema: Schema<ILocation> = new Schema({
       friday: { open: { type: String, default: '09:00' }, close: { type: String, default: '17:00' } },
       saturday: { open: { type: String, default: '10:00' }, close: { type: String, default: '14:00' } },
       sunday: { open: { type: String, default: 'closed' }, close: { type: String, default: 'closed' } }
-    }
+
   },
   
   performance: {

@@ -35,7 +35,6 @@ export interface IExportTemplate extends Document {
   isDefault: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
 
 const ExportTemplateSchema: Schema<IExportTemplate> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -55,7 +54,7 @@ const ExportTemplateSchema: Schema<IExportTemplate> = new Schema({
       right: { type: Number, default: 20 },
       bottom: { type: Number, default: 20 },
       left: { type: Number, default: 20 }
-    }
+
   },
   
   columns: [{

@@ -22,7 +22,6 @@ export interface IRole extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
 
 const RoleSchema: Schema<IRole> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },

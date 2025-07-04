@@ -5,7 +5,6 @@ export interface IPlanLimits {
   maxProperties: number;
   maxTenants: number;
   maxAgents: number;
-}
 
 export interface IPlan extends Document {
   name: string;
@@ -14,7 +13,6 @@ export interface IPlan extends Document {
   features: string[];
   limits: IPlanLimits;
   isPublic: boolean;
-}
 
 const planSchema = new Schema<IPlan>(
   {

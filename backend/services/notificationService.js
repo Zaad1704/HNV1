@@ -21,11 +21,10 @@ class NotificationService {
                 link,
             });
 
-        }
         catch (error) {
             console.error('Failed to create notification:', error);
-        }
-    }
-}
+
+
+
 exports.default = new NotificationService();
 //# sourceMappingURL=notificationService.js.map

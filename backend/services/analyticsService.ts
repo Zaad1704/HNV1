@@ -42,12 +42,12 @@ class AnalyticsService {
             collected: 0,
             tenantCount: 0
           });
-        }
+
         const stats = propertyStats.get(key);
         stats.totalDue += tenant.totalOwed;
         if (tenant.status === 'paid') {
           stats.collected += tenant.totalOwed;
-        }
+
         stats.tenantCount++;
       });
     });
@@ -92,13 +92,13 @@ class AnalyticsService {
           totalDaysLate: 0,
           missedPayments: 0
         };
-      }
+
       acc[key].totalOwed += tenant.totalOwed;
       acc[key].appearances++;
       acc[key].totalDaysLate += tenant.daysLate;
       if (tenant.status === 'overdue') {
         acc[key].missedPayments++;
-      }
+
       return acc;
     }, {} as Record<string, any>);
 
@@ -122,7 +122,7 @@ class AnalyticsService {
           collectionRateChange: averageCollectionRate - previousCollectionRate,
           outstandingChange: -8.5, // Mock data
           averageDaysChange: -1.2 // Mock data
-        }
+
       },
       breakdown: {
         byProperty,
@@ -131,7 +131,6 @@ class AnalyticsService {
       },
       problemTenants
     };
-  }
 
   async getCollectionTrends(organizationId: string, months: number = 12): Promise<any> {
     const endDate = new Date();
@@ -151,7 +150,6 @@ class AnalyticsService {
       outstanding: period.summary.outstandingRent,
       totalUnits: period.summary.totalUnits
     }));
-  }
 
   async getPropertyPerformance(organizationId: string): Promise<any> {
     const properties = await Property.find({ organizationId }).lean();
@@ -185,7 +183,6 @@ class AnalyticsService {
     });
 
     return propertyPerformance.sort((a, b) => b.collectionRate - a.collectionRate);
-  }
 
   async getTenantRiskAnalysis(organizationId: string): Promise<any> {
     const periods = await RentCollectionPeriod.find({
@@ -209,18 +206,17 @@ class AnalyticsService {
             totalOwed: 0,
             lastPaymentDate: null
           });
-        }
-        
+
         const risk = tenantRisks.get(key);
         risk.totalPayments++;
         if (tenant.daysLate > 0) {
           risk.latePayments++;
           risk.totalDaysLate += tenant.daysLate;
-        }
+
         risk.totalOwed += tenant.totalOwed;
         if (tenant.paymentHistory?.lastPayment) {
           risk.lastPaymentDate = tenant.paymentHistory.lastPayment;
-        }
+
       });
     });
 
@@ -233,7 +229,6 @@ class AnalyticsService {
         riskScore = 'high';
       } else if (latePaymentRate > 25 || averageDaysLate > 7) {
         riskScore = 'medium';
-      }
 
       return {
         ...risk,
@@ -242,7 +237,6 @@ class AnalyticsService {
         riskScore
       };
     }).sort((a, b) => b.latePaymentRate - a.latePaymentRate);
-  }
-}
+
 
 export default new AnalyticsService();

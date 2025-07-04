@@ -12,7 +12,6 @@ router.get('/monthly-collection', asyncHandler(async (req: Request, res: Respons
   if (!req.user?.organizationId) {
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
-  }
 
   const { month, year } = req.query;
   const targetDate = new Date(Number(year), Number(month) - 1, 1);
@@ -46,16 +45,4 @@ router.get('/monthly-collection', asyncHandler(async (req: Request, res: Respons
         unitNo: tenant.unit,
         propertyName: (tenant.propertyId as any)?.name || 'N/A',
         rentAmount: tenant.rentAmount || 0,
-        rentStartMonth: `${month}/${year}`,
-        overdueMonths: overduePayments.map(p => 
-          new Date(p.paymentDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-        ),
-        isCollected: !!payment
-      };
-    })
-  );
-
-  res.json({ success: true, data: collectionData });
-}));
-
-export default router;
+        rentStartMonth: `${month}/${year}

@@ -13,7 +13,7 @@ const getTenantDashboardData = async (req, res) => {
     if (!req.user || req.user.role !== 'Tenant') {
         res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
         return;
-    }
+
     try {
         const tenantInfo = await Tenant_1.default.findOne({
             email: req.user.email,
@@ -25,12 +25,12 @@ const getTenantDashboardData = async (req, res) => {
                 path: 'createdBy',
                 model: 'User',
                 select: 'name email'
-            }
+
         });
         if (!tenantInfo) {
             res.status(404).json({ success: false, message: 'Tenant profile not found.' });
             return;
-        }
+
         const activeLease = await Lease_1.default.findOne({ tenantId: tenantInfo._id, status: 'active' });
         const paymentHistory = await Payment_1.default.find({ tenantId: tenantInfo._id })
             .sort({ paymentDate: -1 })
@@ -69,11 +69,11 @@ const getTenantDashboardData = async (req, res) => {
             upcomingDues,
         };
         res.status(200).json({ success: true, data: dashboardData });
-    }
+
     catch (error) {
         console.error('Error fetching tenant dashboard data:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.getTenantDashboardData = getTenantDashboardData;
 //# sourceMappingURL=tenantPortalController.js.map

@@ -14,7 +14,7 @@ const date_fns_1 = require("date-fns");
 exports.getOverviewStats = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user) {
         throw new Error('User not authorized');
-    }
+
     const organizationId = req.user.organizationId;
     const totalProperties = await Property_1.default.countDocuments({ organizationId });
     const activeTenants = await Tenant_1.default.countDocuments({ organizationId, status: 'Active' });
@@ -32,13 +32,13 @@ exports.getOverviewStats = (0, express_async_handler_1.default)(async (req, res)
             activeTenants,
             monthlyRevenue: monthlyRevenue[0]?.total || 0,
             occupancyRate
-        }
+
     });
 });
 exports.getLateTenants = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const lateTenants = await Tenant_1.default.find({ organizationId, status: 'Late' })
         .populate('propertyId', 'name unit')
@@ -49,7 +49,7 @@ exports.getLateTenants = (0, express_async_handler_1.default)(async (req, res) =
 exports.getExpiringLeases = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const today = new Date();
     const threeMonthsFromNow = (0, date_fns_1.addMonths)(today, 3);
@@ -67,7 +67,7 @@ exports.getExpiringLeases = (0, express_async_handler_1.default)(async (req, res
 exports.getFinancialSummary = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const sixMonthsAgo = (0, date_fns_1.subMonths)(new Date(), 5);
     const monthlyData = [];
@@ -95,13 +95,13 @@ exports.getFinancialSummary = (0, express_async_handler_1.default)(async (req, r
             Revenue: revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0,
             Expenses: expensesResult.length > 0 ? expensesResult[0].totalExpenses : 0,
         });
-    }
+
     res.status(200).json({ success: true, data: monthlyData });
 });
 exports.getOccupancySummary = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const sixMonthsAgo = (0, date_fns_1.subMonths)(new Date(), 5);
     const monthlyData = [];
@@ -117,13 +117,13 @@ exports.getOccupancySummary = (0, express_async_handler_1.default)(async (req, r
             name: monthName,
             'New Tenants': newTenantsCount,
         });
-    }
+
     res.status(200).json({ success: true, data: monthlyData });
 });
 exports.getRentStatus = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const activeCount = await Tenant_1.default.countDocuments({ organizationId, status: 'Active' });
     const lateCount = await Tenant_1.default.countDocuments({ organizationId, status: 'Late' });
@@ -136,7 +136,7 @@ exports.getRentStatus = (0, express_async_handler_1.default)(async (req, res) =>
 exports.getRecentActivity = (0, express_async_handler_1.default)(async (req, res) => {
     if (!req.user?.organizationId) {
         throw new Error('User or organization not found');
-    }
+
     const { organizationId } = req.user;
     const activities = await AuditLog_1.default.find({ organizationId })
         .populate('user', 'name')

@@ -63,8 +63,4 @@ PropertySchema.pre('save', async function (next) {
             40.7128 + (Math.random() - 0.5) * 0.1
         ]
     };
-    this.address.formattedAddress = `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}`;
-    next();
-});
-exports.default = (0, mongoose_1.model)('Property', PropertySchema);
-//# sourceMappingURL=Property.js.map
+    this.address.formattedAddress = `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}

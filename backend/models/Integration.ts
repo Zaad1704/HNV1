@@ -28,7 +28,6 @@ export interface IIntegration extends Document {
   
   createdAt: Date;
   updatedAt: Date;
-}
 
 const IntegrationSchema: Schema<IIntegration> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -66,7 +65,7 @@ const IntegrationSchema: Schema<IIntegration> = new Schema({
     apiCalls: { type: Number, default: 0 },
     dataTransferred: { type: Number, default: 0 },
     lastUsed: Date
-  }
+
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

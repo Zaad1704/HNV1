@@ -11,12 +11,12 @@ const createSuperAdmin = async (req, res) => {
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
         return res.status(400).json({ success: false, message: 'Email, password, and name are required' });
-    }
+
     try {
         const userExists = await User_1.default.findOne({ email });
         if (userExists) {
             return res.status(400).json({ success: false, message: 'Super admin already exists' });
-        }
+
         const user = await User_1.default.create({
             name,
             email,
@@ -24,10 +24,10 @@ const createSuperAdmin = async (req, res) => {
             role: 'Super Admin',
         });
         res.status(201).json({ success: true, data: user });
-    }
+
     catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.createSuperAdmin = createSuperAdmin;
 /**
@@ -39,12 +39,12 @@ const createDefaultPlans = async (req, res) => {
     const { secretKey } = req.body;
     if (!secretKey || secretKey !== process.env.SETUP_SECRET_KEY) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
+
     try {
         const plansExist = await Plan_1.default.countDocuments();
         if (plansExist > 0) {
             return res.status(400).json({ success: false, message: 'Default plans have already been created.' });
-        }
+
         // FIX: We define the plans with all the required fields from our new Plan model.
         // We ensure the plans meant for the public pricing page have isPublic: true.
         const defaultPlans = [
@@ -71,15 +71,15 @@ const createDefaultPlans = async (req, res) => {
                 isPublic: true,
                 features: ['Unlimited Properties', 'Advanced Reporting', 'Vendor Management', 'Priority Phone Support'],
                 limits: { maxProperties: 1000, maxTenants: 1000, maxAgents: 10 }
-            }
+
         ];
         await Plan_1.default.insertMany(defaultPlans);
         res.status(201).json({ success: true, message: 'Default subscription plans created successfully!' });
-    }
+
     catch (error) {
         console.error('Error creating default plans:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.createDefaultPlans = createDefaultPlans;
 //# sourceMappingURL=setupController.js.map

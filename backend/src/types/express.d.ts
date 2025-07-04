@@ -6,5 +6,4 @@ declare module 'express-serve-static-core' {
     user?: (IUser & Document<any, any, any>) | null;
     // FIX: Add the organizationId property
     organizationId?: Types.ObjectId;
-  }
-}
+

@@ -10,14 +10,14 @@ const translateContent = async (req, res) => {
     if (!text || !targetLanguage) {
         res.status(400).json({ success: false, message: 'Text and targetLanguage are required.' });
         return;
-    }
+
     try {
         const translatedText = await translationService_1.default.translateText(text, targetLanguage);
         res.status(200).json({ success: true, translatedText });
-    }
+
     catch (error) {
         res.status(500).json({ success: false, message: 'Failed to translate content.' });
-    }
+
 };
 exports.translateContent = translateContent;
 //# sourceMappingURL=translationController.js.map

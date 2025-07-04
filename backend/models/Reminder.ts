@@ -13,7 +13,6 @@ export interface IReminder extends Document {
   status: 'active' | 'inactive' | 'sent' | 'failed'; // Status of the reminder record
   lastSentDate?: Date; // Last time this reminder was sent
   sentCount: number; // How many times this reminder has been sent
-}
 
 const ReminderSchema: Schema<IReminder> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },

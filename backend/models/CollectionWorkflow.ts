@@ -32,7 +32,6 @@ export interface ICollectionWorkflow extends Document {
   
   createdAt: Date;
   updatedAt: Date;
-}
 
 const CollectionWorkflowSchema: Schema<ICollectionWorkflow> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -45,7 +44,7 @@ const CollectionWorkflowSchema: Schema<ICollectionWorkflow> = new Schema({
       minAmount: Number,
       excludeStatuses: [String],
       propertyTypes: [String]
-    }
+
   },
   
   actions: [{
@@ -72,7 +71,7 @@ const CollectionWorkflowSchema: Schema<ICollectionWorkflow> = new Schema({
       enum: ['legal_notice', 'eviction', 'collections_agency'] 
     },
     assignTo: String
-  }
+
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

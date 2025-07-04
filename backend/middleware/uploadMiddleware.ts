@@ -13,7 +13,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
         cb(null, true);
     } else {
         cb(new Error('Not an image! Please upload only images.'));
-    }
+
 };
 
 const upload = multer({ 

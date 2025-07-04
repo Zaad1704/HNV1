@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   organizationId?: string;
-}
 
 class WebSocketService {
   private io: SocketIOServer | null = null;
@@ -15,7 +14,7 @@ class WebSocketService {
       cors: {
         origin: process.env.FRONTEND_URL || 'http://localhost:3000',
         credentials: true
-      }
+
     });
 
     this.io.use((socket: AuthenticatedSocket, next) => {
@@ -29,36 +28,11 @@ class WebSocketService {
         next();
       } catch (err) {
         next(new Error('Authentication error'));
-      }
+
     });
 
     this.io.on('connection', (socket: AuthenticatedSocket) => {
-      socket.join(`org_${socket.organizationId}`);
-      socket.join(`user_${socket.userId}`);
-      
-      socket.on('disconnect', () => {
-
-      });
-    });
-  }
-
-  notifyOrganization(orgId: string, event: string, data: any) {
-    if (this.io) {
-      this.io.to(`org_${orgId}`).emit(event, data);
-    }
-  }
-
-  notifyUser(userId: string, event: string, data: any) {
-    if (this.io) {
-      this.io.to(`user_${userId}`).emit(event, data);
-    }
-  }
-
-  broadcastToAll(event: string, data: any) {
-    if (this.io) {
-      this.io.emit(event, data);
-    }
-  }
-}
-
-export default new WebSocketService();
+      socket.join(`org_${socket.organizationId}
+      socket.join(`user_${socket.userId}
+      this.io.to(`org_${orgId}
+      this.io.to(`user_${userId}

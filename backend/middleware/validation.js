@@ -10,7 +10,7 @@ const handleValidationErrors = (req, res, next) => {
             message: 'Validation failed',
             errors: errors.array()
         });
-    }
+
     next();
 };
 exports.handleValidationErrors = handleValidationErrors;

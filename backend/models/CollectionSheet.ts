@@ -48,7 +48,6 @@ export interface ICollectionSheet extends Document {
   
   createdAt: Date;
   updatedAt: Date;
-}
 
 const CollectionSheetSchema: Schema<ICollectionSheet> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -81,7 +80,7 @@ const CollectionSheetSchema: Schema<ICollectionSheet> = new Schema({
       showTotals: { type: Boolean, default: true },
       showSignature: { type: Boolean, default: true },
       showDate: { type: Boolean, default: true }
-    }
+
   },
   
   customization: {
@@ -97,7 +96,7 @@ const CollectionSheetSchema: Schema<ICollectionSheet> = new Schema({
     fileUrl: String,
     fileName: String,
     generatedAt: Date
-  }
+
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

@@ -69,14 +69,14 @@ const createUserLimiter = (maxRequests = 1000) => {
         if (!userLimit || now > userLimit.resetTime) {
             userLimits.set(userId, { count: 1, resetTime: now + windowMs });
             return next();
-        }
+
         if (userLimit.count >= maxRequests) {
             return res.status(429).json({
                 success: false,
                 message: 'User rate limit exceeded',
                 retryAfter: Math.ceil((userLimit.resetTime - now) / 1000)
             });
-        }
+
         userLimit.count++;
         next();
     };

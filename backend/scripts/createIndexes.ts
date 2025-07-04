@@ -8,7 +8,6 @@ const createDatabaseIndexes = async () => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error('MONGO_URI is not defined');
-    }
 
     await mongoose.connect(process.env.MONGO_URI);
     logger.info('Connected to MongoDB for index creation');
@@ -132,20 +131,4 @@ const createDatabaseIndexes = async () => {
     const collections = ['users', 'properties', 'tenants', 'payments', 'expenses', 'maintenancerequests'];
     for (const collectionName of collections) {
       const indexes = await db.collection(collectionName).indexes();
-      logger.info(`${collectionName} indexes:`, indexes.map(idx => idx.name));
-    }
-
-  } catch (error) {
-    logger.error('Error creating indexes:', error);
-  } finally {
-    await mongoose.disconnect();
-    logger.info('Disconnected from MongoDB');
-  }
-};
-
-// Run if called directly
-if (require.main === module) {
-  createDatabaseIndexes();
-}
-
-export { createDatabaseIndexes };
+      logger.info(`${collectionName} indexes:

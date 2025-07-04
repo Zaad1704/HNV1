@@ -5,7 +5,6 @@ export interface IBranding {
   companyName: string;
   companyLogoUrl: string;
   companyAddress: string;
-}
 
 export interface IOrganization extends Document {
   name: string;
@@ -21,7 +20,6 @@ export interface IOrganization extends Document {
   };
   // NEW FIELD for A.2: Control self-service data deletion
   allowSelfDeletion: boolean; 
-}
 
 const OrganizationSchema: Schema<IOrganization> = new Schema({
   name: { type: String, required: true },

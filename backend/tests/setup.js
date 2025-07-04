@@ -21,6 +21,6 @@ afterEach(async () => {
     for (const key in collections) {
         const collection = collections[key];
         await collection.deleteMany({});
-    }
+
 });
 //# sourceMappingURL=setup.js.map

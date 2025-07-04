@@ -29,7 +29,7 @@ router.delete('/users/:userId', (0, express_async_handler_1.default)(async (req,
     if (!user) {
         res.status(404).json({ success: false, message: 'User not found' });
         return;
-    }
+
     res.json({ success: true, message: 'User deleted successfully' });
 }));
 router.post('/moderators', (0, express_async_handler_1.default)(async (req, res) => {

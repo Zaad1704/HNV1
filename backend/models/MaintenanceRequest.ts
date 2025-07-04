@@ -10,7 +10,6 @@ export interface IMaintenanceRequest extends Document {
     status: 'Open' | 'In Progress' | 'Completed';
     createdAt: Date; // FIX: Added createdAt property
     updatedAt: Date; // FIX: Added updatedAt property
-}
 
 const MaintenanceRequestSchema: Schema<IMaintenanceRequest> = new Schema({
     propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },

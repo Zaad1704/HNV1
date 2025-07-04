@@ -14,7 +14,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs")); // CORRECTED IMPORT
 const createUserService = async (userData) => {
     if (!userData.password) {
         throw new Error('Password is required to create a user.');
-    }
+
     const salt = await bcryptjs_1.default.genSalt(10);
     const hashedPassword = await bcryptjs_1.default.hash(userData.password, salt);
     const user = new User_1.default({

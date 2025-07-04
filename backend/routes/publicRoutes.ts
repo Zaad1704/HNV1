@@ -23,9 +23,9 @@ router.get('/landing-data', async (req, res) => {
         siteSettings: { siteName: 'HNV Property Management' },
         plans: [],
         stats: { totalProperties: 2500, totalUsers: 1000, countriesServed: 25 }
-      }
+
     });
-  }
+
 });
 
 // Public site settings - connects to super admin editor
@@ -43,8 +43,7 @@ router.get('/site-settings', async (req, res) => {
         statsTitle: 'Trusted by Property Managers Worldwide',
         statsSubtitle: 'Join thousands of property managers who trust our platform'
       });
-    }
-    
+
     res.json({
       success: true,
       data: settings
@@ -59,9 +58,9 @@ router.get('/site-settings', async (req, res) => {
         siteDescription: 'Professional Property Management Solutions',
         heroTitle: 'The All-in-One Platform for Modern Property Management',
         statsTitle: 'Trusted by Property Managers Worldwide'
-      }
+
     });
-  }
+
 });
 
 // Public plans - connects to super admin plans
@@ -78,7 +77,7 @@ router.get('/plans', asyncHandler(async (req, res) => {
       success: true,
       data: []
     });
-  }
+
 }));
 
 // Validate organization code
@@ -91,19 +90,18 @@ router.get('/validate-org-code/:code', asyncHandler(async (req, res, next) => {
     if (!organization) {
       res.status(404).json({ success: false, message: 'Invalid organization code' });
       return;
-    }
-    
+
     res.json({ 
       success: true, 
       data: { 
         name: organization.name, 
         code: organization.organizationCode,
         owner: organization.owner
-      } 
+
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to validate organization code' });
-  }
+
 }));
 
 // Public stats for landing page
@@ -124,7 +122,7 @@ router.get('/stats', asyncHandler(async (req, res) => {
         totalOrganizations,
         totalProperties: totalUsers * 2, // Estimated
         uptime: 99.9
-      }
+
     });
   } catch (error) {
     console.error('Public stats error:', error);
@@ -135,9 +133,9 @@ router.get('/stats', asyncHandler(async (req, res) => {
         totalOrganizations: 0,
         totalProperties: 0,
         uptime: 99.9
-      }
+
     });
-  }
+
 }));
 
 export default router;

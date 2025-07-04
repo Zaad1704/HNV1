@@ -18,13 +18,13 @@ router.get('/', (0, express_async_handler_1.default)(async (req, res) => {
     };
     if (userId) {
         query.user = userId;
-    }
+
     if (action) {
         query.action = { $regex: action, $options: 'i' };
-    }
+
     if (startDate && endDate) {
         query.timestamp = { $gte: new Date(startDate), $lte: new Date(endDate) };
-    }
+
     const logs = await AuditLog_1.default.find(query)
         .populate('user', 'name email')
         .sort({ timestamp: -1 })

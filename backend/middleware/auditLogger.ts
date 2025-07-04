@@ -22,7 +22,7 @@ export const auditLogger = (action: string, resource: string) => {
           ipAddress: req.ip,
           userAgent: req.get('User-Agent') || 'Unknown'
         }).catch(err => console.error('Audit log error:', err));
-      }
+
       return originalSend.call(this, data);
     };
     

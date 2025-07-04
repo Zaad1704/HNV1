@@ -15,10 +15,10 @@ router.get('/public', (0, express_async_handler_1.default)(async (req, res) => {
     try {
         const plans = await Plan_1.default.find({ isPublic: true }).sort({ price: 1 });
         res.status(200).json({ success: true, data: plans });
-    }
+
     catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 }));
 router.route('/')
     .get((0, express_async_handler_1.default)(planController_1.getPlans))

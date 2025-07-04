@@ -51,7 +51,6 @@ export interface IRentCollectionPeriod extends Document {
   
   generatedAt: Date;
   lastUpdated: Date;
-}
 
 const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -81,8 +80,8 @@ const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
       pending: {
         count: { type: Number, default: 0 },
         amount: { type: Number, default: 0 }
-      }
-    }
+
+
   },
   
   tenants: [{
@@ -108,7 +107,7 @@ const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
         type: String, 
         enum: ['phone', 'email', 'sms'], 
         default: 'phone' 
-      }
+
     },
     
     paymentHistory: {

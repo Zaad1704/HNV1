@@ -12,20 +12,20 @@ const getSiteSettings = async (req, res) => {
 
             settings = new SiteSettings_1.default({});
             await settings.save();
-        }
+
         res.status(200).json({ success: true, data: settings });
-    }
+
     catch (error) {
         console.error('Error fetching site settings:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.getSiteSettings = getSiteSettings;
 const updateSiteSettings = async (req, res) => {
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
+
     try {
         const settingsData = {
             ...req.body,
@@ -37,11 +37,11 @@ const updateSiteSettings = async (req, res) => {
             runValidators: true,
         });
         res.status(200).json({ success: true, data: updatedSettings });
-    }
+
     catch (error) {
         console.error('Error updating site settings:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 exports.updateSiteSettings = updateSiteSettings;
 //# sourceMappingURL=siteSettingsController.js.map

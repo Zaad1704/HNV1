@@ -8,7 +8,7 @@ export const config = {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-    }
+
   },
   
   auth: {
@@ -50,5 +50,5 @@ export const config = {
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-  }
+
 };

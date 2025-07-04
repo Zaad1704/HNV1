@@ -18,7 +18,7 @@ AgentInvitationSchema.pre('validate', function (next) {
     if (this.isNew) {
         this.token = crypto_1.default.randomBytes(32).toString('hex');
         this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 day expiry
-    }
+
     next();
 });
 exports.default = (0, mongoose_1.model)('AgentInvitation', AgentInvitationSchema);

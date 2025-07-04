@@ -45,7 +45,6 @@ export const updateIntegration = asyncHandler(async (req: Request, res: Response
       message: 'Integration not found'
     });
     return;
-  }
 
   res.json({
     success: true,
@@ -67,7 +66,6 @@ export const deleteIntegration = asyncHandler(async (req: Request, res: Response
       message: 'Integration not found'
     });
     return;
-  }
 
   res.json({
     success: true,
@@ -114,7 +112,7 @@ export const globalSearch = asyncHandler(async (req: Request, res: Response): Pr
       sort: sort as string,
       page: parseInt(page as string),
       limit: parseInt(limit as string)
-    }
+
   );
 
   res.json({

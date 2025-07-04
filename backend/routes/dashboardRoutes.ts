@@ -30,7 +30,7 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
         totalProperties,
         totalUsers,
         countriesServed
-      }
+
     });
   } catch (error) {
     res.status(200).json({
@@ -39,9 +39,9 @@ router.get('/landing-stats', asyncHandler(async (req: Request, res: Response) =>
         totalProperties: 2500,
         totalUsers: 5000,
         countriesServed: 25
-      }
+
     });
-  }
+
 }));
 
 // Protected routes - auth already applied in app.ts, but we need authorize for role checking
@@ -70,8 +70,7 @@ router.get('/tenant-portal', authorize(['Tenant']), asyncHandler(async (req: Req
   if (!tenant) {
     res.status(404).json({ success: false, message: 'Tenant profile not found' });
     return;
-  }
-  
+
   const paymentHistory = await Payment.find({ tenantId: tenant._id }).sort({ createdAt: -1 }).limit(10);
   
   res.json({
@@ -83,8 +82,8 @@ router.get('/tenant-portal', authorize(['Tenant']), asyncHandler(async (req: Req
         totalAmount: tenant.rentAmount || 1200,
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         lineItems: [{ description: 'Monthly Rent', amount: tenant.rentAmount || 1200 }]
-      }
-    }
+
+
   });
 }));
 

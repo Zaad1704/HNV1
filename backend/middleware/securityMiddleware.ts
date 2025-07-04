@@ -24,7 +24,7 @@ export const securityHeaders = helmet({
     maxAge: 31536000,
     includeSubDomains: true,
     preload: true
-  }
+
 });
 
 // Rate limiting
@@ -41,7 +41,7 @@ export const createRateLimit = (windowMs: number, max: number, message?: string)
         message: 'Rate limit exceeded',
         retryAfter: Math.round(windowMs / 1000)
       });
-    }
+
   });
 
 // Speed limiting
@@ -57,17 +57,17 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction) =
   const sanitize = (obj: any): any => {
     if (typeof obj === 'string') {
       return obj.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    }
+
     if (Array.isArray(obj)) {
       return obj.map(sanitize);
-    }
+
     if (obj && typeof obj === 'object') {
       const sanitized: any = {};
       for (const key in obj) {
         sanitized[key] = sanitize(obj[key]);
-      }
+
       return sanitized;
-    }
+
     return obj;
   };
 
@@ -86,7 +86,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
       message: 'Validation failed',
       errors: errors.array()
     });
-  }
+
   next();
 };
 
@@ -116,8 +116,7 @@ export const ipWhitelist = (allowedIPs: string[]) => {
     
     if (process.env.NODE_ENV === 'development') {
       return next();
-    }
-    
+
     if (allowedIPs.includes(clientIP as string)) {
       next();
     } else {
@@ -125,7 +124,7 @@ export const ipWhitelist = (allowedIPs: string[]) => {
         success: false,
         message: 'Access denied from this IP address'
       });
-    }
+
   };
 };
 
@@ -139,31 +138,4 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
       method: req.method,
       url: req.url,
       status: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date().toISOString()
-    };
-    
-    if (process.env.NODE_ENV === 'production') {
-      );
-    } else {
-
-    }
-  });
-  
-  next();
-};
-
-export default {
-  securityHeaders,
-  createRateLimit,
-  speedLimiter,
-  sanitizeInput,
-  handleValidationErrors,
-  emailValidation,
-  passwordValidation,
-  nameValidation,
-  ipWhitelist,
-  requestLogger
-};
+      duration: `${duration}ms

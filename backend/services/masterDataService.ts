@@ -10,7 +10,6 @@ class MasterDataService {
     await this.createDefaultPlans();
     await this.createDefaultSiteSettings();
     await this.ensureSuperAdmin();
-  }
 
   // Create default plans if they don't exist
   private async createDefaultPlans(): Promise<void> {
@@ -48,13 +47,11 @@ class MasterDataService {
           features: ['Unlimited properties', 'White-label solution', '24/7 phone support', 'Custom integrations', 'Multi-location'],
           limits: { maxProperties: -1, maxTenants: -1, maxAgents: -1 }, // -1 means unlimited
           isPublic: true
-        }
+
       ];
 
       await Plan.insertMany(defaultPlans);
 
-    }
-  }
 
   // Create default site settings
   private async createDefaultSiteSettings(): Promise<void> {
@@ -95,7 +92,7 @@ class MasterDataService {
               title: 'Maintenance Tracking',
               description: 'Streamlined maintenance requests and vendor management.',
               icon: 'wrench'
-            }
+
           ]
         },
         aboutSection: {
@@ -124,7 +121,7 @@ class MasterDataService {
               imageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               linkedin: '#',
               twitter: '#'
-            }
+
           ]
         },
         contactSection: {
@@ -138,14 +135,12 @@ class MasterDataService {
             twitter: '#',
             linkedin: '#',
             instagram: '#'
-          }
-        }
+
+
       };
 
       await SiteSettings.create(defaultSettings);
 
-    }
-  }
 
   // Ensure super admin exists
   private async ensureSuperAdmin(): Promise<void> {
@@ -181,8 +176,6 @@ class MasterDataService {
         isLifetime: true
       });
 
-    }
-  }
 
   // Get all system data for Super Admin dashboard
   async getSystemOverview(): Promise<any> {
@@ -215,16 +208,14 @@ class MasterDataService {
         status: 'healthy',
         uptime: process.uptime(),
         memoryUsage: process.memoryUsage()
-      }
+
     };
-  }
 
   private async calculateTotalRevenue(): Promise<number> {
     const activeSubscriptions = await Subscription.find({ status: 'active' }).populate('planId');
     return activeSubscriptions.reduce((total, sub: any) => {
       return total + (sub.planId?.price || 0);
     }, 0) / 100; // Convert from cents to dollars
-  }
 
   // Update site content (Super Admin only)
   async updateSiteContent(section: string, data: any): Promise<any> {
@@ -233,20 +224,16 @@ class MasterDataService {
       new: true, 
       upsert: true 
     });
-  }
 
   // Manage plans (Super Admin only)
   async createPlan(planData: any): Promise<any> {
     return await Plan.create(planData);
-  }
 
   async updatePlan(planId: string, planData: any): Promise<any> {
     return await Plan.findByIdAndUpdate(planId, planData, { new: true });
-  }
 
   async deletePlan(planId: string): Promise<void> {
     await Plan.findByIdAndDelete(planId);
-  }
 
   // Get landing page data (public)
   async getLandingPageData(): Promise<any> {
@@ -261,7 +248,6 @@ class MasterDataService {
       plans: publicPlans,
       stats
     };
-  }
 
   private async getPublicStats(): Promise<any> {
     const totalProperties = await this.getRandomStat(2500, 3000);
@@ -275,11 +261,9 @@ class MasterDataService {
       countriesServed,
       uptimeGuarantee
     };
-  }
 
   private getRandomStat(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-}
+
 
 export default new MasterDataService();

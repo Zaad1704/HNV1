@@ -19,7 +19,7 @@ export const protect = async (
       token = req.headers.authorization.split(" ")[1];
       if (!process.env.JWT_SECRET) {
         throw new Error("JWT_SECRET not defined");
-      }
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: string };
 
       const foundUser = await User.findById(decoded.id).select("-password");
@@ -29,14 +29,12 @@ export const protect = async (
         return res
           .status(401)
           .json({ success: false, message: "Not authorized, user not found" });
-      }
 
       // Check user's individual status (e.g., suspended by admin)
       if (req.user.status === "suspended" || req.user.status === "pending" || req.user.status === "inactive") {
         return res
           .status(401)
           .json({ success: false, message: "User account is not active." });
-      }
 
       // Check organization's subscription status (relaxed approach)
       if (req.user.organizationId) {
@@ -47,22 +45,21 @@ export const protect = async (
             // Allow Super Admin and Super Moderator regardless of subscription
             if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
               return next();
-            }
+
             // Block access for canceled/inactive subscriptions
             if (subscription?.status === 'canceled' || subscription?.status === 'inactive') {
               return res.status(403).json({ 
                 success: false, 
                 message: 'Subscription has been canceled. Please contact support.' 
               });
-            }
-          }
-          
+
+
           // Check if subscription has expired
           if (subscription && subscription.currentPeriodEndsAt && new Date() > subscription.currentPeriodEndsAt) {
             // Allow Super Admin and Super Moderator regardless of expiration
             if (req.user.role === 'Super Admin' || req.user.role === 'Super Moderator') {
               return next();
-            }
+
             // Auto-cancel expired subscription
             await Subscription.findByIdAndUpdate(subscription._id, {
               status: 'expired',
@@ -72,7 +69,7 @@ export const protect = async (
               success: false, 
               message: 'Subscription has expired. Please renew to continue using the service.' 
             });
-          }
+
         } catch (subscriptionError) {
           console.warn('Subscription check failed:', subscriptionError);
           // Don't block user if subscription check fails
@@ -80,12 +77,11 @@ export const protect = async (
             status: 'unknown',
             message: 'Unable to verify subscription status.'
           };
-        }
+
       } else if (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator') {
         // Only block if user has no organization and is not a super user
         console.warn('User has no organization:', req.user.email);
         (req as any).organizationWarning = 'User is not associated with an organization.';
-      }
 
       return next(); // Proceed if user and subscription are active
 
@@ -93,11 +89,11 @@ export const protect = async (
       // Differentiate between token errors and other errors
       if (error instanceof jwt.JsonWebTokenError) {
           return res.status(401).json({ success: false, message: "Not authorized, invalid token." });
-      }
+
       console.error("Authentication/Authorization error in protect middleware:", error);
       return res.status(500).json({ success: false, message: "Server Error during authentication." });
-    }
-  }
+
+
   return res
     .status(401)
     .json({ success: false, message: "Not authorized, no token provided." });
@@ -109,10 +105,4 @@ export const authorize = (...roles: IUser["role"][]) => {
     if (!req.user || !roles.includes(req.user.role)) {
       res.status(403).json({
         success: false,
-        message: `User role ${req.user?.role} is not authorized`,
-      });
-      return;
-    }
-    next();
-  };
-};
+        message: `User role ${req.user?.role} is not authorized

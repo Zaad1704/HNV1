@@ -12,10 +12,10 @@ const storage = multer_1.default.memoryStorage(); // <--- CHANGE: Use memoryStor
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
-    }
+
     else {
         cb(new Error('Not an image! Please upload only images.'));
-    }
+
 };
 const upload = (0, multer_1.default)({
     storage: storage, // <--- Use the memory storage

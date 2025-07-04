@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs'; // CORRECTED IMPORT
 export const createUserService = async (userData: Partial<IUser>): Promise<IUser> => {
     if (!userData.password) {
         throw new Error('Password is required to create a user.');
-    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(userData.password, salt);
 

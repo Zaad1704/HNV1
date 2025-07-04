@@ -7,7 +7,6 @@ class CacheService {
 
   constructor() {
     this.initializeRedis();
-  }
 
   private async initializeRedis() {
     try {
@@ -18,10 +17,10 @@ class CacheService {
             reconnectStrategy: (retries) => {
               if (retries > 10) {
                 return new Error('Retry attempts exhausted');
-              }
+
               return Math.min(retries * 100, 3000);
-            }
-          }
+
+
         });
 
         this.client.on('connect', () => {
@@ -38,12 +37,11 @@ class CacheService {
       } else {
         logger.warn('Redis URL not provided, using in-memory cache fallback');
         this.setupMemoryFallback();
-      }
+
     } catch (error) {
       logger.error('Failed to initialize Redis, using memory fallback:', error);
       this.setupMemoryFallback();
-    }
-  }
+
 
   private memoryCache = new Map<string, { value: any; expiry: number }>();
 
@@ -55,10 +53,9 @@ class CacheService {
       for (const [key, item] of this.memoryCache.entries()) {
         if (item.expiry < now) {
           this.memoryCache.delete(key);
-        }
-      }
+
+
     }, 5 * 60 * 1000);
-  }
 
   async get(key: string): Promise<any> {
     try {
@@ -70,15 +67,14 @@ class CacheService {
         const item = this.memoryCache.get(key);
         if (item && item.expiry > Date.now()) {
           return item.value;
-        }
+
         this.memoryCache.delete(key);
         return null;
-      }
+
     } catch (error) {
       logger.error('Cache get error:', error);
       return null;
-    }
-  }
+
 
   async set(key: string, value: any, ttlSeconds = 3600): Promise<boolean> {
     try {
@@ -92,12 +88,11 @@ class CacheService {
           expiry: Date.now() + (ttlSeconds * 1000)
         });
         return true;
-      }
+
     } catch (error) {
       logger.error('Cache set error:', error);
       return false;
-    }
-  }
+
 
   async del(key: string): Promise<boolean> {
     try {
@@ -107,12 +102,11 @@ class CacheService {
       } else {
         this.memoryCache.delete(key);
         return true;
-      }
+
     } catch (error) {
       logger.error('Cache delete error:', error);
       return false;
-    }
-  }
+
 
   async exists(key: string): Promise<boolean> {
     try {
@@ -121,12 +115,11 @@ class CacheService {
       } else {
         const item = this.memoryCache.get(key);
         return item ? item.expiry > Date.now() : false;
-      }
+
     } catch (error) {
       logger.error('Cache exists error:', error);
       return false;
-    }
-  }
+
 
   async flush(): Promise<boolean> {
     try {
@@ -136,50 +129,20 @@ class CacheService {
       } else {
         this.memoryCache.clear();
         return true;
-      }
+
     } catch (error) {
       logger.error('Cache flush error:', error);
       return false;
-    }
-  }
+
 
   // Cache patterns for common use cases
   async cacheUserData(userId: string, userData: any, ttl = 1800) {
-    return this.set(`user:${userId}`, userData, ttl);
-  }
-
-  async getUserData(userId: string) {
-    return this.get(`user:${userId}`);
-  }
-
-  async cachePropertyData(propertyId: string, propertyData: any, ttl = 3600) {
-    return this.set(`property:${propertyId}`, propertyData, ttl);
-  }
-
-  async getPropertyData(propertyId: string) {
-    return this.get(`property:${propertyId}`);
-  }
-
-  async cacheOrganizationData(orgId: string, orgData: any, ttl = 3600) {
-    return this.set(`org:${orgId}`, orgData, ttl);
-  }
-
-  async getOrganizationData(orgId: string) {
-    return this.get(`org:${orgId}`);
-  }
-
-  // Invalidate related caches
-  async invalidateUserCache(userId: string) {
-    await this.del(`user:${userId}`);
-  }
-
-  async invalidatePropertyCache(propertyId: string) {
-    await this.del(`property:${propertyId}`);
-  }
-
-  async invalidateOrganizationCache(orgId: string) {
-    await this.del(`org:${orgId}`);
-  }
-}
-
-export const cacheService = new CacheService();
+    return this.set(`user:${userId}
+    return this.get(`user:${userId}
+    return this.set(`property:${propertyId}
+    return this.get(`property:${propertyId}
+    return this.set(`org:${orgId}
+    return this.get(`org:${orgId}
+    await this.del(`user:${userId}
+    await this.del(`property:${propertyId}
+    await this.del(`org:${orgId}

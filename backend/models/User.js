@@ -4,7 +4,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
       desc = { enumerable: true, get: function() { return m[k]; } };
-    }
+
     Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -74,7 +74,7 @@ const UserSchema = new mongoose_1.Schema({
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password') || !this.password) {
         return next();
-    }
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
@@ -88,7 +88,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 UserSchema.methods.getSignedJwtToken = function () {
     if (!process.env.JWT_SECRET) {
         throw new Error('JWT Secret is not defined in environment variables.');
-    }
+
     const payload = { id: this._id.toString(), role: this.role, name: this.name };
     const secret = process.env.JWT_SECRET;
     const options = {

@@ -8,12 +8,12 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
         return res.status(400).json({ success: false, message: 'Email, password, and name are required' });
-    }
+
     try {
         const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ success: false, message: 'Super admin already exists' });
-        }
+
         const user = await User.create({
             name,
             email,
@@ -21,10 +21,10 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
             role: 'Super Admin',
         });
         res.status(201).json({ success: true, data: user });
-    }
+
     catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };
 
 /**
@@ -36,13 +36,11 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
     const { secretKey } = req.body;
     if (!secretKey || secretKey !== process.env.SETUP_SECRET_KEY) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
 
     try {
         const plansExist = await Plan.countDocuments();
         if (plansExist > 0) {
             return res.status(400).json({ success: false, message: 'Default plans have already been created.' });
-        }
 
         // FIX: We define the plans with all the required fields from our new Plan model.
         // We ensure the plans meant for the public pricing page have isPublic: true.
@@ -70,7 +68,7 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
                 isPublic: true,
                 features: ['Unlimited Properties', 'Advanced Reporting', 'Vendor Management', 'Priority Phone Support'],
                 limits: { maxProperties: 1000, maxTenants: 1000, maxAgents: 10 }
-            }
+
         ];
 
         await Plan.insertMany(defaultPlans);
@@ -80,5 +78,5 @@ export const createDefaultPlans = async (req: Request, res: Response) => {
     } catch (error: any) {
         console.error('Error creating default plans:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };

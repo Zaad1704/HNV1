@@ -8,7 +8,6 @@ export interface IEditRequest extends Document {
   organizationId: Types.ObjectId;
   reason: string; // The reason provided by the agent
   status: 'pending' | 'approved' | 'rejected';
-}
 
 const EditRequestSchema: Schema<IEditRequest> = new Schema({
   resourceId: { type: Schema.Types.ObjectId, required: true },

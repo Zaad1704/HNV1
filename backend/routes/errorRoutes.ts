@@ -30,7 +30,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
       success: false, 
       message: 'Failed to log error' 
     });
-  }
+
 }));
 
 export default router;

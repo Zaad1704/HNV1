@@ -9,7 +9,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
       message: 'Validation failed',
       errors: errors.array() 
     });
-  }
+
   next();
 };
 

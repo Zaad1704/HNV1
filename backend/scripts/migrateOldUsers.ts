@@ -10,32 +10,9 @@ const runMigration = async () => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error('MONGO_URI is not defined in environment variables.');
-    }
 
     await mongoose.connect(process.env.MONGO_URI);
 
     // IMPORTANT: Set this to the exact date and time (in UTC) when the email verification feature went live.
     // All user accounts created BEFORE this date will have their isEmailVerified flag set to true.
     const FEATURE_ROLLOUT_DATE = new Date('2025-06-26T00:00:00.000Z'); // <<< REPLACE WITH YOUR ACTUAL ROLLOUT DATE
-
-    }`);
-
-    const result = await User.updateMany(
-      {
-        createdAt: { $lt: FEATURE_ROLLOUT_DATE }, // Users created before the feature rollout date
-        isEmailVerified: false // And whose email is not currently verified
-      },
-      {
-        $set: { isEmailVerified: true }
-      }
-    );
-
-  } catch (error) {
-    console.error('Migration failed:', error);
-  } finally {
-    await mongoose.disconnect();
-
-  }
-};
-
-runMigration();

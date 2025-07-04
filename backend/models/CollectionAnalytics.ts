@@ -56,7 +56,6 @@ export interface ICollectionAnalytics extends Document {
   }>;
   
   generatedAt: Date;
-}
 
 const CollectionAnalyticsSchema: Schema<ICollectionAnalytics> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -76,7 +75,7 @@ const CollectionAnalyticsSchema: Schema<ICollectionAnalytics> = new Schema({
       collectionRateChange: { type: Number, default: 0 },
       outstandingChange: { type: Number, default: 0 },
       averageDaysChange: { type: Number, default: 0 }
-    }
+
   },
   
   breakdown: {
@@ -101,7 +100,7 @@ const CollectionAnalyticsSchema: Schema<ICollectionAnalytics> = new Schema({
       early: { count: Number, percentage: Number },
       onTime: { count: Number, percentage: Number },
       late: { count: Number, percentage: Number }
-    }
+
   },
   
   problemTenants: [{

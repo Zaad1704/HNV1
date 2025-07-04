@@ -10,22 +10,6 @@ const handleFeedbackSubmission = async (req, res) => {
     if (!name || !email || !message) {
         res.status(400).json({ success: false, message: 'Name, email, and message are required fields.' });
         return;
-    }
+
     const recipientEmail = 'feedback@hnvpropertysolutions.com';
-    const emailSubject = `New Feedback from ${name}: ${subject || 'No Subject'}`;
-    try {
-        await emailService_1.default.sendEmail(recipientEmail, emailSubject, 'feedbackReceived', {
-            name: name,
-            email: email,
-            subject: subject || 'Not Provided',
-            message: message.replace(/\n/g, '<br>')
-        });
-        res.status(200).json({ success: true, message: 'Feedback sent successfully!' });
-    }
-    catch (error) {
-        console.error('Failed to send feedback email:', error);
-        res.status(500).json({ success: false, message: 'Server error: could not send feedback.' });
-    }
-};
-exports.handleFeedbackSubmission = handleFeedbackSubmission;
-//# sourceMappingURL=feedbackController.js.map
+    const emailSubject = `New Feedback from ${name}: ${subject || 'No Subject'}

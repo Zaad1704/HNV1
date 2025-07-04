@@ -19,7 +19,7 @@ class AuditService {
         });
     } catch (error) {
       console.error('Failed to record audit log:', error);
-    }
-  }
-}
+
+
+
 export default new AuditService();

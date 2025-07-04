@@ -17,12 +17,12 @@ router.get('/health', async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
       health.database = 'connected';
-    }
+
     res.status(200).json(health);
   } catch (error) {
     health.status = 'ERROR';
     res.status(503).json(health);
-  }
+
 });
 
 // Readiness check
@@ -31,7 +31,7 @@ router.get('/ready', async (req, res) => {
     res.status(200).json({ status: 'ready' });
   } else {
     res.status(503).json({ status: 'not ready' });
-  }
+
 });
 
 export default router;

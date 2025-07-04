@@ -15,11 +15,11 @@ class AuditService {
                 // Mongoose can store a flexible object in a Map type field
                 details: details
             });
-        }
+
         catch (error) {
             console.error('Failed to record audit log:', error);
-        }
-    }
-}
+
+
+
 exports.default = new AuditService();
 //# sourceMappingURL=auditService.js.map

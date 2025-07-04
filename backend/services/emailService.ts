@@ -8,7 +8,6 @@ class EmailService {
 
   isConfigured(): boolean {
     return !!this.transporter;
-  }
 
   constructor() {
     this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
@@ -21,96 +20,31 @@ class EmailService {
         auth: {
           user: process.env.SMTP_USER || 'resend',
           pass: process.env.SMTP_PASS || process.env.RESEND_API_KEY
-        }
+
       });
 
     } catch (error) {
       console.error('❌ Failed to initialize email service:', error);
-    }
-  }
+
 
   async sendEmail(to: string, subject: string, templateName: string, templateData: Record<string, string>) {
 
     if (!this.transporter) {
 
       throw new Error('Email service not configured');
-    }
 
     try {
       let htmlContent = '';
       
       try {
-        const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.html`);
-        htmlContent = fs.readFileSync(templatePath, 'utf-8');
-      } catch (templateError) {
-        console.warn(`Template ${templateName} not found, using fallback`);
-        // Fallback template
-        htmlContent = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #1f2937;">${subject}</h2>
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              ${Object.entries(templateData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
-            </div>
-            <p style="color: #6b7280; font-size: 14px;">This message was sent from HNV Property Management.</p>
-          </div>
-        `;
-      }
-
-      // Replace template variables
-      for (const key in templateData) {
-        const regex = new RegExp(`{{${key}}}`, 'g');
-        htmlContent = htmlContent.replace(regex, templateData[key]);
-      }
-
-      const result = await this.transporter.sendMail({
-        from: this.fromEmail,
-        to: to,
-        subject,
-        html: htmlContent,
-      });
-
-      return result;
-    } catch (error) {
-      console.error(`Error sending email to ${to}:`, error);
-      throw new Error(`Failed to send email: ${error.message}`);
-    }
-  }
-
-  async sendContactForm(formData: { name: string; email: string; subject: string; message: string }) {
-    if (!this.transporter) {
-
-      return;
-    }
-
-    try {
-      const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1f2937;">New Contact Form Submission</h2>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${formData.name}</p>
-            <p><strong>Email:</strong> ${formData.email}</p>
-            <p><strong>Subject:</strong> ${formData.subject}</p>
-            <p><strong>Message:</strong></p>
-            <div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
-              ${formData.message.replace(/\n/g, '<br>')}
-            </div>
-          </div>
-          <p style="color: #6b7280; font-size: 14px;">This message was sent from the HNV Property Management contact form.</p>
-        </div>
-      `;
-
-      await this.transporter.sendMail({
-        from: this.fromEmail,
-        to: process.env.CONTACT_EMAIL || 'contact@hnvpm.com',
-        subject: `Contact Form: ${formData.subject}`,
-        html: htmlContent,
-        replyTo: formData.email
-      });
-    } catch (error) {
-      console.error('Error sending contact form email:', error);
-      throw new Error('Failed to send contact form.');
-    }
-  }
-}
-
-export default new EmailService();
+        const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.html
+        console.warn(`Template ${templateName} not found, using fallback
+        htmlContent = 
+              ${Object.entries(templateData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>
+        
+        const regex = new RegExp(`{{${key}}}
+      console.error(`Error sending email to ${to}:
+      throw new Error(
+      const htmlContent = 
+      
+        subject: `Contact Form: ${formData.subject}

@@ -23,9 +23,9 @@ router.get('/landing-stats', (0, express_async_handler_1.default)(async (req, re
                 totalProperties,
                 totalUsers,
                 countriesServed
-            }
+
         });
-    }
+
     catch (error) {
         res.status(200).json({
             success: true,
@@ -33,9 +33,9 @@ router.get('/landing-stats', (0, express_async_handler_1.default)(async (req, re
                 totalProperties: 2500,
                 totalUsers: 5000,
                 countriesServed: 25
-            }
+
         });
-    }
+
 }));
 // Protected routes
 router.use(authMiddleware_1.protect, (0, rbac_1.authorize)(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));

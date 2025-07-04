@@ -17,7 +17,7 @@ router.get('/email-status', async (req, res) => {
     });
   } catch (error) {
     res.json({ success: false, configured: false, message: 'Email service unavailable' });
-  }
+
 });
 
 // Test email endpoint
@@ -35,7 +35,7 @@ router.post('/test-email', async (req, res) => {
   } catch (error) {
     console.error('Test email failed:', error);
     res.status(500).json({ success: false, message: 'Test email failed', error: error.message });
-  }
+
 });
 
 export default router;

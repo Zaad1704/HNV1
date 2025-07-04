@@ -7,7 +7,6 @@ export const createShareLink = async (req: Request, res: Response) => {
     if (!req.user || !req.user.organizationId) {
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
-    }
 
     try {
         const expense = await Expense.findById(req.params.expenseId);
@@ -15,48 +14,10 @@ export const createShareLink = async (req: Request, res: Response) => {
         if (!expense || !expense.documentUrl || expense.organizationId.toString() !== req.user.organizationId.toString()) {
             res.status(404).json({ success: false, message: 'Document not found or access denied.' });
             return;
-        }
 
         const newLink = await ShareableLink.create({
             documentUrl: expense.documentUrl,
             organizationId: req.user.organizationId,
         });
 
-        const shareUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/view-document/${newLink.token}`;
-
-        res.status(201).json({ success: true, shareUrl });
-
-    } catch (error) {
-        console.error("Error creating share link:", error);
-        res.status(500).json({ success: false, message: "Server Error" });
-    }
-};
-
-export const viewSharedDocument = async (req: Request, res: Response) => {
-    try {
-        const link = await ShareableLink.findOne({ 
-            token: req.params.token,
-            expiresAt: { $gt: new Date() }
-        });
-
-        if (!link) {
-            res.status(404).send('<h1>Link is invalid or has expired</h1>');
-            return;
-        }
-
-        // This assumes the documentUrl is a relative path to a file in /public/uploads
-        // In a real scenario with Google Drive, you would redirect to the Drive URL
-        const filePath = path.join(__dirname, '..', 'public', link.documentUrl);
-        
-        res.sendFile(filePath, (err) => {
-            if (err) {
-                console.error("File serving error:", err);
-                res.status(404).send('<h1>Document not found</h1>');
-            }
-        });
-
-    } catch (error) {
-        console.error("Error viewing shared document:", error);
-        res.status(500).send('<h1>Server Error</h1>');
-    }
-};
+        const shareUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/view-document/${newLink.token}

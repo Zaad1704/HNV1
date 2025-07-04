@@ -15,7 +15,7 @@ const validateInput = (req, res, next) => {
             message: 'Validation failed',
             errors: errors.array()
         });
-    }
+
     next();
 };
 exports.validateInput = validateInput;
@@ -80,15 +80,15 @@ exports.fileValidation = {
                 success: false,
                 message: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.'
             });
-        }
+
         if (req.file.size > maxSize) {
             return res.status(400).json({
                 success: false,
                 message: 'File too large. Maximum size is 5MB.'
             });
-        }
+
         next();
-    }
+
 };
 // Sanitize HTML input
 const sanitizeHtml = (req, res, next) => {
@@ -96,17 +96,17 @@ const sanitizeHtml = (req, res, next) => {
     const sanitizeObject = (obj) => {
         if (typeof obj === 'string') {
             return DOMPurify.sanitize(obj);
-        }
+
         if (Array.isArray(obj)) {
             return obj.map(sanitizeObject);
-        }
+
         if (obj && typeof obj === 'object') {
             const sanitized = {};
             for (const key in obj) {
                 sanitized[key] = sanitizeObject(obj[key]);
-            }
+
             return sanitized;
-        }
+
         return obj;
     };
     req.body = sanitizeObject(req.body);

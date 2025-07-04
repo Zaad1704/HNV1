@@ -23,7 +23,6 @@ export interface ISiteSettings extends Document {
   contactTitle?: string;
   contactSubtitle?: string;
   updatedAt: Date;
-}
 
 const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   siteName: { type: String, default: 'HNV Property Management' },

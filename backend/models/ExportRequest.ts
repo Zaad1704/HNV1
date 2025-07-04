@@ -40,7 +40,6 @@ export interface IExportRequest extends Document {
   
   createdAt: Date;
   updatedAt: Date;
-}
 
 const ExportRequestSchema: Schema<IExportRequest> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -89,7 +88,7 @@ const ExportRequestSchema: Schema<IExportRequest> = new Schema({
   error: {
     message: String,
     details: String
-  }
+
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

@@ -6,12 +6,10 @@ interface IAddress {
   state: string;
   zipCode: string;
   formattedAddress?: string;
-}
 
 interface ILocation {
   type: 'Point';
   coordinates: [number, number];
-}
 
 export interface IProperty extends Document {
   name: string;
@@ -38,7 +36,6 @@ export interface IProperty extends Document {
     leaseEnd?: Date;
   }>;
   createdAt: Date;
-}
 
 const PropertySchema: Schema<IProperty> = new Schema({
   name: {
@@ -105,7 +102,7 @@ const PropertySchema: Schema<IProperty> = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+
 });
 
 // pre-save middleware remains unchanged...
@@ -117,8 +114,4 @@ PropertySchema.pre<IProperty>('save', async function(next) {
             40.7128 + (Math.random() - 0.5) * 0.1
         ]
     };
-    this.address.formattedAddress = `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}`;
-    next();
-});
-
-export default model<IProperty>('Property', PropertySchema);
+    this.address.formattedAddress = `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}

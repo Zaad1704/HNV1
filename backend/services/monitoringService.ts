@@ -14,7 +14,6 @@ interface PerformanceMetrics {
   activeConnections: number;
   responseTime: number;
   errorRate: number;
-}
 
 class MonitoringService {
   private metrics: PerformanceMetrics[] = [];
@@ -32,7 +31,6 @@ class MonitoringService {
     setInterval(() => {
       this.cleanOldMetrics();
     }, 3600000);
-  }
 
   private collectMetrics() {
     const cpuUsage = process.cpuUsage();
@@ -57,23 +55,19 @@ class MonitoringService {
     // Log critical metrics
     if (metrics.memoryUsage.percentage > 80) {
       logger.warn('High memory usage detected', { usage: metrics.memoryUsage.percentage });
-    }
-    
+
     if (metrics.errorRate > 5) {
       logger.warn('High error rate detected', { errorRate: metrics.errorRate });
-    }
-  }
+
 
   private getAverageResponseTime(): number {
     if (this.responseTimes.length === 0) return 0;
     const sum = this.responseTimes.reduce((a, b) => a + b, 0);
     return sum / this.responseTimes.length;
-  }
 
   private getErrorRate(): number {
     if (this.requestCount === 0) return 0;
     return (this.errorCount / this.requestCount) * 100;
-  }
 
   private cleanOldMetrics() {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -83,7 +77,6 @@ class MonitoringService {
     this.requestCount = 0;
     this.errorCount = 0;
     this.responseTimes = [];
-  }
 
   // Middleware to track request metrics
   trackRequest = (req: Request, res: Response, next: NextFunction) => {
@@ -96,7 +89,6 @@ class MonitoringService {
 
       if (res.statusCode >= 400) {
         this.errorCount++;
-      }
 
       // Log slow requests
       if (responseTime > 5000) {
@@ -106,7 +98,7 @@ class MonitoringService {
           responseTime,
           statusCode: res.statusCode
         });
-      }
+
     });
 
     next();
@@ -135,15 +127,13 @@ class MonitoringService {
       requests: {
         total: this.requestCount,
         errors: this.errorCount
-      }
+
     };
-  }
 
   // Get performance metrics for dashboard
   getMetrics(hours = 1) {
     const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
     return this.metrics.filter(metric => metric.timestamp > cutoff);
-  }
 
   // Alert system
   checkAlerts() {
@@ -158,7 +148,6 @@ class MonitoringService {
         message: 'Memory usage above 90%',
         value: latest.memoryUsage.percentage
       });
-    }
 
     if (latest.errorRate > 10) {
       alerts.push({
@@ -166,7 +155,6 @@ class MonitoringService {
         message: 'Error rate above 10%',
         value: latest.errorRate
       });
-    }
 
     if (latest.responseTime > 3000) {
       alerts.push({
@@ -174,14 +162,11 @@ class MonitoringService {
         message: 'Average response time above 3 seconds',
         value: latest.responseTime
       });
-    }
 
     if (alerts.length > 0) {
       logger.warn('System alerts triggered', { alerts });
-    }
 
     return alerts;
-  }
 
   // Database performance monitoring
   async getDatabaseStats() {
@@ -199,8 +184,7 @@ class MonitoringService {
     } catch (error) {
       logger.error('Failed to get database stats', error);
       return null;
-    }
-  }
-}
+
+
 
 export const monitoringService = new MonitoringService();

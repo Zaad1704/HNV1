@@ -37,19 +37,6 @@ router.get('/google/callback',
         if (state) {
             const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
             (req as any).authRole = decodedState.role;
-        }
+
         const authenticator = passport.authenticate('google', {
-            failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
-            session: false
-        });
-        authenticator(req, res, next);
-    },
-    asyncHandler(googleAuthCallback)
-);
-
-// 2FA routes
-router.post('/2fa/generate', protect, generateTwoFactorSecret as any);
-router.post('/2fa/enable', protect, enableTwoFactor as any);
-router.post('/2fa/verify', protect, verifyTwoFactor as any);
-
-export default router;
+            failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed

@@ -7,12 +7,10 @@ export const getNotifications = asyncHandler(async (req: Request, res: Response)
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     // Generate fresh notifications before fetching
     if (req.user.organizationId) {
         await generateSystemNotifications(req.user.organizationId);
-    }
 
     const notifications = await Notification.find({ userId: req.user._id })
         .sort({ createdAt: -1 })
@@ -37,7 +35,6 @@ export const markNotificationAsReadHandler = asyncHandler(async (req: Request, r
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     const { notificationId } = req.body;
     await markNotificationAsRead(notificationId, req.user._id);
@@ -48,7 +45,6 @@ export const markAllNotificationsAsReadHandler = asyncHandler(async (req: Reques
     if (!req.user) {
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
-    }
 
     await markAllNotificationsAsRead(req.user._id);
     res.status(200).json({ success: true, message: 'All notifications marked as read' });

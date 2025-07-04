@@ -6,7 +6,6 @@ export interface IShareableLink extends Document {
   documentUrl: string; // The private path to the file, e.g., '/uploads/filename.pdf'
   organizationId: Types.ObjectId;
   expiresAt: Date;
-}
 
 const ShareableLinkSchema = new Schema<IShareableLink>({
   token: { type: String, required: true, unique: true, index: true },
@@ -20,7 +19,7 @@ ShareableLinkSchema.pre<IShareableLink>('validate', function(next) {
     if (this.isNew) {
         this.token = crypto.randomBytes(24).toString('hex');
         this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Link is valid for 24 hours
-    }
+
     next();
 });
 

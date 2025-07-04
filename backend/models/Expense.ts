@@ -9,7 +9,6 @@ export interface IExpense extends Document {
   organizationId: Types.ObjectId;
   documentUrl?: string; // NEW: For the uploaded file URL
   paidToAgentId?: Types.ObjectId; // NEW: To link a salary payment to an agent
-}
 
 const ExpenseSchema: Schema<IExpense> = new Schema({
   description: { type: String, required: true },
@@ -36,7 +35,7 @@ const ExpenseSchema: Schema<IExpense> = new Schema({
   paidToAgentId: { // NEW SCHEMA FIELD
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }
+
 }, { timestamps: true });
 
 export default model<IExpense>('Expense', ExpenseSchema);

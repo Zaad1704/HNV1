@@ -26,7 +26,6 @@ export interface ICollectionAction extends Document {
   
   createdAt: Date;
   updatedAt: Date;
-}
 
 const CollectionActionSchema: Schema<ICollectionAction> = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
@@ -64,7 +63,7 @@ const CollectionActionSchema: Schema<ICollectionAction> = new Schema({
     },
     actualAmount: Number,
     actualDate: Date
-  }
+
 }, { 
   timestamps: true,
   toJSON: { virtuals: true },

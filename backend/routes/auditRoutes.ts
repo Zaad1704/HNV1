@@ -15,7 +15,6 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
         if (!authenticatedUser) {
             res.status(401).json({ success: false, message: 'Not authenticated' });
             return;
-        }
 
         const { userId, action, startDate, endDate } = req.query;
         const query: any = {
@@ -29,7 +28,6 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
                 $gte: new Date(startDate as string), 
                 $lte: new Date(endDate as string) 
             };
-        }
 
         const logs = await AuditLog.find(query)
             .populate('user', 'name email')
@@ -40,7 +38,7 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Audit log error:', error);
         res.status(200).json({ success: true, data: [] });
-    }
+
 }));
 
 export default router;

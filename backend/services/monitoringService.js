@@ -22,7 +22,7 @@ class MonitoringService {
                 this.responseTimes.push(responseTime);
                 if (res.statusCode >= 400) {
                     this.errorCount++;
-                }
+
                 // Log slow requests
                 if (responseTime > 5000) {
                     logger_1.logger.warn('Slow request detected', {
@@ -31,7 +31,7 @@ class MonitoringService {
                         responseTime,
                         statusCode: res.statusCode
                     });
-                }
+
             });
             next();
         };
@@ -43,7 +43,7 @@ class MonitoringService {
         setInterval(() => {
             this.cleanOldMetrics();
         }, 3600000);
-    }
+
     collectMetrics() {
         const cpuUsage = process.cpuUsage();
         const memUsage = process.memoryUsage();
@@ -64,22 +64,22 @@ class MonitoringService {
         // Log critical metrics
         if (metrics.memoryUsage.percentage > 80) {
             logger_1.logger.warn('High memory usage detected', { usage: metrics.memoryUsage.percentage });
-        }
+
         if (metrics.errorRate > 5) {
             logger_1.logger.warn('High error rate detected', { errorRate: metrics.errorRate });
-        }
-    }
+
+
     getAverageResponseTime() {
         if (this.responseTimes.length === 0)
             return 0;
         const sum = this.responseTimes.reduce((a, b) => a + b, 0);
         return sum / this.responseTimes.length;
-    }
+
     getErrorRate() {
         if (this.requestCount === 0)
             return 0;
         return (this.errorCount / this.requestCount) * 100;
-    }
+
     cleanOldMetrics() {
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         this.metrics = this.metrics.filter(metric => metric.timestamp > oneDayAgo);
@@ -87,7 +87,7 @@ class MonitoringService {
         this.requestCount = 0;
         this.errorCount = 0;
         this.responseTimes = [];
-    }
+
     // Health check endpoint data
     getHealthStatus() {
         const latestMetrics = this.metrics[this.metrics.length - 1];
@@ -110,14 +110,14 @@ class MonitoringService {
             requests: {
                 total: this.requestCount,
                 errors: this.errorCount
-            }
+
         };
-    }
+
     // Get performance metrics for dashboard
     getMetrics(hours = 1) {
         const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
         return this.metrics.filter(metric => metric.timestamp > cutoff);
-    }
+
     // Alert system
     checkAlerts() {
         const latest = this.metrics[this.metrics.length - 1];
@@ -130,26 +130,26 @@ class MonitoringService {
                 message: 'Memory usage above 90%',
                 value: latest.memoryUsage.percentage
             });
-        }
+
         if (latest.errorRate > 10) {
             alerts.push({
                 type: 'warning',
                 message: 'Error rate above 10%',
                 value: latest.errorRate
             });
-        }
+
         if (latest.responseTime > 3000) {
             alerts.push({
                 type: 'warning',
                 message: 'Average response time above 3 seconds',
                 value: latest.responseTime
             });
-        }
+
         if (alerts.length > 0) {
             logger_1.logger.warn('System alerts triggered', { alerts });
-        }
+
         return alerts;
-    }
+
     // Database performance monitoring
     async getDatabaseStats() {
         try {
@@ -162,12 +162,12 @@ class MonitoringService {
                 storageSize: stats.storageSize,
                 avgObjSize: stats.avgObjSize
             };
-        }
+
         catch (error) {
             logger_1.logger.error('Failed to get database stats', error);
             return null;
-        }
-    }
-}
+
+
+
 exports.monitoringService = new MonitoringService();
 //# sourceMappingURL=monitoringService.js.map

@@ -12,7 +12,6 @@ interface SubscriptionData {
   status: string;
   renewalDate: Date;
   externalId: string;
-}
 
 /**
  * Mocks creating a subscription with a billing provider like 2Checkout.
@@ -27,17 +26,11 @@ export async function createSubscription2CO(
   const planDetails = billingPlans.find(p => p.id === planId);
   if (!planDetails) {
     throw new Error('Invalid plan ID provided.');
-  }
-  
+
   // In a real app, you would get this data back from the billing provider's API.
   const subscriptionDetails = {
     plan: planDetails.name,
     status: 'active',
     // Set renewal date to 30 days from now
     renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 
-    externalId: `mock_sub_${Date.now()}` // A fake subscription ID
-  };
-
-  // THE FIX: This function must return the subscription data object.
-  return subscriptionDetails;
-}
+    externalId: `mock_sub_${Date.now()}

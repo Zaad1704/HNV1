@@ -35,7 +35,6 @@ export interface IUser extends Document {
   getSignedJwtToken(): string;
   getEmailVerificationToken(): string; // Added method
   getPasswordResetToken(): string;
-}
 
 const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
@@ -74,7 +73,7 @@ const UserSchema: Schema<IUser> = new Schema({
 UserSchema.pre<IUser>('save', async function(next) {
   if (!this.isModified('password') || !this.password) {
     return next();
-  }
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -86,7 +85,7 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
   if (!this.password || !enteredPassword) {
 
     return false;
-  }
+
   try {
     const result = await bcrypt.compare(enteredPassword, this.password);
 
@@ -94,13 +93,13 @@ UserSchema.methods.matchPassword = async function(enteredPassword: string): Prom
   } catch (error) {
     console.error('Password comparison error:', error);
     return false;
-  }
+
 };
 
 UserSchema.methods.getSignedJwtToken = function(): string {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
-  }
+
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
   const options: SignOptions = {

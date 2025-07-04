@@ -10,7 +10,6 @@ const fixSuperAdminEmail = async () => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error('MONGO_URI is not defined in environment variables.');
-    }
 
     await mongoose.connect(process.env.MONGO_URI);
 
@@ -24,8 +23,8 @@ const fixSuperAdminEmail = async () => {
         $set: { 
           isEmailVerified: true,
           status: 'active'
-        }
-      }
+
+
     );
 
     // Also fix any users created before email verification was implemented
@@ -36,7 +35,7 @@ const fixSuperAdminEmail = async () => {
       },
       {
         $set: { isEmailVerified: true }
-      }
+
     );
 
   } catch (error) {
@@ -44,7 +43,6 @@ const fixSuperAdminEmail = async () => {
   } finally {
     await mongoose.disconnect();
 
-  }
 };
 
 fixSuperAdminEmail();

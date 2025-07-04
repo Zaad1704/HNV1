@@ -48,12 +48,12 @@ const sanitizeInput = (req, res, next) => {
             return obj.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                 .replace(/javascript:/gi, '')
                 .replace(/on\w+=/gi, '');
-        }
+
         if (typeof obj === 'object' && obj !== null) {
             for (const key in obj) {
                 obj[key] = sanitize(obj[key]);
-            }
-        }
+
+
         return obj;
     };
     req.body = sanitize(req.body);

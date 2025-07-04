@@ -7,7 +7,6 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
     // Skip for super admin and public routes
     if (req.user?.role === 'Super Admin' || req.user?.role === 'Super Moderator') {
       return next();
-    }
 
     if (!req.user?.organizationId) {
       return res.status(403).json({
@@ -15,7 +14,6 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
         message: 'No organization associated',
         code: 'NO_ORGANIZATION'
       });
-    }
 
     const subscription = await Subscription.findOne({ 
       organizationId: req.user.organizationId 
@@ -28,13 +26,11 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
         code: 'NO_SUBSCRIPTION',
         action: 'REDIRECT_TO_PRICING'
       });
-    }
 
     // Check if trial expired
     if (subscription.status === 'trialing' && subscription.trialExpiresAt && new Date() > subscription.trialExpiresAt) {
       subscription.status = 'inactive';
       await subscription.save();
-    }
 
     // Check if subscription expired
     if (subscription.status === 'inactive' || subscription.status === 'canceled' || subscription.status === 'past_due') {
@@ -45,7 +41,6 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
         action: 'REDIRECT_TO_BILLING',
         subscriptionStatus: subscription.status
       });
-    }
 
     // Add subscription info to request
     (req as any).subscription = subscription;
@@ -53,7 +48,7 @@ export const checkSubscriptionStatus = async (req: Request, res: Response, next:
   } catch (error) {
     console.error('Subscription check error:', error);
     next();
-  }
+
 };
 
 export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') => {
@@ -62,7 +57,6 @@ export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') 
       // Skip for super admin
       if (req.user?.role === 'Super Admin' || req.user?.role === 'Super Moderator') {
         return next();
-      }
 
       const subscription = (req as any).subscription;
       if (!subscription || !subscription.planId) {
@@ -71,7 +65,6 @@ export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') 
           message: 'No active subscription',
           code: 'NO_SUBSCRIPTION'
         });
-      }
 
       const plan = subscription.planId;
       let currentCount = 0;
@@ -96,24 +89,8 @@ export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') 
           });
           limit = plan.limits?.maxAgents || 0;
           break;
-      }
 
       if (currentCount >= limit) {
         return res.status(403).json({
           success: false,
-          message: `You've reached your ${resource} limit (${limit}). Upgrade your plan to add more.`,
-          code: 'USAGE_LIMIT_EXCEEDED',
-          current: currentCount,
-          limit: limit,
-          planName: plan.name,
-          action: 'UPGRADE_PLAN'
-        });
-      }
-
-      next();
-    } catch (error) {
-      console.error('Usage limit check error:', error);
-      next();
-    }
-  };
-};
+          message: `You've reached your ${resource} limit (${limit}). Upgrade your plan to add more.

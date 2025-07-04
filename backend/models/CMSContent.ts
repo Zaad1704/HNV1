@@ -5,7 +5,6 @@ export interface ICMSContent extends Document {
   value: string;
   updatedBy: string; // user id
   updatedAt: Date;
-}
 
 const CMSContentSchema = new Schema<ICMSContent>({
   key: { type: String, required: true, unique: true }, // e.g., 'homeTitle'

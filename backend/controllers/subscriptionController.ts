@@ -86,7 +86,7 @@ export const getBillingHistory = asyncHandler(async (req: Request, res: Response
       status: 'paid',
       plan: 'Professional',
       invoice: 'INV-001'
-    }
+
   ];
   
   res.json({
@@ -106,17 +106,6 @@ export const createCheckoutSession = asyncHandler(async (req: Request, res: Resp
       message: 'Plan not found'
     });
     return;
-  }
-  
+
   // Create Stripe checkout session or similar
-  const checkoutUrl = `${process.env.FRONTEND_URL}/checkout?plan=${planId}&org=${organizationId}`;
-  
-  res.json({
-    success: true,
-    data: {
-      checkoutUrl,
-      planId,
-      amount: plan.price
-    }
-  });
-});
+  const checkoutUrl = `${process.env.FRONTEND_URL}/checkout?plan=${planId}&org=${organizationId}

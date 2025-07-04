@@ -32,12 +32,6 @@ router.get('/google/callback', (req, res, next) => {
     if (state) {
         const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
         req.authRole = decodedState.role;
-    }
+
     const authenticator = passport_1.default.authenticate('google', {
-        failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
-        session: false
-    });
-    authenticator(req, res, next);
-}, (0, express_async_handler_1.default)(authController_1.googleAuthCallback));
-exports.default = router;
-//# sourceMappingURL=authRoutes.js.map
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed

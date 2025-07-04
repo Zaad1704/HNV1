@@ -13,14 +13,12 @@ router.post('/properties', asyncHandler(async (req: Request, res: Response) => {
   if (!req.user?.organizationId) {
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
-  }
 
   const { format, filters } = req.body;
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
     query._id = { $in: filters.ids };
-  }
 
   const properties = await Property.find(query).populate('createdBy', 'name');
   
@@ -42,7 +40,7 @@ router.post('/properties', asyncHandler(async (req: Request, res: Response) => {
     res.send(csvData);
   } else {
     res.json({ success: true, data: properties });
-  }
+
 }));
 
 // Export tenants
@@ -50,14 +48,12 @@ router.post('/tenants', asyncHandler(async (req: Request, res: Response) => {
   if (!req.user?.organizationId) {
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
-  }
 
   const { format, filters } = req.body;
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
     query._id = { $in: filters.ids };
-  }
 
   const tenants = await Tenant.find(query).populate('propertyId', 'name');
   
@@ -81,7 +77,7 @@ router.post('/tenants', asyncHandler(async (req: Request, res: Response) => {
     res.send(csvData);
   } else {
     res.json({ success: true, data: tenants });
-  }
+
 }));
 
 // Export payments
@@ -89,14 +85,12 @@ router.post('/payments', asyncHandler(async (req: Request, res: Response) => {
   if (!req.user?.organizationId) {
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
-  }
 
   const { format, filters } = req.body;
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
     query._id = { $in: filters.ids };
-  }
 
   const payments = await Payment.find(query)
     .populate('tenantId', 'name')
@@ -120,7 +114,7 @@ router.post('/payments', asyncHandler(async (req: Request, res: Response) => {
     res.send(csvData);
   } else {
     res.json({ success: true, data: payments });
-  }
+
 }));
 
 // Export expenses
@@ -128,14 +122,12 @@ router.post('/expenses', asyncHandler(async (req: Request, res: Response) => {
   if (!req.user?.organizationId) {
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
-  }
 
   const { format, filters } = req.body;
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
     query._id = { $in: filters.ids };
-  }
 
   const expenses = await Expense.find(query)
     .populate('propertyId', 'name')
@@ -159,7 +151,7 @@ router.post('/expenses', asyncHandler(async (req: Request, res: Response) => {
     res.send(csvData);
   } else {
     res.json({ success: true, data: expenses });
-  }
+
 }));
 
 export default router;

@@ -7,7 +7,6 @@ export interface IOrgInvitation extends Document {
   token: string;
   status: "pending" | "accepted" | "expired";
   expiresAt: Date;
-}
 
 const OrgInvitationSchema = new Schema(
   {

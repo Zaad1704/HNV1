@@ -54,7 +54,7 @@ router.get('/health', (req, res) => {
       'platform-growth': 'Requires auth', 
       'plan-distribution': 'Requires auth',
       'email-status': 'Requires auth'
-    }
+
   });
 });
 
@@ -70,7 +70,7 @@ router.use((req, res, next) => {
         userRole: req.user?.role || 'No role',
         requiredRoles: ['Super Admin', 'Super Moderator']
       });
-    }
+
     next();
   });
 });
@@ -109,14 +109,14 @@ router.get('/organizations', async (req: Request, res: Response) => {
         populate: {
           path: 'planId',
           select: 'name price duration'
-        }
+
       });
 
     res.json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Organizations fetch error:', error);
     res.json({ success: true, data: [] });
-  }
+
 });
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
 router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
@@ -157,7 +157,7 @@ router.get('/users', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Users fetch error:', error);
     res.json({ success: true, data: [] });
-  }
+
 });
 router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
 router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => {
@@ -165,7 +165,7 @@ router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response)
   if (!user) {
     res.status(404).json({ success: false, message: 'User not found' });
     return;
-  }
+
   res.json({ success: true, message: 'User deleted successfully' });
 }));
 
@@ -195,7 +195,7 @@ router.put('/moderators/:id', asyncHandler(async (req: Request, res: Response) =
   if (!user) {
     res.status(404).json({ success: false, message: 'Moderator not found' });
     return;
-  }
+
   res.json({ success: true, data: user });
 }));
 
@@ -204,7 +204,7 @@ router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response
   if (!user) {
     res.status(404).json({ success: false, message: 'Moderator not found' });
     return;
-  }
+
   res.json({ success: true, message: 'Moderator removed successfully' });
 }));
 router.get('/billing', async (req: Request, res: Response) => {
@@ -264,9 +264,9 @@ router.get('/billing', async (req: Request, res: Response) => {
         churnRate: 0,
         recentTransactions: [],
         revenueChart: []
-      }
+
     });
-  }
+
 });
 
 // Plan management routes
@@ -279,7 +279,7 @@ router.get('/plans', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Plans fetch error:', error);
     res.json({ success: true, data: [] });
-  }
+
 });
 
 router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
@@ -292,7 +292,7 @@ router.put('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
   if (!plan) {
     res.status(404).json({ success: false, message: 'Plan not found' });
     return;
-  }
+
   res.json({ success: true, data: plan });
 }));
 
@@ -301,7 +301,7 @@ router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => 
   if (!plan) {
     res.status(404).json({ success: false, message: 'Plan not found' });
     return;
-  }
+
   res.json({ success: true, message: 'Plan deleted successfully' });
 }));
 
@@ -314,8 +314,7 @@ router.put('/users/:userId/plan', asyncHandler(async (req: Request, res: Respons
   if (!user) {
     res.status(404).json({ success: false, message: 'User not found' });
     return;
-  }
-  
+
   const subscription = await Subscription.findOneAndUpdate(
     { organizationId: user.organizationId },
     { planId, status: 'active' },
@@ -360,14 +359,14 @@ router.get('/email-status', asyncHandler(async (req: Request, res: Response) => 
       data: { 
         configured,
         status: configured ? 'operational' : 'not_configured'
-      }
+
     });
   } catch (error) {
     res.json({ 
       success: false, 
       data: { configured: false, status: 'error' }
     });
-  }
+
 }));
 
 // Get organization by code
@@ -380,12 +379,11 @@ router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res:
     if (!organization) {
       res.status(404).json({ success: false, message: 'Organization not found' });
       return;
-    }
-    
+
     res.json({ success: true, data: organization });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch organization' });
-  }
+
 }));
 
 // Site settings save route
@@ -399,14 +397,14 @@ router.put('/site-settings', asyncHandler(async (req: Request, res: Response) =>
         new: true, // Return updated document
         upsert: true, // Create if doesn't exist
         runValidators: false // Skip validation for flexibility
-      }
+
     );
 
     res.json({ success: true, data: settings, message: 'Settings saved successfully' });
   } catch (error) {
     console.error('Save settings error:', error);
     res.status(500).json({ success: false, message: 'Failed to save settings', error: error.message });
-  }
+
 }));
 
 // Image upload route with multer middleware
@@ -419,23 +417,10 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only image files allowed'));
-    }
-  }
+
+
 });
 
 router.post('/upload-image', upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
   try {
-    const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}`;
-
-    res.json({ 
-      success: true, 
-      imageUrl: mockImageUrl,
-      message: 'Image uploaded successfully'
-    });
-  } catch (error) {
-    console.error('Image upload error:', error);
-    res.status(500).json({ success: false, message: 'Image upload failed' });
-  }
-}));
-
-export default router;
+    const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}

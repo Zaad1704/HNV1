@@ -17,7 +17,7 @@ export const getPlans = async (req: Request, res: Response) => {
                 { _id: '3', name: 'Enterprise', price: 199, features: ['Unlimited properties', 'Full features', 'Priority support'] }
             ]
         });
-    }
+
 };
 
 export const createPlan = async (req: Request, res: Response) => { 
@@ -25,7 +25,7 @@ export const createPlan = async (req: Request, res: Response) => {
         if (!req.user || !req.user.organizationId) {
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
-        }
+
         const newPlan = await Plan.create(req.body);
         
         auditService.recordAction(
@@ -37,7 +37,7 @@ export const createPlan = async (req: Request, res: Response) => {
         res.status(201).json({ success: true, data: newPlan });
     } catch (error: any) {
         res.status(400).json({ success: false, message: error.message });
-    }
+
 };
 
 export const updatePlan = async (req: Request, res: Response) => { 
@@ -45,7 +45,7 @@ export const updatePlan = async (req: Request, res: Response) => {
         if (!req.user || !req.user.organizationId) {
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
-        }
+
         const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
@@ -53,8 +53,7 @@ export const updatePlan = async (req: Request, res: Response) => {
         if (!plan) {
             res.status(404).json({ success: false, message: 'Plan not found' });
             return;
-        }
-        
+
         auditService.recordAction(
             req.user._id,
             req.user.organizationId,
@@ -64,7 +63,7 @@ export const updatePlan = async (req: Request, res: Response) => {
         res.status(200).json({ success: true, data: plan });
     } catch (error: any) {
         res.status(400).json({ success: false, message: error.message });
-    }
+
 };
 
 export const deletePlan = async (req: Request, res: Response) => { 
@@ -72,12 +71,12 @@ export const deletePlan = async (req: Request, res: Response) => {
         if (!req.user || !req.user.organizationId) {
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
-        }
+
         const plan = await Plan.findById(req.params.id);
         if (!plan) {
             res.status(404).json({ success: false, message: 'Plan not found' });
             return;
-        }
+
         await plan.deleteOne();
         
         auditService.recordAction(
@@ -89,5 +88,5 @@ export const deletePlan = async (req: Request, res: Response) => {
         res.status(200).json({ success: true, data: {} });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Server Error' });
-    }
+
 };

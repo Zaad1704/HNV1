@@ -11,7 +11,6 @@ export const submitContactForm = asyncHandler(async (req: Request, res: Response
       message: 'All fields are required'
     });
     return;
-  }
 
   try {
     await emailService.sendContactForm({ name, email, subject, message });
@@ -26,5 +25,5 @@ export const submitContactForm = asyncHandler(async (req: Request, res: Response
       success: false,
       message: 'Failed to send message. Please try again later.'
     });
-  }
+
 });

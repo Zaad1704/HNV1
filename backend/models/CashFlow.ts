@@ -13,7 +13,6 @@ export interface ICashFlow extends Document {
   description?: string;
   documentUrl?: string; // URL to an uploaded receipt/proof (e.g., from Google Drive)
   recordedBy: Types.ObjectId; // The user who created this record (Agent)
-}
 
 const CashFlowSchema: Schema<ICashFlow> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },

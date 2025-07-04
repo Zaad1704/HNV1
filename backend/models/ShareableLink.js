@@ -16,7 +16,7 @@ ShareableLinkSchema.pre('validate', function (next) {
     if (this.isNew) {
         this.token = crypto_1.default.randomBytes(24).toString('hex');
         this.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Link is valid for 24 hours
-    }
+
     next();
 });
 exports.default = (0, mongoose_1.model)('ShareableLink', ShareableLinkSchema);
