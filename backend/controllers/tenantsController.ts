@@ -15,12 +15,19 @@ export const getTenants = async (req: AuthRequest, res: Response) => {
 
     const tenants = await Tenant.find({ 
       organizationId: req.user.organizationId 
-    }).populate('propertyId', 'name') || [];
+    })
+    .populate('propertyId', 'name')
+    .lean()
+    .exec() || [];
 
     res.status(200).json({ success: true, data: tenants });
   } catch (error) {
     console.error('Get tenants error:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch tenants',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
