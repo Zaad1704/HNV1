@@ -8,8 +8,8 @@ import Plan from '../models/Plan';
 const router = Router();
 
 // Public route for getting public plans
-router.get('/public', asyncHandler(async (req: Request, res: Response) => {
-  try {
+router.get('/public', asyncHandler(async (req: Request, res: Response) => { try { }
+
     const plans = await Plan.find({ isPublic: true }).sort({ price: 1 });
     res.status(200).json({ success: true, data: plans });
   } catch (error) {

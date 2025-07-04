@@ -30,62 +30,49 @@ const mongoose_1 = __importStar(require("mongoose"));
 const bcrypt = __importStar(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
+matchPassword(enteredPassword, string);
+Promise;
+getSignedJwtToken();
+string;
+getEmailVerificationToken();
+string;
+getPasswordResetToken();
+string;
 const UserSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: {
-        type: String,
-        required: function () {
-            return !this.googleId;
-        },
-        select: false
-    },
-    role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
-    organizationId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Organization' },
-    createdAt: { type: Date, default: Date.now },
-    googleId: String,
-    status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
-    permissions: { type: [String], default: [] },
-    managedAgentIds: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }],
-    isEmailVerified: { type: Boolean, default: false },
-    emailVerificationToken: { type: String, select: false },
-    emailVerificationExpires: { type: Date, select: false },
-    passwordResetToken: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false },
-    phone: { type: String },
-    profilePicture: { type: String },
-    twoFactorEnabled: { type: Boolean, default: false },
-    twoFactorSecret: { type: String, select: false },
-    twoFactorToken: { type: String, select: false },
-    twoFactorExpires: { type: Date, select: false }
-});
+    password: { type: String,
+        required: function () { },
+        return: this.googleId },
+    select: false
+}, role, { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' }, organizationId, { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Organization' }, isIndependentAgent, { type: Boolean, default: false }, createdAt, { type: Date, default: Date.now }, googleId, String, status, { type: String, enum: ['active', 'suspended', 'pending', 'inactive'], default: 'active' }, permissions, { type: [String], default: [] }, managedAgentIds, [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }], isEmailVerified, { type: Boolean, default: false }, emailVerificationToken, { type: String, select: false }, emailVerificationExpires, { type: Date, select: false }, passwordResetToken, { type: String, select: false }, passwordResetExpires, { type: Date, select: false }, phone, { type: String }, profilePicture, { type: String }, twoFactorEnabled, { type: Boolean, default: false }, twoFactorSecret, { type: String, select: false }, twoFactorToken, { type: String, select: false }, twoFactorExpires, { type: Date, select: false });
+;
 UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password') || !this.password) {
-        return next();
-    }
+    if (!this.isModified('password') || !this.password) { }
+    return next();
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 UserSchema.methods.matchPassword = async function (enteredPassword) {
-    if (!this.password || !enteredPassword) {
-        console.log('Password matching failed: missing password or entered password');
-        return false;
-    }
+    if (!this.password || !enteredPassword) { }
+    return false;
     try {
         const result = await bcrypt.compare(enteredPassword, this.password);
-        console.log('Password match result:', result);
         return result;
     }
-    catch (error) {
-        console.error('Password comparison error:', error);
-        return false;
+    finally {
     }
 };
+try { }
+catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+}
+;
 UserSchema.methods.getSignedJwtToken = function () {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT Secret is not defined in environment variables.');
-    }
+    if (!process.env.JWT_SECRET) { }
+    throw new Error('JWT Secret is not defined in environment variables.');
     const payload = { id: this._id.toString(), role: this.role, name: this.name };
     const secret = process.env.JWT_SECRET;
     const options = {
@@ -99,10 +86,12 @@ UserSchema.methods.getEmailVerificationToken = function () {
     this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000);
     return verificationToken;
 };
+;
 UserSchema.methods.getPasswordResetToken = function () {
     const resetToken = crypto_1.default.randomBytes(20).toString('hex');
     this.passwordResetToken = crypto_1.default.createHash('sha256').update(resetToken).digest('hex');
     this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
     return resetToken;
 };
+;
 exports.default = (0, mongoose_1.model)('User', UserSchema);

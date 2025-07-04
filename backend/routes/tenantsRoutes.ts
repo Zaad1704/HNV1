@@ -1,11 +1,11 @@
 import { Router, Response, NextFunction } from "express";
 import asyncHandler from 'express-async-handler';
-import {
-  getTenants,
+import { getTenants,
   createTenant,
   getTenantById,
   updateTenant,
-  deleteTenant
+  deleteTenant; }
+
 } from "../controllers/tenantsController";
 import { protect } from "../middleware/authMiddleware";
 import upload from "../middleware/uploadMiddleware";

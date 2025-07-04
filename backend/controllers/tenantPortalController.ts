@@ -7,19 +7,19 @@ import Lease from '../models/Lease';
 import Invoice from '../models/Invoice';
 import { startOfMonth } from 'date-fns';
 
-export const getTenantDashboardData = async (req: Request, res: Response) => { 
-    if (!req.user || req.user.role !== 'Tenant') {
+export const getTenantDashboardData = async (req: Request, res: Response) => { if (!req.user || req.user.role !== 'Tenant') { }
+
+
         res.status(403).json({ success: false, message: 'Access denied. Not a tenant.' });
         return;
 
-    try {
-        const tenantInfo = await Tenant.findOne({ 
+    try { const tenantInfo = await Tenant.findOne({ }
             email: req.user.email, 
-            organizationId: req.user.organizationId 
-        }).populate({
-            path: 'propertyId',
+            organizationId: req.user.organizationId;
+
+        }).populate({ path: 'propertyId',
             select: 'name address createdBy',
-            populate: {
+            populate: { }
                 path: 'createdBy',
                 model: 'User',
                 select: 'name email'
@@ -27,6 +27,7 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
         });
 
         if (!tenantInfo) {
+
             res.status(404).json({ success: false, message: 'Tenant profile not found.' });
             return;
 
@@ -53,9 +54,9 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
             dueDate: outstandingInvoice.dueDate.toISOString().split('T')[0],
         } : undefined;
 
-        const dashboardData = {
-            leaseInfo: {
+        const dashboardData = { leaseInfo: { }
                 property: {
+
                     name: (tenantInfo.propertyId as any)?.name,
                     street: (tenantInfo.propertyId as any)?.address.street,
                     city: (tenantInfo.propertyId as any)?.address.city,
@@ -75,8 +76,8 @@ export const getTenantDashboardData = async (req: Request, res: Response) => {
 
         res.status(200).json({ success: true, data: dashboardData });
 
-    } catch (error) {
-        console.error('Error fetching tenant dashboard data:', error);
+    } catch (error) { console.error('Error fetching tenant dashboard data:', error); }
+
         res.status(500).json({ success: false, message: 'Server Error' });
 
 };

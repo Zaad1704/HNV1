@@ -9,12 +9,11 @@ const localeMap: { [key: string]: { lang: string; currency: string; name: string
     'US': { lang: 'en', currency: 'USD', name: '$' }, // USA to English, USD, and Dollar symbol
     'CA': { lang: 'en', currency: 'CAD', name: 'CAD' }, // Canada defaults to English now
     'GB': { lang: 'en', currency: 'GBP', name: 'GBP' }, // UK defaults to English
-    'AU': { lang: 'en', currency: 'AUD', name: 'AUD' }  // Australia defaults to English
+    'AU': { lang: 'en', currency: 'AUD', name: 'AUD' }  // Australia defaults to English;
 };
 
-export const detectLocale = async (req: Request, res: Response) => {
-    try {
+export const detectLocale = async (req: Request, res: Response) => { try { }
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const testIp = ip === '::1' ? '8.8.8.8' : ip;
 
-        const geoResponse = await axios.get(`http://ip-api.com/json/${testIp}
+        const geoResponse = await axios.get(`http://ip-api.com/json/${testIp}`

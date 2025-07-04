@@ -5,9 +5,10 @@ import Property from '../models/Property';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-export const getTenants = async (req: Request, res: Response) => { 
-  try {
+export const getTenants = async (req: Request, res: Response) => { try { }
     if (!req.user || !req.user.organizationId) {
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
@@ -18,9 +19,10 @@ export const getTenants = async (req: Request, res: Response) => {
 
 };
 
-export const createTenant = async (req: Request, res: Response) => { 
-  try {
+export const createTenant = async (req: Request, res: Response) => { try { }
     if (!req.user || !req.user.organizationId) {
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
@@ -33,30 +35,32 @@ export const createTenant = async (req: Request, res: Response) => {
     const tenantData = { ...req.body, organizationId: req.user.organizationId };
     const tenant = await Tenant.create(tenantData);
     
-    auditService.recordAction(
+    auditService.recordAction();
         req.user._id,
         req.user.organizationId,
         'TENANT_CREATE',
-        {
-            tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), 
+        { tenantId: (tenant._id as mongoose.Types.ObjectId).toString(), 
             tenantName: tenant.name,
             propertyId: (property._id as mongoose.Types.ObjectId).toString() 
 
-    );
+    ); }
+
     res.status(201).json({ success: true, data: tenant });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
 
 };
 
-export const getTenantById = async (req: Request, res: Response) => { 
-  try {
+export const getTenantById = async (req: Request, res: Response) => { try { }
     if (!req.user || !req.user.organizationId) {
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
     const tenant = await Tenant.findById(req.params.id);
     if (!tenant) {
+
       res.status(404).json({ success: false, message: 'Tenant not found' });
       return;
 
@@ -71,14 +75,16 @@ export const getTenantById = async (req: Request, res: Response) => {
 
 };
 
-export const updateTenant = async (req: Request, res: Response) => { 
-  try {
+export const updateTenant = async (req: Request, res: Response) => { try { }
     if (!req.user || !req.user.organizationId) {
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
     const originalTenant = await Tenant.findById(req.params.id).lean();
     if (!originalTenant) {
+
       res.status(404).json({ success: false, message: 'Tenant not found' });
       return;
 
@@ -89,21 +95,21 @@ export const updateTenant = async (req: Request, res: Response) => {
     const updatedTenant = await Tenant.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     
     if (updatedTenant) {
+
         const changes = {};
-        for (const key in req.body) {
-            if ((originalTenant as any)[key] !== (updatedTenant as any)[key]) {
-                (changes as any)[key] = {
-                    from: (originalTenant as any)[key] || 'undefined',
-                    to: (updatedTenant as any)[key]
+        for (const key in req.body) { if ((originalTenant as any)[key] !== (updatedTenant as any)[key]) { }
+                (changes as any)[key] = { from: (originalTenant as any)[key] || 'undefined',
+                    to: (updatedTenant as any)[key] }
+
                 };
 
 
-        auditService.recordAction(
+        auditService.recordAction();
             req.user._id,
             req.user.organizationId,
             'TENANT_UPDATE',
-            { 
-                tenantId: (updatedTenant._id as mongoose.Types.ObjectId).toString(), 
+            { tenantId: (updatedTenant._id as mongoose.Types.ObjectId).toString(),  }
+
                 tenantName: updatedTenant.name,
                 ...(Object.keys(changes).length > 0 && { changes })
 
@@ -115,14 +121,16 @@ export const updateTenant = async (req: Request, res: Response) => {
 
 };
 
-export const deleteTenant = async (req: Request, res: Response) => { 
-  try {
+export const deleteTenant = async (req: Request, res: Response) => { try { }
     if (!req.user || !req.user.organizationId) {
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
     const tenant = await Tenant.findById(req.params.id);
     if (!tenant) {
+
       res.status(404).json({ success: false, message: 'Tenant not found' });
       return;
 
@@ -132,7 +140,7 @@ export const deleteTenant = async (req: Request, res: Response) => {
 
     await tenant.deleteOne();
     
-    auditService.recordAction(
+    auditService.recordAction();
         req.user._id,
         req.user.organizationId,
         'TENANT_DELETE',

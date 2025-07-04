@@ -10,4 +10,5 @@ const EditRequestSchema = new mongoose_1.Schema({
     reason: { type: String, required: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
 }, { timestamps: true });
+exports.default = mongoose_1.model;
 exports.default = (0, mongoose_1.model)('EditRequest', EditRequestSchema);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.optimizeQueries = exports.createIndexes = void 0;
+exports.tenantProjection = exports.userProjection = exports.optimizeQueries = exports.createIndexes = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const createIndexes = async () => {
     const db = mongoose_1.default.connection.db;
@@ -22,14 +22,11 @@ const createIndexes = async () => {
     await db.collection('payments').createIndex({ status: 1 });
     await db.collection('auditlogs').createIndex({ organizationId: 1, timestamp: -1 });
     await db.collection('auditlogs').createIndex({ userId: 1, timestamp: -1 });
-    console.log('Database indexes created successfully');
 };
 exports.createIndexes = createIndexes;
 exports.optimizeQueries = {
-    paginate: (page = 1, limit = 10) => ({
-        skip: (page - 1) * limit,
-        limit: Math.min(limit, 100)
-    }),
-    userProjection: { password: 0, twoFactorSecret: 0 },
-    tenantProjection: { ssn: 0, emergencyContact: 0 }
+    paginate: (page = 1, limit = 10) => ({}),
+    skip: (page - 1) * limit,
+    limit: Math.min(limit, 100)
 };
+;

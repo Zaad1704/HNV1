@@ -11,9 +11,9 @@ export const getCollectionAnalytics = asyncHandler(async (req: Request, res: Res
 
   const analytics = await analyticsService.generateCollectionAnalytics(organizationId, start, end);
 
-  res.json({
-    success: true,
-    data: analytics
+  res.json({ success: true,
+    data: analytics; }
+
   });
 });
 
@@ -23,36 +23,35 @@ export const getCollectionTrends = asyncHandler(async (req: Request, res: Respon
 
   const trends = await analyticsService.getCollectionTrends(organizationId, parseInt(months as string));
 
-  res.json({
-    success: true,
-    data: trends
+  res.json({ success: true,
+    data: trends; }
+
   });
 });
 
-export const getPropertyPerformance = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const organizationId = req.user!.organizationId.toString();
+export const getPropertyPerformance = asyncHandler(async (req: Request, res: Response): Promise<void> => { const organizationId = req.user!.organizationId.toString();
 
   const performance = await analyticsService.getPropertyPerformance(organizationId);
 
-  res.json({
+  res.json({ }
     success: true,
-    data: performance
+    data: performance;
+
   });
 });
 
-export const getTenantRiskAnalysis = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const organizationId = req.user!.organizationId.toString();
+export const getTenantRiskAnalysis = asyncHandler(async (req: Request, res: Response): Promise<void> => { const organizationId = req.user!.organizationId.toString();
 
   const riskAnalysis = await analyticsService.getTenantRiskAnalysis(organizationId);
 
-  res.json({
+  res.json({ }
     success: true,
-    data: riskAnalysis
+    data: riskAnalysis;
+
   });
 });
 
-export const getDashboardMetrics = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const organizationId = req.user!.organizationId.toString();
+export const getDashboardMetrics = asyncHandler(async (req: Request, res: Response): Promise<void> => { const organizationId = req.user!.organizationId.toString();
   const currentDate = new Date();
   const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
@@ -64,13 +63,13 @@ export const getDashboardMetrics = asyncHandler(async (req: Request, res: Respon
     analyticsService.getTenantRiskAnalysis(organizationId)
   ]);
 
-  res.json({
+  res.json({ }
     success: true,
-    data: {
-      currentMonth: analytics,
+    data: { currentMonth: analytics,
       trends: trends.slice(-6), // Last 6 months
       topProperties: propertyPerformance.slice(0, 5),
       highRiskTenants: tenantRisks.filter((t: any) => t.riskScore === 'high').slice(0, 10)
+
 
   });
 });

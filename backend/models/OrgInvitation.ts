@@ -1,14 +1,15 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface IOrgInvitation extends Document {
-  orgId: string;
+export interface IOrgInvitation extends Document { orgId: string;
   email: string;
   role: "Agent" | "Landlord" | "Tenant";
   token: string;
   status: "pending" | "accepted" | "expired";
-  expiresAt: Date;
 
-const OrgInvitationSchema = new Schema(
+  expiresAt: Date; }
+
+
+const OrgInvitationSchema = new Schema();
   {
     orgId: { type: String, required: true },
     email: { type: String, required: true },

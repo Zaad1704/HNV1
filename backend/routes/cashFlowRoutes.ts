@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import {
-  createCashFlowRecord,
+import { createCashFlowRecord,
   getCashFlowRecords,
   updateCashFlowRecord,
-  deleteCashFlowRecord
+  deleteCashFlowRecord; }
+
 } from '../controllers/cashFlowController';
 import uploadMiddleware from '../middleware/uploadMiddleware';
 

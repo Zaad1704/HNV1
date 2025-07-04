@@ -8,8 +8,9 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 const router = Router();
 
 // Monthly collection sheet
-router.get('/monthly-collection', asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.organizationId) {
+router.get('/monthly-collection', asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
+
+
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
 
@@ -18,15 +19,15 @@ router.get('/monthly-collection', asyncHandler(async (req: Request, res: Respons
   const monthStart = startOfMonth(targetDate);
   const monthEnd = endOfMonth(targetDate);
 
-  const tenants = await Tenant.find({ 
-    organizationId: req.user.organizationId,
-    status: 'Active'
+  const tenants = await Tenant.find({ organizationId: req.user.organizationId,
+    status: 'Active' }
+
   }).populate('propertyId', 'name');
 
-  const collectionData = await Promise.all(
-    tenants.map(async (tenant) => {
-      // Check if payment exists for this month
-      const payment = await Payment.findOne({
+  const collectionData = await Promise.all();
+    tenants.map(async (tenant) => { // Check if payment exists for this month
+      const payment = await Payment.findOne({ }
+
         tenantId: tenant._id,
         paymentDate: { $gte: monthStart, $lte: monthEnd },
         status: 'Paid'
@@ -45,4 +46,4 @@ router.get('/monthly-collection', asyncHandler(async (req: Request, res: Respons
         unitNo: tenant.unit,
         propertyName: (tenant.propertyId as any)?.name || 'N/A',
         rentAmount: tenant.rentAmount || 0,
-        rentStartMonth: `${month}/${year}
+        rentStartMonth: `${month}/${year}`

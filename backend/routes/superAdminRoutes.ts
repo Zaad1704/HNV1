@@ -6,8 +6,7 @@ import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
 import SiteSettings from '../models/SiteSettings';
 import asyncHandler from 'express-async-handler';
-import { 
-    getDashboardStats, 
+import { getDashboardStats, 
     getAllOrganizations,
     getAllUsers,
     updateSubscriptionStatus,
@@ -25,7 +24,8 @@ import {
     updateSiteContent,
     createPlan,
     updatePlan,
-    deletePlan
+    deletePlan; }
+
 } from '../controllers/superAdminController';
 import { protect } from '../middleware/authMiddleware';
 // import { authorize } from '../middleware/rbac'; // Using direct role check instead
@@ -33,9 +33,8 @@ import { protect } from '../middleware/authMiddleware';
 const router = Router();
 
 // Debug middleware
-router.use((req, res, next) => {
+router.use((req, res, next) => { next(); }
 
-  next();
 });
 
 // Test route without auth
@@ -44,31 +43,28 @@ router.get('/test', (req, res) => {
 });
 
 // Health check route without auth
-router.get('/health', (req, res) => {
-  res.json({ 
+router.get('/health', (req, res) => { res.json({ }
     success: true, 
     message: 'Super admin service healthy',
     timestamp: new Date(),
-    endpoints: {
-      'dashboard-stats': 'Requires auth',
+    endpoints: { 'dashboard-stats': 'Requires auth',
       'platform-growth': 'Requires auth', 
       'plan-distribution': 'Requires auth',
       'email-status': 'Requires auth'
+
 
   });
 });
 
 // Apply auth to all routes except test and health
-router.use((req, res, next) => {
-  if (req.path === '/test' || req.path === '/health') return next();
-  protect(req, res, () => {
-    if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) {
-
-      return res.status(403).json({ 
+router.use((req, res, next) => { if (req.path === '/test' || req.path === '/health') return next();
+  protect(req, res, () => { }
+    if (!req.user || (req.user.role !== 'Super Admin' && req.user.role !== 'Super Moderator')) { return res.status(403).json({ }
         success: false, 
         message: 'Access denied. Super Admin role required.',
         userRole: req.user?.role || 'No role',
         requiredRoles: ['Super Admin', 'Super Moderator']
+
       });
 
     next();
@@ -83,8 +79,7 @@ router.get('/platform-growth', asyncHandler(getPlatformGrowth));
 router.get('/plan-distribution', asyncHandler(getPlanDistribution));
 
 // Add debug route to test endpoints
-router.get('/debug-routes', (req, res) => {
-  res.json({
+router.get('/debug-routes', (req, res) => { res.json({ }
     success: true,
     availableRoutes: [
       'GET /dashboard-stats',
@@ -96,32 +91,30 @@ router.get('/debug-routes', (req, res) => {
       'GET /billing'
     ],
     timestamp: new Date().toISOString()
+
   });
 });
 
-router.get('/organizations', async (req: Request, res: Response) => {
-  try {
+router.get('/organizations', async (req: Request, res: Response) => { try { }
 
     const organizations = await Organization.find({})
       .populate('owner', 'name email')
-      .populate({
-        path: 'subscription',
-        populate: {
+      .populate({ path: 'subscription',
+        populate: { }
           path: 'planId',
           select: 'name price duration'
 
       });
 
     res.json({ success: true, data: organizations || [] });
-  } catch (error) {
-    console.error('Organizations fetch error:', error);
+  } catch (error) { console.error('Organizations fetch error:', error); }
+
     res.json({ success: true, data: [] });
 
 });
 router.put('/organizations/:id/status', asyncHandler(updateSubscriptionStatus));
-router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => {
+router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, res: Response) => { const subscription = await Subscription.findOneAndUpdate(); }
 
-  const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'active' },
     { new: true, upsert: true }
@@ -130,9 +123,8 @@ router.patch('/organizations/:id/activate', asyncHandler(async (req: Request, re
   res.json({ success: true, data: subscription });
 }));
 
-router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => {
+router.patch('/organizations/:id/deactivate', asyncHandler(async (req: Request, res: Response) => { const subscription = await Subscription.findOneAndUpdate(); }
 
-  const subscription = await Subscription.findOneAndUpdate(
     { organizationId: req.params.id },
     { status: 'inactive' },
     { new: true }
@@ -148,21 +140,21 @@ router.delete('/organizations/:orgId', asyncHandler(deleteOrganization)); // New
 router.put('/organizations/:orgId/subscription', asyncHandler(updateOrganizationSubscription)); 
 router.put('/organizations/:orgId/toggle-self-deletion', asyncHandler(toggleSelfDeletion)); 
 
-router.get('/users', async (req: Request, res: Response) => {
-  try {
+router.get('/users', async (req: Request, res: Response) => { try { }
 
     const users = await User.find({}).populate('organizationId', 'name');
 
     res.json({ success: true, data: users || [] });
-  } catch (error) {
-    console.error('Users fetch error:', error);
+  } catch (error) { console.error('Users fetch error:', error); }
+
     res.json({ success: true, data: [] });
 
 });
 router.put('/users/:userId/manage', asyncHandler(updateUserByAdmin));
-router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findByIdAndDelete(req.params.userId);
-  if (!user) {
+router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response) => { const user = await User.findByIdAndDelete(req.params.userId);
+  if (!user) { }
+
+
     res.status(404).json({ success: false, message: 'User not found' });
     return;
 
@@ -171,14 +163,14 @@ router.delete('/users/:userId', asyncHandler(async (req: Request, res: Response)
 
 router.post('/moderators', asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
-  const user = await User.create({
-    name,
+  const user = await User.create({ name,
     email, 
     password,
     role: 'Super Moderator',
     organizationId: req.user?.organizationId,
     isEmailVerified: true,
-    status: 'active'
+    status: 'active' }
+
   });
   res.status(201).json({ success: true, data: user });
 }));
@@ -187,35 +179,36 @@ router.get('/moderators', asyncHandler(getModerators));
 
 router.put('/moderators/:id', asyncHandler(async (req: Request, res: Response) => {
   const { name, email, status } = req.body;
-  const user = await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate();
     req.params.id,
     { name, email, status: status === 'active' ? 'active' : 'suspended' },
     { new: true }
   );
   if (!user) {
+
     res.status(404).json({ success: false, message: 'Moderator not found' });
     return;
 
   res.json({ success: true, data: user });
 }));
 
-router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findByIdAndDelete(req.params.id);
-  if (!user) {
+router.delete('/moderators/:id', asyncHandler(async (req: Request, res: Response) => { const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) { }
+
+
     res.status(404).json({ success: false, message: 'Moderator not found' });
     return;
 
   res.json({ success: true, message: 'Moderator removed successfully' });
 }));
-router.get('/billing', async (req: Request, res: Response) => {
-  try {
-    // Models already imported at top
-    
+router.get('/billing', async (req: Request, res: Response) => { try { }
+    // Models already imported at top;
+
     const activeSubscriptions = await Subscription.countDocuments({ status: 'active' });
     const allSubscriptions = await Subscription.find({ status: 'active' }).populate('planId');
     
-    const totalRevenue = allSubscriptions.reduce((sum, sub) => {
-      return sum + ((sub.planId as any)?.price || 0);
+    const totalRevenue = allSubscriptions.reduce((sum, sub) => { return sum + ((sub.planId as any)?.price || 0); }
+
     }, 0);
     
     const monthlyRevenue = Math.round(totalRevenue * 0.75); // Estimate
@@ -225,13 +218,13 @@ router.get('/billing', async (req: Request, res: Response) => {
       .populate('planId', 'name price')
       .sort({ createdAt: -1 })
       .limit(10)
-      .then(subs => subs.map(sub => ({
-        _id: sub._id,
+      .then(subs => subs.map(sub => ({ _id: sub._id,
         organizationName: (sub.organizationId as any)?.name || 'Unknown',
         amount: (sub.planId as any)?.price || 0,
         status: 'completed',
         date: (sub as any).createdAt || new Date(),
-        planName: (sub.planId as any)?.name || 'Unknown Plan'
+        planName: (sub.planId as any)?.name || 'Unknown Plan' }
+
       })));
     
     const revenueChart = [
@@ -243,62 +236,62 @@ router.get('/billing', async (req: Request, res: Response) => {
       { month: 'Jun', revenue: Math.round(totalRevenue * 1.1), subscriptions: Math.round(activeSubscriptions * 1.1) }
     ];
     
-    const billingData = {
-      totalRevenue: Math.round(totalRevenue / 100), // Convert cents to dollars
+    const billingData = { totalRevenue: Math.round(totalRevenue / 100), // Convert cents to dollars
       monthlyRevenue: Math.round(monthlyRevenue / 100),
       activeSubscriptions,
       churnRate: 2.3,
       recentTransactions,
-      revenueChart
+      revenueChart; }
+
     };
     
     res.json({ success: true, data: billingData });
-  } catch (error) {
-    console.error('Billing data error:', error);
-    res.json({ 
+  } catch (error) { console.error('Billing data error:', error);
+    res.json({ }
       success: true, 
-      data: {
-        totalRevenue: 0,
+      data: { totalRevenue: 0,
         monthlyRevenue: 0,
         activeSubscriptions: 0,
         churnRate: 0,
         recentTransactions: [],
         revenueChart: []
 
+
     });
 
 });
 
 // Plan management routes
-router.get('/plans', async (req: Request, res: Response) => {
-  try {
+router.get('/plans', async (req: Request, res: Response) => { try { }
 
     const plans = await Plan.find({}).sort({ price: 1 });
 
     res.json({ success: true, data: plans || [] });
-  } catch (error) {
-    console.error('Plans fetch error:', error);
+  } catch (error) { console.error('Plans fetch error:', error); }
+
     res.json({ success: true, data: [] });
 
 });
 
-router.post('/plans', asyncHandler(async (req: Request, res: Response) => {
-  const plan = await Plan.create(req.body);
+router.post('/plans', asyncHandler(async (req: Request, res: Response) => { const plan = await Plan.create(req.body); }
+
   res.status(201).json({ success: true, data: plan });
 }));
 
 router.put('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
   const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!plan) {
+
     res.status(404).json({ success: false, message: 'Plan not found' });
     return;
 
   res.json({ success: true, data: plan });
 }));
 
-router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => {
-  const plan = await Plan.findByIdAndDelete(req.params.id);
-  if (!plan) {
+router.delete('/plans/:id', asyncHandler(async (req: Request, res: Response) => { const plan = await Plan.findByIdAndDelete(req.params.id);
+  if (!plan) { }
+
+
     res.status(404).json({ success: false, message: 'Plan not found' });
     return;
 
@@ -312,10 +305,11 @@ router.put('/users/:userId/plan', asyncHandler(async (req: Request, res: Respons
   
   const user = await User.findById(req.params.userId);
   if (!user) {
+
     res.status(404).json({ success: false, message: 'User not found' });
     return;
 
-  const subscription = await Subscription.findOneAndUpdate(
+  const subscription = await Subscription.findOneAndUpdate();
     { organizationId: user.organizationId },
     { planId, status: 'active' },
     { new: true, upsert: true }
@@ -340,8 +334,8 @@ router.get('/invites', asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data: invites });
 }));
 
-router.get('/history', asyncHandler(async (req: Request, res: Response) => {
-  const history = [];
+router.get('/history', asyncHandler(async (req: Request, res: Response) => { const history = []; }
+
   res.json({ success: true, data: history });
 }));
 
@@ -351,32 +345,31 @@ router.get('/organization', asyncHandler(async (req: Request, res: Response) => 
 }));
 
 // Email service status route
-router.get('/email-status', asyncHandler(async (req: Request, res: Response) => {
-  try {
+router.get('/email-status', asyncHandler(async (req: Request, res: Response) => { try { }
     const configured = !!(process.env.SMTP_HOST || process.env.RESEND_API_KEY);
-    res.json({ 
-      success: true, 
-      data: { 
+    res.json({ success: true, 
+      data: { }
         configured,
         status: configured ? 'operational' : 'not_configured'
 
     });
-  } catch (error) {
-    res.json({ 
+  } catch (error) { res.json({ }
       success: false, 
+
       data: { configured: false, status: 'error' }
     });
 
 }));
 
 // Get organization by code
-router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res: Response, next) => {
-  try {
+router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res: Response, next) => { try { }
+
     const organization = await Organization.findOne({ organizationCode: req.params.code })
       .select('name organizationCode')
       .populate('owner', 'name email');
     
     if (!organization) {
+
       res.status(404).json({ success: false, message: 'Organization not found' });
       return;
 
@@ -387,40 +380,39 @@ router.get('/organization-by-code/:code', asyncHandler(async (req: Request, res:
 }));
 
 // Site settings save route
-router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => {
-  try {
+router.put('/site-settings', asyncHandler(async (req: Request, res: Response) => { try { }
+    const settings = await SiteSettings.findOneAndUpdate();
 
-    const settings = await SiteSettings.findOneAndUpdate(
       {}, // Find any document
       req.body, // Update with new data
-      { 
-        new: true, // Return updated document
+      { new: true, // Return updated document
         upsert: true, // Create if doesn't exist
-        runValidators: false // Skip validation for flexibility
+        runValidators: false // Skip validation for flexibility;
 
     );
 
+
     res.json({ success: true, data: settings, message: 'Settings saved successfully' });
-  } catch (error) {
-    console.error('Save settings error:', error);
+  } catch (error) { console.error('Save settings error:', error); }
+
     res.status(500).json({ success: false, message: 'Failed to save settings', error: error.message });
 
 }));
 
 // Image upload route with multer middleware
 const multer = require('multer');
-const upload = multer({ 
+const upload = multer({   }
+
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype.startsWith('image/')) {
+  fileFilter: (req: any, file: any, cb: any) => { if (file.mimetype.startsWith('image/')) { }
       cb(null, true);
-    } else {
-      cb(new Error('Only image files allowed'));
+
+    } else { cb(new Error('Only image files allowed'));
 
 
 });
 
-router.post('/upload-image', upload.single('image'), asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}
+router.post('/upload-image', upload.single('image'), asyncHandler(async (req: Request, res: Response) => { try { }
+
+    const mockImageUrl = `https://drive.google.com/uc?id=1234567890_${Date.now()}`

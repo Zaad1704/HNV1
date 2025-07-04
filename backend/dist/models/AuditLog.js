@@ -34,9 +34,8 @@ const auditLogSchema = new mongoose_1.Schema({
     ipAddress: { type: String, required: true },
     userAgent: { type: String, required: true },
     timestamp: { type: Date, default: Date.now }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
+;
 auditLogSchema.index({ organizationId: 1, timestamp: -1 });
 auditLogSchema.index({ userId: 1, timestamp: -1 });
 exports.default = mongoose_1.default.model('AuditLog', auditLogSchema);

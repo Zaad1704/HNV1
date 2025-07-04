@@ -1,27 +1,27 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface ICollectionAnalytics extends Document {
-  organizationId: mongoose.Types.ObjectId;
-  period: {
+export interface ICollectionAnalytics extends Document { organizationId: mongoose.Types.ObjectId;
+
+  period: { }
     start: Date;
     end: Date;
     type: 'monthly' | 'quarterly' | 'yearly';
+
   };
   
-  performance: {
-    collectionRate: number;
+  performance: { collectionRate: number;
     averageDaysToCollect: number;
     totalCollected: number;
     totalOutstanding: number;
-    trends: {
+    trends: { }
       collectionRateChange: number;
       outstandingChange: number;
       averageDaysChange: number;
+
     };
   };
   
-  breakdown: {
-    byProperty: Array<{
+  breakdown: { byProperty: Array<{ }
       propertyId: mongoose.Types.ObjectId;
       name: string;
       collectionRate: number;
@@ -29,6 +29,7 @@ export interface ICollectionAnalytics extends Document {
       collected: number;
       outstanding: number;
       tenantCount: number;
+
     }>;
     
     byPaymentMethod: {
@@ -45,14 +46,14 @@ export interface ICollectionAnalytics extends Document {
     };
   };
   
-  problemTenants: Array<{
-    tenantId: mongoose.Types.ObjectId;
+  problemTenants: Array<{ tenantId: mongoose.Types.ObjectId;
     name: string;
     property: string;
     daysLate: number;
     amountOwed: number;
     missedPayments: number;
-    riskScore: 'high' | 'medium' | 'low';
+    riskScore: 'high' | 'medium' | 'low'; }
+
   }>;
   
   generatedAt: Date;
@@ -78,15 +79,15 @@ const CollectionAnalyticsSchema: Schema<ICollectionAnalytics> = new Schema({
 
   },
   
-  breakdown: {
-    byProperty: [{
+  breakdown: { byProperty: [{ }
+
       propertyId: { type: Schema.Types.ObjectId, ref: 'Property' },
       name: String,
       collectionRate: Number,
       totalDue: Number,
       collected: Number,
       outstanding: Number,
-      tenantCount: Number
+      tenantCount: Number;
     }],
     
     byPaymentMethod: {
@@ -114,7 +115,8 @@ const CollectionAnalyticsSchema: Schema<ICollectionAnalytics> = new Schema({
   }],
   
   generatedAt: { type: Date, default: Date.now }
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

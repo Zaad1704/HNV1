@@ -10,4 +10,5 @@ const NotificationSchema = new mongoose_1.Schema({
     link: { type: String },
     isRead: { type: Boolean, default: false },
 }, { timestamps: true });
+exports.default = mongoose_1.model;
 exports.default = (0, mongoose_1.model)('Notification', NotificationSchema);

@@ -1,13 +1,14 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface ILease extends Document {
-  propertyId: mongoose.Schema.Types.ObjectId;
+export interface ILease extends Document { propertyId: mongoose.Schema.Types.ObjectId;
   tenantId: mongoose.Schema.Types.ObjectId;
   organizationId: mongoose.Schema.Types.ObjectId;
   startDate: Date;
   endDate: Date;
   rentAmount: number;
-  status: 'active' | 'expired' | 'terminated';
+
+  status: 'active' | 'expired' | 'terminated'; }
+
 
 const LeaseSchema: Schema<ILease> = new Schema({
   propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
@@ -19,4 +20,5 @@ const LeaseSchema: Schema<ILease> = new Schema({
   status: { type: String, enum: ['active', 'expired', 'terminated'], default: 'active' },
 }, { timestamps: true });
 
+export default model
 export default model<ILease>('Lease', LeaseSchema);

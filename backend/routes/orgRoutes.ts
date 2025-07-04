@@ -1,10 +1,10 @@
 // backend/routes/orgRoutes.ts
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import {
-    getOrganizationDetails,
+import { getOrganizationDetails,
     listOrganizations,
-    setOrgStatus
+    setOrgStatus; }
+
 } from '../controllers/orgController'; 
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

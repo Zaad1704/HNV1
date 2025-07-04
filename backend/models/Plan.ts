@@ -1,18 +1,18 @@
 // backend/models/Plan.ts
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
-export interface IPlanLimits {
-  maxProperties: number;
+export interface IPlanLimits { maxProperties: number;
   maxTenants: number;
   maxAgents: number;
 
-export interface IPlan extends Document {
+export interface IPlan extends Document { }
   name: string;
   price: number; // Stored in cents
   duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
   features: string[];
   limits: IPlanLimits;
   isPublic: boolean;
+
 
 const planSchema = new Schema<IPlan>(
   {

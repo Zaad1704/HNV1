@@ -9,8 +9,9 @@ import Expense from '../models/Expense';
 const router = Router();
 
 // Export properties
-router.post('/properties', asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.organizationId) {
+router.post('/properties', asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
+
+
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
 
@@ -18,12 +19,12 @@ router.post('/properties', asyncHandler(async (req: Request, res: Response) => {
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
+
     query._id = { $in: filters.ids };
 
   const properties = await Property.find(query).populate('createdBy', 'name');
   
-  if (format === 'csv') {
-    const csvData = [
+  if (format === 'csv') { const csvData = [
       ['Name', 'Address', 'Units', 'Status', 'Created By', 'Created Date'],
       ...properties.map(p => [
         p.name,
@@ -37,15 +38,18 @@ router.post('/properties', asyncHandler(async (req: Request, res: Response) => {
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=properties.csv');
-    res.send(csvData);
+    res.send(csvData); }
+
+
   } else {
     res.json({ success: true, data: properties });
 
 }));
 
 // Export tenants
-router.post('/tenants', asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.organizationId) {
+router.post('/tenants', asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
+
+
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
 
@@ -53,12 +57,12 @@ router.post('/tenants', asyncHandler(async (req: Request, res: Response) => {
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
+
     query._id = { $in: filters.ids };
 
   const tenants = await Tenant.find(query).populate('propertyId', 'name');
   
-  if (format === 'csv') {
-    const csvData = [
+  if (format === 'csv') { const csvData = [
       ['Name', 'Email', 'Phone', 'Property', 'Unit', 'Rent Amount', 'Status', 'Lease End'],
       ...tenants.map(t => [
         t.name,
@@ -74,15 +78,18 @@ router.post('/tenants', asyncHandler(async (req: Request, res: Response) => {
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=tenants.csv');
-    res.send(csvData);
+    res.send(csvData); }
+
+
   } else {
     res.json({ success: true, data: tenants });
 
 }));
 
 // Export payments
-router.post('/payments', asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.organizationId) {
+router.post('/payments', asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
+
+
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
 
@@ -90,14 +97,14 @@ router.post('/payments', asyncHandler(async (req: Request, res: Response) => {
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
+
     query._id = { $in: filters.ids };
 
   const payments = await Payment.find(query)
     .populate('tenantId', 'name')
     .populate('propertyId', 'name');
   
-  if (format === 'csv') {
-    const csvData = [
+  if (format === 'csv') { const csvData = [
       ['Transaction ID', 'Tenant', 'Property', 'Amount', 'Date', 'Status'],
       ...payments.map(p => [
         p.transactionId || p._id.toString(),
@@ -111,15 +118,18 @@ router.post('/payments', asyncHandler(async (req: Request, res: Response) => {
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=payments.csv');
-    res.send(csvData);
+    res.send(csvData); }
+
+
   } else {
     res.json({ success: true, data: payments });
 
 }));
 
 // Export expenses
-router.post('/expenses', asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user?.organizationId) {
+router.post('/expenses', asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
+
+
     res.status(401).json({ success: false, message: 'Unauthorized' });
     return;
 
@@ -127,14 +137,14 @@ router.post('/expenses', asyncHandler(async (req: Request, res: Response) => {
   const query: any = { organizationId: req.user.organizationId };
   
   if (filters?.ids) {
+
     query._id = { $in: filters.ids };
 
   const expenses = await Expense.find(query)
     .populate('propertyId', 'name')
     .populate('recordedBy', 'name');
   
-  if (format === 'csv') {
-    const csvData = [
+  if (format === 'csv') { const csvData = [
       ['Description', 'Category', 'Amount', 'Property', 'Date', 'Recorded By'],
       ...expenses.map(e => [
         e.description,
@@ -148,7 +158,9 @@ router.post('/expenses', asyncHandler(async (req: Request, res: Response) => {
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=expenses.csv');
-    res.send(csvData);
+    res.send(csvData); }
+
+
   } else {
     res.json({ success: true, data: expenses });
 

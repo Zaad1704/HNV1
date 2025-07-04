@@ -24,12 +24,44 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const OrgInvitationSchema = new mongoose_1.Schema({
-    orgId: { type: String, required: true },
-    email: { type: String, required: true },
-    role: { type: String, enum: ["Agent", "Landlord", "Tenant"], required: true },
-    token: { type: String, required: true, unique: true },
-    status: { type: String, enum: ["pending", "accepted", "expired"], default: "pending" },
-    expiresAt: { type: Date, required: true },
-}, { timestamps: true });
+const OrgInvitationSchema = new mongoose_1.Schema();
+{
+    orgId: {
+        type: String, required;
+        true;
+    }
+    email: {
+        type: String, required;
+        true;
+    }
+    role: {
+        type: String, ;
+        let ;
+        (function () {
+        })( || ( = {}));
+        ["Agent", "Landlord", "Tenant"], required;
+        true;
+    }
+    token: {
+        type: String, required;
+        true, unique;
+        true;
+    }
+    status: {
+        type: String, ;
+        let ;
+        (function () {
+        })( || ( = {}));
+        ["pending", "accepted", "expired"], ;
+        "pending";
+    }
+    expiresAt: {
+        type: Date, required;
+        true;
+    }
+}
+{
+    timestamps: true;
+}
+;
 exports.default = mongoose_1.default.model("OrgInvitation", OrgInvitationSchema);

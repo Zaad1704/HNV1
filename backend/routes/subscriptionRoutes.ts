@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import {
-  getSubscriptionStatus,
+import { getSubscriptionStatus,
   upgradePlan,
   cancelSubscription,
   reactivateSubscription,
   processPayment,
   getAvailablePlans,
   getBillingHistory,
-  createCheckoutSession
+  createCheckoutSession; }
+
 } from '../controllers/subscriptionController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

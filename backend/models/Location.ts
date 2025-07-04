@@ -1,25 +1,26 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface ILocation extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface ILocation extends Document { organizationId: mongoose.Types.ObjectId;
   name: string;
-  address: {
+
+  address: { }
     street: string;
     city: string;
     state: string;
     zipCode: string;
     country: string;
+
   };
   manager: mongoose.Types.ObjectId;
   
   properties: mongoose.Types.ObjectId[];
   staff: mongoose.Types.ObjectId[];
   
-  settings: {
-    timezone: string;
+  settings: { timezone: string;
     currency: string;
     localRegulations: Record<string, any>;
-    operatingHours: {
+    operatingHours: { }
+
       monday: { open: string; close: string };
       tuesday: { open: string; close: string };
       wednesday: { open: string; close: string };
@@ -30,12 +31,12 @@ export interface ILocation extends Document {
     };
   };
   
-  performance: {
-    revenue: number;
+  performance: { revenue: number;
     expenses: number;
     occupancy: number;
     maintenanceRequests: number;
-    tenantSatisfaction: number;
+    tenantSatisfaction: number; }
+
   };
   
   isActive: boolean;
@@ -82,7 +83,8 @@ const LocationSchema: Schema<ILocation> = new Schema({
   },
   
   isActive: { type: Boolean, default: true }
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

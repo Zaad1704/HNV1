@@ -6,11 +6,12 @@ import { logger } from '../services/logger';
 // Enhanced JWT middleware with blacklist support
 const tokenBlacklist = new Set<string>();
 
-export const advancedAuth = async (req: Request, res: Response, next: NextFunction) => {
-  try {
+export const advancedAuth = async (req: Request, res: Response, next: NextFunction) => { try { }
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+
+
       return res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
 
     // Check if token is blacklisted
@@ -21,6 +22,6 @@ export const advancedAuth = async (req: Request, res: Response, next: NextFuncti
     req.user = decoded;
     
     // Log access for audit
-    logger.info(`User ${decoded.id} accessed ${req.method} ${req.path}
+    logger.info(`User ${decoded.id} accessed ${req.method} ${req.path}`
     logger.warn(`Invalid token attempt from ${req.ip}
-    logger.warn(
+    logger.warn(`

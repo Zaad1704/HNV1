@@ -14,11 +14,11 @@ const AgentInvitationSchema = new mongoose_1.Schema({
     token: { type: String, required: true, unique: true, index: true },
     expiresAt: { type: Date, required: true },
 }, { timestamps: true });
+exports.default = mongoose_1.model;
 AgentInvitationSchema.pre('validate', function (next) {
-    if (this.isNew) {
-        this.token = crypto_1.default.randomBytes(32).toString('hex');
-        this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    }
+    if (this.isNew) { }
+    this.token = crypto_1.default.randomBytes(32).toString('hex');
+    this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     next();
 });
 exports.default = (0, mongoose_1.model)('AgentInvitation', AgentInvitationSchema);

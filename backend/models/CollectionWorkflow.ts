@@ -1,33 +1,34 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface ICollectionWorkflow extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface ICollectionWorkflow extends Document { organizationId: mongoose.Types.ObjectId;
   name: string;
-  isActive: boolean;
-  
-  triggers: {
-    daysLate: number[];
-    conditions: {
+
+  isActive: boolean; }
+
+
+  triggers: { daysLate: number[];
+    conditions: { }
       minAmount?: number;
       excludeStatuses?: string[];
       propertyTypes?: string[];
+
     };
   };
   
-  actions: Array<{
-    day: number;
+  actions: Array<{ day: number;
     type: 'email' | 'sms' | 'call' | 'notice' | 'legal';
     template: string;
     automatic: boolean;
     assignTo?: 'property_manager' | 'collections_specialist' | 'owner';
-    delay?: number; // Hours to delay
+    delay?: number; // Hours to delay; }
+
   }>;
   
-  escalation: {
-    enabled: boolean;
+  escalation: { enabled: boolean;
     afterDays: number;
     action: 'legal_notice' | 'eviction' | 'collections_agency';
-    assignTo?: string;
+    assignTo?: string; }
+
   };
   
   createdAt: Date;
@@ -40,25 +41,25 @@ const CollectionWorkflowSchema: Schema<ICollectionWorkflow> = new Schema({
   
   triggers: {
     daysLate: [{ type: Number, required: true }],
-    conditions: {
-      minAmount: Number,
+    conditions: { minAmount: Number,
       excludeStatuses: [String],
       propertyTypes: [String]
+
 
   },
   
   actions: [{
     day: { type: Number, required: true },
-    type: { 
-      type: String, 
+    type: { type: String, 
       enum: ['email', 'sms', 'call', 'notice', 'legal'], 
-      required: true 
+      required: true; }
+
     },
     template: { type: String, required: true },
     automatic: { type: Boolean, default: false },
-    assignTo: { 
-      type: String, 
-      enum: ['property_manager', 'collections_specialist', 'owner'] 
+    assignTo: { type: String, 
+      enum: ['property_manager', 'collections_specialist', 'owner']  }
+
     },
     delay: { type: Number, default: 0 }
   }],
@@ -66,13 +67,14 @@ const CollectionWorkflowSchema: Schema<ICollectionWorkflow> = new Schema({
   escalation: {
     enabled: { type: Boolean, default: false },
     afterDays: { type: Number, default: 30 },
-    action: { 
-      type: String, 
-      enum: ['legal_notice', 'eviction', 'collections_agency'] 
-    },
-    assignTo: String
+    action: { type: String, 
+      enum: ['legal_notice', 'eviction', 'collections_agency']  }
 
-}, { 
+    },
+    assignTo: String;
+
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

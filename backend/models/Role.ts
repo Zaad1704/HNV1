@@ -1,21 +1,22 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface IRole extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface IRole extends Document { organizationId: mongoose.Types.ObjectId;
   name: string;
-  description: string;
-  
-  permissions: Array<{
-    resource: string;
+
+  description: string; }
+
+
+  permissions: Array<{ resource: string;
     actions: string[];
     conditions?: Record<string, any>;
-    effect: 'allow' | 'deny';
+    effect: 'allow' | 'deny'; }
+
   }>;
   
-  hierarchy: {
-    level: number;
+  hierarchy: { level: number;
     inheritsFrom: mongoose.Types.ObjectId[];
-    canDelegate: boolean;
+    canDelegate: boolean; }
+
   };
   
   isSystem: boolean;
@@ -43,7 +44,8 @@ const RoleSchema: Schema<IRole> = new Schema({
   
   isSystem: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true }
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

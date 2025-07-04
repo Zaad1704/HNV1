@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import {
-  getCollectionPeriod,
+import { getCollectionPeriod,
   generateCollectionPeriod,
   createCollectionSheet,
   downloadCollectionSheet,
@@ -8,7 +7,8 @@ import {
   getCollectionActions,
   getCollectionAnalytics,
   getOverduePayments,
-  updateTenantNotes
+  updateTenantNotes; }
+
 } from '../controllers/rentCollectionController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

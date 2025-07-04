@@ -21,8 +21,8 @@ router.put('/reset-password/:resetToken', resetPassword as any);
 router.put('/profile', protect, updateProfile as any);
 
 // Google OAuth
-router.get('/google', (req, res, next) => {
-    const role = req.query.role || 'Landlord';
+router.get('/google', (req, res, next) => { const role = req.query.role || 'Landlord'; }
+
     const state = Buffer.from(JSON.stringify({ role })).toString('base64');
     const authenticator = passport.authenticate('google', {
         scope: ['profile', 'email'],
@@ -32,11 +32,12 @@ router.get('/google', (req, res, next) => {
 });
 
 router.get('/google/callback', 
-    (req, res, next) => {
-        const state = req.query.state as string;
-        if (state) {
+    (req, res, next) => { const state = req.query.state as string;
+        if (state) { }
             const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
             (req as any).authRole = decodedState.role;
 
         const authenticator = passport.authenticate('google', {
-            failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed
+
+
+            failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`

@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+lineItems: {
+    description: string;
+    amount: number;
+}
+[];
+paidAt ?  : Date;
+transactionId ?  : string;
 const InvoiceSchema = new mongoose_1.Schema({
     tenantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Tenant', required: true },
     propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
@@ -17,4 +24,5 @@ const InvoiceSchema = new mongoose_1.Schema({
     paidAt: { type: Date },
     transactionId: { type: String },
 }, { timestamps: true });
+exports.default = mongoose_1.model;
 exports.default = (0, mongoose_1.model)('Invoice', InvoiceSchema);

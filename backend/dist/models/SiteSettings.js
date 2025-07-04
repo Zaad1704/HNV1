@@ -46,9 +46,8 @@ const SiteSettingsSchema = new mongoose_1.Schema({
     aboutSubtitle: { type: String, default: 'Built for modern property managers' },
     contactTitle: { type: String, default: 'Get in Touch' },
     contactSubtitle: { type: String, default: "We'd love to hear from you. Send us a message and we'll respond as soon as possible." }
-}, {
-    timestamps: true,
+}, { timestamps: true,
     strict: false,
-    minimize: false
-});
+    minimize: false });
+;
 exports.default = mongoose_1.default.model('SiteSettings', SiteSettingsSchema);

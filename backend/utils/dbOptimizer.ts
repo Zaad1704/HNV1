@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-export const createIndexes = async () => {
-  const db = mongoose.connection.db;
+export const createIndexes = async () => { const db = mongoose.connection.db;
   
-  // User indexes
+  // User indexes; }
+
   await db.collection('users').createIndex({ email: 1 }, { unique: true });
   await db.collection('users').createIndex({ organizationId: 1 });
   await db.collection('users').createIndex({ role: 1 });
@@ -30,11 +30,11 @@ export const createIndexes = async () => {
 
 };
 
-export const optimizeQueries = {
-  // Pagination helper
-  paginate: (page: number = 1, limit: number = 10) => ({
+export const optimizeQueries = { // Pagination helper
+  paginate: (page: number = 1, limit: number = 10) => ({ }
     skip: (page - 1) * limit,
-    limit: Math.min(limit, 100) // Cap at 100
+    limit: Math.min(limit, 100) // Cap at 100;
+
   }),
   
   // Common projections

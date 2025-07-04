@@ -3,25 +3,26 @@ import { IProperty } from './Property';
 import { IOrganization } from './Organization';
 
 // Expanded sub-document interface for other adults
-interface IAdditionalAdult {
-    name: string;
+interface IAdditionalAdult { name: string;
     phone?: string;
     fatherName?: string;
     motherName?: string;
     permanentAddress?: string;
     govtIdNumber?: string;
     govtIdImageUrl?: string;
-    imageUrl?: string;
+
+    imageUrl?: string; }
+
 
 // Expanded sub-document interface for references
-interface IReference {
-    name: string;
+interface IReference { name: string;
     phone?: string;
     email?: string;
-    idNumber?: string; // New field
 
-export interface ITenant extends Document {
-    name: string;
+    idNumber?: string; // New field; }
+
+
+export interface ITenant extends Document { name: string;
     email: string;
     phone?: string;
     
@@ -47,8 +48,10 @@ export interface ITenant extends Document {
     permanentAddress?: string;
     
     reference?: IReference;
-    additionalAdults?: IAdditionalAdult[];
-    
+
+    additionalAdults?: IAdditionalAdult[]; }
+
+
     // ... existing fields
     createdAt: Date;
     discountAmount?: number;
@@ -98,4 +101,5 @@ const TenantSchema: Schema<ITenant> = new Schema({
     discountExpiresAt: { type: Date },
 }, { timestamps: true });
 
+export default model
 export default model<ITenant>('Tenant', TenantSchema);

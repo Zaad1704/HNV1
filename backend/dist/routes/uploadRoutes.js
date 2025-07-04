@@ -10,5 +10,11 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const rbac_1 = require("../middleware/rbac");
 const uploadMiddleware_1 = __importDefault(require("../middleware/uploadMiddleware"));
 const router = (0, express_1.Router)();
-router.post('/image', authMiddleware_1.protect, (0, rbac_1.authorize)(['Super Admin', 'Super Moderator']), uploadMiddleware_1.default.single('image'), (0, express_async_handler_1.default)(fileUploadController_1.uploadImage));
+router.post();
+'/image',
+    authMiddleware_1.protect,
+    (0, rbac_1.authorize)(['Super Admin', 'Super Moderator']),
+    uploadMiddleware_1.default.single('image'),
+    (0, express_async_handler_1.default)(fileUploadController_1.uploadImage);
+;
 exports.default = router;

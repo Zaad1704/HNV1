@@ -3,16 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createDatabaseIndexes = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const logger_1 = require("../services/logger");
 dotenv_1.default.config();
 const createDatabaseIndexes = async () => {
-    try {
-        if (!process.env.MONGO_URI) {
-            throw new Error('MONGO_URI is not defined');
-        }
+    try { }
+    finally {
+    }
+    if (!process.env.MONGO_URI) {
+        throw new Error('MONGO_URI is not defined');
         await mongoose_1.default.connect(process.env.MONGO_URI);
         logger_1.logger.info('Connected to MongoDB for index creation');
         const db = mongoose_1.default.connection.db;
@@ -81,41 +81,23 @@ const createDatabaseIndexes = async () => {
         await db.collection('leases').createIndex({ status: 1 });
         await db.collection('leases').createIndex({ startDate: 1 });
         await db.collection('leases').createIndex({ endDate: 1 });
-        await db.collection('payments').createIndex({
-            organizationId: 1,
+        await db.collection('payments').createIndex({ organizationId: 1,
             status: 1,
-            dueDate: 1
-        });
-        await db.collection('properties').createIndex({
-            organizationId: 1,
-            status: 1
-        });
-        await db.collection('tenants').createIndex({
-            organizationId: 1,
-            status: 1,
-            leaseEndDate: 1
-        });
-        await db.collection('maintenancerequests').createIndex({
-            organizationId: 1,
-            status: 1,
-            priority: 1
-        });
-        logger_1.logger.info('All database indexes created successfully');
-        const collections = ['users', 'properties', 'tenants', 'payments', 'expenses', 'maintenancerequests'];
-        for (const collectionName of collections) {
-            const indexes = await db.collection(collectionName).indexes();
-            logger_1.logger.info(`${collectionName} indexes:`, indexes.map(idx => idx.name));
-        }
+            dueDate: 1 });
     }
-    catch (error) {
-        logger_1.logger.error('Error creating indexes:', error);
-    }
-    finally {
-        await mongoose_1.default.disconnect();
-        logger_1.logger.info('Disconnected from MongoDB');
-    }
+    ;
+    await db.collection('properties').createIndex({ organizationId: 1,
+        status: 1 });
 };
-exports.createDatabaseIndexes = createDatabaseIndexes;
-if (require.main === module) {
-    createDatabaseIndexes();
+await db.collection('tenants').createIndex({ organizationId: 1,
+    status: 1,
+    leaseEndDate: 1 });
+await db.collection('maintenancerequests').createIndex({ organizationId: 1,
+    status: 1,
+    priority: 1 });
+logger_1.logger.info('All database indexes created successfully');
+const collections = ['users', 'properties', 'tenants', 'payments', 'expenses', 'maintenancerequests'];
+for (const collectionName of collections) {
+    const indexes = await db.collection(collectionName).indexes();
 }
+logger_1.logger.info(`${collectionName} indexes:`);

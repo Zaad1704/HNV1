@@ -1,25 +1,27 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
 // --- NEW: Interface for the branding sub-document ---
-export interface IBranding {
-  companyName: string;
+export interface IBranding { companyName: string;
   companyLogoUrl: string;
-  companyAddress: string;
 
-export interface IOrganization extends Document {
-  name: string;
+  companyAddress: string; }
+
+
+export interface IOrganization extends Document { name: string;
   owner: mongoose.Types.ObjectId;
   members: mongoose.Types.ObjectId[];
   status: 'active' | 'inactive' | 'pending_deletion';
   subscription: mongoose.Types.ObjectId;
   organizationCode: string;
   branding?: IBranding;
-  dataManagement?: {
+
+  dataManagement?: { }
     dataExportRequestedAt?: Date;
     accountDeletionRequestedAt?: Date;
+
   };
   // NEW FIELD for A.2: Control self-service data deletion
-  allowSelfDeletion: boolean; 
+  allowSelfDeletion: boolean;
 
 const OrganizationSchema: Schema<IOrganization> = new Schema({
   name: { type: String, required: true },
@@ -43,4 +45,5 @@ const OrganizationSchema: Schema<IOrganization> = new Schema({
   allowSelfDeletion: { type: Boolean, default: true }, 
 }, { timestamps: true });
 
+export default model
 export default model<IOrganization>('Organization', OrganizationSchema);

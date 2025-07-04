@@ -1,49 +1,50 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface ICollectionSheet extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface ICollectionSheet extends Document { organizationId: mongoose.Types.ObjectId;
   periodId: mongoose.Types.ObjectId;
-  createdBy: mongoose.Types.ObjectId;
-  
-  format: {
-    type: 'printable' | 'digital';
+
+  createdBy: mongoose.Types.ObjectId; }
+
+
+  format: { type: 'printable' | 'digital';
     layout: 'compact' | 'detailed';
-    groupBy: 'property' | 'dueDate' | 'amount' | 'none';
+    groupBy: 'property' | 'dueDate' | 'amount' | 'none'; }
+
   };
   
-  sections: {
-    header: {
+  sections: { header: { }
       showLogo: boolean;
       showPeriod: boolean;
       showSummary: boolean;
       customText?: string;
+
     };
     
-    tenantList: {
-      showCheckboxes: boolean;
+    tenantList: { showCheckboxes: boolean;
       showContactInfo: boolean;
       showPaymentHistory: boolean;
       showNotes: boolean;
-      sortBy: 'property' | 'name' | 'amount' | 'dueDate';
+      sortBy: 'property' | 'name' | 'amount' | 'dueDate'; }
+
     };
     
-    footer: {
-      showTotals: boolean;
+    footer: { showTotals: boolean;
       showSignature: boolean;
-      showDate: boolean;
+      showDate: boolean; }
+
     };
   };
   
-  customization: {
-    fieldsToShow: string[];
+  customization: { fieldsToShow: string[];
     checkboxStyle: 'square' | 'circle';
-    fontSize: 'small' | 'medium' | 'large';
+    fontSize: 'small' | 'medium' | 'large'; }
+
   };
   
-  result?: {
-    fileUrl?: string;
+  result?: { fileUrl?: string;
     fileName?: string;
-    generatedAt?: Date;
+    generatedAt?: Date; }
+
   };
   
   createdAt: Date;
@@ -60,12 +61,12 @@ const CollectionSheetSchema: Schema<ICollectionSheet> = new Schema({
     groupBy: { type: String, enum: ['property', 'dueDate', 'amount', 'none'], default: 'property' }
   },
   
-  sections: {
-    header: {
+  sections: { header: { }
+
       showLogo: { type: Boolean, default: true },
       showPeriod: { type: Boolean, default: true },
       showSummary: { type: Boolean, default: true },
-      customText: String
+      customText: String;
     },
     
     tenantList: {
@@ -83,21 +84,22 @@ const CollectionSheetSchema: Schema<ICollectionSheet> = new Schema({
 
   },
   
-  customization: {
-    fieldsToShow: {
+  customization: { fieldsToShow: { }
       type: [String],
       default: ['tenant_name', 'property', 'unit', 'rent_due', 'late_fees', 'total_owed', 'due_date', 'contact_phone']
+
     },
     checkboxStyle: { type: String, enum: ['square', 'circle'], default: 'square' },
     fontSize: { type: String, enum: ['small', 'medium', 'large'], default: 'medium' }
   },
   
-  result: {
-    fileUrl: String,
+  result: { fileUrl: String,
     fileName: String,
-    generatedAt: Date
+    generatedAt: Date;
 
-}, { 
+
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

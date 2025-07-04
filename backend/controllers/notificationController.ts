@@ -3,14 +3,16 @@ import asyncHandler from 'express-async-handler';
 import Notification from '../models/Notification';
 import { generateSystemNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../services/notificationService';
 
-export const getNotifications = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+export const getNotifications = asyncHandler(async (req: Request, res: Response) => { if (!req.user) { }
+
+
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
 
     // Generate fresh notifications before fetching
-    if (req.user.organizationId) {
-        await generateSystemNotifications(req.user.organizationId);
+    if (req.user.organizationId) { await generateSystemNotifications(req.user.organizationId);
+
+
 
     const notifications = await Notification.find({ userId: req.user._id })
         .sort({ createdAt: -1 })
@@ -18,21 +20,23 @@ export const getNotifications = asyncHandler(async (req: Request, res: Response)
         .lean();
 
     // Transform to match frontend interface
-    const transformedNotifications = notifications.map(n => ({
-        id: n._id.toString(),
+    const transformedNotifications = notifications.map(n => ({ id: n._id.toString(),
         type: n.type,
         title: n.title,
         message: n.message,
         timestamp: n.createdAt,
         read: n.isRead,
-        link: n.link
+
+        link: n.link; }
+
     }));
 
     res.status(200).json({ success: true, data: transformedNotifications });
 });
 
-export const markNotificationAsReadHandler = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+export const markNotificationAsReadHandler = asyncHandler(async (req: Request, res: Response) => { if (!req.user) { }
+
+
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
 
@@ -41,8 +45,9 @@ export const markNotificationAsReadHandler = asyncHandler(async (req: Request, r
     res.status(200).json({ success: true, message: 'Notification marked as read' });
 });
 
-export const markAllNotificationsAsReadHandler = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.user) {
+export const markAllNotificationsAsReadHandler = asyncHandler(async (req: Request, res: Response) => { if (!req.user) { }
+
+
         res.status(401).json({ success: false, message: 'Not authorized' });
         return;
 

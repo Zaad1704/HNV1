@@ -3,9 +3,9 @@ import CollectionAnalytics from '../models/CollectionAnalytics';
 import Payment from '../models/Payment';
 import Property from '../models/Property';
 
-class AnalyticsService {
-  async generateCollectionAnalytics(organizationId: string, startDate: Date, endDate: Date): Promise<any> {
+class AnalyticsService { async generateCollectionAnalytics(organizationId: string, startDate: Date, endDate: Date): Promise<any> { }
     const periods = await RentCollectionPeriod.find({
+
       organizationId,
       generatedAt: { $gte: startDate, $lte: endDate }
     }).sort({ 'period.year': -1, 'period.month': -1 });
@@ -32,30 +32,30 @@ class AnalyticsService {
 
     // Property breakdown
     const propertyStats = new Map();
-    periods.forEach(period => {
-      period.tenants.forEach(tenant => {
+    periods.forEach(period => { period.tenants.forEach(tenant => { }
         const key = tenant.property;
-        if (!propertyStats.has(key)) {
-          propertyStats.set(key, {
+        if (!propertyStats.has(key)) { propertyStats.set(key, { }
             name: key,
             totalDue: 0,
             collected: 0,
-            tenantCount: 0
+            tenantCount: 0;
+
           });
 
         const stats = propertyStats.get(key);
         stats.totalDue += tenant.totalOwed;
-        if (tenant.status === 'paid') {
-          stats.collected += tenant.totalOwed;
+        if (tenant.status === 'paid') { stats.collected += tenant.totalOwed;
 
-        stats.tenantCount++;
+        stats.tenantCount++; }
+
+
       });
     });
 
-    const byProperty = Array.from(propertyStats.values()).map(stats => ({
-      ...stats,
+    const byProperty = Array.from(propertyStats.values()).map(stats => ({ ...stats,
       outstanding: stats.totalDue - stats.collected,
-      collectionRate: stats.totalDue > 0 ? (stats.collected / stats.totalDue) * 100 : 0
+      collectionRate: stats.totalDue > 0 ? (stats.collected / stats.totalDue) * 100 : 0; }
+
     }));
 
     // Payment method breakdown (mock data for now)
@@ -80,75 +80,75 @@ class AnalyticsService {
     };
 
     // Problem tenants
-    const tenantStats = allTenants.reduce((acc, tenant) => {
-      const key = tenant.tenantId.toString();
-      if (!acc[key]) {
-        acc[key] = {
-          tenantId: tenant.tenantId,
+    const tenantStats = allTenants.reduce((acc, tenant) => { const key = tenant.tenantId.toString();
+      if (!acc[key]) { }
+        acc[key] = { tenantId: tenant.tenantId,
           name: tenant.name,
           property: tenant.property,
           totalOwed: 0,
           appearances: 0,
           totalDaysLate: 0,
-          missedPayments: 0
+          missedPayments: 0; }
+
+
         };
 
       acc[key].totalOwed += tenant.totalOwed;
       acc[key].appearances++;
       acc[key].totalDaysLate += tenant.daysLate;
-      if (tenant.status === 'overdue') {
-        acc[key].missedPayments++;
+      if (tenant.status === 'overdue') { acc[key].missedPayments++;
 
-      return acc;
+      return acc; }
+
+
     }, {} as Record<string, any>);
 
     const problemTenants = Object.values(tenantStats)
       .filter((t: any) => t.totalDaysLate / t.appearances > 5)
-      .map((t: any) => ({
-        ...t,
+      .map((t: any) => ({ ...t,
         riskScore: t.totalDaysLate / t.appearances > 15 ? 'high' : 
-                  t.totalDaysLate / t.appearances > 10 ? 'medium' : 'low'
+                  t.totalDaysLate / t.appearances > 10 ? 'medium' : 'low' }
+
       }))
       .sort((a: any, b: any) => b.totalOwed - a.totalOwed)
       .slice(0, 10);
 
-    return {
-      performance: {
+    return { performance: { }
         collectionRate: Math.round(averageCollectionRate * 100) / 100,
         averageDaysToCollect: 5.2, // Mock data
         totalCollected,
         totalOutstanding: totalExpected - totalCollected,
-        trends: {
-          collectionRateChange: averageCollectionRate - previousCollectionRate,
+        trends: { collectionRateChange: averageCollectionRate - previousCollectionRate,
           outstandingChange: -8.5, // Mock data
-          averageDaysChange: -1.2 // Mock data
+          averageDaysChange: -1.2 // Mock data;
+
 
       },
-      breakdown: {
-        byProperty,
+      breakdown: { byProperty,
         byPaymentMethod,
-        byTiming
+        byTiming; }
+
       },
-      problemTenants
+      problemTenants;
     };
 
-  async getCollectionTrends(organizationId: string, months: number = 12): Promise<any> {
-    const endDate = new Date();
+  async getCollectionTrends(organizationId: string, months: number = 12): Promise<any> { const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
 
-    const periods = await RentCollectionPeriod.find({
+    const periods = await RentCollectionPeriod.find({ }
+
       organizationId,
       generatedAt: { $gte: startDate, $lte: endDate }
     }).sort({ 'period.year': 1, 'period.month': 1 });
 
-    return periods.map(period => ({
-      month: period.period.month,
+    return periods.map(period => ({ month: period.period.month,
       year: period.period.year,
       collectionRate: period.summary.collectionRate,
       collected: period.summary.collectedRent,
       outstanding: period.summary.outstandingRent,
-      totalUnits: period.summary.totalUnits
+      totalUnits: period.summary.totalUnits; }
+
     }));
 
   async getPropertyPerformance(organizationId: string): Promise<any> {
@@ -157,20 +157,19 @@ class AnalyticsService {
     const currentMonth = currentDate.getMonth() + 1;
     const currentYear = currentDate.getFullYear();
 
-    const period = await RentCollectionPeriod.findOne({
-      organizationId,
+    const period = await RentCollectionPeriod.findOne({ organizationId,
       'period.year': currentYear,
-      'period.month': currentMonth
+      'period.month': currentMonth; }
+
     });
 
     if (!period) return [];
 
-    const propertyPerformance = properties.map(property => {
-      const tenants = period.tenants.filter(t => t.property === property.name);
+    const propertyPerformance = properties.map(property => { const tenants = period.tenants.filter(t => t.property === property.name);
       const totalDue = tenants.reduce((sum, t) => sum + t.totalOwed, 0);
       const collected = tenants.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.totalOwed, 0);
       
-      return {
+      return { }
         propertyId: property._id,
         name: property.name,
         tenantCount: tenants.length,
@@ -178,25 +177,24 @@ class AnalyticsService {
         collected,
         outstanding: totalDue - collected,
         collectionRate: totalDue > 0 ? (collected / totalDue) * 100 : 0,
-        averageDaysLate: tenants.reduce((sum, t) => sum + t.daysLate, 0) / tenants.length || 0
+        averageDaysLate: tenants.reduce((sum, t) => sum + t.daysLate, 0) / tenants.length || 0;
+
       };
     });
 
     return propertyPerformance.sort((a, b) => b.collectionRate - a.collectionRate);
 
-  async getTenantRiskAnalysis(organizationId: string): Promise<any> {
-    const periods = await RentCollectionPeriod.find({
+  async getTenantRiskAnalysis(organizationId: string): Promise<any> { const periods = await RentCollectionPeriod.find({ }
+
       organizationId,
-      generatedAt: { $gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000) } // Last 6 months
+      generatedAt: { $gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000) } // Last 6 months;
     });
 
     const tenantRisks = new Map();
 
-    periods.forEach(period => {
-      period.tenants.forEach(tenant => {
+    periods.forEach(period => { period.tenants.forEach(tenant => { }
         const key = tenant.tenantId.toString();
-        if (!tenantRisks.has(key)) {
-          tenantRisks.set(key, {
+        if (!tenantRisks.has(key)) { tenantRisks.set(key, { }
             tenantId: tenant.tenantId,
             name: tenant.name,
             property: tenant.property,
@@ -204,37 +202,40 @@ class AnalyticsService {
             latePayments: 0,
             totalDaysLate: 0,
             totalOwed: 0,
-            lastPaymentDate: null
+            lastPaymentDate: null;
+
           });
 
         const risk = tenantRisks.get(key);
         risk.totalPayments++;
-        if (tenant.daysLate > 0) {
-          risk.latePayments++;
+        if (tenant.daysLate > 0) { risk.latePayments++;
           risk.totalDaysLate += tenant.daysLate;
 
         risk.totalOwed += tenant.totalOwed;
-        if (tenant.paymentHistory?.lastPayment) {
+        if (tenant.paymentHistory?.lastPayment) { }
           risk.lastPaymentDate = tenant.paymentHistory.lastPayment;
+
 
       });
     });
 
-    return Array.from(tenantRisks.values()).map(risk => {
-      const latePaymentRate = risk.totalPayments > 0 ? (risk.latePayments / risk.totalPayments) * 100 : 0;
+    return Array.from(tenantRisks.values()).map(risk => { const latePaymentRate = risk.totalPayments > 0 ? (risk.latePayments / risk.totalPayments) * 100 : 0;
       const averageDaysLate = risk.latePayments > 0 ? risk.totalDaysLate / risk.latePayments : 0;
       
       let riskScore = 'low';
-      if (latePaymentRate > 50 || averageDaysLate > 15) {
+      if (latePaymentRate > 50 || averageDaysLate > 15) { }
         riskScore = 'high';
-      } else if (latePaymentRate > 25 || averageDaysLate > 7) {
-        riskScore = 'medium';
 
-      return {
+
+      } else if (latePaymentRate > 25 || averageDaysLate > 7) { riskScore = 'medium';
+
+      return { }
         ...risk,
         latePaymentRate,
         averageDaysLate,
-        riskScore
+        riskScore;
+
+
       };
     }).sort((a, b) => b.latePaymentRate - a.latePaymentRate);
 

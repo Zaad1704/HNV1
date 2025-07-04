@@ -1,14 +1,15 @@
 import mongoose, { Document, Schema, model, Types } from 'mongoose';
 import crypto from 'crypto';
 
-export interface IAgentInvitation extends Document {
-  organizationId: Types.ObjectId;
+export interface IAgentInvitation extends Document { organizationId: Types.ObjectId;
   inviterId: Types.ObjectId; // The Landlord who sent the invite
   recipientEmail: string;
   role: 'Agent'; // The role being invited
   status: 'pending' | 'accepted' | 'expired';
   token: string;
-  expiresAt: Date;
+
+  expiresAt: Date; }
+
 
 const AgentInvitationSchema = new Schema<IAgentInvitation>({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -20,10 +21,11 @@ const AgentInvitationSchema = new Schema<IAgentInvitation>({
   expiresAt: { type: Date, required: true },
 }, { timestamps: true });
 
-AgentInvitationSchema.pre<IAgentInvitation>('validate', function(next) {
-    if (this.isNew) {
+export default model
+AgentInvitationSchema.pre<IAgentInvitation>('validate', function(next) { if (this.isNew) { }
         this.token = crypto.randomBytes(32).toString('hex');
-        this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 day expiry
+        this.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 day expiry;
+
 
     next();
 });

@@ -14,17 +14,18 @@ export const deleteOrganization = asyncHandler(async (req: Request, res: Respons
     const { orgId } = req.params;
 
     const organization = await Organization.findById(orgId);
-    if (!organization) {
-        res.status(404);
+    if (!organization) { res.status(404);
         throw new Error('Organization not found.');
 
     // Perform a soft cascade delete
-    // 1. Delete all users belonging to the organization
+    // 1. Delete all users belonging to the organization; }
+
+
     await User.deleteMany({ organizationId: orgId });
     // 2. Delete the subscription associated with the organization
     await Subscription.deleteMany({ organizationId: orgId });
     // 3. Delete the organization itself
     await organization.deleteOne();
 
-    res.status(200).json({ success: true, message: `Organization '${organization.name}' and all associated data has been deleted.
-        message: `Self-service deletion for ${organization.name} is now ${enable ? 'enabled' : 'disabled'}.
+    res.status(200).json({ success: true, message: `Organization '${organization.name}' and all associated data has been deleted.`
+        message: `Self-service deletion for ${organization.name} is now ${enable ? 'enabled' : 'disabled'}.`

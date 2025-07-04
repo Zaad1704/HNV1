@@ -1,7 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IAuditLog extends Document {
-  userId: mongoose.Types.ObjectId;
+export interface IAuditLog extends Document { userId: mongoose.Types.ObjectId;
   organizationId: mongoose.Types.ObjectId;
   action: string;
   resource: string;
@@ -9,7 +8,9 @@ export interface IAuditLog extends Document {
   details: any;
   ipAddress: string;
   userAgent: string;
-  timestamp: Date;
+
+  timestamp: Date; }
+
 
 const auditLogSchema = new Schema<IAuditLog>({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -21,8 +22,8 @@ const auditLogSchema = new Schema<IAuditLog>({
   ipAddress: { type: String, required: true },
   userAgent: { type: String, required: true },
   timestamp: { type: Date, default: Date.now }
-}, {
-  timestamps: true
+}, { timestamps: true; }
+
 });
 
 auditLogSchema.index({ organizationId: 1, timestamp: -1 });

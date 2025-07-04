@@ -1,16 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export const optimizeImage = async (buffer: Buffer, options: {
-  width?: number;
+export const optimizeImage = async (buffer: Buffer, options: { width?: number;
   height?: number;
   quality?: number;
-  format?: 'jpeg' | 'png' | 'webp';
-} = {}) => {
-  const {
+  format?: 'jpeg' | 'png' | 'webp'; }
+
+} = {}) => { const { }
     width = 1200,
     height = 800,
     quality = 80,
     format = 'webp'
+
   } = options;
 
   // Simulate optimization - in production use sharp or similar
@@ -19,4 +19,4 @@ export const optimizeImage = async (buffer: Buffer, options: {
 
   return {
     buffer: optimized,
-    filename: `${uuidv4()}.${format}
+    filename: `${uuidv4()}.${format}`

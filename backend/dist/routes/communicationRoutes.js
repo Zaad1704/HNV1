@@ -13,23 +13,19 @@ router.post('/send-rent-reminder', (0, express_async_handler_1.default)(async (r
     if (!tenantId) {
         res.status(400).json({ success: false, message: 'Tenant ID is required' });
         return;
+        res.json({ success: true,
+            message: 'Rent reminder sent successfully!' });
     }
-    console.log(`Sending rent reminder to tenant: ${tenantId}`);
-    res.json({
-        success: true,
-        message: 'Rent reminder sent successfully!'
-    });
 }));
+;
 router.post('/send-lease-renewal', (0, express_async_handler_1.default)(async (req, res) => {
     const { tenantId } = req.body;
     if (!tenantId) {
         res.status(400).json({ success: false, message: 'Tenant ID is required' });
         return;
+        res.json({ success: true,
+            message: 'Lease renewal notice sent successfully!' });
     }
-    console.log(`Sending lease renewal notice to tenant: ${tenantId}`);
-    res.json({
-        success: true,
-        message: 'Lease renewal notice sent successfully!'
-    });
 }));
+;
 exports.default = router;

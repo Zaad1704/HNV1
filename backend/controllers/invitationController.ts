@@ -5,8 +5,9 @@ import Property from '../models/Property';
 import emailService from '../services/emailService';
 import { addDays } from 'date-fns';
 
-export const inviteUser = async (req: Request, res: Response) => { 
-    if (!req.user || !req.user.organizationId) {
+export const inviteUser = async (req: Request, res: Response) => { if (!req.user || !req.user.organizationId) { }
+
+
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
 
@@ -14,10 +15,12 @@ export const inviteUser = async (req: Request, res: Response) => {
     const inviter = req.user;
 
     if (!recipientEmail || !role) {
+
         res.status(400).json({ success: false, message: 'Recipient email and role are required.' });
         return;
 
     if (role !== 'Agent') {
+
         res.status(400).json({ success: false, message: 'Only "Agent" role can be invited this way.' });
         return;
 
@@ -27,13 +30,14 @@ export const inviteUser = async (req: Request, res: Response) => {
             res.status(400).json({ success: false, message: 'User with this email is already a member of your organization.' });
             return;
 
-        const existingInvitation = await AgentInvitation.findOne({
-            recipientEmail,
+        const existingInvitation = await AgentInvitation.findOne({ recipientEmail,
             organizationId: inviter.organizationId,
-            status: 'pending'
+            status: 'pending' }
+
         });
 
         if (existingInvitation) {
+
             res.status(400).json({ success: false, message: 'An invitation has already been sent to this email for your organization.' });
             return;
 
@@ -45,7 +49,7 @@ export const inviteUser = async (req: Request, res: Response) => {
             status: 'pending',
         });
 
-        const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${newInvitation.token}
-            `Invitation to join ${inviter.name}'s Team on HNV
-    const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${invitation.token}
-        `Invitation to join ${(invitation.inviterId as any)?.name}'s Team
+        const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${newInvitation.token}`
+            `Invitation to join ${inviter.name}'s Team on HNV`
+    const acceptURL = `${process.env.FRONTEND_URL}/accept-agent-invite/${invitation.token}`
+        `Invitation to join ${(invitation.inviterId as any)?.name}'s Team`

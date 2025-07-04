@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { 
-    inviteUser, 
+import { inviteUser, 
     getInvitationDetails, 
     acceptInvitation,
     getPendingInvitations, 
     revokeInvitation,      
-    resendInvitation       
+    resendInvitation; }
+
 } from '../controllers/invitationController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac'; 

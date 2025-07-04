@@ -1,165 +1,45 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRealTimeService = exports.initializeRealTimeService = void 0;
 const socket_io_1 = require("socket.io");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const logger_1 = require("./logger");
+const http_1 = require("http");
 class RealTimeService {
-    constructor(server) {
-        this.connectedUsers = new Map();
-        this.io = new socket_io_1.Server(server, {
-            cors: {
-                origin: process.env.FRONTEND_URL || "http://localhost:3000",
-                methods: ["GET", "POST"],
-                credentials: true
-            },
-            transports: ['websocket', 'polling']
-        });
-        this.setupMiddleware();
-        this.setupEventHandlers();
-    }
-    setupMiddleware() {
-        this.io.use((socket, next) => {
-            try {
-                const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
-                if (!token) {
-                    return next(new Error('Authentication error: No token provided'));
-                }
-                const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-                socket.userId = decoded.id;
-                socket.organizationId = decoded.organizationId;
-                socket.role = decoded.role;
-                logger_1.logger.info(`Socket authenticated for user ${decoded.id}`);
-                next();
-            }
-            catch (error) {
-                logger_1.logger.error('Socket authentication failed:', error);
-                next(new Error('Authentication error: Invalid token'));
-            }
-        });
-    }
-    setupEventHandlers() {
-        this.io.on('connection', (socket) => {
-            logger_1.logger.info(`User ${socket.userId} connected via WebSocket`);
-            if (socket.userId) {
-                this.connectedUsers.set(socket.userId, socket.id);
-                if (socket.organizationId) {
-                    socket.join(`org:${socket.organizationId}`);
-                }
-                socket.join(`user:${socket.userId}`);
-            }
-            socket.on('join_property', (propertyId) => {
-                socket.join(`property:${propertyId}`);
-                logger_1.logger.info(`User ${socket.userId} joined property room ${propertyId}`);
-            });
-            socket.on('leave_property', (propertyId) => {
-                socket.leave(`property:${propertyId}`);
-                logger_1.logger.info(`User ${socket.userId} left property room ${propertyId}`);
-            });
-            socket.on('typing_start', (data) => {
-                socket.to(data.room).emit('user_typing', {
-                    userId: socket.userId,
-                    userName: data.userName
-                });
-            });
-            socket.on('typing_stop', (data) => {
-                socket.to(data.room).emit('user_stopped_typing', {
-                    userId: socket.userId
-                });
-            });
-            socket.on('disconnect', () => {
-                logger_1.logger.info(`User ${socket.userId} disconnected`);
-                if (socket.userId) {
-                    this.connectedUsers.delete(socket.userId);
-                }
-            });
-        });
-    }
-    sendToUser(userId, event, data) {
-        const socketId = this.connectedUsers.get(userId);
-        if (socketId) {
-            this.io.to(`user:${userId}`).emit(event, data);
-            return true;
-        }
-        return false;
-    }
-    sendToOrganization(organizationId, event, data) {
-        this.io.to(`org:${organizationId}`).emit(event, data);
-    }
-    sendToProperty(propertyId, event, data) {
-        this.io.to(`property:${propertyId}`).emit(event, data);
-    }
-    notifyPaymentReceived(organizationId, paymentData) {
-        this.sendToOrganization(organizationId, 'payment_received', {
-            type: 'payment',
-            message: `Payment of $${paymentData.amount} received from ${paymentData.tenantName}`,
-            data: paymentData,
-            timestamp: new Date()
-        });
-    }
-    notifyMaintenanceRequest(organizationId, propertyId, requestData) {
-        this.sendToOrganization(organizationId, 'maintenance_request', {
-            type: 'maintenance',
-            message: `New maintenance request: ${requestData.title}`,
-            data: requestData,
-            timestamp: new Date()
-        });
-        this.sendToProperty(propertyId, 'maintenance_request', requestData);
-    }
-    notifyLeaseExpiring(organizationId, leaseData) {
-        this.sendToOrganization(organizationId, 'lease_expiring', {
-            type: 'lease',
-            message: `Lease expiring soon for ${leaseData.tenantName} at ${leaseData.propertyName}`,
-            data: leaseData,
-            timestamp: new Date()
-        });
-    }
-    notifyRentOverdue(organizationId, tenantId, rentData) {
-        this.sendToOrganization(organizationId, 'rent_overdue', {
-            type: 'rent',
-            message: `Rent overdue for ${rentData.tenantName}`,
-            data: rentData,
-            timestamp: new Date()
-        });
-        this.sendToUser(tenantId, 'rent_overdue_notice', {
-            type: 'rent',
-            message: 'Your rent payment is overdue',
-            data: rentData,
-            timestamp: new Date()
-        });
-    }
-    notifySystemMaintenance(message, scheduledTime) {
-        this.io.emit('system_maintenance', {
-            type: 'system',
-            message,
-            scheduledTime,
-            timestamp: new Date()
-        });
-    }
-    getConnectedUsersCount() {
-        return this.connectedUsers.size;
-    }
-    getUsersInOrganization(organizationId) {
-        const room = this.io.sockets.adapter.rooms.get(`org:${organizationId}`);
-        return room ? Array.from(room) : [];
-    }
-    broadcast(event, data) {
-        this.io.emit(event, data);
+    constructor() {
+        this.io = null;
     }
 }
-let realTimeService;
-const initializeRealTimeService = (server) => {
-    realTimeService = new RealTimeService(server);
-    return realTimeService;
+initialize(server, http_1.Server);
+void { this: .io = new socket_io_1.Server(server, {}, cors, { origin: "*",
+        methods: ["GET", "POST"] })
 };
-exports.initializeRealTimeService = initializeRealTimeService;
-const getRealTimeService = () => {
-    if (!realTimeService) {
-        throw new Error('RealTimeService not initialized. Call initializeRealTimeService first.');
+;
+this.io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+    socket.on('join-organization', (organizationId) => { }, socket.join(`org-${organizationId}`));
+});
+socket.on('disconnect', () => { console.log('User disconnected:', socket.id); });
+;
+emitToOrganization(organizationId, string, event, string, data, any);
+void {
+    : .io
+};
+{
+    ` }
+
+
+      this.io.to(`;
+    org - $;
+    {
+        organizationId;
     }
-    return realTimeService;
-};
-exports.getRealTimeService = getRealTimeService;
+    `).emit(event, data);
+
+
+  emitToAll(event: string, data: any): void { if (this.io) { }
+      this.io.emit(event, data);
+
+
+
+
+
+export default new RealTimeService();`;
+}

@@ -3,21 +3,20 @@ import { body, validationResult, param, query } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 
 // Enhanced validation middleware
-export const validateInput = (req: Request, res: Response, next: NextFunction) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
+export const validateInput = (req: Request, res: Response, next: NextFunction) => { const errors = validationResult(req);
+  if (!errors.isEmpty()) { }
+    return res.status(400).json({ success: false,
       message: 'Validation failed',
-      errors: errors.array()
+      errors: errors.array() }
+
     });
 
   next();
 };
 
 // User validation rules
-export const userValidation = {
-  register: [
+export const userValidation = { register: [ }
+
     body('name').trim().isLength({ min: 2, max: 50 }).escape(),
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/),
@@ -30,8 +29,8 @@ export const userValidation = {
 };
 
 // Property validation rules
-export const propertyValidation = {
-  create: [
+export const propertyValidation = { create: [ }
+
     body('name').trim().isLength({ min: 2, max: 100 }).escape(),
     body('address.street').trim().isLength({ min: 5, max: 200 }).escape(),
     body('address.city').trim().isLength({ min: 2, max: 50 }).escape(),
@@ -42,8 +41,8 @@ export const propertyValidation = {
 };
 
 // Tenant validation rules
-export const tenantValidation = {
-  create: [
+export const tenantValidation = { create: [ }
+
     body('name').trim().isLength({ min: 2, max: 50 }).escape(),
     body('email').isEmail().normalizeEmail(),
     body('phone').optional().isMobilePhone('any'),
@@ -53,40 +52,40 @@ export const tenantValidation = {
 };
 
 // API rate limiting
-export const apiRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+export const apiRateLimit = rateLimit({ windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs; }
+
   message: 'Too many API requests from this IP',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // Strict rate limiting for auth endpoints
-export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5, // limit each IP to 5 requests per windowMs
+export const authRateLimit = rateLimit({ windowMs: 15 * 60 * 1000,
+  max: 5, // limit each IP to 5 requests per windowMs; }
+
   message: 'Too many authentication attempts',
   skipSuccessfulRequests: true,
 });
 
 // File upload validation
-export const fileValidation = {
-  image: (req: Request, res: Response, next: NextFunction) => {
+export const fileValidation = { image: (req: Request, res: Response, next: NextFunction) => { }
     if (!req.file) return next();
     
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const maxSize = 5 * 1024 * 1024; // 5MB
     
-    if (!allowedTypes.includes(req.file.mimetype)) {
-      return res.status(400).json({
+    if (!allowedTypes.includes(req.file.mimetype)) { return res.status(400).json({ }
         success: false,
         message: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.'
+
       });
 
-    if (req.file.size > maxSize) {
-      return res.status(400).json({
+    if (req.file.size > maxSize) { return res.status(400).json({ }
         success: false,
         message: 'File too large. Maximum size is 5MB.'
+
+
       });
 
     next();
@@ -94,24 +93,24 @@ export const fileValidation = {
 };
 
 // Sanitize HTML input
-export const sanitizeHtml = (req: Request, res: Response, next: NextFunction) => {
-  const DOMPurify = require('isomorphic-dompurify');
+export const sanitizeHtml = (req: Request, res: Response, next: NextFunction) => { const DOMPurify = require('isomorphic-dompurify');
   
-  const sanitizeObject = (obj: any): any => {
-    if (typeof obj === 'string') {
-      return DOMPurify.sanitize(obj);
+  const sanitizeObject = (obj: any): any => { }
+    if (typeof obj === 'string') { return DOMPurify.sanitize(obj);
 
-    if (Array.isArray(obj)) {
+    if (Array.isArray(obj)) { }
       return obj.map(sanitizeObject);
 
     if (obj && typeof obj === 'object') {
+
+
       const sanitized: any = {};
-      for (const key in obj) {
-        sanitized[key] = sanitizeObject(obj[key]);
+      for (const key in obj) { sanitized[key] = sanitizeObject(obj[key]);
 
       return sanitized;
 
-    return obj;
+    return obj; }
+
   };
   
   req.body = sanitizeObject(req.body);

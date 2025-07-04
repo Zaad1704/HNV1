@@ -10,35 +10,38 @@ const AuditLog_1 = __importDefault(require("../models/AuditLog"));
 const router = require('express').Router();
 router.use(authMiddleware_1.protect, (0, rbac_1.authorize)(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 router.get('/', (0, express_async_handler_1.default)(async (req, res) => {
-    try {
-        const authenticatedUser = req.user;
-        if (!authenticatedUser) {
-            res.status(401).json({ success: false, message: 'Not authenticated' });
-            return;
-        }
+    try { }
+    finally {
+    }
+    const authenticatedUser = req.user;
+    if (!authenticatedUser) {
+        res.status(401).json({ success: false, message: 'Not authenticated' });
+        return;
         const { userId, action, startDate, endDate } = req.query;
-        const query = {
-            organizationId: authenticatedUser.organizationId
-        };
-        if (userId)
-            query.user = userId;
-        if (action)
-            query.action = { $regex: action, $options: 'i' };
-        if (startDate && endDate) {
-            query.timestamp = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
-        }
-        const logs = await AuditLog_1.default.find(query)
-            .populate('user', 'name email')
-            .sort({ timestamp: -1 })
-            .limit(200);
-        res.status(200).json({ success: true, data: logs || [] });
+        const query = { organizationId: authenticatedUser.organizationId };
     }
-    catch (error) {
-        console.error('Audit log error:', error);
-        res.status(200).json({ success: true, data: [] });
+    ;
+    if (userId)
+        query.user = userId;
+    if (action)
+        query.action = { $regex: action, $options: 'i' };
+    if (startDate && endDate) {
+        query.timestamp = {};
+        $gte: new Date(startDate),
+            $lte;
+        new Date(endDate);
     }
+    ;
+    const logs = await AuditLog_1.default.find(query)
+        .populate('user', 'name email')
+        .sort({ timestamp: -1 })
+        .limit(200);
+    res.status(200).json({ success: true, data: logs || [] });
 }));
+try { }
+catch (error) {
+    console.error('Audit log error:', error);
+}
+res.status(200).json({ success: true, data: [] });
+;
 exports.default = router;

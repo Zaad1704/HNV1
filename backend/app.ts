@@ -80,35 +80,31 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
+app.use(cors({ origin: (origin, callback) => { }
     console.log('CORS origin check:', origin);
     
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    if (allowedOrigins.includes(origin)) { return callback(null, true); }
+
 
     // Allow any localhost for development
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) { return callback(null, true); }
+
 
     // Allow render.com domains
-    if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
-      return callback(null, true);
-    }
+    if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) { return callback(null, true); }
+
 
     console.warn('CORS blocked origin:', origin);
-    callback(null, true); // Allow all for now to fix production
+    callback(null, true); // Allow all for now to fix production;
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
   preflightContinue: false,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204;
 }));
 // Rate limiting - more restrictive for auth endpoints
 app.use('/api/auth', createRateLimit(15 * 60 * 1000, 10)); // 10 requests per 15 minutes
@@ -130,40 +126,40 @@ app.use(requestLogger);
 
 // --- Route Setup ---
 // Root route for health checks
-app.get('/', (req, res) => {
-  res.json({
+app.get('/', (req, res) => { res.json({ }
     status: 'OK',
     service: 'HNV Property Management API',
     version: '1.0.0',
     timestamp: new Date().toISOString()
+
   });
 });
 
 // Debug endpoint
-app.get('/api/debug', (req, res) => {
-  res.json({
+app.get('/api/debug', (req, res) => { res.json({ }
     status: 'OK',
     origin: req.get('Origin'),
     userAgent: req.get('User-Agent'),
     headers: req.headers,
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    frontendUrl: process.env.FRONTEND_URL
+    frontendUrl: process.env.FRONTEND_URL;
+
   });
 });
 
 // Handle preflight requests
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+app.options('*', (req, res) => { res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Client-Version, X-Request-Time');
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(204);
+  res.sendStatus(204); }
+
 });
 
 // Debug middleware for all API routes - MUST BE FIRST
 app.use('/api', (req, res, next) => {
-
+  console.log(`API Request: ${req.method} ${req.originalUrl}`);
   next();
 });
 
@@ -179,3 +175,61 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
   console.error(`Route error in ${req.originalUrl}: ${err.message}`);
   res.status(404).json({ error: `Route ${req.originalUrl} not found` });
 };
+
+// Public routes (no auth required)
+app.use('/api/public', publicRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/setup', setupRoutes);
+app.use('/api/password-reset', passwordResetRoutes);
+
+// Protected routes (auth required)
+app.use('/api/dashboard', protect, checkSubscriptionStatus, dashboardRoutes);
+app.use('/api/properties', protect, checkSubscriptionStatus, propertiesRoutes);
+app.use('/api/tenants', protect, checkSubscriptionStatus, tenantsRoutes);
+app.use('/api/payments', protect, checkSubscriptionStatus, paymentsRoutes);
+app.use('/api/expenses', protect, checkSubscriptionStatus, expenseRoutes);
+app.use('/api/maintenance', protect, checkSubscriptionStatus, maintenanceRoutes);
+app.use('/api/cash-flow', protect, checkSubscriptionStatus, cashFlowRoutes);
+app.use('/api/reminders', protect, checkSubscriptionStatus, reminderRoutes);
+app.use('/api/edit-requests', protect, checkSubscriptionStatus, editRequestRoutes);
+app.use('/api/users', protect, userRoutes);
+app.use('/api/billing', protect, billingRoutes);
+app.use('/api/audit', protect, auditRoutes);
+app.use('/api/org', protect, orgRoutes);
+app.use('/api/subscriptions', protect, subscriptionsRoutes);
+app.use('/api/super-admin', protect, superAdminRoutes);
+app.use('/api/feedback', protect, feedbackRoutes);
+app.use('/api/notifications', protect, notificationRoutes);
+app.use('/api/communication', protect, communicationRoutes);
+app.use('/api/sharing', protect, sharingRoutes);
+app.use('/api/site-settings', protect, siteSettingsRoutes);
+app.use('/api/localization', protect, localizationRoutes);
+app.use('/api/translation', protect, translationRoutes);
+app.use('/api/upload', protect, uploadRoutes);
+app.use('/api/file-upload', protect, fileUploadRoutes);
+app.use('/api/invoices', protect, invoiceRoutes);
+app.use('/api/receipts', protect, receiptRoutes);
+app.use('/api/reports', protect, reportRoutes);
+app.use('/api/plans', protect, planRoutes);
+app.use('/api/export', protect, exportRoutes);
+app.use('/api/rent-collection', protect, rentCollectionRoutes);
+app.use('/api/analytics', protect, analyticsRoutes);
+app.use('/api/integrations', protect, integrationRoutes);
+app.use('/api/subscription', protect, subscriptionRoutes);
+app.use('/api/invitations', protect, invitationRoutes);
+
+// Error routes
+app.use('/api/error', errorRoutes);
+
+// Route error handler
+app.use(routeErrorHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
+
+// Initialize system data
+if (process.env.NODE_ENV !== 'test') { masterDataService.initializeSystemData().catch(console.error); }
+
+
+export default app;

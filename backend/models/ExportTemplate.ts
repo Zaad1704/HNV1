@@ -1,35 +1,36 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface IExportTemplate extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface IExportTemplate extends Document { organizationId: mongoose.Types.ObjectId;
   name: string;
-  type: 'properties' | 'tenants' | 'payments' | 'maintenance' | 'expenses';
-  
-  layout: {
-    format: 'pdf' | 'csv';
+
+  type: 'properties' | 'tenants' | 'payments' | 'maintenance' | 'expenses'; }
+
+
+  layout: { format: 'pdf' | 'csv';
     orientation?: 'portrait' | 'landscape';
     pageSize?: 'A4' | 'Letter';
-    margins?: {
+    margins?: { }
       top: number;
       right: number;
       bottom: number;
       left: number;
+
     };
   };
   
-  columns: Array<{
-    field: string;
+  columns: Array<{ field: string;
     label: string;
     width?: number;
     align?: 'left' | 'center' | 'right';
-    format?: 'text' | 'currency' | 'date' | 'number';
+    format?: 'text' | 'currency' | 'date' | 'number'; }
+
   }>;
   
-  styling: {
-    headerColor?: string;
+  styling: { headerColor?: string;
     alternateRows?: boolean;
     showLogo?: boolean;
-    showFooter?: boolean;
+    showFooter?: boolean; }
+
   };
   
   isDefault: boolean;
@@ -39,10 +40,10 @@ export interface IExportTemplate extends Document {
 const ExportTemplateSchema: Schema<IExportTemplate> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   name: { type: String, required: true },
-  type: { 
-    type: String, 
+  type: { type: String, 
     enum: ['properties', 'tenants', 'payments', 'maintenance', 'expenses'], 
-    required: true 
+    required: true; }
+
   },
   
   layout: {
@@ -73,7 +74,8 @@ const ExportTemplateSchema: Schema<IExportTemplate> = new Schema({
   },
   
   isDefault: { type: Boolean, default: false }
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

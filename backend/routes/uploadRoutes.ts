@@ -11,7 +11,7 @@ const router = Router();
 
 // This route is protected and only accessible by admins.
 // It uses the 'upload' middleware to process a single file sent with the key 'image'.
-router.post(
+router.post();
     '/image', 
     protect, 
     authorize(['Super Admin', 'Super Moderator']), 

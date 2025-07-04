@@ -1,24 +1,51 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-class SmsService {
-    constructor() {
-    }
-    async sendSms(to, message) {
-        try {
-            if (!process.env.TWILIO_PHONE_NUMBER) {
-                console.warn('SMS Service: TWILIO_PHONE_NUMBER is not set. Skipping sending SMS.');
-                return;
-            }
-            console.log(`SMS Service: (MOCK) Sent SMS to ${to}: "${message.substring(0, 50)}..."`);
-        }
-        catch (error) {
-            console.error('SMS Service: Failed to send SMS:', error);
-            throw new Error('Failed to send SMS.');
-        }
-    }
-    async sendSmsWithLink(to, message, linkUrl) {
-        const fullMessage = `${message}\n${linkUrl}`;
-        return this.sendSms(to, fullMessage);
-    }
+const twilio_1 = __importDefault(require("twilio"));
+class SMSService {
 }
-exports.default = new SmsService();
+constructor();
+{
+    this.config = {};
+    accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+        authToken;
+    process.env.TWILIO_AUTH_TOKEN || '',
+        fromNumber;
+    process.env.TWILIO_FROM_NUMBER || '';
+}
+;
+if (this.config.accountSid && this.config.authToken) {
+    this.client = (0, twilio_1.default)(this.config.accountSid, this.config.authToken);
+}
+async;
+sendSMS(to, string, message, string);
+Promise < boolean > { : .client };
+{ }
+console.warn('SMS service not configured');
+return false;
+try {
+    await this.client.messages.create({}, body, message, from, this.config.fromNumber, to, to);
+}
+finally { }
+;
+return true;
+try { }
+catch (error) {
+    console.error('SMS sending failed:', error);
+    return false;
+}
+async;
+sendBulkSMS(recipients, string[], message, string);
+Promise < { success: number, failed: number } > { let, success = 0,
+    let, failed = 0,
+    for(, recipient, of, recipients) { },
+    const: sent = await this.sendSMS(recipient, message),
+    if(sent) { success++; }
+};
+{
+    failed++;
+}
+return { success, failed };
+exports.default = new SMSService();

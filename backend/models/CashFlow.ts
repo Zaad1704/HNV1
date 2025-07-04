@@ -2,8 +2,7 @@
 
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
 
-export interface ICashFlow extends Document {
-  organizationId: Types.ObjectId;
+export interface ICashFlow extends Document { organizationId: Types.ObjectId;
   fromUser: Types.ObjectId; // The user (Agent) who handled the cash
   toUser?: Types.ObjectId; // The user (Landlord) who received the cash, or null if deposited to bank
   amount: number;
@@ -12,7 +11,9 @@ export interface ICashFlow extends Document {
   transactionDate: Date;
   description?: string;
   documentUrl?: string; // URL to an uploaded receipt/proof (e.g., from Google Drive)
-  recordedBy: Types.ObjectId; // The user who created this record (Agent)
+
+  recordedBy: Types.ObjectId; // The user who created this record (Agent) }
+
 
 const CashFlowSchema: Schema<ICashFlow> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
@@ -27,4 +28,5 @@ const CashFlowSchema: Schema<ICashFlow> = new Schema({
   recordedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
+export default model
 export default model<ICashFlow>('CashFlow', CashFlowSchema);

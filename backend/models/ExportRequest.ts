@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface IExportRequest extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface IExportRequest extends Document { organizationId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   type: 'properties' | 'tenants' | 'payments' | 'maintenance' | 'expenses' | 'rent_collection' | 'collection_actions';
-  format: 'pdf' | 'csv' | 'excel';
-  
+
+  format: 'pdf' | 'csv' | 'excel'; }
+
+
   filters: {
     dateRange?: { start: Date; end: Date };
     properties?: mongoose.Types.ObjectId[];
@@ -13,29 +14,29 @@ export interface IExportRequest extends Document {
     customFilters?: Record<string, any>;
   };
   
-  options: {
-    includeImages?: boolean;
+  options: { includeImages?: boolean;
     includeDocuments?: boolean;
     groupBy?: string;
     sortBy?: string;
-    columns?: string[];
+    columns?: string[]; }
+
   };
   
   status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number;
   
-  result?: {
-    fileUrl?: string;
+  result?: { fileUrl?: string;
     fileName?: string;
     fileSize?: number;
     recordCount?: number;
     generatedAt?: Date;
-    expiresAt?: Date;
+    expiresAt?: Date; }
+
   };
   
-  error?: {
-    message?: string;
-    details?: string;
+  error?: { message?: string;
+    details?: string; }
+
   };
   
   createdAt: Date;
@@ -44,21 +45,21 @@ export interface IExportRequest extends Document {
 const ExportRequestSchema: Schema<IExportRequest> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { 
-    type: String, 
+  type: { type: String, 
     enum: ['properties', 'tenants', 'payments', 'maintenance', 'expenses', 'rent_collection', 'collection_actions'], 
-    required: true 
+    required: true; }
+
   },
   format: { type: String, enum: ['pdf', 'csv', 'excel'], required: true },
   
-  filters: {
-    dateRange: {
+  filters: { dateRange: { }
       start: Date,
-      end: Date
+      end: Date;
+
     },
     properties: [{ type: Schema.Types.ObjectId, ref: 'Property' }],
     status: [String],
-    customFilters: Schema.Types.Mixed
+    customFilters: Schema.Types.Mixed;
   },
   
   options: {
@@ -69,27 +70,28 @@ const ExportRequestSchema: Schema<IExportRequest> = new Schema({
     columns: [String]
   },
   
-  status: { 
-    type: String, 
+  status: { type: String, 
     enum: ['pending', 'processing', 'completed', 'failed'], 
-    default: 'pending' 
+    default: 'pending'  }
+
   },
   progress: { type: Number, default: 0, min: 0, max: 100 },
   
-  result: {
-    fileUrl: String,
+  result: { fileUrl: String,
     fileName: String,
     fileSize: Number,
     recordCount: Number,
     generatedAt: Date,
-    expiresAt: Date
+    expiresAt: Date; }
+
   },
   
-  error: {
-    message: String,
-    details: String
+  error: { message: String,
+    details: String;
 
-}, { 
+
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

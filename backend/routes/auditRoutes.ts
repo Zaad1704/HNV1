@@ -9,24 +9,26 @@ const router = require('express').Router();
 
 router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
 
-router.get('/', asyncHandler(async (req: Request, res: Response) => {
-    try {
+router.get('/', asyncHandler(async (req: Request, res: Response) => { try { }
         const authenticatedUser = req.user;
         if (!authenticatedUser) {
+
+
             res.status(401).json({ success: false, message: 'Not authenticated' });
             return;
 
         const { userId, action, startDate, endDate } = req.query;
-        const query: any = {
-            organizationId: authenticatedUser.organizationId
+        const query: any = { organizationId: authenticatedUser.organizationId; }
+
         };
         
         if (userId) query.user = userId;
         if (action) query.action = { $regex: action, $options: 'i' };
-        if (startDate && endDate) {
-            query.timestamp = { 
+        if (startDate && endDate) { query.timestamp = { }
                 $gte: new Date(startDate as string), 
                 $lte: new Date(endDate as string) 
+
+
             };
 
         const logs = await AuditLog.find(query)
@@ -35,8 +37,8 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
             .limit(200);
 
         res.status(200).json({ success: true, data: logs || [] });
-    } catch (error) {
-        console.error('Audit log error:', error);
+    } catch (error) { console.error('Audit log error:', error); }
+
         res.status(200).json({ success: true, data: [] });
 
 }));

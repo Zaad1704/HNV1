@@ -4,8 +4,7 @@ import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
 // The IUser interface now includes all the necessary fields and method signatures.
-export interface IUser extends Document {
-  name: string;
+export interface IUser extends Document { name: string;
   email: string;
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
@@ -28,8 +27,10 @@ export interface IUser extends Document {
   twoFactorEnabled?: boolean;
   twoFactorSecret?: string;
   twoFactorToken?: string;
-  twoFactorExpires?: Date;
-  
+
+  twoFactorExpires?: Date; }
+
+
   // --- Method signatures ---
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
@@ -39,12 +40,12 @@ export interface IUser extends Document {
 const UserSchema: Schema<IUser> = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: {
-    type: String,
-    required: function(this: IUser): boolean {
+  password: { type: String,
+    required: function(this: IUser): boolean { }
       return !this.googleId;
+
     },
-    select: false
+    select: false;
   },
   role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
@@ -70,9 +71,9 @@ const UserSchema: Schema<IUser> = new Schema({
 });
 
 // --- Lifecycle Hooks (pre-save for password hashing) ---
-UserSchema.pre<IUser>('save', async function(next) {
-  if (!this.isModified('password') || !this.password) {
+UserSchema.pre<IUser>('save', async function(next) { if (!this.isModified('password') || !this.password) { }
     return next();
+
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -81,48 +82,50 @@ UserSchema.pre<IUser>('save', async function(next) {
 
 // --- Instance Methods ---
 
-UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> {
-  if (!this.password || !enteredPassword) {
-
+UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> { if (!this.password || !enteredPassword) { }
     return false;
 
-  try {
-    const result = await bcrypt.compare(enteredPassword, this.password);
 
-    return result;
-  } catch (error) {
-    console.error('Password comparison error:', error);
-    return false;
+
+  try { const result = await bcrypt.compare(enteredPassword, this.password);
+
+    return result; }
+
+
+  } catch (error) { console.error('Password comparison error:', error);
+    return false; }
+
 
 };
 
-UserSchema.methods.getSignedJwtToken = function(): string {
-  if (!process.env.JWT_SECRET) {
+UserSchema.methods.getSignedJwtToken = function(): string { if (!process.env.JWT_SECRET) { }
     throw new Error('JWT Secret is not defined in environment variables.');
+
+
 
   const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
   const secret: Secret = process.env.JWT_SECRET;
-  const options: SignOptions = {
-    // @ts-ignore
+  const options: SignOptions = { // @ts-ignore; }
+
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   };
   return jwt.sign(payload, secret, options);
 };
 
 // Implementation for the email verification token method
-UserSchema.methods.getEmailVerificationToken = function(): string {
-  const verificationToken = crypto.randomBytes(32).toString('hex');
+UserSchema.methods.getEmailVerificationToken = function(): string { const verificationToken = crypto.randomBytes(32).toString('hex');
   this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
   this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
-  return verificationToken;
+  return verificationToken; }
+
 };
 
 // Implementation for the password reset token method
-UserSchema.methods.getPasswordResetToken = function(): string {
-  const resetToken = crypto.randomBytes(20).toString('hex');
+UserSchema.methods.getPasswordResetToken = function(): string { const resetToken = crypto.randomBytes(20).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-  return resetToken;
+  return resetToken; }
+
 };
 
 export default model<IUser>('User', UserSchema);

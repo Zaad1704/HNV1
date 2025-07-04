@@ -1,15 +1,16 @@
 // backend/models/Invoice.ts
 import mongoose, { Schema, Document, model, Types } from 'mongoose';
 
-export interface IInvoice extends Document {
-  tenantId: Types.ObjectId;
+export interface IInvoice extends Document { tenantId: Types.ObjectId;
   propertyId: Types.ObjectId;
   organizationId: Types.ObjectId;
   leaseId: Types.ObjectId;
   invoiceNumber: string; // NEW FIELD: Unique identifier for the invoice
   amount: number;
   dueDate: Date;
-  status: 'pending' | 'paid' | 'overdue' | 'canceled';
+
+  status: 'pending' | 'paid' | 'overdue' | 'canceled'; }
+
   lineItems: { description: string; amount: number; }[];
   paidAt?: Date; // NEW FIELD: When the invoice was paid
   transactionId?: string; // NEW FIELD: Link to payment transaction
@@ -28,7 +29,8 @@ const InvoiceSchema: Schema<IInvoice> = new Schema({
     amount: { type: Number, required: true },
   }],
   paidAt: { type: Date }, // NEW SCHEMA FIELD
-  transactionId: { type: String }, // NEW SCHEMA FIELD
+  transactionId: { type: String }, // NEW SCHEMA FIELD;
 }, { timestamps: true });
 
+export default model
 export default model<IInvoice>('Invoice', InvoiceSchema);

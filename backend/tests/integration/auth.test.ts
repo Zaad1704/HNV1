@@ -4,10 +4,10 @@ import app from '../../server';
 import User from '../../models/User';
 import Organization from '../../models/Organization';
 
-describe('Authentication Integration Tests', () => {
-  beforeAll(async () => {
+describe('Authentication Integration Tests', () => { beforeAll(async () => { }
     const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/hnv_test';
     await mongoose.connect(mongoUri);
+
   });
 
   beforeEach(async () => {
@@ -15,17 +15,16 @@ describe('Authentication Integration Tests', () => {
     await Organization.deleteMany({});
   });
 
-  afterAll(async () => {
-    await mongoose.connection.close();
+  afterAll(async () => { await mongoose.connection.close(); }
+
   });
 
-  describe('POST /api/auth/register', () => {
-    it('should register a new user successfully', async () => {
-      const userData = {
-        name: 'John Doe',
+  describe('POST /api/auth/register', () => { it('should register a new user successfully', async () => { }
+      const userData = { name: 'John Doe',
         email: 'john@example.com',
         password: 'SecurePass123!',
-        role: 'Landlord'
+        role: 'Landlord' }
+
       };
 
       const response = await request(app)
@@ -38,12 +37,12 @@ describe('Authentication Integration Tests', () => {
       expect(response.body.data.token).toBeDefined();
     });
 
-    it('should not register user with weak password', async () => {
-      const userData = {
+    it('should not register user with weak password', async () => { const userData = { }
         name: 'John Doe',
         email: 'john@example.com',
         password: '123',
         role: 'Landlord'
+
       };
 
       const response = await request(app)
@@ -55,13 +54,12 @@ describe('Authentication Integration Tests', () => {
     });
   });
 
-  describe('POST /api/auth/login', () => {
-    beforeEach(async () => {
-      const userData = {
-        name: 'John Doe',
+  describe('POST /api/auth/login', () => { beforeEach(async () => { }
+      const userData = { name: 'John Doe',
         email: 'john@example.com',
         password: 'SecurePass123!',
-        role: 'Landlord'
+        role: 'Landlord' }
+
       };
 
       await request(app)
@@ -69,10 +67,10 @@ describe('Authentication Integration Tests', () => {
         .send(userData);
     });
 
-    it('should login with valid credentials', async () => {
-      const loginData = {
+    it('should login with valid credentials', async () => { const loginData = { }
         email: 'john@example.com',
         password: 'SecurePass123!'
+
       };
 
       const response = await request(app)

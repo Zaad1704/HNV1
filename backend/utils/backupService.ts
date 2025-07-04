@@ -4,9 +4,9 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export class BackupService {
-  static async createBackup() {
+export class BackupService { static async createBackup() { }
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupName = `backup-${timestamp}
-      const command = `mongodump --uri="${mongoUri}" --out=backups/${backupName}
-      const command = `find backups -type d -mtime +${daysToKeep} -exec rm -rf {} +
+
+    const backupName = `backup-${timestamp}`
+      const command = `mongodump --uri="${mongoUri}" --out=backups/${backupName}`
+      const command = `find backups -type d -mtime +${daysToKeep} -exec rm -rf {} +`

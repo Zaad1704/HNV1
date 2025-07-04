@@ -4,16 +4,14 @@ exports.validatePayment = exports.validateUser = exports.validateProperty = expo
 const express_validator_1 = require("express-validator");
 const handleValidationErrors = (req, res, next) => {
     const errors = (0, express_validator_1.validationResult)(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
-            success: false,
-            message: 'Validation failed',
-            errors: errors.array()
-        });
-    }
-    next();
+    if (!errors.isEmpty()) { }
+    return res.status(400).json({ success: false,
+        message: 'Validation failed',
+        errors: errors.array() });
 };
 exports.handleValidationErrors = handleValidationErrors;
+next();
+;
 exports.validateTenant = [
     (0, express_validator_1.body)('name').trim().isLength({ min: 2, max: 100 }).escape(),
     (0, express_validator_1.body)('email').isEmail().normalizeEmail(),

@@ -3,24 +3,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findUserByEmail = exports.createUserService = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const createUserService = async (userData) => {
-    if (!userData.password) {
-        throw new Error('Password is required to create a user.');
-    }
-    const salt = await bcryptjs_1.default.genSalt(10);
-    const hashedPassword = await bcryptjs_1.default.hash(userData.password, salt);
-    const user = new User_1.default({
-        ...userData,
-        password: hashedPassword,
-    });
-    await user.save();
+class UserService {
+    async createUser(userData) { }
+}
+try {
+    const user = await User_1.default.create(userData);
     return user;
+}
+finally {
+}
+try { }
+catch (error) {
+    console.error('User creation error:', error);
+    throw error;
+}
+async;
+updateUser(userId, string, updates, any);
+Promise < any > { try: {},
+    if(updates) { }, : .password };
+{
+    const salt = await bcryptjs_1.default.genSalt(10);
+    updates.password = await bcryptjs_1.default.hash(updates.password, salt);
+}
+const user = await User_1.default.findByIdAndUpdate(userId, updates, { new: true });
+return user;
+try { }
+catch (error) {
+    console.error('User update error:', error);
+    throw error;
+}
+async;
+getUsersByOrganization(organizationId, string);
+Promise < any[] > { try: {},
+    const: users = await User_1.default.find({ organizationId }).select('-password'),
+    return: users
 };
-exports.createUserService = createUserService;
-const findUserByEmail = async (email) => {
-    return User_1.default.findOne({ email });
-};
-exports.findUserByEmail = findUserByEmail;
+try { }
+catch (error) {
+    console.error('Get users error:', error);
+    throw error;
+}
+exports.default = new UserService();

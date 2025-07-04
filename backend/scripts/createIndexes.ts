@@ -4,17 +4,17 @@ import { logger } from '../services/logger';
 
 dotenv.config();
 
-const createDatabaseIndexes = async () => {
-  try {
-    if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is not defined');
+const createDatabaseIndexes = async () => { try { }
+    if (!process.env.MONGO_URI) { throw new Error('MONGO_URI is not defined');
 
     await mongoose.connect(process.env.MONGO_URI);
     logger.info('Connected to MongoDB for index creation');
 
     const db = mongoose.connection.db;
 
-    // User indexes
+    // User indexes; }
+
+
     await db.collection('users').createIndex({ email: 1 }, { unique: true });
     await db.collection('users').createIndex({ organizationId: 1 });
     await db.collection('users').createIndex({ role: 1 });
@@ -102,33 +102,33 @@ const createDatabaseIndexes = async () => {
     await db.collection('leases').createIndex({ endDate: 1 });
 
     // Compound indexes for common queries
-    await db.collection('payments').createIndex({ 
-      organizationId: 1, 
+    await db.collection('payments').createIndex({ organizationId: 1, 
       status: 1, 
-      dueDate: 1 
+      dueDate: 1; }
+
     });
 
-    await db.collection('properties').createIndex({ 
-      organizationId: 1, 
-      status: 1 
+    await db.collection('properties').createIndex({ organizationId: 1, 
+      status: 1; }
+
     });
 
-    await db.collection('tenants').createIndex({ 
-      organizationId: 1, 
+    await db.collection('tenants').createIndex({ organizationId: 1, 
       status: 1, 
-      leaseEndDate: 1 
+      leaseEndDate: 1; }
+
     });
 
-    await db.collection('maintenancerequests').createIndex({ 
-      organizationId: 1, 
+    await db.collection('maintenancerequests').createIndex({ organizationId: 1, 
       status: 1, 
-      priority: 1 
+      priority: 1; }
+
     });
 
     logger.info('All database indexes created successfully');
     
     // Display index information
     const collections = ['users', 'properties', 'tenants', 'payments', 'expenses', 'maintenancerequests'];
-    for (const collectionName of collections) {
-      const indexes = await db.collection(collectionName).indexes();
-      logger.info(`${collectionName} indexes:
+    for (const collectionName of collections) { const indexes = await db.collection(collectionName).indexes(); }
+
+      logger.info(`${collectionName} indexes:`

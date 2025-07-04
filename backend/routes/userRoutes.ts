@@ -1,15 +1,15 @@
 import { Router, Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
-import {
-  getUsers,
+import { getUsers,
   getUser,
   updateUser,
   deleteUser,
   getOrgUsers,
   getManagedAgents,
   updatePassword,
-  requestAccountDeletion 
+  requestAccountDeletion; }
+
 } from '../controllers/userController';
 import { protect, authorize } from '../middleware/authMiddleware';
 

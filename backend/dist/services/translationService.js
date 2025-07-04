@@ -1,37 +1,41 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = __importDefault(require("axios"));
-const libreTranslateUrl = 'https://libretranslate.de/translate';
 class TranslationService {
     constructor() {
-        this.cache = new Map();
+        this.translations = {};
     }
-    async translateText(text, targetLanguage) {
-        const cacheKey = `${targetLanguage}:${text}`;
-        if (this.cache.has(cacheKey)) {
-            return this.cache.get(cacheKey);
+    async loadTranslations(language) {
+        try { }
+        finally {
         }
-        try {
-            if (!text || typeof text !== 'string' || targetLanguage === 'en') {
-                return text;
-            }
-            const response = await axios_1.default.post(libreTranslateUrl, {
-                q: text,
-                source: 'en',
-                target: targetLanguage,
-                format: 'text'
-            });
-            const translatedText = response.data.translatedText;
-            this.cache.set(cacheKey, translatedText);
-            return translatedText;
+        if (this.translations[language]) {
+            return this.translations[language];
         }
-        catch (error) {
-            console.error('ERROR using LibreTranslate API:', error);
-            return text;
-        }
+        const translations = await this.fetchTranslations(language);
+        this.translations[language] = translations;
+        return translations;
     }
+    catch(error) { console.error('Translation loading error:', error); }
 }
-exports.default = new TranslationService();
+return {};
+async;
+fetchTranslations(language, string);
+Promise < Record < string, string >> {
+    return: {},
+    'common.loading': 'Loading...',
+    'common.save': 'Save',
+    'common.cancel': 'Cancel',
+    'common.delete': 'Delete',
+    'common.edit': 'Edit'
+};
+translate(key, string, language, string, params ?  : Record);
+string;
+{
+    const translations = this.translations[language] || {};
+    let translation = translations[key] || key;
+    if (params) {
+        Object.keys(params).forEach(param => { }, translation = translation.replace(`{{${param}}}`, params[param]));
+    }
+    ;
+    return translation;
+    export default new TranslationService();
+    `;
+}

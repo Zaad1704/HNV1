@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler'; // Import asyncHandler
 
-import {
-  getProperties,
+import { getProperties,
   createProperty,
   getPropertyById,
   updateProperty,
-  deleteProperty
+  deleteProperty; }
+
 } from '../controllers/propertyController';
 import { protect } from '../middleware/authMiddleware';
 import upload from '../middleware/uploadMiddleware'; // Import upload middleware

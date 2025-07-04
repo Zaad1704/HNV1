@@ -10,4 +10,5 @@ const LeaseSchema = new mongoose_1.Schema({
     rentAmount: { type: Number, required: true },
     status: { type: String, enum: ['active', 'expired', 'terminated'], default: 'active' },
 }, { timestamps: true });
+exports.default = mongoose_1.model;
 exports.default = (0, mongoose_1.model)('Lease', LeaseSchema);

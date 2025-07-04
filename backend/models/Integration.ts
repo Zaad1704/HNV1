@@ -1,29 +1,30 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface IIntegration extends Document {
-  organizationId: mongoose.Types.ObjectId;
+export interface IIntegration extends Document { organizationId: mongoose.Types.ObjectId;
   name: string;
   type: 'payment' | 'accounting' | 'background_check' | 'marketing' | 'email';
-  provider: 'stripe' | 'quickbooks' | 'zillow' | 'mailgun' | 'twilio';
-  
-  config: {
-    apiKey?: string; // Encrypted
+
+  provider: 'stripe' | 'quickbooks' | 'zillow' | 'mailgun' | 'twilio'; }
+
+
+  config: { apiKey?: string; // Encrypted
     webhookUrl?: string;
     settings: Record<string, any>;
-    isActive: boolean;
+    isActive: boolean; }
+
   };
   
-  sync: {
-    lastSyncAt?: Date;
+  sync: { lastSyncAt?: Date;
     nextSyncAt?: Date;
     syncFrequency: 'realtime' | 'hourly' | 'daily';
-    errors: string[];
+    errors: string[]; }
+
   };
   
-  usage: {
-    apiCalls: number;
+  usage: { apiCalls: number;
     dataTransferred: number;
-    lastUsed?: Date;
+    lastUsed?: Date; }
+
   };
   
   createdAt: Date;
@@ -32,31 +33,31 @@ export interface IIntegration extends Document {
 const IntegrationSchema: Schema<IIntegration> = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   name: { type: String, required: true },
-  type: { 
-    type: String, 
+  type: { type: String, 
     enum: ['payment', 'accounting', 'background_check', 'marketing', 'email'], 
-    required: true 
+    required: true; }
+
   },
-  provider: { 
-    type: String, 
+  provider: { type: String, 
     enum: ['stripe', 'quickbooks', 'zillow', 'mailgun', 'twilio'], 
-    required: true 
+    required: true; }
+
   },
   
-  config: {
-    apiKey: String, // Will be encrypted
+  config: { apiKey: String, // Will be encrypted; }
+
     webhookUrl: String,
     settings: { type: Schema.Types.Mixed, default: {} },
     isActive: { type: Boolean, default: true }
   },
   
-  sync: {
-    lastSyncAt: Date,
+  sync: { lastSyncAt: Date,
     nextSyncAt: Date,
-    syncFrequency: { 
+    syncFrequency: { }
       type: String, 
       enum: ['realtime', 'hourly', 'daily'], 
       default: 'daily' 
+
     },
     errors: [String]
   },
@@ -64,9 +65,10 @@ const IntegrationSchema: Schema<IIntegration> = new Schema({
   usage: {
     apiCalls: { type: Number, default: 0 },
     dataTransferred: { type: Number, default: 0 },
-    lastUsed: Date
+    lastUsed: Date;
 
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

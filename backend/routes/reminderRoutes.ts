@@ -2,12 +2,12 @@
 
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import { 
-    createReminder, 
+import { createReminder, 
     getReminders, 
     updateReminder, 
     deleteReminder,
-    processOverdueReminders 
+    processOverdueReminders; }
+
 } from '../controllers/reminderController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

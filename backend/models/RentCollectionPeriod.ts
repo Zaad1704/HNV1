@@ -1,29 +1,29 @@
 import mongoose, { Schema, Document, model } from 'mongoose';
 
-export interface IRentCollectionPeriod extends Document {
-  organizationId: mongoose.Types.ObjectId;
-  period: {
+export interface IRentCollectionPeriod extends Document { organizationId: mongoose.Types.ObjectId;
+
+  period: { }
     month: number;
     year: number;
+
   };
   
-  summary: {
-    totalUnits: number;
+  summary: { totalUnits: number;
     occupiedUnits: number;
     expectedRent: number;
     collectedRent: number;
     outstandingRent: number;
     collectionRate: number;
     
-    breakdown: {
+    breakdown: { }
+
       onTime: { count: number; amount: number };
       late: { count: number; amount: number };
       pending: { count: number; amount: number };
     };
   };
   
-  tenants: Array<{
-    tenantId: mongoose.Types.ObjectId;
+  tenants: Array<{ tenantId: mongoose.Types.ObjectId;
     name: string;
     property: string;
     unit: string;
@@ -34,16 +34,17 @@ export interface IRentCollectionPeriod extends Document {
     daysLate: number;
     status: 'paid' | 'overdue' | 'pending';
     
-    contact: {
+    contact: { }
       phone: string;
       email: string;
       preferredMethod: 'phone' | 'email' | 'sms';
+
     };
     
-    paymentHistory: {
-      lastPayment?: Date;
+    paymentHistory: { lastPayment?: Date;
       averageDaysLate: number;
-      missedPayments: number;
+      missedPayments: number; }
+
     };
     
     notes?: string;
@@ -68,8 +69,8 @@ const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
     outstandingRent: { type: Number, default: 0 },
     collectionRate: { type: Number, default: 0 },
     
-    breakdown: {
-      onTime: {
+    breakdown: { onTime: { }
+
         count: { type: Number, default: 0 },
         amount: { type: Number, default: 0 }
       },
@@ -94,16 +95,15 @@ const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
     totalOwed: { type: Number, required: true },
     dueDate: { type: Date, required: true },
     daysLate: { type: Number, default: 0 },
-    status: { 
-      type: String, 
+    status: { type: String, 
       enum: ['paid', 'overdue', 'pending'], 
-      default: 'pending' 
+      default: 'pending'  }
+
     },
     
-    contact: {
-      phone: String,
+    contact: { phone: String,
       email: String,
-      preferredMethod: { 
+      preferredMethod: { }
         type: String, 
         enum: ['phone', 'email', 'sms'], 
         default: 'phone' 
@@ -116,12 +116,13 @@ const RentCollectionPeriodSchema: Schema<IRentCollectionPeriod> = new Schema({
       missedPayments: { type: Number, default: 0 }
     },
     
-    notes: String
+    notes: String;
   }],
   
   generatedAt: { type: Date, default: Date.now },
   lastUpdated: { type: Date, default: Date.now }
-}, { 
+}, {   }
+
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

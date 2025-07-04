@@ -5,9 +5,9 @@ import slowDown from 'express-slow-down';
 import { body, validationResult } from 'express-validator';
 
 // Enhanced security headers
-export const securityHeaders = helmet({
-  contentSecurityPolicy: {
+export const securityHeaders = helmet({ contentSecurityPolicy: { }
     directives: {
+
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -20,55 +20,54 @@ export const securityHeaders = helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
-  hsts: {
-    maxAge: 31536000,
+  hsts: { maxAge: 31536000,
     includeSubDomains: true,
-    preload: true
+    preload: true;
+
 
 });
 
 // Rate limiting
 export const createRateLimit = (windowMs: number, max: number, message?: string) => 
-  rateLimit({
-    windowMs,
+  rateLimit({ windowMs,
     max,
     message: message || 'Too many requests, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => {
-      res.status(429).json({
-        success: false,
+    handler: (req, res) => { }
+      res.status(429).json({ success: false,
         message: 'Rate limit exceeded',
-        retryAfter: Math.round(windowMs / 1000)
+        retryAfter: Math.round(windowMs / 1000) }
+
       });
 
   });
 
 // Speed limiting
-export const speedLimiter = slowDown({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+export const speedLimiter = slowDown({ windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 50, // Allow 50 requests per windowMs without delay
   delayMs: 500, // Add 500ms delay per request after delayAfter
-  maxDelayMs: 20000, // Maximum delay of 20 seconds
+  maxDelayMs: 20000, // Maximum delay of 20 seconds; }
+
 });
 
 // Input sanitization
-export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
-  const sanitize = (obj: any): any => {
-    if (typeof obj === 'string') {
-      return obj.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => { const sanitize = (obj: any): any => { }
+    if (typeof obj === 'string') { return obj.trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
-    if (Array.isArray(obj)) {
+    if (Array.isArray(obj)) { }
       return obj.map(sanitize);
 
     if (obj && typeof obj === 'object') {
+
+
       const sanitized: any = {};
-      for (const key in obj) {
-        sanitized[key] = sanitize(obj[key]);
+      for (const key in obj) { sanitized[key] = sanitize(obj[key]);
 
       return sanitized;
 
-    return obj;
+    return obj; }
+
   };
 
   req.body = sanitize(req.body);
@@ -78,13 +77,12 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction) =
 };
 
 // Validation error handler
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
+export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => { const errors = validationResult(req);
+  if (!errors.isEmpty()) { }
+    return res.status(400).json({ success: false,
       message: 'Validation failed',
-      errors: errors.array()
+      errors: errors.array() }
+
     });
 
   next();
@@ -110,32 +108,32 @@ export const nameValidation = body('name')
   .withMessage('Name can only contain letters and spaces');
 
 // IP whitelist middleware
-export const ipWhitelist = (allowedIPs: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+export const ipWhitelist = (allowedIPs: string[]) => { return (req: Request, res: Response, next: NextFunction) => { }
     const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
     
-    if (process.env.NODE_ENV === 'development') {
-      return next();
+    if (process.env.NODE_ENV === 'development') { return next();
 
-    if (allowedIPs.includes(clientIP as string)) {
+    if (allowedIPs.includes(clientIP as string)) { }
       next();
-    } else {
-      res.status(403).json({
+
+
+    } else { res.status(403).json({ }
         success: false,
         message: 'Access denied from this IP address'
+
       });
 
   };
 };
 
 // Request logging
-export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
-  const start = Date.now();
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => { const start = Date.now();
   
-  res.on('finish', () => {
+  res.on('finish', () => { }
     const duration = Date.now() - start;
     const logData = {
+
       method: req.method,
       url: req.url,
       status: res.statusCode,
-      duration: `${duration}ms
+      duration: `${duration}ms`

@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import {
-  getIntegrations,
+import { getIntegrations,
   createIntegration,
   updateIntegration,
   deleteIntegration,
@@ -10,7 +9,8 @@ import {
   searchSuggestions,
   getPerformanceMetrics,
   optimizeDatabase,
-  cleanupData
+  cleanupData; }
+
 } from '../controllers/integrationController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

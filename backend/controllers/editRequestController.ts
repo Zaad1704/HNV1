@@ -9,18 +9,17 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
     const { resourceId, resourceModel, reason, approverId } = req.body;
     const requester = req.user!;
 
-    if (!resourceId || !resourceModel || !reason || !approverId) {
-        res.status(400);
+    if (!resourceId || !resourceModel || !reason || !approverId) { res.status(400);
         throw new Error('Resource details, reason, and approver are required.');
 
-    if(resourceModel === 'CashFlow') {
+    if(resourceModel === 'CashFlow') { }
         const resource = await CashFlow.findById(resourceId);
-        if(!resource || resource.organizationId.toString() !== requester.organizationId?.toString()){
-            res.status(404);
+        if(!resource || resource.organizationId.toString() !== requester.organizationId?.toString()){ res.status(404);
             throw new Error('Resource not found in your organization.');
 
 
-    const newRequest = await EditRequest.create({
+    const newRequest = await EditRequest.create({ }
+
         resourceId: new Types.ObjectId(resourceId as string),
         resourceModel,
         reason,
@@ -28,8 +27,9 @@ export const createEditRequest = asyncHandler(async (req: Request, res: Response
         approver: new Types.ObjectId(approverId as string),
         organizationId: requester.organizationId,
         status: 'pending',
+
     });
     
-    const message = `${requester.name} has requested permission to edit a ${resourceModel} record.
-    const message = `Your request to edit a ${request.resourceModel} record has been approved.
-    const message = `Your request to edit a ${request.resourceModel} record has been rejected.
+    const message = `${requester.name} has requested permission to edit a ${resourceModel} record.`
+    const message = `Your request to edit a ${request.resourceModel} record has been approved.`
+    const message = `Your request to edit a ${request.resourceModel} record has been rejected.`

@@ -3,23 +3,23 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 let mongoServer: MongoMemoryServer;
 
-beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+beforeAll(async () => { mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
   
-  await mongoose.connect(mongoUri);
+  await mongoose.connect(mongoUri); }
+
 });
 
-afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+afterAll(async () => { await mongoose.disconnect();
+  await mongoServer.stop(); }
+
 });
 
-beforeEach(async () => {
-  const collections = mongoose.connection.collections;
+beforeEach(async () => { const collections = mongoose.connection.collections;
   
-  for (const key in collections) {
+  for (const key in collections) { }
     const collection = collections[key];
+
     await collection.deleteMany({});
-  }
+
 });

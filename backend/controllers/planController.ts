@@ -3,15 +3,15 @@ import Plan from '../models/Plan';
 import auditService from '../services/auditService';
 import mongoose from 'mongoose';
 
-export const getPlans = async (req: Request, res: Response) => { 
-    try {
+export const getPlans = async (req: Request, res: Response) => { try { }
+
         const plans = await Plan.find({}).sort({ price: 1 });
         res.status(200).json({ success: true, data: plans });
-    } catch (error) {
-        // Return default plans instead of 500 error
-        res.status(200).json({ 
+    } catch (error) { // Return default plans instead of 500 error
+        res.status(200).json({ }
             success: true, 
             data: [
+
                 { _id: '1', name: 'Basic', price: 29, features: ['Up to 10 properties', 'Basic reporting'] },
                 { _id: '2', name: 'Pro', price: 79, features: ['Up to 50 properties', 'Advanced reporting', 'Tenant portal'] },
                 { _id: '3', name: 'Enterprise', price: 199, features: ['Unlimited properties', 'Full features', 'Priority support'] }
@@ -20,15 +20,16 @@ export const getPlans = async (req: Request, res: Response) => {
 
 };
 
-export const createPlan = async (req: Request, res: Response) => { 
-    try {
+export const createPlan = async (req: Request, res: Response) => { try { }
         if (!req.user || !req.user.organizationId) {
+
+
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
 
         const newPlan = await Plan.create(req.body);
         
-        auditService.recordAction(
+        auditService.recordAction();
             req.user._id,
             req.user.organizationId,
             'PLAN_CREATE',
@@ -40,9 +41,10 @@ export const createPlan = async (req: Request, res: Response) => {
 
 };
 
-export const updatePlan = async (req: Request, res: Response) => { 
-    try {
+export const updatePlan = async (req: Request, res: Response) => { try { }
         if (!req.user || !req.user.organizationId) {
+
+
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
 
@@ -51,10 +53,11 @@ export const updatePlan = async (req: Request, res: Response) => {
             runValidators: true,
         });
         if (!plan) {
+
             res.status(404).json({ success: false, message: 'Plan not found' });
             return;
 
-        auditService.recordAction(
+        auditService.recordAction();
             req.user._id,
             req.user.organizationId,
             'PLAN_UPDATE',
@@ -66,20 +69,22 @@ export const updatePlan = async (req: Request, res: Response) => {
 
 };
 
-export const deletePlan = async (req: Request, res: Response) => { 
-    try {
+export const deletePlan = async (req: Request, res: Response) => { try { }
         if (!req.user || !req.user.organizationId) {
+
+
             res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
             return;
 
         const plan = await Plan.findById(req.params.id);
         if (!plan) {
+
             res.status(404).json({ success: false, message: 'Plan not found' });
             return;
 
         await plan.deleteOne();
         
-        auditService.recordAction(
+        auditService.recordAction();
             req.user._id,
             req.user.organizationId,
             'PLAN_DELETE',

@@ -8,13 +8,13 @@ const router = Router();
 router.post('/agent', async (req, res) => {
   const { email, name, role = 'agent' } = req.body;
   
-  try {
-    await emailService.sendEmail(
+  try { await emailService.sendEmail();
       email,
       'Invitation to Join HNV Property Management',
       'agent-invite',
-      {
+      { }
+
         name: name || 'Agent',
         inviterName: req.user?.name || 'Property Manager',
-        inviteUrl: `${process.env.FRONTEND_URL}/register?invite=agent&email=${email}
-        inviteUrl: `${process.env.FRONTEND_URL}/register?invite=tenant&email=${email}
+        inviteUrl: `${process.env.FRONTEND_URL}/register?invite=agent&email=${email}`
+        inviteUrl: `${process.env.FRONTEND_URL}/register?invite=tenant&email=${email}`

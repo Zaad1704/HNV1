@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import asyncHandler from 'express-async-handler';
-import {
-    createEditRequest,
+import { createEditRequest,
     getEditRequests,
     approveEditRequest,
-    rejectEditRequest
+    rejectEditRequest; }
+
 } from '../controllers/editRequestController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';
