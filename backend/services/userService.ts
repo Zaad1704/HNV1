@@ -1,32 +1,41 @@
-import User, { IUser } from '../models/User';
-import bcrypt from 'bcryptjs'; // CORRECTED IMPORT
+import User from '../models/User';
+import bcrypt from 'bcryptjs';
 
-/**
- * Creates a new user in the database with a hashed password.
- * @param userData - The user data, including a plain text password.
- * @returns The newly created user document.
- */
-export const createUserService = async (userData: Partial<IUser>): Promise<IUser> => {
-    if (!userData.password) {
-        throw new Error('Password is required to create a user.');
+class UserService {
+  async createUser(userData: any): Promise<any> {
+    try {
+      const user = await User.create(userData);
+      return user;
+    } catch (error) {
+      console.error('User creation error:', error);
+      throw error;
+    }
+  }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
+  async updateUser(userId: string, updates: any): Promise<any> {
+    try {
+      if (updates.password) {
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(updates.password, salt);
+      }
 
-    const user = new User({
-        ...userData,
-        password: hashedPassword,
-    });
+      const user = await User.findByIdAndUpdate(userId, updates, { new: true });
+      return user;
+    } catch (error) {
+      console.error('User update error:', error);
+      throw error;
+    }
+  }
 
-    await user.save();
-    return user;
-};
+  async getUsersByOrganization(organizationId: string): Promise<any[]> {
+    try {
+      const users = await User.find({ organizationId }).select('-password');
+      return users;
+    } catch (error) {
+      console.error('Get users error:', error);
+      throw error;
+    }
+  }
+}
 
-/**
- * Finds a user by their email address.
- * @param email - The email of the user to find.
- * @returns The user document or null if not found.
- */
-export const findUserByEmail = async (email: string): Promise<IUser | null> => {
-    return User.findOne({ email });
-};
+export default new UserService();

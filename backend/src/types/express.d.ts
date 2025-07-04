@@ -1,9 +1,10 @@
-import { Types, Document } from 'mongoose';
 import { IUser } from '../../models/User';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: (IUser & Document<any, any, any>) | null;
-    // FIX: Add the organizationId property
-    organizationId?: Types.ObjectId;
-
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IUser;
+      organizationId?: string;
+    }
+  }
+}
