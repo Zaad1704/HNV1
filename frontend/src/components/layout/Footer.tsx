@@ -19,7 +19,7 @@ const Footer = () => {
                 />
               )}
               <span className="text-xl font-bold">
-                {settings?.logos?.companyName || 'HNV Solutions'}
+                {settings?.logos?.companyName || 'HNV Property Management Solutions'}
               </span>
             </div>
             <p className="text-white/80 mb-4 max-w-md">
@@ -55,7 +55,7 @@ const Footer = () => {
         
         <div className="border-t border-white/20 mt-8 pt-8 text-center">
           <p className="text-white/60">
-            {settings?.footer?.copyrightText || '© 2024 HNV Solutions. All rights reserved.'}
+            {settings?.footer?.copyrightText || '© 2024 HNV Property Management Solutions. All rights reserved.'}
           </p>
         </div>
       </div>

@@ -44,7 +44,7 @@ const PWAInstallPrompt = () => {
             
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-text-primary mb-1">
-                Install HNV App
+                Install HNV Property Management App
               </h4>
               <p className="text-sm text-text-secondary mb-3">
                 Get the native app experience with offline access and push notifications.

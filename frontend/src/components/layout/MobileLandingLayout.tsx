@@ -43,7 +43,7 @@ const MobileLandingLayout = () => {
       <header className="app-gradient sticky top-0 z-50">
         <div className="flex items-center justify-between p-4">
           <Link to="/" className="text-xl font-bold text-white">
-            {settings?.logos?.companyName || 'HNV Solutions'}
+            {settings?.logos?.companyName || 'HNV Property Management Solutions'}
           </Link>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}

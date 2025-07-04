@@ -30,7 +30,7 @@ const PublicMobileHeader = () => {
           />
           <div className="text-center">
             <div className="text-sm font-bold leading-tight">
-              {settings?.logos?.companyName || 'HNV'}
+              {settings?.logos?.companyName || 'HNV Property Management Solutions'}
             </div>
             <div className="text-xs text-white/70 leading-tight">
               Property Management
@@ -59,7 +59,7 @@ const PublicMobileHeader = () => {
                 />
                 <div>
                   <h2 className="text-lg font-bold text-text-primary">
-                    {settings?.logos?.companyName || 'HNV Solutions'}
+                    {settings?.logos?.companyName || 'HNV Property Management Solutions'}
                   </h2>
                   <p className="text-sm text-text-secondary">Property Management</p>
                 </div>

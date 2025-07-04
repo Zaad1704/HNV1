@@ -88,7 +88,7 @@ const PublicHeader = () => {
                     {/* Logo and Company Name */}
                     <Link to="/" className="flex items-center space-x-3 flex-shrink-0">
                         <img src={settings?.logos?.faviconUrl || "/logo-min.png"} alt="HNV Logo" className="h-10 w-10 rounded-lg" />
-                        <span className="hidden md:block text-xl font-bold text-white">{settings?.logos?.companyName || "HNV Solutions"}</span>
+                        <span className="hidden md:block text-xl font-bold text-white">{settings?.logos?.companyName || "HNV Property Management Solutions"}</span>
                     </Link>
 
                     {/* Desktop Navigation */}
