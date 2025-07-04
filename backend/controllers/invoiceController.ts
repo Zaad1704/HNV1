@@ -76,8 +76,8 @@ export const generateInvoices = async (req: AuthRequest, res: Response) => {
       const invoiceNumber = `INV-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${format(invoiceMonthStart, 'yyyyMM')}-${(countForMonth + 1).toString().padStart(3, '0')}`;
       
       invoicesToCreate.push({
-        tenantId: lease.tenantId._id,
-        propertyId: lease.propertyId._id,
+        tenantId: (lease.tenantId as any)._id,
+        propertyId: (lease.propertyId as any)._id,
         organizationId: req.user.organizationId,
         leaseId: lease._id,
         invoiceNumber,
@@ -329,12 +329,12 @@ export const sendWhatsAppInvoice = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Invoice not found' });
     }
 
-    const recipientPhone = phone || invoice.tenantId?.phone;
+    const recipientPhone = phone || (invoice.tenantId as any)?.phone;
     if (!recipientPhone) {
       return res.status(400).json({ success: false, message: 'Phone number required' });
     }
 
-    const whatsappMessage = message || `Hi ${invoice.tenantId?.name}, your invoice #${invoice.invoiceNumber} for $${invoice.amount} is ready. Amount due: $${invoice.amount}. Thank you!`;
+    const whatsappMessage = message || `Hi ${(invoice.tenantId as any)?.name}, your invoice #${invoice.invoiceNumber} for $${invoice.amount} is ready. Amount due: $${invoice.amount}. Thank you!`;
     
     // WhatsApp Business API URL (free for basic messages)
     const whatsappUrl = `https://wa.me/${recipientPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
@@ -366,13 +366,13 @@ export const sendEmailInvoice = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Invoice not found' });
     }
 
-    const recipientEmail = email || invoice.tenantId?.email;
+    const recipientEmail = email || (invoice.tenantId as any)?.email;
     if (!recipientEmail) {
       return res.status(400).json({ success: false, message: 'Email address required' });
     }
 
-    const emailSubject = subject || `Invoice #${invoice.invoiceNumber} from ${invoice.organizationId?.name}`;
-    const emailMessage = message || `Dear ${invoice.tenantId?.name},\n\nPlease find your invoice #${invoice.invoiceNumber} for $${invoice.amount}.\n\nThank you!\n\nPowered by HNV Property Management Solutions`;
+    const emailSubject = subject || `Invoice #${invoice.invoiceNumber} from ${(invoice.organizationId as any)?.name}`;
+    const emailMessage = message || `Dear ${(invoice.tenantId as any)?.name},\n\nPlease find your invoice #${invoice.invoiceNumber} for $${invoice.amount}.\n\nThank you!\n\nPowered by HNV Property Management Solutions`;
     
     // Generate PDF attachment
     const doc = new PDFDocument({ size: 'A4', margin: 50 });

@@ -89,7 +89,7 @@ export const sendBulkWhatsAppNotices = async (req: AuthRequest, res: Response) =
     const tenants = await Tenant.find({
       _id: { $in: tenantIds },
       organizationId: req.user.organizationId
-    }).populate('organizationId', 'name');
+    }).populate('organizationId', 'name') as any[];
 
     const whatsappUrls = [];
 
@@ -105,14 +105,14 @@ export const sendBulkWhatsAppNotices = async (req: AuthRequest, res: Response) =
               tenant.name,
               tenant.rentAmount || 0,
               'end of month',
-              tenant.organizationId?.name || 'Property Management'
+              (tenant.organizationId as any)?.name || 'Property Management'
             );
             break;
           case 'notice':
-            message = `Hi ${tenant.name}! This is an important notice from ${tenant.organizationId?.name || 'Property Management'}. Please contact us for more details. Powered by HNV Property Management Solutions`;
+            message = `Hi ${tenant.name}! This is an important notice from ${(tenant.organizationId as any)?.name || 'Property Management'}. Please contact us for more details. Powered by HNV Property Management Solutions`;
             break;
           default:
-            message = `Hi ${tenant.name}! Message from ${tenant.organizationId?.name || 'Property Management'}. Powered by HNV Property Management Solutions`;
+            message = `Hi ${tenant.name}! Message from ${(tenant.organizationId as any)?.name || 'Property Management'}. Powered by HNV Property Management Solutions`;
         }
       }
 
