@@ -50,9 +50,11 @@ const DashboardPage = () => {
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    staleTime: 5000, // Consider data fresh for 5 seconds
+    cacheTime: 10 * 60 * 1000 // Cache for 10 minutes
   });
 
   const defaultStats: DashboardStats = {
@@ -65,8 +67,9 @@ const DashboardPage = () => {
   };
 
   const dashboardStats = stats || defaultStats;
+  const showContent = !isLoading || stats; // Show content if not loading OR if we have cached data
 
-  if (isLoading) {
+  if (isLoading && !stats) {
     return (
       <div className="p-6 pt-0">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -104,11 +107,19 @@ const DashboardPage = () => {
 
   return (
     <motion.main
-      className="p-6 pt-0"
+      className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
     >
+      {isLoading && stats && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-brand-blue text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            Updating...
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div 
           className="gradient-dark-orange-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between text-white"
