@@ -1,18 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const Plan_1 = __importDefault(require("../models/Plan"));
+const planController_1 = require("../controllers/planController");
 const router = (0, express_1.Router)();
-router.get('/', async (req, res) => {
-    try {
-        const plans = await Plan_1.default.find({ isActive: true }).select('name price features');
-        res.json({ success: true, data: plans });
-    }
-    catch (error) {
-        res.json({ success: true, data: [] });
-    }
-});
+router.get('/', planController_1.getPlans);
 exports.default = router;

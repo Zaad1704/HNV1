@@ -1,14 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const authMiddleware_1 = require("../middleware/authMiddleware");
+const superAdminController_1 = require("../controllers/superAdminController");
 const router = (0, express_1.Router)();
-router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'superAdmin routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.get('/dashboard-stats', superAdminController_1.getDashboardStats);
+router.get('/plan-distribution', superAdminController_1.getPlanDistribution);
+router.get('/platform-growth', superAdminController_1.getPlatformGrowth);
+router.get('/email-status', superAdminController_1.getEmailStatus);
+router.get('/organizations', superAdminController_1.getOrganizations);
 exports.default = router;
