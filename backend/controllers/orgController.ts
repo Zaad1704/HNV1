@@ -34,7 +34,11 @@ export const getOrganizations = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ success: true, data: organizations || [] });
   } catch (error) {
     console.error('Error fetching organizations:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch organizations',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

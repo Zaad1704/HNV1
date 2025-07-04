@@ -107,13 +107,13 @@ const LandingPage = () => {
     // Convert Google Drive share URLs to direct image URLs
     const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (driveMatch) {
-      return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+      return `${window.location.protocol}//drive.google.com/uc?export=view&id=${driveMatch[1]}`;
     }
     
     // Fix existing uc URLs that might be malformed
     const ucMatch = url.match(/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/);
     if (ucMatch) {
-      return `https://drive.google.com/uc?export=view&id=${ucMatch[1]}`;
+      return `${window.location.protocol}//drive.google.com/uc?export=view&id=${ucMatch[1]}`;
     }
     
     return url;

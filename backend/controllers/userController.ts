@@ -20,7 +20,11 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: users });
   } catch (error) {
     console.error('Get users error:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch users',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -82,7 +86,11 @@ export const getOrgUsers = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ success: true, data: users });
   } catch (error) {
     console.error('Get org users error:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch organization users',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
