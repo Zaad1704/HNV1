@@ -140,16 +140,21 @@ class ActionChainService {
 
   // Helper methods
   private async updateTenantStatus(tenantId: string, organizationId: string) {
-    const tenant = await Tenant.findById(tenantId);
-    if (!tenant) return;
+    try {
+      const tenant = await Tenant.findById(tenantId);
+      if (!tenant) return;
 
-    const recentPayment = await Payment.findOne({
-      tenantId,
-      paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-    });
+      const recentPayment = await Payment.findOne({
+        tenantId,
+        status: { $in: ['Paid', 'completed', 'Completed'] },
+        paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      });
 
-    tenant.status = recentPayment ? 'Active' : 'Late';
-    await tenant.save();
+      tenant.status = recentPayment ? 'Active' : 'Late';
+      await tenant.save();
+    } catch (error) {
+      console.error('Update tenant status error:', error);
+    }
   }
 
   private async cancelOverdueReminders(tenantId: string, paymentDate: Date) {
@@ -165,26 +170,33 @@ class ActionChainService {
   }
 
   private async updatePropertyCashFlow(propertyId: string, amount: number, type: 'income' | 'expense') {
-    // Update property cash flow tracking
-    const property = await Property.findById(propertyId);
-    if (property) {
-      if (!property.cashFlow) property.cashFlow = { income: 0, expenses: 0 };
-      property.cashFlow[type] += amount;
-      await property.save();
+    try {
+      const property = await Property.findById(propertyId);
+      if (property) {
+        if (!property.cashFlow) property.cashFlow = { income: 0, expenses: 0 };
+        property.cashFlow[type] += (amount || 0);
+        await property.save();
+      }
+    } catch (error) {
+      console.error('Update property cash flow error:', error);
     }
   }
 
   private async updatePropertyOccupancy(propertyId: string) {
-    const property = await Property.findById(propertyId);
-    if (!property) return;
+    try {
+      const property = await Property.findById(propertyId);
+      if (!property) return;
 
-    const occupiedUnits = await Tenant.countDocuments({
-      propertyId,
-      status: { $in: ['Active', 'Late'] }
-    });
+      const occupiedUnits = await Tenant.countDocuments({
+        propertyId,
+        status: { $in: ['Active', 'Late'] }
+      });
 
-    property.occupancyRate = (occupiedUnits / property.numberOfUnits) * 100;
-    await property.save();
+      property.occupancyRate = Math.round((occupiedUnits / (property.numberOfUnits || 1)) * 100);
+      await property.save();
+    } catch (error) {
+      console.error('Update property occupancy error:', error);
+    }
   }
 
   private async createRentReminder(tenantData: any, organizationId: string) {

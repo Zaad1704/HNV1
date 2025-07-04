@@ -23,9 +23,10 @@ class DashboardService {
       const currentMonth = new Date();
       currentMonth.setDate(1);
       const monthlyPayments = payments.filter(p => 
-        new Date(p.paymentDate) >= currentMonth
+        new Date(p.paymentDate) >= currentMonth && 
+        ['Paid', 'completed', 'Completed'].includes(p.status)
       );
-      const monthlyRevenue = monthlyPayments.reduce((sum, p) => sum + p.amount, 0);
+      const monthlyRevenue = monthlyPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
       // Count pending maintenance
       const pendingMaintenance = reminders.filter(r => 
@@ -35,7 +36,8 @@ class DashboardService {
       // Recent payments count
       const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const recentPayments = payments.filter(p => 
-        new Date(p.paymentDate) >= last24Hours
+        new Date(p.paymentDate) >= last24Hours &&
+        ['Paid', 'completed', 'Completed'].includes(p.status)
       ).length;
 
       return {
@@ -67,9 +69,10 @@ class DashboardService {
 
       // Group by month
       const monthlyData = payments.reduce((acc: any, payment) => {
+        if (!payment.paymentDate || !['Paid', 'completed', 'Completed'].includes(payment.status)) return acc;
         const month = new Date(payment.paymentDate).toISOString().slice(0, 7);
         if (!acc[month]) acc[month] = { income: 0, expenses: 0 };
-        acc[month].income += payment.amount;
+        acc[month].income += (payment.amount || 0);
         return acc;
       }, {});
 
