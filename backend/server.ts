@@ -10,8 +10,11 @@ dotenv.config();
 
 // Environment validation with defaults for development
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
-const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/hnv-dev';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://rajputragav420:5EIWHghGDZ4rEpmr@hnv.qw1lakw.mongodb.net/hnv?retryWrites=true&w=majority&appName=HNV';
 const PORT = process.env.PORT || 5001;
+
+console.log('MongoDB URI:', MONGO_URI ? 'Set' : 'Not set');
+console.log('Environment:', process.env.NODE_ENV);
 
 // Database connection with retry logic
 const connectDB = async (retries = 5): Promise<void> => {
