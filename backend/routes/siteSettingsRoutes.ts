@@ -1,18 +1,16 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import SiteSettings from '../models/SiteSettings';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'siteSettings routes working',
-    timestamp: new Date().toISOString()
-  });
+// Public route for landing page
+router.get('/', async (req, res) => {
+  try {
+    const settings = await SiteSettings.findOne().select('siteName logo contactInfo');
+    res.json({ success: true, data: settings || {} });
+  } catch (error) {
+    res.json({ success: true, data: {} });
+  }
 });
 
 export default router;

@@ -165,7 +165,7 @@ app.use('/api/feedback', authMiddleware_1.protect, feedbackRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.protect, notificationRoutes_1.default);
 app.use('/api/communication', authMiddleware_1.protect, communicationRoutes_1.default);
 app.use('/api/sharing', authMiddleware_1.protect, sharingRoutes_1.default);
-app.use('/api/site-settings', authMiddleware_1.protect, siteSettingsRoutes_1.default);
+app.use('/api/site-settings', siteSettingsRoutes_1.default);
 app.use('/api/localization', authMiddleware_1.protect, localizationRoutes_1.default);
 app.use('/api/translation', authMiddleware_1.protect, translationRoutes_1.default);
 app.use('/api/upload', authMiddleware_1.protect, uploadRoutes_1.default);
@@ -173,7 +173,7 @@ app.use('/api/file-upload', authMiddleware_1.protect, fileUploadRoutes_1.default
 app.use('/api/invoices', authMiddleware_1.protect, invoiceRoutes_1.default);
 app.use('/api/receipts', authMiddleware_1.protect, receiptRoutes_1.default);
 app.use('/api/reports', authMiddleware_1.protect, reportRoutes_1.default);
-app.use('/api/plans', authMiddleware_1.protect, planRoutes_1.default);
+app.use('/api/plans', planRoutes_1.default);
 app.use('/api/export', authMiddleware_1.protect, exportRoutes_1.default);
 app.use('/api/rent-collection', authMiddleware_1.protect, rentCollectionRoutes_1.default);
 app.use('/api/analytics', authMiddleware_1.protect, analyticsRoutes_1.default);

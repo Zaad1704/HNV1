@@ -1,18 +1,16 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import Plan from '../models/Plan';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'plan routes working',
-    timestamp: new Date().toISOString()
-  });
+// Public route for landing page
+router.get('/', async (req, res) => {
+  try {
+    const plans = await Plan.find({ isActive: true }).select('name price features');
+    res.json({ success: true, data: plans });
+  } catch (error) {
+    res.json({ success: true, data: [] });
+  }
 });
 
 export default router;
