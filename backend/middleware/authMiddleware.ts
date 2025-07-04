@@ -36,25 +36,37 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         });
       }
 
+      // Allow Super Admin access regardless of subscription
+      if (req.user.role === 'Super Admin') {
+        return next();
+      }
+
+      // For regular users, check organization and subscription
       if (req.user.organizationId) {
         const subscription = await Subscription.findOne({ 
           organizationId: req.user.organizationId 
         });
         
-        if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
-          if (req.user.role === 'Super Admin') {
-            return next();
-          }
-          return res.status(403).json({ 
-            success: false, 
-            message: "Your organization's subscription is not active. Please renew to continue accessing features." 
-          });
+        // Allow access if subscription is active, trialing, or doesn't exist (free tier)
+        if (!subscription || subscription.status === 'active' || subscription.status === 'trialing') {
+          return next();
         }
-      } else {
+        
+        // For inactive subscriptions, still allow basic dashboard access
+        const basicRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments'];
+        const isBasicRoute = basicRoutes.some(route => req.originalUrl.startsWith(route));
+        
+        if (isBasicRoute) {
+          return next();
+        }
+        
         return res.status(403).json({ 
           success: false, 
-          message: "User is not associated with an organization." 
+          message: "Your organization's subscription is not active. Please renew to continue accessing premium features." 
         });
+      } else {
+        // Allow users without organization to access basic features
+        return next();
       }
 
       return next();
