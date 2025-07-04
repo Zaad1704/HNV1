@@ -89,14 +89,17 @@ app.use(cors({
     
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
+    }
 
     // Allow any localhost for development
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
+    }
 
     // Allow render.com domains
     if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
       return callback(null, true);
+    }
 
     console.warn('CORS blocked origin:', origin);
     callback(null, true); // Allow all for now to fix production
@@ -173,5 +176,6 @@ app.use('/health', healthRoutes);
 
 // Route error handler middleware
 const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
-  console.error(`Route error in ${req.originalUrl}:
-        message: `Route ${req.originalUrl} not found
+  console.error(`Route error in ${req.originalUrl}: ${err.message}`);
+  res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+};

@@ -19,9 +19,36 @@ passport.deserializeUser(async (id: string, done) => {
         done(null, user);
     } catch (error) {
         done(error, null);
-
+    }
 });
 
 const callbackURL = process.env.NODE_ENV === 'production' 
-    ? `${process.env.BACKEND_URL}/api/auth/google/callback
-                    name: `${profile.displayName}'s Organization
+    ? `${process.env.BACKEND_URL}/api/auth/google/callback`
+    : 'http://localhost:5001/api/auth/google/callback';
+
+// Google OAuth Strategy
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: callbackURL
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            let user = await User.findOne({ googleId: profile.id });
+            if (user) {
+                return done(null, user);
+            }
+            user = new User({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: profile.emails?.[0]?.value,
+                avatar: profile.photos?.[0]?.value,
+                isVerified: true
+            });
+            await user.save();
+            done(null, user);
+        } catch (error) {
+            done(error, null);
+        }
+    }));
+}
