@@ -40,10 +40,12 @@ const TenantsPage = () => {
     if (!tenants) return [];
     
     return tenants.filter((tenant: any) => {
+      if (!tenant) return false;
+      
       const matchesSearch = !searchQuery || 
-        tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tenant.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tenant.unit.toLowerCase().includes(searchQuery.toLowerCase());
+        (tenant.name && tenant.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (tenant.email && tenant.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (tenant.unit && tenant.unit.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesStatus = !filters.status || tenant.status === filters.status;
       const matchesProperty = !filters.property || tenant.propertyId?._id === filters.property;
@@ -189,16 +191,16 @@ const TenantsPage = () => {
               </div>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
-                  {tenant.name.charAt(0).toUpperCase()}
+                  {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-text-primary">{tenant.name}</h3>
+                  <h3 className="font-semibold text-text-primary">{tenant.name || 'Unknown'}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     tenant.status === 'Active' 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {tenant.status}
+                    {tenant.status || 'Unknown'}
                   </span>
                 </div>
               </div>
@@ -206,7 +208,7 @@ const TenantsPage = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
                   <Mail size={14} />
-                  <span>{tenant.email}</span>
+                  <span>{tenant.email || 'No email'}</span>
                 </div>
                 {tenant.phone && (
                   <div className="flex items-center gap-2 text-text-secondary text-sm">
@@ -216,7 +218,7 @@ const TenantsPage = () => {
                 )}
                 <div className="flex items-center gap-2 text-text-secondary text-sm">
                   <MapPin size={14} />
-                  <span>Unit {tenant.unit} • {tenant.propertyId?.name}</span>
+                  <span>Unit {tenant.unit || 'N/A'} • {tenant.propertyId?.name || 'No property'}</span>
                 </div>
                 {tenant.rentAmount && (
                   <div className="flex items-center gap-2 text-text-secondary text-sm">

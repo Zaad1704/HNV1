@@ -11,8 +11,13 @@ import { motion } from 'framer-motion';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchPayments = async () => {
-    const { data } = await apiClient.get('/payments');
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/payments');
+        return data.data || [];
+    } catch (error) {
+        console.error('Failed to fetch payments:', error);
+        return [];
+    }
 };
 
 const PaymentsPage = () => {
@@ -24,19 +29,27 @@ const PaymentsPage = () => {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { exportPayments, isExporting } = useDataExport();
   
-  const { data: payments = [], isLoading, isError } = useQuery({ queryKey:['payments'], queryFn: fetchPayments });
+  const { data: payments = [], isLoading, isError, error } = useQuery({ 
+    queryKey:['payments'], 
+    queryFn: fetchPayments,
+    retry: 1,
+    staleTime: 30000
+  });
 
   const filteredPayments = useMemo(() => {
     if (!payments) return [];
     
     return payments.filter((payment: any) => {
+      if (!payment) return false;
+      
       const matchesSearch = !searchQuery || 
-        payment.tenantId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        payment.propertyId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        payment.transactionId?.toLowerCase().includes(searchQuery.toLowerCase());
+        (payment.tenantId?.name && payment.tenantId.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (payment.propertyId?.name && payment.propertyId.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (payment.transactionId && payment.transactionId.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesStatus = !filters.status || payment.status === filters.status;
       const matchesDateRange = !filters.dateRange || (
+        payment.paymentDate &&
         new Date(payment.paymentDate) >= new Date(filters.dateRange.start) &&
         new Date(payment.paymentDate) <= new Date(filters.dateRange.end)
       );
@@ -127,8 +140,21 @@ const PaymentsPage = () => {
     out: { opacity: 0, y: -20 },
   };
 
-  if (isLoading) return <div className="text-dark-text text-center p-8">Loading...</div>;
-  if (isError) return <div className="text-red-400 text-center p-8">Error loading payments.</div>;
+  if (isLoading) return <div className="text-text-primary text-center p-8">Loading payments...</div>;
+  
+  if (isError) {
+    return (
+      <div className="text-center p-8">
+        <div className="text-red-500 mb-4">Failed to load payments</div>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -203,8 +229,8 @@ const PaymentsPage = () => {
                   <td className="p-4 text-light-text dark:text-light-text-dark font-mono text-xs">{payment.transactionId || payment._id}</td>
                   <td className="p-4 font-bold text-dark-text dark:text-dark-text-dark">{payment.tenantId?.name || 'N/A'}</td>
                   <td className="p-4 text-light-text dark:text-light-text-dark">{payment.propertyId?.name || 'N/A'}</td>
-                  <td className="p-4 text-dark-text font-semibold dark:text-dark-text-dark">${payment.amount.toFixed(2)}</td>
-                  <td className="p-4 text-light-text dark:text-light-text-dark">{formatDate(payment.paymentDate)}</td>
+                  <td className="p-4 text-text-primary font-semibold">${(payment.amount || 0).toFixed(2)}</td>
+                  <td className="p-4 text-text-secondary">{payment.paymentDate ? formatDate(payment.paymentDate) : 'N/A'}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(payment.status)}`}>
                       {payment.status}

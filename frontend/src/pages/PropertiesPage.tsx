@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
@@ -44,9 +44,11 @@ const PropertiesPage = () => {
     if (!properties) return [];
     
     return properties.filter((property: any) => {
+      if (!property) return false;
+      
       const matchesSearch = !searchQuery || 
-        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.address?.city?.toLowerCase().includes(searchQuery.toLowerCase());
+        (property.name && property.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (property.address?.city && property.address.city.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesStatus = !filters.status || property.status === filters.status;
       const matchesUnits = !filters.units || 
