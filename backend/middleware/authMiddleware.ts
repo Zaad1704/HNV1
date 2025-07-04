@@ -14,11 +14,8 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     try {
       token = req.headers.authorization.split(" ")[1];
       
-      if (!process.env.JWT_SECRET) {
-        throw new Error("JWT_SECRET not defined");
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
+      const secret = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
+      const decoded = jwt.verify(token, secret) as any;
       const foundUser = await User.findById(decoded.id).select("-password");
       req.user = foundUser;
 
