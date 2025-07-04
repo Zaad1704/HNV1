@@ -3,23 +3,24 @@ import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import MaintenanceRequest from '../models/MaintenanceRequest';
 
-interface SearchQuery { query: string;
+interface SearchQuery {
+  query: string;
   filters: Record<string, any>;
   sort: string;
   page: number;
+  limit: number;
+}
 
-  limit: number; }
-
-
-class SearchService { async globalSearch(organizationId: string, searchQuery: SearchQuery): Promise<any> { }
+class SearchService {
+  async globalSearch(organizationId: string, searchQuery: SearchQuery): Promise<any> {
 
     const { query, filters, sort, page, limit } = searchQuery;
     const skip = (page - 1) * limit;
 
     const baseQuery: any = { organizationId };
     
-    const textSearch = query ? { $or: [ }
-
+    const textSearch = query ? {
+      $or: [
         { name: { $regex: query, $options: 'i' } },
         { email: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } }
@@ -47,20 +48,20 @@ class SearchService { async globalSearch(organizationId: string, searchQuery: Se
       .lean();
 
     const paymentQuery = { ...baseQuery };
-    if (query) { paymentQuery.$or = [ }
-
-
+    if (query) {
+      paymentQuery.$or = [
         { description: { $regex: query, $options: 'i' } },
         { transactionId: { $regex: query, $options: 'i' } }
       ];
+    }
 
     if (filters.paymentStatus) paymentQuery.status = filters.paymentStatus;
-    if (filters.dateRange) { paymentQuery.paymentDate = { }
+    if (filters.dateRange) {
+      paymentQuery.paymentDate = {
         $gte: new Date(filters.dateRange.start),
         $lte: new Date(filters.dateRange.end)
-
-
       };
+    }
 
     const payments = await Payment.find(paymentQuery)
       .populate('tenantId', 'name')
@@ -71,12 +72,12 @@ class SearchService { async globalSearch(organizationId: string, searchQuery: Se
       .lean();
 
     const maintenanceQuery = { ...baseQuery };
-    if (query) { maintenanceQuery.$or = [ }
-
-
+    if (query) {
+      maintenanceQuery.$or = [
         { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } }
       ];
+    }
 
     if (filters.priority) maintenanceQuery.priority = filters.priority;
     if (filters.maintenanceStatus) maintenanceQuery.status = filters.maintenanceStatus;
@@ -95,8 +96,10 @@ class SearchService { async globalSearch(organizationId: string, searchQuery: Se
       payments: { data: payments, total: await Payment.countDocuments(paymentQuery) },
       maintenance: { data: maintenance, total: await MaintenanceRequest.countDocuments(maintenanceQuery) }
     };
+  }
 
-  private buildSort(sortString: string): any { const sortMap: Record<string, any> = { }
+  private buildSort(sortString: string): any {
+    const sortMap: Record<string, any> = {
 
       'name_asc': { name: 1 },
       'name_desc': { name: -1 },
@@ -109,11 +112,13 @@ class SearchService { async globalSearch(organizationId: string, searchQuery: Se
     };
 
     return sortMap[sortString] || { createdAt: -1 };
+  }
 
-  async getSuggestions(organizationId: string, query: string, type: string): Promise<string[]> { const limit = 10;
+  async getSuggestions(organizationId: string, query: string, type: string): Promise<string[]> {
+    const limit = 10;
     let suggestions: string[] = [];
 
-    switch (type) { }
+    switch (type) {
       case 'properties':
         const properties = await Property.find({
 
@@ -138,8 +143,10 @@ class SearchService { async globalSearch(organizationId: string, searchQuery: Se
         }).limit(limit);
         suggestions = locations;
         break;
+    }
 
     return suggestions;
-
+  }
+}
 
 export default new SearchService();

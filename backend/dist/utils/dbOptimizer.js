@@ -7,23 +7,24 @@ exports.tenantProjection = exports.userProjection = exports.optimizeQueries = ex
 const mongoose_1 = __importDefault(require("mongoose"));
 const createIndexes = async () => {
     const db = mongoose_1.default.connection.db;
-    await db.collection('users').createIndex({ email: 1 }, { unique: true });
-    await db.collection('users').createIndex({ organizationId: 1 });
-    await db.collection('users').createIndex({ role: 1 });
-    await db.collection('properties').createIndex({ organizationId: 1 });
-    await db.collection('properties').createIndex({ 'address.city': 1 });
-    await db.collection('properties').createIndex({ status: 1 });
-    await db.collection('tenants').createIndex({ organizationId: 1 });
-    await db.collection('tenants').createIndex({ propertyId: 1 });
-    await db.collection('tenants').createIndex({ email: 1 });
-    await db.collection('payments').createIndex({ organizationId: 1 });
-    await db.collection('payments').createIndex({ tenantId: 1 });
-    await db.collection('payments').createIndex({ dueDate: 1 });
-    await db.collection('payments').createIndex({ status: 1 });
-    await db.collection('auditlogs').createIndex({ organizationId: 1, timestamp: -1 });
-    await db.collection('auditlogs').createIndex({ userId: 1, timestamp: -1 });
 };
 exports.createIndexes = createIndexes;
+await db.collection('users').createIndex({ email: 1 }, { unique: true });
+await db.collection('users').createIndex({ organizationId: 1 });
+await db.collection('users').createIndex({ role: 1 });
+await db.collection('properties').createIndex({ organizationId: 1 });
+await db.collection('properties').createIndex({ 'address.city': 1 });
+await db.collection('properties').createIndex({ status: 1 });
+await db.collection('tenants').createIndex({ organizationId: 1 });
+await db.collection('tenants').createIndex({ propertyId: 1 });
+await db.collection('tenants').createIndex({ email: 1 });
+await db.collection('payments').createIndex({ organizationId: 1 });
+await db.collection('payments').createIndex({ tenantId: 1 });
+await db.collection('payments').createIndex({ dueDate: 1 });
+await db.collection('payments').createIndex({ status: 1 });
+await db.collection('auditlogs').createIndex({ organizationId: 1, timestamp: -1 });
+await db.collection('auditlogs').createIndex({ userId: 1, timestamp: -1 });
+;
 exports.optimizeQueries = {
     paginate: (page = 1, limit = 10) => ({}),
     skip: (page - 1) * limit,

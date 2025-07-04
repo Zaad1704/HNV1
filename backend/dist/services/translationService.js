@@ -13,7 +13,9 @@ class TranslationService {
         this.translations[language] = translations;
         return translations;
     }
-    catch(error) { console.error('Translation loading error:', error); }
+    catch(error) {
+        console.error('Translation loading error:', error);
+    }
 }
 return {};
 async;
@@ -32,10 +34,7 @@ string;
     const translations = this.translations[language] || {};
     let translation = translations[key] || key;
     if (params) {
-        Object.keys(params).forEach(param => { }, translation = translation.replace(`{{${param}}}`, params[param]));
+        Object.keys(params).forEach(param => { }, translation = translation.replace(`{{${param}}}
+export default new TranslationService();));
     }
-    ;
-    return translation;
-    export default new TranslationService();
-    `;
 }
