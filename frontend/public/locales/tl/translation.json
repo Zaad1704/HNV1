@@ -1,8 +1,8 @@
 {
-  "app_name": "HNV Property Management Solutions",
+  "app_name": "HNV Mga Solusyon sa Pamamahala ng Ari-arian",
   "app_name_short": "HNV Solutions",
   "header": {
-    "login": "Login",
+    "login": "Mag-login",
     "get_started": "Get Started"
   },
   "nav": {
@@ -12,7 +12,7 @@
     "services": "Services",
     "pricing": "Pricing",
     "contact": "Contact",
-    "login": "Login",
+    "login": "Mag-login",
     "dashboard": "Dashboard"
   },
   "auth": {
@@ -46,11 +46,11 @@
     "verification_sent": "Verification email sent"
   },
   "common": {
-    "loading": "Loading...",
+    "loading": "Naglo-load...",
     "error": "Error",
     "success": "Success",
-    "cancel": "Cancel",
-    "save": "Save",
+    "cancel": "Kanselahin",
+    "save": "I-save",
     "edit": "Edit",
     "delete": "Delete",
     "add": "Add",
@@ -63,7 +63,7 @@
     "happening_today": "Here's what's happening with your properties today.",
     "learn_more": "Learn More",
     "analytics": "Analytics",
-    "payments": "Payments",
+    "payments": "Mga Bayad",
     "actions": "Actions",
     "status": "Status",
     "name": "Name",
@@ -91,7 +91,6 @@
     "settings": "Settings",
     "search": "Search...",
     "search_placeholder": "Search properties, tenants, payments...",
-    "search_placeholder": "Search properties, tenants, payments...",
     "filter": "Filters",
     "clear_all": "Clear All",
     "all": "All",
@@ -113,8 +112,8 @@
   },
   "dashboard": {
     "overview": "Overview",
-    "properties": "Properties",
-    "tenants": "Tenants",
+    "properties": "Mga Ari-arian",
+    "tenants": "Mga Nangungupa",
     "settings": "Settings",
     "logout": "Logout",
     "maintenance": "Maintenance",
@@ -154,7 +153,7 @@
     "tenant": "Tenant",
     "next_send": "Next Send",
     "frequency": "Frequency",
-    "payments": "Payments",
+    "payments": "Mga Bayad",
     "welcome_message": "Welcome to your dashboard",
     "good_morning": "Good morning",
     "good_afternoon": "Good afternoon",
