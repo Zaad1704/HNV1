@@ -8,15 +8,20 @@ const OrganizationDashboardPage: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    apiClient.get("/orgs/me").then(res => { // Corrected endpoint for user's orgs
-      setOrgs(res.data.data); // Access data.data
-      // First load: set default or persisted org
-      if (res.data.data.length && !currentOrg) { // Access data.data
-        const persisted = localStorage.getItem("currentOrgId");
-        const found = res.data.data.find((o: any) => o._id === persisted); // Access data.data
-        persistCurrentOrg(found || res.data.data[0]); // Access data.data
-      }
-    });
+    apiClient.get("/orgs/me")
+      .then(res => {
+        if (res.data.success && res.data.data) {
+          setOrgs(res.data.data);
+          if (res.data.data.length && !currentOrg) {
+            const persisted = localStorage.getItem("currentOrgId");
+            const found = res.data.data.find((o: any) => o._id === persisted);
+            persistCurrentOrg(found || res.data.data[0]);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Failed to fetch organizations:', error);
+      });
   }, []);
 
   useEffect(() => {

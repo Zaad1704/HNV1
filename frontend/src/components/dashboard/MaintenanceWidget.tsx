@@ -22,14 +22,22 @@ interface MaintenanceRequest {
 }
 
 const fetchMaintenanceRequests = async (): Promise<MaintenanceRequest[]> => {
-  const { data } = await apiClient.get('/api/maintenance-requests?limit=5');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/api/maintenance-requests?limit=5');
+    return data.success ? (data.data || []) : [];
+  } catch (error) {
+    console.error('Failed to fetch maintenance requests:', error);
+    return [];
+  }
 };
 
 const MaintenanceWidget = () => {
-  const { data: requests = [], isLoading } = useQuery({
+  const { data: requests = [], isLoading, error } = useQuery({
     queryKey: ['maintenanceRequests'],
-    queryFn: fetchMaintenanceRequests
+    queryFn: fetchMaintenanceRequests,
+    retry: 1,
+    staleTime: 60000,
+    refetchOnWindowFocus: false
   });
 
   const getStatusColor = (status: MaintenanceStatus) => {
@@ -99,7 +107,7 @@ const MaintenanceWidget = () => {
                     {request.title}
                   </p>
                   <p className="text-xs text-text-secondary mt-1">
-                    {request.propertyId?.name} • {request.tenantId?.name}
+                    {request.propertyId?.name || 'Unknown Property'} • {request.tenantId?.name || 'Unknown Tenant'}
                   </p>
                   <p className="text-xs text-text-muted mt-1">
                     {new Date(request.createdAt).toLocaleDateString()}

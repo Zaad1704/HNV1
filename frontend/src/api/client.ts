@@ -31,14 +31,12 @@ const apiClient = axios.create({
     'X-Requested-With': 'XMLHttpRequest',
     'X-Client-Version': '1.0.0',
   },
-  timeout: 30000,
+  timeout: 15000, // Reduced timeout for better UX
   withCredentials: true,
 });
 
 // Request interceptor with security enhancements
 apiClient.interceptors.request.use((config) => {
-  // Debug logging
-
   // Rate limiting check
   const url = config.url || '';
   if (!rateLimiter.isAllowed(url, 30, 60000)) {
@@ -99,6 +97,9 @@ apiClient.interceptors.response.use(
     } else if (error.response?.status >= 500) {
       console.error('Server error:', error.response?.status);
       error.userMessage = 'Server error. Please try again later.';
+    } else if (error.response?.status === 404) {
+      console.warn('Resource not found:', error.config?.url);
+      error.userMessage = 'Requested data not found.';
     }
     
     if (import.meta.env.DEV) {

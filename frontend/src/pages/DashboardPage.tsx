@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
+import DashboardMonitor from '../components/dashboard/DashboardMonitor';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -31,9 +32,13 @@ interface DashboardStats {
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
     const { data } = await apiClient.get('/dashboard/stats');
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch dashboard stats');
+    }
     return data.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch dashboard stats:', error);
+    // Don't throw error, return default values to prevent crashes
     return {
       totalProperties: 0,
       totalTenants: 0,
@@ -47,14 +52,22 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 const DashboardPage = () => {
   const { currency } = useCurrency();
-  const { data: stats, isLoading, error } = useQuery({
+  const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
-    refetchInterval: 30000,
-    retry: 3,
-    retryDelay: 1000,
-    staleTime: 5000, // Consider data fresh for 5 seconds
-    cacheTime: 10 * 60 * 1000 // Cache for 10 minutes
+    refetchInterval: 60000, // Increased to 1 minute
+    retry: (failureCount, error: any) => {
+      // Don't retry on 401/403 errors
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        return false;
+      }
+      return failureCount < 2; // Reduced retry attempts
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    cacheTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false, // Prevent excessive refetching
+    refetchOnMount: true
   });
 
   const defaultStats: DashboardStats = {
@@ -85,7 +98,7 @@ const DashboardPage = () => {
     );
   }
 
-  if (error) {
+  if (error && !stats) {
     return (
       <div className="p-6 pt-0">
         <div className="text-center py-12">
@@ -93,25 +106,37 @@ const DashboardPage = () => {
             <BarChart3 size={32} className="text-red-600" />
           </div>
           <h2 className="text-xl font-bold text-text-primary mb-2">Dashboard Temporarily Unavailable</h2>
-          <p className="text-text-secondary mb-4">We're having trouble loading your dashboard data.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
-          >
-            Refresh Dashboard
-          </button>
+          <p className="text-text-secondary mb-4">
+            {error?.userMessage || 'We\'re having trouble loading your dashboard data.'}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button 
+              onClick={() => refetch()}
+              className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 rounded-2xl font-semibold border border-app-border text-text-secondary hover:text-text-primary"
+            >
+              Refresh Page
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <motion.main
-      className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <>
+      <DashboardMonitor />
+      <motion.main
+        className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
       {isLoading && stats && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-brand-blue text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
@@ -250,6 +275,7 @@ const DashboardPage = () => {
         </motion.div>
       </div>
     </motion.main>
+    </>
   );
 };
 

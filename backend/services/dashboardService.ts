@@ -6,37 +6,42 @@ import Reminder from '../models/Reminder';
 class DashboardService {
   async getDashboardStats(organizationId: string) {
     try {
-      // Get real-time stats
-      const [properties, tenants, payments, reminders] = await Promise.all([
-        Property.find({ organizationId }),
-        Tenant.find({ organizationId }),
-        Payment.find({ organizationId }).sort({ paymentDate: -1 }).limit(10),
-        Reminder.find({ organizationId, status: 'active' })
+      // Use Promise.allSettled for better error handling
+      const [propertiesResult, tenantsResult, paymentsResult, remindersResult] = await Promise.allSettled([
+        Property.find({ organizationId }).select('numberOfUnits').lean().exec(),
+        Tenant.find({ organizationId }).select('status').lean().exec(),
+        Payment.find({ 
+          organizationId,
+          paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        }).select('amount paymentDate status').sort({ paymentDate: -1 }).limit(50).lean().exec(),
+        Reminder.countDocuments({ organizationId, status: 'active', type: 'maintenance_reminder' }).exec()
       ]);
 
+      const properties = propertiesResult.status === 'fulfilled' ? propertiesResult.value : [];
+      const tenants = tenantsResult.status === 'fulfilled' ? tenantsResult.value : [];
+      const payments = paymentsResult.status === 'fulfilled' ? paymentsResult.value : [];
+      const pendingMaintenance = remindersResult.status === 'fulfilled' ? remindersResult.value : 0;
+
       // Calculate occupancy rate
-      const totalUnits = properties.reduce((sum, prop) => sum + prop.numberOfUnits, 0);
+      const totalUnits = properties.reduce((sum, prop) => sum + (prop.numberOfUnits || 1), 0);
       const occupiedUnits = tenants.filter(t => ['Active', 'Late'].includes(t.status)).length;
       const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
 
       // Calculate monthly revenue
       const currentMonth = new Date();
       currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+      
       const monthlyPayments = payments.filter(p => 
-        new Date(p.paymentDate) >= currentMonth && 
+        p.paymentDate && new Date(p.paymentDate) >= currentMonth && 
         ['Paid', 'completed', 'Completed'].includes(p.status)
       );
       const monthlyRevenue = monthlyPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-      // Count pending maintenance
-      const pendingMaintenance = reminders.filter(r => 
-        r.type === 'maintenance_reminder'
-      ).length;
-
       // Recent payments count
       const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const recentPayments = payments.filter(p => 
-        new Date(p.paymentDate) >= last24Hours &&
+        p.paymentDate && new Date(p.paymentDate) >= last24Hours &&
         ['Paid', 'completed', 'Completed'].includes(p.status)
       ).length;
 
@@ -63,24 +68,36 @@ class DashboardService {
 
   async getCashFlowData(organizationId: string, period: string = 'monthly') {
     try {
-      const payments = await Payment.find({ organizationId })
-        .sort({ paymentDate: -1 })
-        .limit(100);
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+      const payments = await Payment.find({ 
+        organizationId,
+        paymentDate: { $gte: sixMonthsAgo },
+        status: { $in: ['Paid', 'completed', 'Completed'] }
+      })
+      .select('amount paymentDate')
+      .sort({ paymentDate: -1 })
+      .lean()
+      .exec();
 
       // Group by month
       const monthlyData = payments.reduce((acc: any, payment) => {
-        if (!payment.paymentDate || !['Paid', 'completed', 'Completed'].includes(payment.status)) return acc;
+        if (!payment.paymentDate) return acc;
         const month = new Date(payment.paymentDate).toISOString().slice(0, 7);
         if (!acc[month]) acc[month] = { income: 0, expenses: 0 };
         acc[month].income += (payment.amount || 0);
         return acc;
       }, {});
 
-      return Object.entries(monthlyData).map(([month, data]: [string, any]) => ({
-        month,
-        income: data.income,
-        expenses: data.expenses
-      })).slice(0, 12);
+      return Object.entries(monthlyData)
+        .map(([month, data]: [string, any]) => ({
+          month,
+          income: data.income,
+          expenses: data.expenses
+        }))
+        .sort((a, b) => a.month.localeCompare(b.month))
+        .slice(-12);
     } catch (error) {
       console.error('Cash flow data error:', error);
       return [];
@@ -89,17 +106,22 @@ class DashboardService {
 
   async getUpcomingReminders(organizationId: string) {
     try {
+      const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      
       const upcoming = await Reminder.find({
         organizationId,
         status: 'active',
-        nextRunDate: { $gte: new Date(), $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
+        nextRunDate: { $gte: new Date(), $lte: sevenDaysFromNow }
       })
       .populate('tenantId', 'name unit')
       .populate('propertyId', 'name')
+      .select('type message nextRunDate tenantId propertyId')
       .sort({ nextRunDate: 1 })
-      .limit(10);
+      .limit(10)
+      .lean()
+      .exec();
 
-      return upcoming;
+      return upcoming || [];
     } catch (error) {
       console.error('Upcoming reminders error:', error);
       return [];
