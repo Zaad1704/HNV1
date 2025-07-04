@@ -6,7 +6,8 @@ import {
   getExpiringLeases,
   getFinancialSummary,
   getRentStatus,
-  getStats
+  getStats,
+  getDashboardStats
 } from '../controllers/dashboardController';
 
 const router = Router();
@@ -20,5 +21,6 @@ router.get('/expiring-leases', getExpiringLeases);
 router.get('/financial-summary', getFinancialSummary);
 router.get('/rent-status', getRentStatus);
 router.get('/stats', getStats);
+router.get('/dashboard-stats', getDashboardStats);
 
 export default router;

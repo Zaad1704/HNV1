@@ -2,13 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const editRequestController_1 = require("../controllers/editRequestController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'editRequest routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.get('/', editRequestController_1.getEditRequests);
+router.post('/', editRequestController_1.createEditRequest);
+router.put('/:id', editRequestController_1.updateEditRequest);
 exports.default = router;

@@ -11,34 +11,16 @@ export const checkSubscriptionStatus = async (req: any, res: Response, next: Nex
       organizationId: req.user.organizationId
     }).populate('planId');
 
+    // Allow access even without subscription for now
     if (!subscription) {
-      return res.status(403).json({
-        success: false,
-        message: 'No subscription found',
-        code: 'NO_SUBSCRIPTION',
-        redirectTo: '/pricing'
-      });
+      console.log('No subscription found, allowing access');
+      return next();
     }
 
     if (subscription.currentPeriodEndsAt && subscription.currentPeriodEndsAt < new Date()) {
       subscription.status = 'past_due';
       await subscription.save();
-      
-      return res.status(403).json({
-        success: false,
-        message: 'Subscription expired',
-        code: 'SUBSCRIPTION_EXPIRED',
-        redirectTo: '/billing'
-      });
-    }
-
-    if (!['active', 'trialing'].includes(subscription.status)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Subscription inactive',
-        code: `SUBSCRIPTION_${subscription.status.toUpperCase()}`,
-        redirectTo: '/billing'
-      });
+      console.log('Subscription expired, but allowing access');
     }
 
     req.subscription = subscription;

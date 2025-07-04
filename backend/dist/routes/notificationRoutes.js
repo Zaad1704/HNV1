@@ -2,13 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const notificationController_1 = require("../controllers/notificationController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'notification routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.get('/', notificationController_1.getNotifications);
+router.put('/:id/read', notificationController_1.markAsRead);
+router.put('/mark-all-read', notificationController_1.markAllAsRead);
 exports.default = router;

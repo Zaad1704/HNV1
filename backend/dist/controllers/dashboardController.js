@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStats = exports.getRentStatus = exports.getFinancialSummary = exports.getExpiringLeases = exports.getLateTenants = exports.getOverviewStats = void 0;
+exports.getDashboardStats = exports.getStats = exports.getRentStatus = exports.getFinancialSummary = exports.getExpiringLeases = exports.getLateTenants = exports.getOverviewStats = void 0;
 const Property_1 = __importDefault(require("../models/Property"));
 const Tenant_1 = __importDefault(require("../models/Tenant"));
 const Payment_1 = __importDefault(require("../models/Payment"));
@@ -139,3 +139,16 @@ const getStats = async (req, res) => {
     }
 };
 exports.getStats = getStats;
+const getDashboardStats = async (req, res) => {
+    try {
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId);
+        res.status(200).json({ success: true, data: stats });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getDashboardStats = getDashboardStats;

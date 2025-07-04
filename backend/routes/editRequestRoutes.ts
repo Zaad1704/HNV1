@@ -1,18 +1,13 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import { getEditRequests, createEditRequest, updateEditRequest } from '../controllers/editRequestController';
 
 const router = Router();
 
-// Apply authentication middleware
 router.use(protect);
 
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'editRequest routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getEditRequests);
+router.post('/', createEditRequest);
+router.put('/:id', updateEditRequest);
 
 export default router;

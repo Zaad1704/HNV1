@@ -1,18 +1,13 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import { getNotifications, markAsRead, markAllAsRead } from '../controllers/notificationController';
 
 const router = Router();
 
-// Apply authentication middleware
 router.use(protect);
 
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'notification routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getNotifications);
+router.put('/:id/read', markAsRead);
+router.put('/mark-all-read', markAllAsRead);
 
 export default router;

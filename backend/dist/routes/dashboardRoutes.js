@@ -12,4 +12,5 @@ router.get('/expiring-leases', dashboardController_1.getExpiringLeases);
 router.get('/financial-summary', dashboardController_1.getFinancialSummary);
 router.get('/rent-status', dashboardController_1.getRentStatus);
 router.get('/stats', dashboardController_1.getStats);
+router.get('/dashboard-stats', dashboardController_1.getDashboardStats);
 exports.default = router;

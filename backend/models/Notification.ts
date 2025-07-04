@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, model } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
@@ -11,14 +11,21 @@ export interface INotification extends Document {
   createdAt: Date;
 }
 
-const NotificationSchema: Schema<INotification> = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+const notificationSchema = new Schema<INotification>({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-  type: { type: String, enum: ['info', 'warning', 'success', 'error'], default: 'info' },
+  type: { 
+    type: String, 
+    enum: ['info', 'warning', 'success', 'error'], 
+    required: true 
+  },
   title: { type: String, required: true },
   message: { type: String, required: true },
   link: { type: String },
   isRead: { type: Boolean, default: false }
 }, { timestamps: true });
 
-export default model<INotification>('Notification', NotificationSchema);
+notificationSchema.index({ userId: 1, createdAt: -1 });
+notificationSchema.index({ organizationId: 1, createdAt: -1 });
+
+export default mongoose.model<INotification>('Notification', notificationSchema);
