@@ -43,16 +43,27 @@ const SiteEditorPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-
-      const response = await apiClient.put('/super-admin/site-settings', siteData);
+      // Save to backend with action chain trigger
+      const response = await apiClient.put('/super-admin/site-settings', {
+        ...siteData,
+        lastUpdated: new Date().toISOString(),
+        updatedBy: 'Super Admin'
+      });
 
       // Force refresh of site settings cache
       await fetchSiteData();
       
-      // Trigger landing page refresh
+      // Trigger multiple refresh events for different components
       window.dispatchEvent(new Event('siteSettingsUpdated'));
+      window.dispatchEvent(new Event('landingPageRefresh'));
+      window.dispatchEvent(new Event('publicDataRefresh'));
       
-      alert('Settings saved successfully!');
+      // Clear any cached data
+      if ('caches' in window) {
+        caches.delete('site-settings-cache');
+      }
+      
+      alert('Settings saved successfully! Changes will appear on the landing page.');
     } catch (error) {
       console.error('Failed to save:', error);
       alert('Failed to save settings. Please try again.');
@@ -80,13 +91,21 @@ const SiteEditorPage = () => {
       });
       
       // Update the site data with the new image URL
-      const newSiteData = { ...siteData, [field]: data.imageUrl };
+      const newSiteData = { 
+        ...siteData, 
+        [field]: data.imageUrl,
+        lastImageUpdate: new Date().toISOString()
+      };
       setSiteData(newSiteData);
       
-      // Automatically save the settings
+      // Automatically save the settings with action chain
       await apiClient.put('/super-admin/site-settings', newSiteData);
       
-      alert('Image uploaded and saved successfully!');
+      // Trigger immediate refresh of landing page
+      window.dispatchEvent(new Event('siteSettingsUpdated'));
+      window.dispatchEvent(new Event('imageUpdated'));
+      
+      alert('Image uploaded and saved successfully! Landing page updated.');
     } catch (error) {
       console.error('Image upload failed:', error);
       alert('Failed to upload image. Please try again.');

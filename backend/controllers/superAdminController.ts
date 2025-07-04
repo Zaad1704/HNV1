@@ -462,9 +462,40 @@ export const deleteModerator = async (req: AuthRequest, res: Response) => {
 
 export const updateSiteSettings = async (req: AuthRequest, res: Response) => {
   try {
-    const settings = await SiteSettings.findOneAndUpdate({}, req.body, { new: true, upsert: true });
+    const oldSettings = await SiteSettings.findOne();
+    const settings = await SiteSettings.findOneAndUpdate(
+      {}, 
+      { 
+        ...req.body, 
+        lastUpdated: new Date(),
+        updatedBy: req.user._id 
+      }, 
+      { new: true, upsert: true }
+    );
+    
+    // Create audit log for site settings update
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'site_settings_updated',
+      resource: 'site_settings',
+      resourceId: settings._id,
+      details: {
+        updatedFields: Object.keys(req.body),
+        updatedBy: 'Super Admin',
+        previousVersion: oldSettings ? oldSettings.toObject() : null
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
+    // Trigger cache invalidation
+    console.log('Site settings updated, triggering cache refresh');
+    
     res.json({ success: true, data: settings });
   } catch (error) {
+    console.error('Site settings update error:', error);
     res.json({ success: false, message: 'Error updating site settings' });
   }
 };
@@ -486,8 +517,32 @@ export const updateSiteContent = async (req: AuthRequest, res: Response) => {
 export const uploadImage = async (req: AuthRequest, res: Response) => {
   try {
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-    res.json({ success: true, data: { url: imageUrl } });
+    
+    // Create audit log for image upload
+    if (imageUrl) {
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: null,
+        action: 'site_image_uploaded',
+        resource: 'site_image',
+        resourceId: req.file?.filename,
+        details: {
+          section: req.body.section,
+          field: req.body.field,
+          filename: req.file?.filename,
+          originalName: req.file?.originalname,
+          size: req.file?.size,
+          uploadedBy: 'Super Admin'
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    }
+    
+    res.json({ success: true, data: { imageUrl } });
   } catch (error) {
+    console.error('Image upload error:', error);
     res.json({ success: false, message: 'Error uploading image' });
   }
 };

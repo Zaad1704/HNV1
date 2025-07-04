@@ -1,43 +1,18 @@
 import { Router } from 'express';
-import Property from '../models/Property';
-import Tenant from '../models/Tenant';
-import Organization from '../models/Organization';
+import { getPublicStats, getSiteSettings, getPublicData } from '../controllers/publicController';
 
 const router = Router();
 
-// Public stats for landing page
-router.get('/stats', async (req, res) => {
-  try {
-    const totalProperties = await Property.countDocuments();
-    const totalTenants = await Tenant.countDocuments();
-    const totalOrganizations = await Organization.countDocuments();
-    
-    res.json({
-      success: true,
-      data: {
-        totalProperties,
-        totalTenants,
-        totalOrganizations,
-        satisfiedCustomers: Math.floor(totalOrganizations * 0.95)
-      }
-    });
-  } catch (error) {
-    res.json({
-      success: true,
-      data: {
-        totalProperties: 1000,
-        totalTenants: 2500,
-        totalOrganizations: 150,
-        satisfiedCustomers: 142
-      }
-    });
-  }
-});
+// Public endpoints - no authentication required
+router.get('/stats', getPublicStats);
+router.get('/site-settings', getSiteSettings);
+router.get('/data', getPublicData);
 
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Public API working',
+// Health check
+router.get('/health', (req, res) => {
+  res.json({ 
+    success: true, 
+    status: 'healthy',
     timestamp: new Date().toISOString()
   });
 });

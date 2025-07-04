@@ -34,35 +34,67 @@ const LandingPage = () => {
   const { data: landingData, refetch: refetchLandingData } = useQuery({
     queryKey: ['landingData'],
     queryFn: fetchLandingData,
-    staleTime: 10 * 1000, // 10 seconds for faster updates
+    staleTime: 5 * 1000, // 5 seconds for faster updates
+    cacheTime: 1 * 60 * 1000, // 1 minute cache
     retry: false,
-    refetchOnWindowFocus: true // Enable refetch on focus
+    refetchOnWindowFocus: true,
+    refetchInterval: 30 * 1000 // Auto-refresh every 30 seconds
   });
 
-  // Listen for site settings updates
+  // Listen for site settings updates with multiple event types
   useEffect(() => {
     const handleSettingsUpdate = () => {
-
+      console.log('Site settings updated, refreshing landing page data...');
       refetchLandingData();
     };
     
+    const handleLandingRefresh = () => {
+      console.log('Landing page refresh triggered...');
+      refetchLandingData();
+      // Force re-render by updating a state
+      window.location.reload();
+    };
+    
+    const handleImageUpdate = () => {
+      console.log('Image updated, refreshing landing page...');
+      setTimeout(() => refetchLandingData(), 1000); // Delay for image processing
+    };
+    
+    // Listen to multiple events
     window.addEventListener('siteSettingsUpdated', handleSettingsUpdate);
-    return () => window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate);
+    window.addEventListener('landingPageRefresh', handleLandingRefresh);
+    window.addEventListener('imageUpdated', handleImageUpdate);
+    window.addEventListener('publicDataRefresh', handleSettingsUpdate);
+    
+    return () => {
+      window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate);
+      window.removeEventListener('landingPageRefresh', handleLandingRefresh);
+      window.removeEventListener('imageUpdated', handleImageUpdate);
+      window.removeEventListener('publicDataRefresh', handleSettingsUpdate);
+    };
   }, [refetchLandingData]);
 
-  // Fetch real stats from public endpoint
+  // Fetch real stats from public endpoint with better caching
   const { data: realStats } = useQuery({
     queryKey: ['publicStats'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/public/stats');
+        const { data } = await apiClient.get(`/public/stats?t=${Date.now()}`);
         return data.data;
       } catch (error) {
-        return null;
+        console.warn('Public stats API failed, using defaults');
+        return {
+          totalProperties: 0,
+          totalUsers: 0,
+          totalOrganizations: 0,
+          uptime: 99.9
+        };
       }
     },
-    staleTime: 60 * 1000,
-    retry: false
+    staleTime: 30 * 1000, // 30 seconds
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+    refetchInterval: 60 * 1000 // Refresh every minute
   });
 
   const stats = realStats || {};
