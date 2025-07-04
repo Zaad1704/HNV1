@@ -1,39 +1,60 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import HttpApi from 'i18next-http-backend';
 
-const supportedLanguages = [
-  'en', 'zh', 'ja', 'ko', 'hi', 'th', 'vi', 'id', 'ms', 'tl', 'ur', 'bn',
-  'de', 'fr', 'es', 'it', 'pt', 'ru', 'nl', 'sv', 'no', 'da', 'fi', 'pl', 'tr', 'el',
-  'ar', 'sw', 'am', 'ha', 'yo', 'zu', 'af',
-  'pt-BR', 'es-MX', 'es-AR', 'fr-CA',
-  'en-AU', 'en-NZ'
-];
+// Import translations directly
+import enTranslations from '../locales/en/translation.json';
+import zhTranslations from '../locales/zh/translation.json';
+import jaTranslations from '../locales/ja/translation.json';
+import koTranslations from '../locales/ko/translation.json';
+import hiTranslations from '../locales/hi/translation.json';
+import thTranslations from '../locales/th/translation.json';
+import arTranslations from '../locales/ar/translation.json';
+import deTranslations from '../locales/de/translation.json';
+import frTranslations from '../locales/fr/translation.json';
+import esTranslations from '../locales/es/translation.json';
+import itTranslations from '../locales/it/translation.json';
+import ptTranslations from '../locales/pt/translation.json';
+import ruTranslations from '../locales/ru/translation.json';
+import nlTranslations from '../locales/nl/translation.json';
+import svTranslations from '../locales/sv/translation.json';
+import trTranslations from '../locales/tr/translation.json';
+import bnTranslations from '../locales/bn/translation.json';
+import tlTranslations from '../locales/tl/translation.json';
+
+const resources = {
+  en: { translation: enTranslations },
+  zh: { translation: zhTranslations },
+  ja: { translation: jaTranslations },
+  ko: { translation: koTranslations },
+  hi: { translation: hiTranslations },
+  th: { translation: thTranslations },
+  ar: { translation: arTranslations },
+  de: { translation: deTranslations },
+  fr: { translation: frTranslations },
+  es: { translation: esTranslations },
+  it: { translation: itTranslations },
+  pt: { translation: ptTranslations },
+  ru: { translation: ruTranslations },
+  nl: { translation: nlTranslations },
+  sv: { translation: svTranslations },
+  tr: { translation: trTranslations },
+  bn: { translation: bnTranslations },
+  tl: { translation: tlTranslations }
+};
 
 i18n
-  .use(HttpApi)
   .use(initReactI18next)
   .init({
-    supportedLngs: supportedLanguages,
+    resources,
+    lng: 'en',
     fallbackLng: 'en',
     debug: true,
-    backend: {
-      loadPath: '/locales/{{lng}}/translation.json',
-      requestOptions: {
-        cache: 'default'
-      }
-    },
     interpolation: {
       escapeValue: false,
     },
     react: {
       useSuspense: false,
-    },
-    load: 'languageOnly',
-    cleanCode: true,
-    returnEmptyString: false,
-    returnNull: false,
-    returnObjects: false
+    }
   });
 
 export default i18n;
