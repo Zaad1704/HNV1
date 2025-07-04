@@ -132,18 +132,21 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       });
     }
 
-    if (!user.isEmailVerified) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Please verify your email before logging in' 
-      });
-    }
+    // Allow Super Admin to bypass email verification and status checks
+    if (user.role !== 'Super Admin') {
+      if (!user.isEmailVerified) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Please verify your email before logging in' 
+        });
+      }
 
-    if (user.status !== 'active') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Account is suspended. Please contact support.' 
-      });
+      if (user.status !== 'active') {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Account is suspended. Please contact support.' 
+        });
+      }
     }
 
     sendTokenResponse(user, 200, res);
