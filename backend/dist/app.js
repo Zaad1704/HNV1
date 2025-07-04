@@ -155,12 +155,16 @@ app.use('/api/payments', authMiddleware_1.protect, subscriptionMiddleware_1.chec
 app.use('/api/expenses', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, expenseRoutes_1.default);
 app.use('/api/maintenance', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, maintenanceRoutes_1.default);
 app.use('/api/cash-flow', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, cashFlowRoutes_1.default);
+app.use('/api/cashflow', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, cashFlowRoutes_1.default);
 app.use('/api/reminders', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, reminderRoutes_1.default);
 app.use('/api/edit-requests', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, editRequestRoutes_1.default);
 app.use('/api/users', authMiddleware_1.protect, userRoutes_1.default);
+app.use('/api/users/invites', authMiddleware_1.protect, userRoutes_1.default);
 app.use('/api/billing', authMiddleware_1.protect, billingRoutes_1.default);
 app.use('/api/audit', authMiddleware_1.protect, auditRoutes_1.default);
 app.use('/api/org', authMiddleware_1.protect, orgRoutes_1.default);
+app.use('/api/organization', authMiddleware_1.protect, orgRoutes_1.default);
+app.use('/api/orgs', authMiddleware_1.protect, orgRoutes_1.default);
 app.use('/api/subscriptions', authMiddleware_1.protect, subscriptionsRoutes_1.default);
 app.use('/api/super-admin', authMiddleware_1.protect, superAdminRoutes_1.default);
 app.use('/api/feedback', authMiddleware_1.protect, feedbackRoutes_1.default);

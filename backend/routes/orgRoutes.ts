@@ -1,18 +1,19 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import {
+  getMyOrganization,
+  getOrganizations,
+  updateOrganization,
+  setOrgStatus
+} from '../controllers/orgController';
 
 const router = Router();
 
-// Apply authentication middleware
 router.use(protect);
 
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'org routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getOrganizations);
+router.get('/me', getMyOrganization);
+router.put('/me', updateOrganization);
+router.put('/status', setOrgStatus);
 
 export default router;

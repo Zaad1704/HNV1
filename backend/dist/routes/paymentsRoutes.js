@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const subscriptionMiddleware_1 = require("../middleware/subscriptionMiddleware");
+const paymentsController_1 = require("../controllers/paymentsController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'payments routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.use(subscriptionMiddleware_1.checkSubscriptionStatus);
+router.get('/', paymentsController_1.getPayments);
+router.post('/', paymentsController_1.createPayment);
+router.put('/:id', paymentsController_1.updatePayment);
+router.delete('/:id', paymentsController_1.deletePayment);
 exports.default = router;

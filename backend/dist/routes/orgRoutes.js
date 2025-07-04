@@ -2,13 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const orgController_1 = require("../controllers/orgController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'org routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.get('/', orgController_1.getOrganizations);
+router.get('/me', orgController_1.getMyOrganization);
+router.put('/me', orgController_1.updateOrganization);
+router.put('/status', orgController_1.setOrgStatus);
 exports.default = router;
