@@ -13,12 +13,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-productio
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://rajputragav420:5EIWHghGDZ4rEpmr@hnv.qw1lakw.mongodb.net/hnv?retryWrites=true&w=majority&appName=HNV';
 const PORT = process.env.PORT || 5001;
 
-console.log('MongoDB URI:', MONGO_URI ? 'Set' : 'Not set');
+console.log('MongoDB URI from env:', process.env.MONGODB_URI);
+console.log('Final MongoDB URI:', MONGO_URI);
 console.log('Environment:', process.env.NODE_ENV);
 
 // Database connection with retry logic
 const connectDB = async (retries = 5): Promise<void> => {
   try {
+    // Validate MongoDB URI format
+    if (!MONGO_URI || (!MONGO_URI.startsWith('mongodb://') && !MONGO_URI.startsWith('mongodb+srv://'))) {
+      throw new Error(`Invalid MongoDB URI format: ${MONGO_URI}`);
+    }
+    
+    console.log('Attempting to connect to MongoDB...');
     const conn = await mongoose.connect(MONGO_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
