@@ -20,7 +20,7 @@ export const getSubscriptionDetails = async (req: AuthRequest, res: Response) =>
 
     if (!subscription) {
       // Check if organization has lifetime access or other subscription method
-      const org = await Organization.findById(req.user.organizationId).lean().exec();
+      const org = await Organization.findById(req.user.organizationId).lean().exec() as any;
       if (org?.subscription?.isLifetime) {
         return res.status(200).json({ 
           success: true, 
@@ -81,7 +81,7 @@ export const getBillingHistory = async (req: AuthRequest, res: Response) => {
     // For now, return mock data. In production, integrate with payment processor
     const subscription = await Subscription.findOne({ 
       organizationId: req.user.organizationId 
-    }).populate('planId').lean().exec();
+    }).populate('planId').lean().exec() as any;
 
     const billingHistory = subscription ? [
       { 
