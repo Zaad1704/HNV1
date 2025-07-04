@@ -19,12 +19,14 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
       data: {
         totalOrganizations: totalOrgs,
         totalUsers: totalUsers,
+        totalOrgs: totalOrgs,
         activeOrganizations: activeOrgs,
+        activeSubscriptions: activeOrgs,
         revenue: totalOrgs * 99
       }
     });
   } catch (error) {
-    res.json({ success: true, data: { totalOrganizations: 0, totalUsers: 0, activeOrganizations: 0, revenue: 0 } });
+    res.json({ success: true, data: { totalOrganizations: 0, totalUsers: 0, totalOrgs: 0, activeOrganizations: 0, activeSubscriptions: 0, revenue: 0 } });
   }
 };
 
@@ -234,7 +236,33 @@ export const getBilling = async (req: AuthRequest, res: Response) => {
       totalRevenue: 50000,
       monthlyRevenue: 8500,
       activeSubscriptions: 125,
-      churnRate: 2.5
+      churnRate: 2.5,
+      recentTransactions: [
+        {
+          _id: '1',
+          organizationName: 'ABC Properties',
+          amount: 9900,
+          status: 'completed',
+          date: new Date().toISOString(),
+          planName: 'Premium'
+        },
+        {
+          _id: '2',
+          organizationName: 'XYZ Realty',
+          amount: 2900,
+          status: 'completed',
+          date: new Date(Date.now() - 86400000).toISOString(),
+          planName: 'Basic'
+        }
+      ],
+      revenueChart: [
+        { month: 'Jan', revenue: 4200, subscriptions: 42 },
+        { month: 'Feb', revenue: 4800, subscriptions: 48 },
+        { month: 'Mar', revenue: 5200, subscriptions: 52 },
+        { month: 'Apr', revenue: 5800, subscriptions: 58 },
+        { month: 'May', revenue: 6200, subscriptions: 62 },
+        { month: 'Jun', revenue: 6800, subscriptions: 68 }
+      ]
     };
     res.json({ success: true, data: billing });
   } catch (error) {
