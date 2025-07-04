@@ -6,6 +6,7 @@ import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail } fro
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
+import BulkPaymentModal from '../components/common/BulkPaymentModal';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
@@ -28,6 +29,7 @@ const PropertiesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showBulkPayment, setShowBulkPayment] = useState(false);
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport();
 
@@ -152,6 +154,13 @@ const PropertiesPage = () => {
           <p className="text-text-secondary mt-1">{t('property.manage_portfolio')}</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => setShowBulkPayment(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
+          >
+            <DollarSign size={16} />
+            Bulk Payment
+          </button>
           <button
             onClick={() => setShowExportModal(true)}
             className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
@@ -306,6 +315,11 @@ const PropertiesPage = () => {
         onClose={() => setShowExportModal(false)}
         section="properties"
         title="Properties"
+      />
+
+      <BulkPaymentModal
+        isOpen={showBulkPayment}
+        onClose={() => setShowBulkPayment(false)}
       />
     </motion.div>
   );

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, DollarSign, Calendar, User } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, DollarSign, Calendar, User, Search } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 
@@ -17,6 +17,7 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTenant, setSearchTenant] = useState('');
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants'],
@@ -26,6 +27,15 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
     },
     enabled: isOpen
   });
+
+  const filteredTenants = useMemo(() => {
+    if (!tenants || !searchTenant) return tenants || [];
+    return tenants.filter((tenant: any) => 
+      tenant.name.toLowerCase().includes(searchTenant.toLowerCase()) ||
+      tenant.unit.toLowerCase().includes(searchTenant.toLowerCase()) ||
+      tenant.email.toLowerCase().includes(searchTenant.toLowerCase())
+    );
+  }, [tenants, searchTenant]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +85,16 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
             <label className="block text-sm font-medium text-text-secondary mb-2">
               Tenant
             </label>
+            <div className="relative mb-2">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
+              <input
+                type="text"
+                placeholder="Search tenant by name, unit, or email..."
+                value={searchTenant}
+                onChange={(e) => setSearchTenant(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-app-border rounded-xl bg-app-surface text-text-primary text-sm"
+              />
+            </div>
             <select
               value={formData.tenantId}
               onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
@@ -82,9 +102,9 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
               required
             >
               <option value="">Select Tenant</option>
-              {tenants?.map((tenant: any) => (
+              {filteredTenants?.map((tenant: any) => (
                 <option key={tenant._id} value={tenant._id}>
-                  {tenant.name} - Unit {tenant.unit}
+                  {tenant.name} - Unit {tenant.unit} - ${tenant.rentAmount || 0}
                 </option>
               ))}
             </select>
