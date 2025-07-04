@@ -52,6 +52,7 @@ const rentCollectionRoutes_1 = __importDefault(require("./routes/rentCollectionR
 const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
 const integrationRoutes_1 = __importDefault(require("./routes/integrationRoutes"));
 const subscriptionRoutes_1 = __importDefault(require("./routes/subscriptionRoutes"));
+const tenantPortalRoutes_1 = __importDefault(require("./routes/tenantPortalRoutes"));
 const subscriptionMiddleware_1 = require("./middleware/subscriptionMiddleware");
 const masterDataService_1 = __importDefault(require("./services/masterDataService"));
 const authMiddleware_1 = require("./middleware/authMiddleware");
@@ -179,6 +180,8 @@ app.use('/api/rent-collection', authMiddleware_1.protect, rentCollectionRoutes_1
 app.use('/api/analytics', authMiddleware_1.protect, analyticsRoutes_1.default);
 app.use('/api/integrations', authMiddleware_1.protect, integrationRoutes_1.default);
 app.use('/api/subscription', authMiddleware_1.protect, subscriptionRoutes_1.default);
+app.use('/api/tenant', authMiddleware_1.protect, tenantPortalRoutes_1.default);
+app.use('/api/tenant-portal', authMiddleware_1.protect, tenantPortalRoutes_1.default);
 app.use('/api/invitations', authMiddleware_1.protect, invitationRoutes_1.default);
 app.use('/api/error', errorRoutes_1.default);
 app.use(routeErrorHandler);

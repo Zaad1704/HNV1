@@ -1,18 +1,8 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import { getStatus } from '../controllers/subscriptionController';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'subscription routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/status', getStatus);
 
 export default router;

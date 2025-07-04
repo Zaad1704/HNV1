@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFinancialSummary = exports.getExpiringLeases = exports.getLateTenants = exports.getOverviewStats = void 0;
+exports.getStats = exports.getRentStatus = exports.getFinancialSummary = exports.getExpiringLeases = exports.getLateTenants = exports.getOverviewStats = void 0;
 const Property_1 = __importDefault(require("../models/Property"));
 const Tenant_1 = __importDefault(require("../models/Tenant"));
 const Payment_1 = __importDefault(require("../models/Payment"));
@@ -107,3 +107,43 @@ const getFinancialSummary = async (req, res) => {
     }
 };
 exports.getFinancialSummary = getFinancialSummary;
+const getRentStatus = async (req, res) => {
+    try {
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const activeCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Active' });
+        const lateCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Late' });
+        const data = [
+            { name: 'Paid / Current', value: activeCount },
+            { name: 'Overdue', value: lateCount }
+        ];
+        res.status(200).json({ success: true, data });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getRentStatus = getRentStatus;
+const getStats = async (req, res) => {
+    try {
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const totalProperties = await Property_1.default.countDocuments({ organizationId: req.user.organizationId });
+        const activeTenants = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Active' });
+        res.status(200).json({
+            success: true,
+            data: {
+                totalProperties,
+                activeTenants,
+                monthlyRevenue: 5000,
+                occupancyRate: totalProperties > 0 ? ((activeTenants / totalProperties) * 100).toFixed(2) + '%' : '0%'
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getStats = getStats;

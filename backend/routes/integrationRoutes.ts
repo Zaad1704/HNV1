@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import {
+  getIntegrations,
+  deleteIntegration,
+  searchIntegrations,
+  getSearchSuggestions,
+  createPaymentIntent
+} from '../controllers/integrationController';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'integration routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getIntegrations);
+router.delete('/:id', deleteIntegration);
+router.get('/search', searchIntegrations);
+router.get('/search/suggestions', getSearchSuggestions);
+router.post('/payment/intent', createPaymentIntent);
 
 export default router;

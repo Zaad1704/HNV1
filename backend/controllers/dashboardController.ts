@@ -118,3 +118,46 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+export const getRentStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const activeCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Active' });
+    const lateCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Late' });
+    
+    const data = [
+      { name: 'Paid / Current', value: activeCount },
+      { name: 'Overdue', value: lateCount }
+    ];
+
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const getStats = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const totalProperties = await Property.countDocuments({ organizationId: req.user.organizationId });
+    const activeTenants = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Active' });
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProperties,
+        activeTenants,
+        monthlyRevenue: 5000,
+        occupancyRate: totalProperties > 0 ? ((activeTenants / totalProperties) * 100).toFixed(2) + '%' : '0%'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

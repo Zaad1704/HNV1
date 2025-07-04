@@ -1,18 +1,22 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import {
+  getAnalytics,
+  getOverdue,
+  getPeriod,
+  generatePeriod,
+  getActions,
+  createAction,
+  createSheet
+} from '../controllers/rentCollectionController';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'rentCollection routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/analytics', getAnalytics);
+router.get('/overdue', getOverdue);
+router.get('/period/:year/:month', getPeriod);
+router.post('/period/:year/:month/generate', generatePeriod);
+router.get('/actions', getActions);
+router.post('/action', createAction);
+router.post('/sheet/:id/create', createSheet);
 
 export default router;
