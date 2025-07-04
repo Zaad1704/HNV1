@@ -20,7 +20,7 @@ export const generateTenantStatement = async (req: AuthRequest, res: Response) =
       .populate('organizationId', 'name')
       .lean();
 
-    if (!tenant || tenant.organizationId._id.toString() !== req.user.organizationId.toString()) {
+    if (!tenant || (tenant.organizationId as any)._id.toString() !== req.user.organizationId.toString()) {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
 

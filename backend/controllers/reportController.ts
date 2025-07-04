@@ -36,7 +36,7 @@ export const generateFinancialReport = async (req: AuthRequest, res: Response) =
         payments,
         totalRevenue,
         totalPayments,
-        organization: payments[0]?.organizationId,
+        organization: (payments[0] as any)?.organizationId,
         startDate,
         endDate
       });

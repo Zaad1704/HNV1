@@ -43,7 +43,6 @@ import uploadRoutes from './routes/uploadRoutes';
 import fileUploadRoutes from './routes/fileUploadRoutes';
 import invoiceRoutes from './routes/invoiceRoutes';
 import receiptRoutes from './routes/receiptRoutes';
-import reportRoutes from './routes/reportRoutes';
 import planRoutes from './routes/planRoutes';
 import errorRoutes from './routes/errorRoutes';
 import contactRoutes from './routes/contactRoutes';
@@ -206,7 +205,6 @@ app.use('/api/upload', protect, uploadRoutes);
 app.use('/api/file-upload', protect, fileUploadRoutes);
 app.use('/api/invoices', protect, invoiceRoutes);
 app.use('/api/receipts', protect, receiptRoutes);
-app.use('/api/reports', protect, reportRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/export', protect, exportRoutes);
 app.use('/api/rent-collection', protect, rentCollectionRoutes);
@@ -217,8 +215,8 @@ app.use('/api/tenant', protect, tenantPortalRoutes);
 app.use('/api/tenant-portal', protect, tenantPortalRoutes);
 app.use('/api/invitations', protect, invitationRoutes);
 app.use('/api/bulk', bulkPaymentRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/statements', statementRoutes);
+app.use('/api/reports', protect, reportRoutes);
+app.use('/api/statements', protect, statementRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // Serve uploaded files
