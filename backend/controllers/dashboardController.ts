@@ -102,7 +102,6 @@ export const getFinancialSummary = safeAsync(async (req: AuthRequest, res: Respo
   }
 
   const organizationId = req.user.organizationId;
-  const monthlyData = [];
   const promises = [];
 
   // Prepare all date ranges and queries
@@ -138,11 +137,11 @@ export const getFinancialSummary = safeAsync(async (req: AuthRequest, res: Respo
   }
 
   const results = await Promise.allSettled(promises);
-  const monthlyData = results.map(result => 
+  const financialData = results.map(result => 
     result.status === 'fulfilled' ? result.value : { name: 'N/A', Revenue: 0, Expenses: 0 }
   );
 
-  res.status(200).json({ success: true, data: monthlyData });
+  res.status(200).json({ success: true, data: financialData });
 });
 
 export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) => {
