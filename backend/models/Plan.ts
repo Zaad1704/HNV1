@@ -4,6 +4,7 @@ export interface IPlan extends Document {
   name: string;
   price: number;
   duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: 'monthly' | 'yearly';
   features: string[];
   limits: {
     maxProperties: number;
@@ -11,6 +12,8 @@ export interface IPlan extends Document {
     maxAgents: number;
   };
   isPublic: boolean;
+  isActive: boolean;
+  trialDays: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +27,11 @@ const planSchema = new Schema<IPlan>({
     enum: ['daily', 'weekly', 'monthly', 'yearly'],
     default: 'monthly',
   },
+  interval: {
+    type: String,
+    enum: ['monthly', 'yearly'],
+    default: 'monthly'
+  },
   features: { type: [String], default: [] },
   limits: {
     maxProperties: { type: Number, default: 1 },
@@ -31,6 +39,8 @@ const planSchema = new Schema<IPlan>({
     maxAgents: { type: Number, default: 0 },
   },
   isPublic: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true },
+  trialDays: { type: Number, default: 14 },
 }, { timestamps: true });
 
 export default mongoose.model<IPlan>('Plan', planSchema);

@@ -33,6 +33,11 @@ const planSchema = new mongoose_1.Schema({
         enum: ['daily', 'weekly', 'monthly', 'yearly'],
         default: 'monthly',
     },
+    interval: {
+        type: String,
+        enum: ['monthly', 'yearly'],
+        default: 'monthly'
+    },
     features: { type: [String], default: [] },
     limits: {
         maxProperties: { type: Number, default: 1 },
@@ -40,5 +45,7 @@ const planSchema = new mongoose_1.Schema({
         maxAgents: { type: Number, default: 0 },
     },
     isPublic: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: true },
+    trialDays: { type: Number, default: 14 },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('Plan', planSchema);

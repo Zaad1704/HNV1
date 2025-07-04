@@ -51,6 +51,7 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import integrationRoutes from './routes/integrationRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
+import webhookRoutes from './routes/webhookRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
@@ -205,6 +206,7 @@ app.use('/api/subscription', protect, subscriptionRoutes);
 app.use('/api/tenant', protect, tenantPortalRoutes);
 app.use('/api/tenant-portal', protect, tenantPortalRoutes);
 app.use('/api/invitations', protect, invitationRoutes);
+app.use('/api/webhooks', webhookRoutes);
 // Error routes
 app.use('/api/error', errorRoutes);
 // Route error handler

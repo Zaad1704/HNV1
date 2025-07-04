@@ -4,7 +4,10 @@ import {
   getSubscriptionDetails,
   createCheckoutSession,
   getBillingHistory,
-  subscribeToPlan
+  subscribeToPlan,
+  reactivateSubscription,
+  cancelSubscription,
+  getSubscriptionStatus
 } from '../controllers/billingController';
 
 const router = Router();
@@ -15,5 +18,8 @@ router.get('/subscription', getSubscriptionDetails);
 router.post('/checkout', createCheckoutSession);
 router.get('/history', getBillingHistory);
 router.post('/subscribe', subscribeToPlan);
+router.post('/reactivate', reactivateSubscription);
+router.post('/cancel', cancelSubscription);
+router.get('/status', getSubscriptionStatus);
 
 export default router;

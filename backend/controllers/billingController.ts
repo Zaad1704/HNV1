@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
+import subscriptionService from '../services/subscriptionService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -72,18 +73,60 @@ export const getBillingHistory = async (req: AuthRequest, res: Response) => {
 
 export const subscribeToPlan = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId } = req.body;
+    const { planId, isTrial = false } = req.body;
     
-    // Mock subscription creation
-    const subscription = {
-      id: 'sub_123',
-      planId,
-      status: 'active',
-      createdAt: new Date()
-    };
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    let subscription;
+    if (isTrial) {
+      subscription = await subscriptionService.createTrialSubscription(req.user.organizationId, planId);
+    } else {
+      subscription = await subscriptionService.activateSubscription(req.user.organizationId, planId);
+    }
 
     res.json({ success: true, data: subscription });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
+  }
+};
+
+export const reactivateSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const subscription = await subscriptionService.reactivateSubscription(req.user.organizationId);
+    res.json({ success: true, data: subscription });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
+  }
+};
+
+export const cancelSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const subscription = await subscriptionService.cancelSubscription(req.user.organizationId);
+    res.json({ success: true, data: subscription });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
+  }
+};
+
+export const getSubscriptionStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const status = await subscriptionService.getSubscriptionStatus(req.user.organizationId);
+    res.json({ success: true, data: status });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message || 'Server error' });
   }
 };

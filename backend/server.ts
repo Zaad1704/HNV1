@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { createServer } from 'http';
 import app from './app';
 import { config } from './config';
+import { startSubscriptionCron } from './scripts/subscriptionCron';
 
 // Load environment variables
 dotenv.config();
@@ -65,6 +66,11 @@ const startServer = async () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+      
+      // Start subscription cron job
+      if (process.env.NODE_ENV !== 'test') {
+        startSubscriptionCron();
+      }
     });
   } catch (error) {
     console.error('Failed to start server:', error);

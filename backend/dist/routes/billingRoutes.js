@@ -9,4 +9,7 @@ router.get('/subscription', billingController_1.getSubscriptionDetails);
 router.post('/checkout', billingController_1.createCheckoutSession);
 router.get('/history', billingController_1.getBillingHistory);
 router.post('/subscribe', billingController_1.subscribeToPlan);
+router.post('/reactivate', billingController_1.reactivateSubscription);
+router.post('/cancel', billingController_1.cancelSubscription);
+router.get('/status', billingController_1.getSubscriptionStatus);
 exports.default = router;

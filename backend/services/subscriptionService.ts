@@ -1,53 +1,149 @@
-import { Subscription } from '../models/Subscription';
-import { User } from '../models/User';
+import Subscription from '../models/Subscription';
+import Organization from '../models/Organization';
+import Plan from '../models/Plan';
 
 class SubscriptionService {
-  async createSubscription(userId: string, planId: string) {
+  async createTrialSubscription(organizationId: string, planId: string) {
     try {
-      const subscription = new Subscription({
-        userId,
+      const plan = await Plan.findById(planId);
+      if (!plan) throw new Error('Plan not found');
+
+      const trialDays = plan.trialDays || 14;
+      const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+
+      const subscription = await Subscription.create({
+        organizationId,
         planId,
-        status: 'active',
-        startDate: new Date(),
-        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+        status: 'trialing',
+        trialExpiresAt,
+        currentPeriodEndsAt: trialExpiresAt
       });
 
-      await subscription.save();
       return subscription;
     } catch (error) {
-      console.error('Failed to create subscription:', error);
+      console.error('Error creating trial subscription:', error);
       throw error;
     }
   }
 
-  async getUserSubscription(userId: string) {
+  async activateSubscription(organizationId: string, planId: string) {
     try {
-      const subscription = await Subscription.findOne({ userId }).populate('planId');
+      const plan = await Plan.findById(planId);
+      if (!plan) throw new Error('Plan not found');
+
+      const currentPeriodEndsAt = new Date();
+      if (plan.interval === 'monthly') {
+        currentPeriodEndsAt.setMonth(currentPeriodEndsAt.getMonth() + 1);
+      } else if (plan.interval === 'yearly') {
+        currentPeriodEndsAt.setFullYear(currentPeriodEndsAt.getFullYear() + 1);
+      }
+
+      let subscription = await Subscription.findOne({ organizationId });
+      
+      if (subscription) {
+        subscription.planId = planId as any;
+        subscription.status = 'active';
+        subscription.currentPeriodEndsAt = currentPeriodEndsAt;
+        await subscription.save();
+      } else {
+        subscription = await Subscription.create({
+          organizationId,
+          planId,
+          status: 'active',
+          currentPeriodEndsAt
+        });
+      }
+
       return subscription;
     } catch (error) {
-      console.error('Failed to get user subscription:', error);
-      return null;
+      console.error('Error activating subscription:', error);
+      throw error;
     }
   }
 
-  async checkSubscriptionStatus(userId: string) {
+  async cancelSubscription(organizationId: string) {
     try {
-      const subscription = await this.getUserSubscription(userId);
-      if (!subscription) {
-        return { active: false, trial: false };
+      const subscription = await Subscription.findOne({ organizationId });
+      if (!subscription) throw new Error('Subscription not found');
+
+      subscription.status = 'canceled';
+      await subscription.save();
+
+      return subscription;
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      throw error;
+    }
+  }
+
+  async reactivateSubscription(organizationId: string) {
+    try {
+      const subscription = await Subscription.findOne({ organizationId });
+      if (!subscription) throw new Error('Subscription not found');
+
+      const plan = await Plan.findById(subscription.planId);
+      if (!plan) throw new Error('Plan not found');
+
+      const currentPeriodEndsAt = new Date();
+      if (plan.interval === 'monthly') {
+        currentPeriodEndsAt.setMonth(currentPeriodEndsAt.getMonth() + 1);
+      } else if (plan.interval === 'yearly') {
+        currentPeriodEndsAt.setFullYear(currentPeriodEndsAt.getFullYear() + 1);
       }
 
-      const now = new Date();
-      const isActive = subscription.status === 'active' && subscription.nextBillingDate > now;
-      
+      subscription.status = 'active';
+      subscription.currentPeriodEndsAt = currentPeriodEndsAt;
+      await subscription.save();
+
+      return subscription;
+    } catch (error) {
+      console.error('Error reactivating subscription:', error);
+      throw error;
+    }
+  }
+
+  async checkExpiredSubscriptions() {
+    try {
+      const expiredSubscriptions = await Subscription.find({
+        status: { $in: ['active', 'trialing'] },
+        currentPeriodEndsAt: { $lt: new Date() }
+      });
+
+      for (const subscription of expiredSubscriptions) {
+        subscription.status = 'past_due';
+        await subscription.save();
+      }
+
+      return expiredSubscriptions.length;
+    } catch (error) {
+      console.error('Error checking expired subscriptions:', error);
+      throw error;
+    }
+  }
+
+  async getSubscriptionStatus(organizationId: string) {
+    try {
+      const subscription = await Subscription.findOne({ organizationId })
+        .populate('planId');
+
+      if (!subscription) {
+        return { hasSubscription: false, status: null };
+      }
+
+      const isExpired = subscription.currentPeriodEndsAt && 
+        subscription.currentPeriodEndsAt < new Date();
+
       return {
-        active: isActive,
-        trial: subscription.status === 'trial',
-        subscription
+        hasSubscription: true,
+        status: subscription.status,
+        isExpired,
+        plan: subscription.planId,
+        expiresAt: subscription.currentPeriodEndsAt,
+        isLifetime: subscription.isLifetime
       };
     } catch (error) {
-      console.error('Failed to check subscription status:', error);
-      return { active: false, trial: false };
+      console.error('Error getting subscription status:', error);
+      throw error;
     }
   }
 }
