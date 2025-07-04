@@ -6,6 +6,10 @@ import {
   getEmailStatus,
   getOrganizations,
   deleteOrganization,
+  activateOrganization,
+  deactivateOrganization,
+  grantLifetime,
+  revokeLifetime,
   getUsers,
   deleteUser,
   updateUserPlan,
@@ -32,6 +36,10 @@ router.get('/platform-growth', getPlatformGrowth);
 router.get('/email-status', getEmailStatus);
 router.get('/organizations', getOrganizations);
 router.delete('/organizations/:orgId', deleteOrganization);
+router.patch('/organizations/:orgId/activate', activateOrganization);
+router.patch('/organizations/:orgId/deactivate', deactivateOrganization);
+router.patch('/organizations/:orgId/grant-lifetime', grantLifetime);
+router.patch('/organizations/:orgId/revoke-lifetime', revokeLifetime);
 router.get('/users', getUsers);
 router.delete('/users/:userId', deleteUser);
 router.put('/users/:userId/plan', updateUserPlan);
