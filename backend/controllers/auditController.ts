@@ -19,7 +19,11 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ success: true, data: logs || [] });
   } catch (error) {
     console.error('Error fetching audit logs:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch data',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

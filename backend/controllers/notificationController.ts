@@ -19,7 +19,11 @@ export const getNotifications = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ success: true, data: notifications });
   } catch (error) {
     console.error('Get notifications error:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch notifications',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
