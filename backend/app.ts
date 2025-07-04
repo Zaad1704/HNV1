@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import compression from 'compression';
+import path from 'path';
 import { securityHeaders, createRateLimit, sanitizeInput, requestLogger } from './middleware/securityMiddleware';
 import { errorHandler } from './middleware/errorHandler';
 // Import route files
@@ -24,6 +25,7 @@ import editRequestRoutes from './routes/editRequestRoutes';
 import userRoutes from './routes/userRoutes';
 import billingRoutes from './routes/billingRoutes';
 import auditRoutes from './routes/auditRoutes';
+import approvalRoutes from './routes/approvalRoutes';
 import orgRoutes from './routes/orgRoutes';
 import subscriptionsRoutes from './routes/subscriptionsRoutes';
 import superAdminRoutes from './routes/superAdminRoutes';
@@ -184,6 +186,7 @@ app.use('/api/users', protect, userRoutes);
 app.use('/api/users/invites', protect, userRoutes);
 app.use('/api/billing', protect, billingRoutes);
 app.use('/api/audit', protect, auditRoutes);
+app.use('/api/approvals', protect, approvalRoutes);
 app.use('/api/org', protect, orgRoutes);
 app.use('/api/organization', protect, orgRoutes);
 app.use('/api/orgs', protect, orgRoutes);
@@ -211,6 +214,9 @@ app.use('/api/tenant', protect, tenantPortalRoutes);
 app.use('/api/tenant-portal', protect, tenantPortalRoutes);
 app.use('/api/invitations', protect, invitationRoutes);
 app.use('/api/webhooks', webhookRoutes);
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Error routes
 app.use('/api/error', errorRoutes);
 // Route error handler

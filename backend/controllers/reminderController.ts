@@ -1,92 +1,81 @@
-import { Request, Response, NextFunction    } from 'express';
-import asyncHandler from 'express-async-handler';
-import Reminder, { IReminder } from '../models/Reminder';
-import Tenant from '../models/Tenant';
-import emailService from '../services/emailService';
-import { addDays, addWeeks, addMonths, addYears    } from 'date-fns';
-import { Types    } from 'mongoose';
-const calculateNextRunDate: (currentDate : Date, frequency: IReminder['frequency']): Date: > { switch(frequency) {
-case 'daily': return addDays(currentDate, 1);
-  case 'weekly': return addWeeks(currentDate, 1)
+import { Request, Response } from 'express';
+import Reminder from '../models/Reminder';
+
+interface AuthRequest extends Request {
+  user?: any;
+}
+
+export const getReminders = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const reminders = await Reminder.find({ organizationId: req.user.organizationId })
+      .populate('tenantId', 'name email unit')
+      .populate('propertyId', 'name')
+      .sort({ nextRunDate: 1 });
+
+    res.status(200).json({ success: true, data: reminders || [] });
+  } catch (error) {
+    console.error('Error fetching reminders:', error);
+    res.status(200).json({ success: true, data: [] });
+  }
 };
-    case 'monthly': return addMonths(currentDate, 1);
-    case 'yearly': return addYears(currentDate, 1);
-    default: return addDays(currentDate, 1);
+
+export const createReminder = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { tenantId, type, message, frequency, nextRunDate } = req.body;
+
+    const reminder = await Reminder.create({
+      organizationId: req.user.organizationId,
+      tenantId,
+      type,
+      message,
+      nextRunDate: new Date(nextRunDate),
+      frequency,
+      status: 'active',
+      sentCount: 0
+    });
+
+    res.status(201).json({ success: true, data: reminder });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };
-export const createReminder: asyncHandler(async ($1) => { if (res.status(401);
-  throw new Error('User not authorized or not part of an organization') ) {
+
+export const updateReminder = async (req: AuthRequest, res: Response) => {
+  try {
+    const reminder = await Reminder.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!reminder) {
+      return res.status(404).json({ success: false, message: 'Reminder not found' });
+    }
+
+    res.json({ success: true, data: reminder });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };
-  const { tenantId, type, message, frequency, nextRunDate  } = req.body;
-  if (res.status(400);
-    throw new Error('Tenant, type, frequency, and next run date are required.');
-  const tenant: await Tenant.findById(tenantId);
-  if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) { ) {
+
+export const deleteReminder = async (req: AuthRequest, res: Response) => {
+  try {
+    const reminder = await Reminder.findByIdAndDelete(req.params.id);
+
+    if (!reminder) {
+      return res.status(404).json({ success: false, message: 'Reminder not found' });
+    }
+
+    res.json({ success: true, message: 'Reminder deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 };
-    res.status(404);
-    throw new Error('Tenant not found in your organization.');
-  const reminder: await Reminder.create({
-organizationId: req.user.organizationId,;
-    tenantId: tenant._id,;
-    propertyId: tenant.propertyId,;
-    type,;
-    message,;
-    nextRunDate: new Date(nextRunDate),;
-    frequency,;
-    status: 'active',;
-    sentCount: 0,
-});
-  res.status(201).json({ success: true, data: reminder  });
-});
-export const getReminders: asyncHandler(async ($1) => { if (res.status(401);
-  throw new Error('User not authorized') ) {
-};
-  const query: (req.user.role ==: 'Super Admin' || !req.user.organizationId) ? {} : { organizationId: req.user.organizationId };
-  const reminders = await Reminder.find(query)
-    .populate('tenantId', 'name email unit')
-    .populate('propertyId', 'name')
-    .sort({ nextRunDate: 1  });
-  res.status(200).json({ success: true, data: reminders  });
-});
-export const updateReminder: asyncHandler(async ($1) => { if (res.status(401);
-  throw new Error('User not authorized or not part of an organization') ) {
-};
-  const { id  } = req.params;
-  const updates: req.body;
-  const reminder: await Reminder.findById(id);
-  if (!reminder || reminder.organizationId.toString() !== req.user.organizationId.toString()) { res.status(404);
-    throw new Error('Reminder not found or unauthorized.');
-  Object.assign(reminder, updates);
-  if ( ) {
-};
-    reminder.nextRunDate: new Date(updates.nextRunDate);
-  await reminder.save();
-  res.status(200).json({ success: true, data: reminder  });
-});
-export const deleteReminder: asyncHandler(async ($1) => { if (res.status(401);
-  throw new Error('User not authorized or not part of an organization') ) {
-};
-  const { id  } = req.params;
-  const reminder: await Reminder.findById(id);
-  if (!reminder || reminder.organizationId.toString() !== req.user.organizationId.toString()) { res.status(404);
-    throw new Error('Reminder not found or unauthorized.');
-  await reminder.deleteOne() };
-  res.status(200).json({ success: true, message: 'Reminder deleted.'  });
-});
-export const processOverdueReminders: asyncHandler(async ($1) => { const now = new Date();
-  const overdueReminders: await Reminder.find({
-nextRunDate: { $lte: now
-},;
-    status: 'active',
-  }).populate('tenantId').populate('propertyId');
-  let sentCount: 0;
-  for(const reminder of overdueReminders) { try { };
-      const tenant: reminder.tenantId as any;
-      const propertyName: (reminder.propertyId as any)?.name || 'your property';
-      if (console.warn(`Reminder ${reminder._id) {
-`
-}: Tenant not found or has no email. Skipping.``;`
-      let subject: `Rent Reminder for ${propertyName} - Unit ${tenant.unit}``;`
-      let messageBody = reminder.message || ``
-      ``;`
-      console.error(`Error processing reminder ${reminder._id}:``;`
-  res.status(200).json({ success: true, message: `Processed ${sentCount} overdue reminders.```

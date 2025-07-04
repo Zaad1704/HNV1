@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, DollarSign } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, DollarSign, Calendar, User } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 
 interface QuickPaymentModalProps {
@@ -13,12 +13,12 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
     tenantId: '',
     amount: '',
     paymentDate: new Date().toISOString().split('T')[0],
-    description: 'Manual Payment Collection'
+    paymentMethod: 'Cash',
+    notes: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  const { data: tenants = [] } = useQuery({
+  const { data: tenants } = useQuery({
     queryKey: ['tenants'],
     queryFn: async () => {
       const { data } = await apiClient.get('/tenants');
@@ -27,119 +27,141 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
     enabled: isOpen
   });
 
-  const recordPaymentMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiClient.post('/payments', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await apiClient.post('/payments', {
+        ...formData,
+        amount: parseFloat(formData.amount),
+        status: 'Paid'
+      });
+      
+      alert('Payment recorded successfully!');
       onClose();
       setFormData({
         tenantId: '',
         amount: '',
         paymentDate: new Date().toISOString().split('T')[0],
-        description: 'Manual Payment Collection'
+        paymentMethod: 'Cash',
+        notes: ''
       });
+    } catch (error) {
+      console.error('Failed to record payment:', error);
+      alert('Failed to record payment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const tenant = tenants.find((t: any) => t._id === formData.tenantId);
-    recordPaymentMutation.mutate({
-      tenantId: formData.tenantId,
-      propertyId: tenant?.propertyId,
-      amount: parseFloat(formData.amount),
-      paymentDate: formData.paymentDate,
-      status: 'Paid',
-      transactionId: `MANUAL-${Date.now()}`,
-      description: formData.description
-    });
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <DollarSign size={20} />
-            Record Manual Payment
-          </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="app-surface rounded-3xl p-6 w-full max-w-md border border-app-border">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-text-primary flex items-center gap-2">
+            <DollarSign size={24} className="text-green-500" />
+            Quick Payment
+          </h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-app-bg">
             <X size={20} />
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Tenant</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Tenant
+            </label>
             <select
               value={formData.tenantId}
               onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
               required
             >
               <option value="">Select Tenant</option>
-              {tenants.map((tenant: any) => (
+              {tenants?.map((tenant: any) => (
                 <option key={tenant._id} value={tenant._id}>
                   {tenant.name} - Unit {tenant.unit}
                 </option>
               ))}
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">Amount</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Amount
+            </label>
             <input
               type="number"
               step="0.01"
               value={formData.amount}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
               placeholder="0.00"
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">Payment Date</label>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Payment Date
+            </label>
             <input
               type="date"
               value={formData.paymentDate}
               onChange={(e) => setFormData({ ...formData, paymentDate: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <input
-              type="text"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder={t('payments.payment_description')}
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Payment Method
+            </label>
+            <select
+              value={formData.paymentMethod}
+              onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+            >
+              <option value="Cash">Cash</option>
+              <option value="Check">Check</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Online Payment">Online Payment</option>
+              <option value="Money Order">Money Order</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Notes (Optional)
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              rows={3}
+              placeholder="Additional notes..."
             />
           </div>
-          
-          <div className="flex gap-3 pt-4">
+
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={recordPaymentMutation.isPending}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50"
             >
-              {recordPaymentMutation.isPending ? 'Recording...' : 'Record Payment'}
+              {isSubmitting ? 'Recording...' : 'Record Payment'}
             </button>
           </div>
         </form>

@@ -1,198 +1,159 @@
 import React, { useState } from 'react';
+import { X, FileText, Check, AlertCircle, Calendar, DollarSign } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-import { Download, Printer, Check } from 'lucide-react';
-import { useCurrency } from '../../contexts/CurrencyContext';
 
-interface CollectionData {
-  _id: string;
-  tenantName: string;
-  unitNo: string;
-  rentAmount: number;
-  rentStartMonth: string;
-  overdueMonths: string[];
-  isCollected: boolean;
-  propertyName: string;
+interface MonthlyCollectionSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const fetchCollectionData = async (month: string, year: string) => {
-  const { data } = await apiClient.get(`/reports/monthly-collection?month=${month}&year=${year}`);
-  return data.data;
-};
+const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen, onClose }) => {
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [checkedTenants, setCheckedTenants] = useState<Set<string>>(new Set());
 
-const MonthlyCollectionSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [collectionStatus, setCollectionStatus] = useState<Record<string, boolean>>({});
-  const { currency } = useCurrency();
-
-  const { data: collectionData = [], isLoading } = useQuery({
-    queryKey: ['monthlyCollection', selectedMonth, selectedYear],
-    queryFn: () => fetchCollectionData(selectedMonth.toString(), selectedYear.toString()),
+  const { data: tenants, isLoading } = useQuery({
+    queryKey: ['tenants', selectedMonth],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/tenants');
+      return data.data || [];
+    },
     enabled: isOpen
   });
 
-  const handleCheckboxChange = (tenantId: string, checked: boolean) => {
-    setCollectionStatus(prev => ({ ...prev, [tenantId]: checked }));
+  const { data: payments } = useQuery({
+    queryKey: ['payments', selectedMonth],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/payments?month=${selectedMonth}`);
+      return data.data || [];
+    },
+    enabled: isOpen
+  });
+
+  const getPaymentStatus = (tenantId: string) => {
+    const payment = payments?.find((p: any) => 
+      p.tenantId === tenantId && 
+      new Date(p.paymentDate).toISOString().slice(0, 7) === selectedMonth
+    );
+    return payment ? 'paid' : 'pending';
   };
 
-  const downloadSheet = () => {
-    const csvContent = [
-      ['Tenant Name', 'Unit No', 'Property', 'Rent Amount', 'Start Month', 'Overdue Months', 'Collected'],
-      ...collectionData.map((item: CollectionData) => [
-        item.tenantName,
-        item.unitNo,
-        item.propertyName,
-        `${currency}${item.rentAmount}`,
-        item.rentStartMonth,
-        item.overdueMonths.join(', '),
-        collectionStatus[item._id] ? 'Yes' : 'No'
-      ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `collection-sheet-${selectedMonth}-${selectedYear}.csv`;
-    a.click();
-  };
-
-  const printSheet = () => {
-    const printContent = `
-      <html>
-        <head>
-          <title>Monthly Collection Sheet</title>
-          <style>
-            body { font-family: Arial, sans-serif; font-size: 12px; }
-            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-            th { background-color: #f0f0f0; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .footer { text-align: center; margin-top: 30px; font-size: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>Monthly Collection Sheet</h2>
-            <p>Month: ${selectedMonth}/${selectedYear}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Tenant Name</th>
-                <th>Unit No</th>
-                <th>Property</th>
-                <th>Rent Amount</th>
-                <th>Overdue Months</th>
-                <th>Collected</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${collectionData.map((item: CollectionData) => `
-                <tr>
-                  <td>${item.tenantName}</td>
-                  <td>${item.unitNo}</td>
-                  <td>${item.propertyName}</td>
-                  <td>${currency}${item.rentAmount}</td>
-                  <td>${item.overdueMonths.join(', ')}</td>
-                  <td>${collectionStatus[item._id] ? '✓' : '☐'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          <div class="footer">
-            <p>Powered by HNV Property Management Solutions</p>
-          </div>
-        </body>
-      </html>
-    `;
+  const getPastDueMonths = (tenantId: string) => {
+    // Mock calculation - in real app, check payment history
+    const currentDate = new Date();
+    const selectedDate = new Date(selectedMonth);
+    const monthsDiff = (currentDate.getFullYear() - selectedDate.getFullYear()) * 12 + 
+                      (currentDate.getMonth() - selectedDate.getMonth());
     
-    const printWindow = window.open('', '_blank');
-    printWindow?.document.write(printContent);
-    printWindow?.document.close();
-    printWindow?.print();
+    if (monthsDiff > 0 && getPaymentStatus(tenantId) === 'pending') {
+      return monthsDiff;
+    }
+    return 0;
+  };
+
+  const handleTenantCheck = (tenantId: string) => {
+    const newChecked = new Set(checkedTenants);
+    if (newChecked.has(tenantId)) {
+      newChecked.delete(tenantId);
+    } else {
+      newChecked.add(tenantId);
+    }
+    setCheckedTenants(newChecked);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Monthly Collection Sheet</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
-          </div>
-          <div className="flex gap-4 mt-4">
-            <select 
-              value={selectedMonth} 
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="px-3 py-2 border rounded-lg"
-            >
-              {Array.from({length: 12}, (_, i) => (
-                <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', {month: 'long'})}</option>
-              ))}
-            </select>
-            <select 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-3 py-2 border rounded-lg"
-            >
-              {Array.from({length: 5}, (_, i) => (
-                <option key={i} value={new Date().getFullYear() - 2 + i}>{new Date().getFullYear() - 2 + i}</option>
-              ))}
-            </select>
-          </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="app-surface rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-app-border">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-text-primary flex items-center gap-2">
+            <FileText size={24} className="text-purple-500" />
+            Monthly Collection Sheet
+          </h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-app-bg">
+            <X size={20} />
+          </button>
         </div>
-        
-        <div className="p-6 overflow-y-auto max-h-96">
-          {isLoading ? (
-            <div className="text-center py-8">Loading...</div>
-          ) : (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700">
-                  <th className="border p-3 text-left">Tenant Name</th>
-                  <th className="border p-3 text-left">Unit No</th>
-                  <th className="border p-3 text-left">Rent Amount</th>
-                  <th className="border p-3 text-left">Overdue</th>
-                  <th className="border p-3 text-center">Collected</th>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-text-secondary mb-2">
+            Select Month
+          </label>
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+          />
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="w-8 h-8 app-gradient rounded-full animate-pulse mx-auto mb-3"></div>
+            <p className="text-text-secondary">Loading collection sheet...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-app-border">
+                <tr>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setCheckedTenants(new Set(tenants?.map((t: any) => t._id) || []));
+                        } else {
+                          setCheckedTenants(new Set());
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Tenant</th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Unit</th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Rent Amount</th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Past Due</th>
+                  <th className="text-left py-3 px-4 font-semibold text-text-secondary">Notes</th>
                 </tr>
               </thead>
-              <tbody>
-                {collectionData.map((item: CollectionData) => (
-                  <tr key={item._id}>
-                    <td className="border p-3">{item.tenantName}</td>
-                    <td className="border p-3">{item.unitNo}</td>
-                    <td className="border p-3">{currency}{item.rentAmount}</td>
-                    <td className="border p-3">{item.overdueMonths.join(', ') || 'None'}</td>
-                    <td className="border p-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={collectionStatus[item._id] || false}
-                        onChange={(e) => handleCheckboxChange(item._id, e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-        
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-          <button onClick={downloadSheet} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <Download size={16} /> Download CSV
-          </button>
-          <button onClick={printSheet} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            <Printer size={16} /> Print
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default MonthlyCollectionSheet;
+              <tbody className="divide-y divide-app-border">
+                {tenants?.map((tenant: any) => {
+                  const paymentStatus = getPaymentStatus(tenant._id);
+                  const pastDueMonths = getPastDueMonths(tenant._id);
+                  
+                  return (
+                    <tr key={tenant._id} className="hover:bg-app-bg transition-colors">
+                      <td className="py-4 px-4">
+                        <input
+                          type="checkbox"
+                          checked={checkedTenants.has(tenant._id)}
+                          onChange={() => handleTenantCheck(tenant._id)}
+                          className="w-4 h-4 rounded"
+                        />
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 app-gradient rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                            {tenant.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-text-primary">{tenant.name}</p>
+                            <p className="text-sm text-text-secondary">{tenant.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-text-primary font-medium">
+                        {tenant.unit}
+                      </td>
+                      <td className="py-4 px-4 text-text-primary font-medium">
+                        ${tenant.rentAmount || 0}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          {paymentStatus === 'paid' ? (
+                            <>
+                              <Check size={16} className="text-green-500" />
+                              <span className="text-green-600 font-medium">Paid</span>\n                            </>\n                          ) : (\n                            <>\n                              <AlertCircle size={16} className=\"text-red-500\" />\n                              <span className=\"text-red-600 font-medium\">Pending</span>\n                            </>\n                          )}\n                        </div>\n                      </td>\n                      <td className=\"py-4 px-4\">\n                        {pastDueMonths > 0 ? (\n                          <span className=\"px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium\">\n                            {pastDueMonths} month{pastDueMonths > 1 ? 's' : ''}\n                          </span>\n                        ) : (\n                          <span className=\"text-text-secondary text-sm\">Current</span>\n                        )}\n                      </td>\n                      <td className=\"py-4 px-4\">\n                        <input\n                          type=\"text\"\n                          placeholder=\"Add notes...\"\n                          className=\"w-full p-2 text-sm border border-app-border rounded-lg bg-app-surface text-text-primary\"\n                        />\n                      </td>\n                    </tr>\n                  );\n                })}\n              </tbody>\n            </table>\n          </div>\n        )}\n\n        <div className=\"flex justify-between items-center mt-6 pt-4 border-t border-app-border\">\n          <div className=\"text-sm text-text-secondary\">\n            {checkedTenants.size} of {tenants?.length || 0} tenants selected\n          </div>\n          <div className=\"flex gap-3\">\n            <button\n              onClick={onClose}\n              className=\"px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors\"\n            >\n              Close\n            </button>\n            <button className=\"px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors\">\n              Export Sheet\n            </button>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nexport default MonthlyCollectionSheet;

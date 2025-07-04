@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Upload, Image } from 'lucide-react';
 import apiClient from '../../api/client';
 
 interface AddPropertyModalProps {
@@ -18,26 +18,73 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
       zipCode: ''
     },
     numberOfUnits: 1,
-    propertyType: 'Apartment'
+    propertyType: 'Apartment',
+    imageUrl: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      const { data } = await apiClient.post('/api/properties', formData);
+      let imageUrl = '';
+      
+      // Upload image if selected
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        try {
+          const imageResponse = await apiClient.post('/upload/image', imageFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          imageUrl = imageResponse.data.data.url;
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+        }
+      }
+      
+      const propertyData = {
+        ...formData,
+        imageUrl,
+        address: {
+          ...formData.address,
+          formattedAddress: `${formData.address.street}, ${formData.address.city}, ${formData.address.state}`
+        }
+      };
+      
+      const { data } = await apiClient.post('/properties', propertyData);
       onPropertyAdded(data.data);
       onClose();
+      
+      // Reset form
       setFormData({
         name: '',
         address: { street: '', city: '', state: '', zipCode: '' },
         numberOfUnits: 1,
-        propertyType: 'Apartment'
+        propertyType: 'Apartment',
+        imageUrl: ''
       });
+      setImageFile(null);
+      setImagePreview('');
     } catch (error) {
       console.error('Failed to add property:', error);
+      alert('Failed to add property. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -121,6 +168,48 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Property Image
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview('');
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Image size={32} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 mb-2">Upload property image</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="property-image"
+                  />
+                  <label
+                    htmlFor="property-image"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100"
+                  >
+                    <Upload size={16} />
+                    Choose Image
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
