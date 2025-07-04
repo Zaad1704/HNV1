@@ -4,6 +4,9 @@ import Plan from '../models/Plan';
 import User from '../models/User';
 import SiteSettings from '../models/SiteSettings';
 import Notification from '../models/Notification';
+import AuditLog from '../models/AuditLog';
+import notificationService from '../services/notificationService';
+import superAdminActionService from '../services/superAdminActionService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -124,7 +127,28 @@ export const getOrganizations = async (req: AuthRequest, res: Response) => {
 
 export const deleteOrganization = async (req: AuthRequest, res: Response) => {
   try {
+    const org = await Organization.findById(req.params.orgId);
+    if (!org) {
+      return res.json({ success: false, message: 'Organization not found' });
+    }
+
+    // Create audit log
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: org._id,
+      action: 'organization_deleted',
+      resource: 'organization',
+      resourceId: org._id,
+      details: { organizationName: org.name, deletedBy: 'Super Admin' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+
+    // Delete organization and trigger action chain
     await Organization.findByIdAndDelete(req.params.orgId);
+    await superAdminActionService.onOrganizationDeleted(req.params.orgId, req.user._id);
+    
     res.json({ success: true, data: {} });
   } catch (error) {
     res.json({ success: false, message: 'Error deleting organization' });
@@ -137,7 +161,38 @@ export const activateOrganization = async (req: AuthRequest, res: Response) => {
       req.params.orgId,
       { status: 'active' },
       { new: true }
-    );
+    ).populate('owner');
+    
+    if (org) {
+      // Create audit log
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: org._id,
+        action: 'organization_activated',
+        resource: 'organization',
+        resourceId: org._id,
+        details: { organizationName: org.name, activatedBy: 'Super Admin' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+
+      // Trigger action chain
+      await superAdminActionService.onOrganizationStatusChanged(org._id, 'active', req.user._id);
+      
+      // Notify organization owner
+      if (org.owner) {
+        await notificationService.createNotification({
+          userId: (org.owner as any)._id,
+          organizationId: org._id,
+          type: 'success',
+          title: 'Organization Activated',
+          message: 'Your organization has been activated by the administrator',
+          link: '/dashboard'
+        });
+      }
+    }
+    
     res.json({ success: true, data: org });
   } catch (error) {
     res.json({ success: false, message: 'Error activating organization' });
@@ -150,7 +205,38 @@ export const deactivateOrganization = async (req: AuthRequest, res: Response) =>
       req.params.orgId,
       { status: 'inactive' },
       { new: true }
-    );
+    ).populate('owner');
+    
+    if (org) {
+      // Create audit log
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: org._id,
+        action: 'organization_deactivated',
+        resource: 'organization',
+        resourceId: org._id,
+        details: { organizationName: org.name, deactivatedBy: 'Super Admin' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+
+      // Trigger action chain
+      await superAdminActionService.onOrganizationStatusChanged(org._id, 'inactive', req.user._id);
+      
+      // Notify organization owner
+      if (org.owner) {
+        await notificationService.createNotification({
+          userId: (org.owner as any)._id,
+          organizationId: org._id,
+          type: 'warning',
+          title: 'Organization Deactivated',
+          message: 'Your organization has been deactivated. Please contact support.',
+          link: '/contact'
+        });
+      }
+    }
+    
     res.json({ success: true, data: org });
   } catch (error) {
     res.json({ success: false, message: 'Error deactivating organization' });
@@ -163,7 +249,38 @@ export const grantLifetime = async (req: AuthRequest, res: Response) => {
       req.params.orgId,
       { 'subscription.isLifetime': true, 'subscription.status': 'active' },
       { new: true }
-    );
+    ).populate('owner');
+    
+    if (org) {
+      // Create audit log
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: org._id,
+        action: 'lifetime_access_granted',
+        resource: 'subscription',
+        resourceId: org._id,
+        details: { organizationName: org.name, grantedBy: 'Super Admin' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+
+      // Trigger action chain
+      await superAdminActionService.onLifetimeAccessGranted(org._id, req.user._id);
+      
+      // Notify organization owner
+      if (org.owner) {
+        await notificationService.createNotification({
+          userId: (org.owner as any)._id,
+          organizationId: org._id,
+          type: 'success',
+          title: 'Lifetime Access Granted',
+          message: 'Congratulations! You now have lifetime access to all features.',
+          link: '/dashboard'
+        });
+      }
+    }
+    
     res.json({ success: true, data: org });
   } catch (error) {
     res.json({ success: false, message: 'Error granting lifetime access' });
@@ -194,6 +311,27 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
 
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.json({ success: false, message: 'User not found' });
+    }
+
+    // Create audit log
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: user.organizationId,
+      action: 'user_deleted',
+      resource: 'user',
+      resourceId: user._id,
+      details: { userName: user.name, userEmail: user.email, deletedBy: 'Super Admin' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+
+    // Trigger action chain before deletion
+    await superAdminActionService.onUserDeleted(req.params.userId, user, req.user._id);
+    
     await User.findByIdAndDelete(req.params.userId);
     res.json({ success: true, data: {} });
   } catch (error) {
@@ -223,6 +361,20 @@ export const getPlans = async (req: AuthRequest, res: Response) => {
 export const createPlan = async (req: AuthRequest, res: Response) => {
   try {
     const plan = await Plan.create(req.body);
+    
+    // Create audit log
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'plan_created',
+      resource: 'plan',
+      resourceId: plan._id,
+      details: { planName: plan.name, price: plan.price, createdBy: 'Super Admin' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
     res.json({ success: true, data: plan });
   } catch (error) {
     res.json({ success: false, message: 'Error creating plan' });
@@ -231,7 +383,32 @@ export const createPlan = async (req: AuthRequest, res: Response) => {
 
 export const updatePlan = async (req: AuthRequest, res: Response) => {
   try {
+    const oldPlan = await Plan.findById(req.params.id);
     const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    
+    if (plan && oldPlan) {
+      // Trigger action chain
+      await superAdminActionService.onPlanUpdated(plan._id, oldPlan, plan, req.user._id);
+      
+      // Create audit log
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: null,
+        action: 'plan_updated',
+        resource: 'plan',
+        resourceId: plan._id,
+        details: { 
+          planName: plan.name, 
+          oldPrice: oldPlan?.price, 
+          newPrice: plan.price,
+          updatedBy: 'Super Admin' 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    }
+    
     res.json({ success: true, data: plan });
   } catch (error) {
     res.json({ success: false, message: 'Error updating plan' });
