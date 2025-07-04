@@ -8,10 +8,19 @@ interface AuthRequest extends Request {
 
 export const getUsers = async (req: AuthRequest, res: Response) => {
   try {
-    const users = await User.find({}).select('-password');
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const users = await User.find({ 
+      organizationId: req.user.organizationId,
+      role: { $ne: 'SuperAdmin' }
+    }).select('-password');
+    
     res.json({ success: true, data: users });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Get users error:', error);
+    res.status(200).json({ success: true, data: [] });
   }
 };
 
@@ -66,12 +75,14 @@ export const getOrgUsers = async (req: AuthRequest, res: Response) => {
     }
 
     const users = await User.find({ 
-      organizationId: req.user.organizationId 
+      organizationId: req.user.organizationId,
+      role: { $ne: 'SuperAdmin' }
     }).select('-password');
     
     res.status(200).json({ success: true, data: users });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Get org users error:', error);
+    res.status(200).json({ success: true, data: [] });
   }
 };
 

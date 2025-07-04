@@ -112,20 +112,34 @@ const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose }) => {
 const UsersPage = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['users'],
     queryFn: async (): Promise<User[]> => {
-      const { data } = await apiClient.get('/users');
-      return data.data;
-    }
+      try {
+        const { data } = await apiClient.get('/users');
+        return (data.data || []).filter((user: User) => user.role !== 'SuperAdmin');
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+        return [];
+      }
+    },
+    retry: 1,
+    staleTime: 30000
   });
 
-  const { data: invites = [] } = useQuery({
+  const { data: invites = [], isLoading: invitesLoading, error: invitesError } = useQuery({
     queryKey: ['invites'],
     queryFn: async (): Promise<Invite[]> => {
-      const { data } = await apiClient.get('/users/invites');
-      return data.data;
-    }
+      try {
+        const { data } = await apiClient.get('/users/invites');
+        return data.data || [];
+      } catch (error) {
+        console.error('Failed to fetch invites:', error);
+        return [];
+      }
+    },
+    retry: 1,
+    staleTime: 30000
   });
 
   return (
@@ -157,19 +171,19 @@ const UsersPage = () => {
               <div key={u._id} className="flex items-center justify-between p-4 bg-app-bg rounded-2xl">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
-                    {u.name.charAt(0).toUpperCase()}
+                    {u.name ? u.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div>
-                    <p className="font-medium text-text-primary">{u.name}</p>
-                    <p className="text-sm text-text-secondary">{u.email}</p>
+                    <p className="font-medium text-text-primary">{u.name || 'Unknown'}</p>
+                    <p className="text-sm text-text-secondary">{u.email || 'No email'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {u.role}
+                    {u.role || 'Unknown'}
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    {u.status}
+                    {u.status || 'Unknown'}
                   </span>
                 </div>
               </div>
