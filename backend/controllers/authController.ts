@@ -116,16 +116,25 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   }
 
   try {
+    console.log('Login attempt for email:', email);
     const user = await User.findOne({ email }).select('+password');
+    console.log('User found:', user ? 'Yes' : 'No');
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
       });
     }
 
+    console.log('User role:', user.role);
+    console.log('User status:', user.status);
+    console.log('Email verified:', user.isEmailVerified);
+    
     const isMatch = await user.matchPassword(password);
+    console.log('Password match:', isMatch);
     if (!isMatch) {
+      console.log('Password mismatch for user:', email);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
