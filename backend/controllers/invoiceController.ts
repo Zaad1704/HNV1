@@ -200,3 +200,120 @@ Management Solutions
 ${doubleLine}
 `;
 };
+
+export const bulkDownloadInvoices = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { ids, status, dateFrom, dateTo, format = 'thermal' } = req.query;
+    let query: any = { organizationId: req.user.organizationId };
+
+    if (ids) {
+      query._id = { $in: (ids as string).split(',') };
+    }
+    if (status) {
+      query.status = status;
+    }
+    if (dateFrom || dateTo) {
+      query.createdAt = {};
+      if (dateFrom) query.createdAt.$gte = new Date(dateFrom as string);
+      if (dateTo) query.createdAt.$lte = new Date(dateTo as string);
+    }
+
+    const invoices = await Invoice.find(query)
+      .populate('tenantId', 'name email phone')
+      .populate('propertyId', 'name address')
+      .populate('organizationId', 'name')
+      .lean();
+
+    if (format === 'thermal') {
+      const bulkReceipts = invoices.map(invoice => 
+        `${generateThermalReceipt(invoice)}\n\n${'='.repeat(50)}\n\n`
+      ).join('');
+      
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="bulk-invoices-${Date.now()}.txt"`);
+      return res.send(bulkReceipts);
+    }
+
+    res.status(200).json({ success: true, data: invoices });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const sendWhatsAppInvoice = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { phone, message } = req.body;
+
+    const invoice = await Invoice.findById(id)
+      .populate('tenantId', 'name phone')
+      .populate('organizationId', 'name')
+      .lean();
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+
+    const recipientPhone = phone || invoice.tenantId?.phone;
+    if (!recipientPhone) {
+      return res.status(400).json({ success: false, message: 'Phone number required' });
+    }
+
+    const whatsappMessage = message || `Hi ${invoice.tenantId?.name}, your invoice #${invoice.invoiceNumber} for $${invoice.amount} is ready. Amount due: $${invoice.amount}. Thank you!`;
+    
+    // WhatsApp Business API URL (free for basic messages)
+    const whatsappUrl = `https://wa.me/${recipientPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
+    
+    res.status(200).json({ 
+      success: true, 
+      data: { 
+        whatsappUrl,
+        message: whatsappMessage,
+        phone: recipientPhone
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const sendEmailInvoice = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { email, subject, message } = req.body;
+
+    const invoice = await Invoice.findById(id)
+      .populate('tenantId', 'name email')
+      .populate('organizationId', 'name')
+      .lean();
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+
+    const recipientEmail = email || invoice.tenantId?.email;
+    if (!recipientEmail) {
+      return res.status(400).json({ success: false, message: 'Email address required' });
+    }
+
+    const emailSubject = subject || `Invoice #${invoice.invoiceNumber} from ${invoice.organizationId?.name}`;
+    const emailMessage = message || `Dear ${invoice.tenantId?.name},\n\nPlease find your invoice #${invoice.invoiceNumber} for $${invoice.amount}.\n\nThank you!\n\nPowered by HNV Property Management Solutions`;
+    
+    // Return email data for frontend to handle sending
+    res.status(200).json({ 
+      success: true, 
+      data: { 
+        to: recipientEmail,
+        subject: emailSubject,
+        message: emailMessage,
+        invoice: generateThermalReceipt(invoice)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

@@ -54,6 +54,7 @@ import integrationRoutes from './routes/integrationRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import tenantPortalRoutes from './routes/tenantPortalRoutes';
 import webhookRoutes from './routes/webhookRoutes';
+import bulkPaymentRoutes from './routes/bulkPaymentRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
@@ -213,6 +214,7 @@ app.use('/api/subscription', protect, subscriptionRoutes);
 app.use('/api/tenant', protect, tenantPortalRoutes);
 app.use('/api/tenant-portal', protect, tenantPortalRoutes);
 app.use('/api/invitations', protect, invitationRoutes);
+app.use('/api/bulk', bulkPaymentRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // Serve uploaded files

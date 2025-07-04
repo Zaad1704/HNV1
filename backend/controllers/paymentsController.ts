@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 import Tenant from '../models/Tenant';
+import Invoice from '../models/Invoice';
 import actionChainService from '../services/actionChainService';
 
 interface AuthRequest extends Request {
@@ -61,10 +62,31 @@ export const createPayment = async (req: AuthRequest, res: Response) => {
       paidForMonth: paidForMonth ? new Date(paidForMonth) : undefined
     });
 
+    // Auto-generate invoice for payment
+    const invoiceNumber = `INV-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${Date.now()}`;
+    const invoice = await Invoice.create({
+      tenantId,
+      propertyId: tenant.propertyId,
+      organizationId: req.user.organizationId,
+      invoiceNumber,
+      amount,
+      dueDate: paymentDate,
+      status: status === 'Paid' ? 'paid' : 'pending',
+      lineItems: lineItems || [{
+        description: `Payment - ${new Date(paymentDate).toLocaleDateString()}`,
+        amount
+      }],
+      paidAt: status === 'Paid' ? paymentDate : undefined,
+      transactionId: newPayment._id.toString()
+    });
+
     // Trigger action chain
     await actionChainService.onPaymentRecorded(newPayment, req.user._id, req.user.organizationId);
 
-    res.status(201).json({ success: true, data: newPayment });
+    res.status(201).json({ 
+      success: true, 
+      data: { payment: newPayment, invoice: invoice }
+    });
   } catch (error) {
     console.error('Error creating payment:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
