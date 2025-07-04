@@ -13,10 +13,13 @@ import { useDataExport } from '../hooks/useDataExport';
 const fetchPayments = async () => {
     try {
         const { data } = await apiClient.get('/payments');
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch payments');
+        }
         return data.data || [];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to fetch payments:', error);
-        return [];
+        throw error; // Let React Query handle the error
     }
 };
 
@@ -29,11 +32,17 @@ const PaymentsPage = () => {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { exportPayments, isExporting } = useDataExport();
   
-  const { data: payments = [], isLoading, isError, error } = useQuery({ 
+  const { data: payments = [], isLoading, isError, error, refetch } = useQuery({ 
     queryKey:['payments'], 
     queryFn: fetchPayments,
-    retry: 1,
-    staleTime: 30000
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    staleTime: 30000,
+    refetchOnWindowFocus: false
   });
 
   const filteredPayments = useMemo(() => {
@@ -146,12 +155,20 @@ const PaymentsPage = () => {
     return (
       <div className="text-center p-8">
         <div className="text-red-500 mb-4">Failed to load payments</div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Retry
-        </button>
+        <div className="flex gap-3 justify-center">
+          <button 
+            onClick={() => refetch()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     );
   }

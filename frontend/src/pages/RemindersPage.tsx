@@ -18,8 +18,16 @@ interface IReminderRecord {
 }
 
 const fetchReminders = async (): Promise<IReminderRecord[]> => {
-    const { data } = await apiClient.get('/reminders');
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/reminders');
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch reminders');
+        }
+        return data.data || [];
+    } catch (error: any) {
+        console.error('Failed to fetch reminders:', error);
+        throw error;
+    }
 };
 
 const RemindersPage: React.FC = () => {
@@ -35,6 +43,14 @@ const RemindersPage: React.FC = () => {
     const { data: reminders = [], isLoading, isError, refetch } = useQuery({
         queryKey: ['reminders'],
         queryFn: fetchReminders,
+        retry: (failureCount, error: any) => {
+            if (error?.response?.status === 401 || error?.response?.status === 403) {
+                return false;
+            }
+            return failureCount < 2;
+        },
+        staleTime: 30000,
+        refetchOnWindowFocus: false
     });
 
     const deleteMutation = useMutation({
@@ -84,7 +100,27 @@ const RemindersPage: React.FC = () => {
     };
 
     if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading reminders...</div>;
-    if (isError) return <div className="text-red-400 text-center p-8 dark:text-red-400">Failed to fetch reminders.</div>;
+    if (isError) {
+        return (
+            <div className="text-center p-8">
+                <div className="text-red-400 mb-4">Failed to fetch reminders</div>
+                <div className="flex gap-3 justify-center">
+                    <button 
+                        onClick={() => refetch()} 
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Try Again
+                    </button>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    >
+                        Refresh Page
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="text-dark-text dark:text-dark-text-dark">

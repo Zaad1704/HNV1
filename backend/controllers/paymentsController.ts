@@ -17,12 +17,18 @@ export const getPayments = async (req: AuthRequest, res: Response) => {
       .populate('tenantId', 'name email')
       .populate('propertyId', 'name address')
       .populate('recordedBy', 'name')
-      .sort({ paymentDate: -1 });
+      .sort({ paymentDate: -1 })
+      .lean()
+      .exec();
 
     res.status(200).json({ success: true, count: payments.length, data: payments || [] });
   } catch (error) {
     console.error('Get payments error:', error);
-    res.status(200).json({ success: true, count: 0, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch payments',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

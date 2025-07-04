@@ -15,21 +15,30 @@ interface IEditRequest {
 const fetchApprovalRequests = async (): Promise<IEditRequest[]> => {
     try {
         const { data } = await apiClient.get('/edit-requests');
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch approval requests');
+        }
         return data.data || [];
-    } catch (error) {
+    } catch (error: any) {
         console.error('Approval requests error:', error);
-        return [];
+        throw error;
     }
 };
 
 const ApprovalRequestsPage: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const { data: requests = [], isLoading, isError, error } = useQuery({
+    const { data: requests = [], isLoading, isError, error, refetch } = useQuery({
         queryKey: ['approvalRequests'],
         queryFn: fetchApprovalRequests,
-        retry: 1,
-        staleTime: 30000
+        retry: (failureCount, error: any) => {
+            if (error?.response?.status === 401 || error?.response?.status === 403) {
+                return false;
+            }
+            return failureCount < 2;
+        },
+        staleTime: 30000,
+        refetchOnWindowFocus: false
     });
 
     const approveMutation = useMutation({
@@ -50,12 +59,20 @@ const ApprovalRequestsPage: React.FC = () => {
         return (
             <div className="text-center p-8">
                 <div className="text-red-500 mb-4">Failed to load approval requests</div>
-                <button 
-                    onClick={() => window.location.reload()} 
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    Retry
-                </button>
+                <div className="flex gap-3 justify-center">
+                    <button 
+                        onClick={() => refetch()} 
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Try Again
+                    </button>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    >
+                        Refresh Page
+                    </button>
+                </div>
             </div>
         );
     }

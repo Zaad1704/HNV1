@@ -11,20 +11,26 @@ import { useDataExport } from '../hooks/useDataExport';
 const fetchBillingInfo = async () => {
   try {
     const { data } = await apiClient.get("/billing");
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch billing information');
+    }
     return data.data || null;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Billing info error:', error);
-    return null;
+    throw error;
   }
 };
 
 const fetchBillingHistory = async () => {
   try {
     const { data } = await apiClient.get("/billing/history");
+    if (!data.success) {
+      throw new Error(data.message || 'Failed to fetch billing history');
+    }
     return data.data || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error('Billing history error:', error);
-    return [];
+    throw error;
   }
 };
 
@@ -36,11 +42,17 @@ const BillingPage: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const { exportData } = useDataExport();
 
-  const { data: billingInfo, isLoading, isError, error } = useQuery({
+  const { data: billingInfo, isLoading, isError, error, refetch } = useQuery({
       queryKey: ['billingInfo'],
       queryFn: fetchBillingInfo,
-      retry: 1,
-      staleTime: 30000
+      retry: (failureCount, error: any) => {
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+      staleTime: 30000,
+      refetchOnWindowFocus: false
   });
 
   const { data: billingHistory = [] } = useQuery({
@@ -116,9 +128,17 @@ const BillingPage: React.FC = () => {
         <div className="text-sm text-gray-500 mb-4">
           {error instanceof Error ? error.message : 'Unknown error occurred'}
         </div>
-        <Link to="/pricing" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          View Plans
-        </Link>
+        <div className="flex gap-3 justify-center">
+          <button 
+            onClick={() => refetch()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
+          <Link to="/pricing" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            View Plans
+          </Link>
+        </div>
       </div>
     );
   }

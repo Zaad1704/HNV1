@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
+import Organization from '../models/Organization';
 import subscriptionService from '../services/subscriptionService';
 
 interface AuthRequest extends Request {
@@ -15,15 +16,32 @@ export const getSubscriptionDetails = async (req: AuthRequest, res: Response) =>
 
     const subscription = await Subscription.findOne({ 
       organizationId: req.user.organizationId 
-    }).populate('planId');
+    }).populate('planId').lean().exec();
 
     if (!subscription) {
+      // Check if organization has lifetime access or other subscription method
+      const org = await Organization.findById(req.user.organizationId).lean().exec();
+      if (org?.subscription?.isLifetime) {
+        return res.status(200).json({ 
+          success: true, 
+          data: {
+            status: 'active',
+            isLifetime: true,
+            planId: org.subscription.planId
+          }
+        });
+      }
       return res.status(200).json({ success: true, data: null });
     }
 
     res.status(200).json({ success: true, data: subscription });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Billing subscription error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch subscription details',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -60,14 +78,29 @@ export const getBillingHistory = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const billingHistory = [
-      { id: 1, date: '2024-01-01', amount: 99, status: 'paid', plan: 'Premium' },
-      { id: 2, date: '2024-02-01', amount: 99, status: 'paid', plan: 'Premium' }
-    ];
+    // For now, return mock data. In production, integrate with payment processor
+    const subscription = await Subscription.findOne({ 
+      organizationId: req.user.organizationId 
+    }).populate('planId').lean().exec();
+
+    const billingHistory = subscription ? [
+      { 
+        _id: '1', 
+        date: subscription.createdAt, 
+        amount: subscription.planId?.price || 0, 
+        status: 'paid', 
+        description: `${subscription.planId?.name || 'Plan'} Subscription`
+      }
+    ] : [];
 
     res.status(200).json({ success: true, data: billingHistory });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Billing history error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch billing history',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

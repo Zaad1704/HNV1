@@ -14,12 +14,18 @@ export const getReminders = async (req: AuthRequest, res: Response) => {
     const reminders = await Reminder.find({ organizationId: req.user.organizationId })
       .populate('tenantId', 'name email unit')
       .populate('propertyId', 'name')
-      .sort({ nextRunDate: 1 });
+      .sort({ nextRunDate: 1 })
+      .lean()
+      .exec();
 
     res.status(200).json({ success: true, data: reminders || [] });
   } catch (error) {
     console.error('Error fetching reminders:', error);
-    res.status(200).json({ success: true, data: [] });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch reminders',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
