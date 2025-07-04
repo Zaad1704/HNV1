@@ -52,17 +52,20 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
           return next();
         }
         
-        // For inactive subscriptions, still allow basic dashboard access
-        const basicRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments'];
-        const isBasicRoute = basicRoutes.some(route => req.originalUrl.startsWith(route));
+        // For inactive subscriptions, allow only view-only access
+        const viewOnlyRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments'];
+        const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
+        const isGetRequest = req.method === 'GET';
         
-        if (isBasicRoute) {
+        if (isViewOnlyRoute && isGetRequest) {
           return next();
         }
         
         return res.status(403).json({ 
           success: false, 
-          message: "Your organization's subscription is not active. Please renew to continue accessing premium features." 
+          message: "Your subscription has expired. You can view existing data but cannot add, edit, or delete items. Please reactivate your subscription to restore full functionality.",
+          action: "renew_subscription",
+          upgradeUrl: "/billing"
         });
       } else {
         // Allow users without organization to access basic features
