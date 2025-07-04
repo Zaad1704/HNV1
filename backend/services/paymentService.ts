@@ -13,6 +13,7 @@ class PaymentService {
         apiVersion: '2025-05-28.basil'
       });
       return;
+    }
 
     if (organizationId) {
       const integration = await Integration.findOne({
@@ -25,6 +26,9 @@ class PaymentService {
         this.stripe = new Stripe(integration.config.apiKey, {
           apiVersion: '2025-05-28.basil'
         });
+      }
+    }
+  }
 
 
 
@@ -40,14 +44,16 @@ class PaymentService {
     
     if (!this.stripe) {
       throw new Error('Stripe not configured');
+    }
 
     let customer;
     if (data.tenantId) {
       const tenant = await Tenant.findById(data.tenantId);
       if (!tenant) {
         throw new Error('Tenant not found');
-
+      }
       customer = tenant.stripeCustomerId;
+    }
 
     const paymentIntent = await this.stripe.paymentIntents.create({
       amount: Math.round(data.amount * 100), // Convert to cents
@@ -84,6 +90,7 @@ class PaymentService {
       paymentId: payment._id,
       publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
     };
+  }
 
   async createSubscriptionCheckout(data: {
     organizationId: string;
@@ -95,11 +102,13 @@ class PaymentService {
     
     if (!this.stripe) {
       throw new Error('Stripe not configured');
+    }
 
     const Plan = require('../models/Plan');
     const plan = await Plan.findById(data.planId);
     if (!plan) {
       throw new Error('Plan not found');
+    }
 
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -132,6 +141,7 @@ class PaymentService {
       sessionId: session.id,
       url: session.url
     };
+  }
 
   async handleWebhook(payload: any, signature: string): Promise<void> {
     await this.initializeStripe();
@@ -151,6 +161,7 @@ class PaymentService {
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
       return;
+    }
 
     switch (event.type) {
       case 'payment_intent.succeeded':
@@ -162,6 +173,8 @@ class PaymentService {
       case 'checkout.session.completed':
         await this.handleCheckoutSuccess(event.data.object);
         break;
+    }
+  }
 
 
   private async handlePaymentSuccess(paymentIntent: any): Promise<void> {
@@ -182,6 +195,9 @@ class PaymentService {
           paymentIntent.metadata.organizationId,
           paymentIntent.metadata.planId
         );
+      }
+    }
+  }
 
 
 
@@ -193,6 +209,8 @@ class PaymentService {
     if (payment) {
       payment.status = 'Failed';
       await payment.save();
+    }
+  }
 
 
   private async handleCheckoutSuccess(session: any): Promise<void> {
@@ -202,6 +220,8 @@ class PaymentService {
         session.metadata.organizationId,
         session.metadata.planId
       );
+    }
+  }
 
 
   async getPaymentMethods(organizationId: string, tenantId: string): Promise<any[]> {
@@ -218,16 +238,19 @@ class PaymentService {
     });
 
     return paymentMethods.data;
+  }
 
   async createCustomer(organizationId: string, tenantId: string): Promise<string> {
     await this.initializeStripe(organizationId);
     
     if (!this.stripe) {
       throw new Error('Stripe not configured');
+    }
 
     const tenant = await Tenant.findById(tenantId);
     if (!tenant) {
       throw new Error('Tenant not found');
+    }
 
     const customer = await this.stripe.customers.create({
       name: tenant.name,
@@ -235,13 +258,15 @@ class PaymentService {
       metadata: {
         tenantId: tenantId,
         organizationId: organizationId
-
+      }
     });
 
     tenant.stripeCustomerId = customer.id;
     await tenant.save();
 
     return customer.id;
+  }
+}
 
 
 export default new PaymentService();
