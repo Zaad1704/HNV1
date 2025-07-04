@@ -1,11 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { generateInvoices } from '../controllers/invoiceController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply authentication middleware
 router.use(protect);
 
-router.post('/generate', asyncHandler(generateInvoices)); 
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'invoice routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

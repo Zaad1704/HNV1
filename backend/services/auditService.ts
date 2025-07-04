@@ -1,25 +1,29 @@
 import AuditLog from '../models/AuditLog';
-import mongoose from 'mongoose';
 
-class AuditService { // The 'details' parameter now accepts a more complex object, not just a map of strings.
-  async recordAction();
-      userId: mongoose.Types.ObjectId, 
-      organizationId: mongoose.Types.ObjectId, 
+interface AuditLogData {
+  userId: string;
+  action: string;
+  resource: string;
+  details?: any;
+}
 
-      action: string,  }
+export const logAudit = async (data: AuditLogData) => {
+  try {
+    const auditLog = new AuditLog({
+      userId: data.userId,
+      action: data.action,
+      resource: data.resource,
+      details: data.details,
+      timestamp: new Date()
+    });
+    
+    await auditLog.save();
+    console.log('Audit log created successfully');
+  } catch (error) {
+    console.error('Failed to create audit log:', error);
+  }
+};
 
-      details: object = {}
-    ) { try { }
-      await AuditLog.create({ user: userId, 
-          organizationId, 
-          action, 
-          // Mongoose can store a flexible object in a Map type field
-          details: details; }
-
-        });
-    } catch (error) { console.error('Failed to record audit log:', error);
-
-
-
-export default new AuditService();
-
+export default {
+  logAudit
+};

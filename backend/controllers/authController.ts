@@ -3,207 +3,278 @@ import User from '../models/User';
 import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
-import emailService from '../services/emailService';
-import auditService from '../services/auditService';
-import { IUser } from '../models/User';
-import mongoose, { Types } from 'mongoose';
 import crypto from 'crypto';
 
-// This helper function creates and sends the JWT response
-const sendTokenResponse = async (user: IUser, statusCode: number, res: Response) => { const token = user.getSignedJwtToken(); }
-
-    const subscription = await Subscription.findOne({ organizationId: user.organizationId });
-
-    res.status(statusCode).json({ success: true,
-        token,
-        user: { }
-
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-        },
-        userStatus: subscription?.status || 'inactive'
-    });
-};
-
-// Generate unique organization code
-const generateOrgCode = () => { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
-
+const sendTokenResponse = async (user: any, statusCode: number, res: Response) => {
+  const token = user.getSignedJwtToken();
+  const subscription = await Subscription.findOne({ organizationId: user.organizationId });
+  
+  res.status(statusCode).json({
+    success: true,
+    token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+    userStatus: subscription?.status || 'inactive'
+  });
 };
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, email, password, role, organizationCode, isIndependentAgent } = req.body;
+  const { name, email, password, role } = req.body;
+
   if (!name || !email || !password || !role) {
-
-      return res.status(400).json({ success: false, message: 'Please provide name, email, password, and role' });
-
-  // Validate tenant requirements
-  if (role === 'Tenant' && !organizationCode) {
-
-    return res.status(400).json({ success: false, message: 'Organization code is required for tenant signup' });
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Please provide name, email, password, and role' 
+    });
+  }
 
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) { // If user exists but is not verified, we can resend verification.
-      if (!userExists.isEmailVerified) { }
-          // You could add logic here to resend the verification email if desired.
-
-
-          return res.status(400).json({ success: false, message: 'This email is already registered but not verified. Please check your inbox.' });
-
-      return res.status(400).json({ success: false, message: 'User with that email already exists' });
-
-    let organization;
-    let user;
-    
-    if (role === 'Tenant' || (role === 'Agent' && organizationCode)) { // Join existing organization; }
-
-      organization = await Organization.findOne({ organizationCode });
-      if (!organization) {
-
-        return res.status(400).json({ success: false, message: 'Invalid organization code' });
-
-      user = new User({ name, 
-        email, 
-        password, 
-        role, 
-        organizationId: organization._id,
-        isEmailVerified: false; }
-
+    if (userExists) {
+      if (!userExists.isEmailVerified) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'This email is already registered but not verified. Please check your inbox.' 
+        });
+      }
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User with that email already exists' 
       });
-      
-      organization.members.push(user._id as Types.ObjectId);
-      await organization.save();
-    } else { // Create new organization (Landlord or Independent Agent) }
+    }
 
-      const trialPlan = await Plan.findOne({ name: 'Free Trial' });
-      if (!trialPlan) {
-
-          return res.status(500).json({ success: false, message: 'Trial plan not configured. Please run setup.' });
-
-      let orgCode;
-      do { orgCode = generateOrgCode(); }
-
-      } while (await Organization.findOne({ organizationCode: orgCode }));
-      
-      organization = new Organization({   }
-
-        name: `${name}'s Organization`,
-        organizationCode: orgCode,
-        status: 'active'
+    const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+    if (!trialPlan) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Trial plan not configured. Please run setup.' 
       });
-      
-      user = new User({ name, 
-        email, 
-        password, 
-        role, 
-        organizationId: organization._id,
-        isEmailVerified: false; }
+    }
 
-      });
-      
-      organization.owner = user._id;
-      organization.members = [user._id];
-      
-      await organization.save();
-      
-      // Create trial subscription
-      await Subscription.create({ organizationId: organization._id,
-        planId: trialPlan._id,
-        status: 'active' }
+    const organization = new Organization({
+      name: `${name}'s Organization`,
+      status: 'active'
+    });
+    await organization.save();
 
-      });
+    const user = new User({
+      name,
+      email,
+      password,
+      role,
+      organizationId: organization._id,
+      status: 'pending'
+    });
 
+    organization.owner = user._id;
+    organization.members = [user._id];
+    await organization.save();
+
+    const verificationToken = user.getEmailVerificationToken();
     await user.save();
-    
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(20).toString('hex');
-    user.emailVerificationToken = verificationToken;
-    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await user.save();
-    
-    // Send verification email`
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
-    
-    try { await emailService.sendEmail();
-        user.email,
-        'Verify Your Email',
-        'emailVerification',
-        { }
-          name: user.name,
-          verificationUrl,`
 
-          dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`
+    const subscription = new Subscription({
+      organizationId: organization._id,
+      planId: trialPlan._id,
+      status: 'trialing',
+      trialExpiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+    });
+    await subscription.save();
 
-      );
-    } catch (emailError) { console.error('Failed to send verification email:', emailError); }
-
-
-    res.status(201).json({ success: true,
-      message: 'User registered successfully. Please check your email to verify your account.',
-      user: { }
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully. Please check your email for verification.',
+      user: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role;
-
-
+        role: user.role
+      }
     });
-  } catch (error: any) { console.error('Registration error:', error); }
 
-    res.status(500).json({ success: false, message: 'Server error during registration' });
-
-};
-
-export const googleAuthCallback = async (req: Request, res: Response) => { try { }
-    if (!req.user) { ` }
-
-
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=google-auth-failed`);
-
-    const user = req.user as IUser;
-    const token = user.getSignedJwtToken();
-    `
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/google/callback?token=${token}`);
-  } catch (error) { ` }
-
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=google-auth-failed`);
-
-};
-
-export const resendVerificationEmail = async (req: Request, res: Response) => { try { }
-
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    
-    if (!user) {
-
-      return res.status(404).json({ success: false, message: 'User not found' });
-
-    if (user.isEmailVerified) {
-
-      return res.status(400).json({ success: false, message: 'Email already verified' });
-
-    const verificationToken = crypto.randomBytes(20).toString('hex');
-    user.emailVerificationToken = verificationToken;
-    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await user.save();
-    `
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email/${verificationToken}`;
-    
-    await emailService.sendEmail();
-      user.email,
-      'Verify Your Email',
-      'emailVerification',
-      { name: user.name,
-        verificationUrl; }
-
-
-    );
-    
-    res.json({ success: true, message: 'Verification email sent' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during registration' 
+    });
+  }
+};
 
-};`
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Please provide email and password' 
+    });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+
+    if (!user.isEmailVerified) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Please verify your email before logging in' 
+      });
+    }
+
+    if (user.status !== 'active') {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Account is suspended. Please contact support.' 
+      });
+    }
+
+    sendTokenResponse(user, 200, res);
+
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during login' 
+    });
+  }
+};
+
+export const getMe = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user as any;
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        organizationId: user.organizationId,
+        status: user.status
+      }
+    });
+
+  } catch (error) {
+    console.error('Get me error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+  const { token } = req.params;
+
+  try {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid or expired verification token' 
+      });
+    }
+
+    user.isEmailVerified = true;
+    user.status = 'active';
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully'
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during email verification' 
+    });
+  }
+};
+
+export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+    }
+
+    const token = (req.user as any).getSignedJwtToken();
+    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+
+  } catch (error) {
+    console.error('Google auth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { name, phone, profilePicture } = req.body;
+    const user = await User.findById((req.user as any)._id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (profilePicture) user.profilePicture = profilePicture;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        profilePicture: user.profilePicture
+      }
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during profile update' 
+    });
+  }
+};

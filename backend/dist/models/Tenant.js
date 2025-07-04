@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-createdAt: Date;
-discountAmount ?  : number;
-discountExpiresAt ?  : Date;
 const TenantSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
@@ -14,10 +11,6 @@ const TenantSchema = new mongoose_1.Schema({
     status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
     leaseEndDate: { type: Date },
     rentAmount: { type: Number, default: 0 },
-    rentDueDay: { type: Number, default: 1, min: 1, max: 31 },
-    unitNumber: { type: String },
-    preferredContactMethod: { type: String, enum: ['phone', 'email', 'sms'], default: 'phone' },
-    stripeCustomerId: { type: String },
     imageUrl: { type: String },
     govtIdNumber: { type: String },
     govtIdImageUrlFront: { type: String },
@@ -44,5 +37,4 @@ const TenantSchema = new mongoose_1.Schema({
     discountAmount: { type: Number, default: 0 },
     discountExpiresAt: { type: Date },
 }, { timestamps: true });
-exports.default = mongoose_1.model;
 exports.default = (0, mongoose_1.model)('Tenant', TenantSchema);

@@ -1,11 +1,18 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Simple IP-based or default language detection (customize as needed)
-router.get('/detect', (req, res) => { // For now, always return 'en' as the default language; }
+// Apply authentication middleware
+router.use(protect);
 
-  res.json({ language: "en" });
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'localization routes working',
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default router;

@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { getCollectionAnalytics,
+import {
+  getCollectionAnalytics,
   getCollectionTrends,
   getPropertyPerformance,
   getTenantRiskAnalysis,
-  getDashboardMetrics; }
-
+  getDashboardMetrics
 } from '../controllers/analyticsController';
 import { protect } from '../middleware/authMiddleware';
 import { authorize } from '../middleware/rbac';

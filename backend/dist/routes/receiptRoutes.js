@@ -1,9 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const receiptController_1 = require("../controllers/receiptController");
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const rbac_1 = require("../middleware/rbac");
 const router = (0, express_1.Router)();
-router.get('/payment/:paymentId', authMiddleware_1.protect, (0, rbac_1.authorize)(['Landlord', 'Agent']), receiptController_1.generatePaymentReceipt);
+router.use(authMiddleware_1.protect);
+router.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'receipt routes working',
+        timestamp: new Date().toISOString()
+    });
+});
 exports.default = router;

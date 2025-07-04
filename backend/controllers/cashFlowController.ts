@@ -1,121 +1,95 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
 import CashFlow from '../models/CashFlow';
-import EditRequest from '../models/EditRequest';
-import auditService from '../services/auditService';
-import mongoose, { Types } from 'mongoose';
 
-export const createCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { if (!req.user || !req.user.organizationId) { }
-        res.status(401);
-        throw new Error('User not authorized');
+interface AuthRequest extends Request {
+  user?: any;
+  file?: any;
+}
 
+export const createCashFlowRecord = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-    const { toUser, amount, type, transactionDate, description, status } = req.body;
-    const documentUrl = req.file ? (req.file as any).imageUrl : undefined;
+    const { amount, type, transactionDate, description } = req.body;
 
-    if (!amount || !type || !transactionDate) { res.status(400);
-        throw new Error('Amount, type, and transaction date are required.');
-
-    if (req.user.role !== 'Agent') { }
-        res.status(403);
-        throw new Error('Only agents can create cash flow records.');
+    if (!amount || !type || !transactionDate) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Amount, type, and transaction date are required' 
+      });
+    }
 
     const newRecord = await CashFlow.create({
-
-        organizationId: req.user.organizationId,
-        fromUser: req.user._id,
-        toUser: type === 'cash_handover' ? toUser : undefined,
-        amount: Number(amount),
-        type,
-        status,
-        transactionDate,
-        description,
-        documentUrl,
-        recordedBy: req.user._id,
-
+      organizationId: req.user.organizationId,
+      fromUser: req.user._id,
+      amount: Number(amount),
+      type,
+      transactionDate,
+      description,
+      recordedBy: req.user._id
     });
 
     res.status(201).json({ success: true, data: newRecord });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
-export const getCashFlowRecords = asyncHandler(async (req: Request, res: Response) => { if (!req.user || !req.user.organizationId) { }
-        res.status(401);
-        throw new Error('User not authorized');
+export const getCashFlowRecords = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-
-    const records = await CashFlow.find({ organizationId: req.user.organizationId })
-        .populate('fromUser', 'name role')
-        .populate('toUser', 'name role')
-        .populate('recordedBy', 'name')
-        .sort({ transactionDate: -1 });
+    const records = await CashFlow.find({ 
+      organizationId: req.user.organizationId 
+    }).sort({ transactionDate: -1 });
 
     res.status(200).json({ success: true, data: records });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
-export const updateCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { if (!req.user || !req.user.organizationId) { }
-        res.status(401);
-        throw new Error('User not authorized');
+export const updateCashFlowRecord = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-    const cashFlowRecord = await CashFlow.findById(req.params.id);
-    if (!cashFlowRecord || cashFlowRecord.organizationId.toString() !== req.user.organizationId.toString()) { res.status(404);
-        throw new Error('Cash flow record not found');
+    const record = await CashFlow.findById(req.params.id);
+    if (!record || record.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(404).json({ success: false, message: 'Record not found' });
+    }
 
-    if (req.user.role === 'Agent') { }
-        const approvedRequest = await EditRequest.findOne({ resourceId: cashFlowRecord._id,
-            requester: req.user._id,
-            status: 'approved' }
-
-
-        });
-
-        if (!approvedRequest) { res.status(403);
-            throw new Error('Permission denied. An approved edit request is required for this action.');
-
-
-
-    } else if (req.user.role !== 'Landlord') { res.status(403);
-        throw new Error('You do not have permission to perform this action.');
-
-
-
-    const updatedRecord = await CashFlow.findByIdAndUpdate(req.params.id, req.body, { new: true });
-
-    if (req.user.role === 'Agent') {
-
-        await EditRequest.deleteMany({ resourceId: cashFlowRecord._id });
+    const updatedRecord = await CashFlow.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true }
+    );
 
     res.status(200).json({ success: true, data: updatedRecord });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
-export const deleteCashFlowRecord = asyncHandler(async (req: Request, res: Response) => { if (!req.user || !req.user.organizationId) { }
-        res.status(401);
-        throw new Error('User not authorized');
+export const deleteCashFlowRecord = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-    const cashFlowRecord = await CashFlow.findById(req.params.id);
-    if (!cashFlowRecord || cashFlowRecord.organizationId.toString() !== req.user.organizationId.toString()) { res.status(404);
-        throw new Error('Cash flow record not found');
+    const record = await CashFlow.findById(req.params.id);
+    if (!record || record.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(404).json({ success: false, message: 'Record not found' });
+    }
 
-    if (req.user.role === 'Agent') { }
-        const approvedRequest = await EditRequest.findOne({ resourceId: cashFlowRecord._id,
-            requester: req.user._id,
-            status: 'approved' }
-
-
-        });
-        if (!approvedRequest) { res.status(403);
-            throw new Error('Permission denied. An approved delete request is required.');
-
-
-
-    } else if (req.user.role !== 'Landlord') { res.status(403);
-        throw new Error('You do not have permission to perform this action.');
-
-    await cashFlowRecord.deleteOne();
-
-    if (req.user.role === 'Agent') { }
-
-
-        await EditRequest.deleteMany({ resourceId: cashFlowRecord._id });
-
+    await record.deleteOne();
     res.status(200).json({ success: true, data: {} });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

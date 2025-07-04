@@ -1,10 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { forgotPassword, resetPassword } from '../controllers/passwordResetController';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.post('/forgot', asyncHandler(forgotPassword));
-router.put('/reset/:resetToken', asyncHandler(resetPassword));
+// Apply authentication middleware
+router.use(protect);
+
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'passwordReset routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

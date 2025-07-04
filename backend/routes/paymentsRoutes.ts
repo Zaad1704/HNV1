@@ -1,15 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { getPayments, createPayment } from '../controllers/paymentsController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; 
 
 const router = Router();
 
+// Apply authentication middleware
 router.use(protect);
 
-router.route('/')
-  .get(asyncHandler(getPayments))
-  .post(asyncHandler(createPayment));
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'payments routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

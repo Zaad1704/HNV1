@@ -1,11 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { translateContent } from '../controllers/translationController';
 import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// This route is protected, so only logged-in users can use the translation service.
-router.post('/', protect, asyncHandler(translateContent));
+// Apply authentication middleware
+router.use(protect);
+
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'translation routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

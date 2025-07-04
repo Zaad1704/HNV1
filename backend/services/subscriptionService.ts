@@ -1,144 +1,53 @@
-import Subscription from '../models/Subscription';
-import Plan from '../models/Plan';
-import Organization from '../models/Organization';
-import { addMonths, addYears, addWeeks, addDays } from 'date-fns';
+import { Subscription } from '../models/Subscription';
+import { User } from '../models/User';
 
 class SubscriptionService {
-  async createSubscription(organizationId: string, planId: string): Promise<any> {
+  async createSubscription(userId: string, planId: string) {
     try {
-      const plan = await Plan.findById(planId);
-      if (!plan) {
-        throw new Error('Plan not found');
-      }
-
-      const organization = await Organization.findById(organizationId);
-      if (!organization) {
-        throw new Error('Organization not found');
-      }
-
-
-
-      let currentPeriodEndsAt: Date;
-      const now = new Date();
-
-      switch (plan.duration) {
-        case 'daily':
-          currentPeriodEndsAt = addDays(now, 1);
-          break;
-        case 'weekly':
-          currentPeriodEndsAt = addWeeks(now, 1);
-          break;
-        case 'monthly':
-          currentPeriodEndsAt = addMonths(now, 1);
-          break;
-        case 'yearly':
-          currentPeriodEndsAt = addYears(now, 1);
-          break;
-        default:
-          currentPeriodEndsAt = addMonths(now, 1);
-      }
-
-
-      const subscription = await Subscription.create({
-        organizationId,
-        planId: plan._id,
+      const subscription = new Subscription({
+        userId,
+        planId,
         status: 'active',
-        currentPeriodEndsAt,
-        isLifetime: false
+        startDate: new Date(),
+        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
       });
 
-      organization.subscription = subscription._id;
-      await organization.save();
-
+      await subscription.save();
       return subscription;
     } catch (error) {
-      console.error('Subscription creation failed:', error);
+      console.error('Failed to create subscription:', error);
       throw error;
     }
   }
 
-
-
-  async updateSubscription(subscriptionId: string, updates: any): Promise<any> {
+  async getUserSubscription(userId: string) {
     try {
-      const subscription = await Subscription.findByIdAndUpdate(
-        subscriptionId,
-        updates,
-        { new: true }
-      ).populate('planId');
-
+      const subscription = await Subscription.findOne({ userId }).populate('planId');
       return subscription;
     } catch (error) {
-      console.error('Subscription update failed:', error);
-      throw error;
+      console.error('Failed to get user subscription:', error);
+      return null;
     }
   }
 
-
-
-  async cancelSubscription(subscriptionId: string): Promise<any> {
+  async checkSubscriptionStatus(userId: string) {
     try {
-      const subscription = await Subscription.findByIdAndUpdate(
-        subscriptionId,
-        {
-          status: 'canceled',
-          canceledAt: new Date()
-        },
-        { new: true }
-      );
-
-      return subscription;
-    } catch (error) {
-      console.error('Subscription cancellation failed:', error);
-      throw error;
-    }
-  }
-
-
-
-  async getSubscriptionByOrganization(organizationId: string): Promise<any> {
-    try {
-      const subscription = await Subscription.findOne({ organizationId })
-        .populate('planId')
-        .populate('organizationId', 'name');
-
-      return subscription;
-    } catch (error) {
-      console.error('Get subscription failed:', error);
-      throw error;
-    }
-  }
-
-
-
-  async checkSubscriptionStatus(organizationId: string): Promise<boolean> {
-    try {
-      const subscription = await Subscription.findOne({ organizationId });
-      
+      const subscription = await this.getUserSubscription(userId);
       if (!subscription) {
-        return false;
+        return { active: false, trial: false };
       }
 
-      if (subscription.isLifetime) {
-        return true;
-      }
-
-      if (subscription.status !== 'active' && subscription.status !== 'trialing') {
-        return false;
-      }
-
-      if (subscription.currentPeriodEndsAt && new Date() > subscription.currentPeriodEndsAt) {
-        await Subscription.findByIdAndUpdate(subscription._id, {
-          status: 'expired',
-          expiredAt: new Date()
-        });
-        return false;
-      }
-
-      return true;
+      const now = new Date();
+      const isActive = subscription.status === 'active' && subscription.nextBillingDate > now;
+      
+      return {
+        active: isActive,
+        trial: subscription.status === 'trial',
+        subscription
+      };
     } catch (error) {
-      console.error('Subscription status check failed:', error);
-      return false;
+      console.error('Failed to check subscription status:', error);
+      return { active: false, trial: false };
     }
   }
 }

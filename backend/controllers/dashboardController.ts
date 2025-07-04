@@ -1,190 +1,120 @@
 import { Request, Response } from 'express';
-import asyncHandler from 'express-async-handler';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
 import Expense from '../models/Expense';
-import AuditLog from '../models/AuditLog';
-import { startOfMonth, endOfMonth, subMonths, format, addDays, addWeeks, addMonths as addMonthsDateFns, addYears } from 'date-fns';
 
-export const getOverviewStats = asyncHandler(async (req: Request, res: Response) => { try { }
-        if (!req.user) { res.status(200).json({ }
+interface AuthRequest extends Request {
+  user?: any;
+}
 
-                success: true,
+export const getOverviewStats = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
-                data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }
-            });
-            return;
-
-        const organizationId = req.user.organizationId; 
-
-        const totalProperties = await Property.countDocuments({ organizationId });
-        const activeTenants = await Tenant.countDocuments({ organizationId, status: 'Active' });
-        
-        const currentMonthStart = startOfMonth(new Date());
-        const currentMonthEnd = endOfMonth(new Date());
-
-        const monthlyRevenue = await Payment.aggregate([
-            { $match: { organizationId, paymentDate: { $gte: currentMonthStart, $lte: currentMonthEnd }, status: 'Paid' } },
-            { $group: { _id: null, total: { $sum: '$amount' } } }
-        ]);
-
-        const occupancyRate = totalProperties > 0 ? ((activeTenants / totalProperties) * 100).toFixed(2) + '%' : '0%';
-
-        res.status(200).json({ success: true,
-            data: { }
-                totalProperties,
-                activeTenants,
-                monthlyRevenue: monthlyRevenue[0]?.total || 0,
-                occupancyRate;
-
-        });
-    } catch (error) { res.status(200).json({ }
-
-            success: true,
-            data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }
-        });
-
-});
-
-export const getLateTenants = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
-
-
-    const { organizationId } = req.user;
+    const organizationId = req.user.organizationId;
+    const totalProperties = await Property.countDocuments({ organizationId });
+    const activeTenants = await Tenant.countDocuments({ organizationId, status: 'Active' });
     
-    const lateTenants = await Tenant.find({ organizationId, 
-        $or: [ }
+    const monthlyRevenue = await Payment.aggregate([
+      { $match: { organizationId, status: 'completed' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
 
-            { status: 'Late' },
-            { status: 'Overdue' },
-            { rentStatus: 'overdue' }
-        ]
-    })
-        .populate('propertyId', 'name unit') 
-        .select('name email unit propertyId') 
-        .limit(5); 
+    const occupancyRate = totalProperties > 0 ? ((activeTenants / totalProperties) * 100).toFixed(2) + '%' : '0%';
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalProperties,
+        activeTenants,
+        monthlyRevenue: monthlyRevenue[0]?.total || 0,
+        occupancyRate
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const getLateTenants = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const lateTenants = await Tenant.find({
+      organizationId: req.user.organizationId,
+      status: { $in: ['Late', 'Overdue'] }
+    }).limit(5);
 
     res.status(200).json({ success: true, data: lateTenants });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
-export const getExpiringLeases = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
-
-
-    const { organizationId } = req.user;
+export const getExpiringLeases = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
     const today = new Date();
-    const threeMonthsFromNow = addMonthsDateFns(today, 3); 
+    const threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(today.getMonth() + 3);
 
-    const expiringLeases = await Tenant.find({ organizationId,  }
-
-        leaseEndDate: { $gte: today, $lte: threeMonthsFromNow },
-        status: 'Active' 
-    })
-    .populate('propertyId', 'name unit')
-    .select('name email unit leaseEndDate propertyId')
-    .sort({ leaseEndDate: 1 }) 
-    .limit(5);
+    const expiringLeases = await Tenant.find({
+      organizationId: req.user.organizationId,
+      leaseEndDate: { $gte: today, $lte: threeMonthsFromNow },
+      status: 'Active'
+    }).limit(5);
 
     res.status(200).json({ success: true, data: expiringLeases });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 
-export const getFinancialSummary = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
+export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
 
+    const monthlyData = [];
+    for (let i = 0; i < 6; i++) {
+      const monthStart = new Date();
+      monthStart.setMonth(monthStart.getMonth() - (5 - i));
+      monthStart.setDate(1);
 
-    const { organizationId } = req.user;
+      const monthEnd = new Date(monthStart);
+      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      monthEnd.setDate(0);
 
-    const sixMonthsAgo = subMonths(new Date(), 5); 
-    const monthlyData: { name: string; Revenue: number; Expenses: number; }[] = [];
+      const monthName = monthStart.toLocaleDateString('en-US', { month: 'short' });
 
-    for (let i = 0; i < 6; i++) { const monthStart = startOfMonth(addMonthsDateFns(sixMonthsAgo, i));
-        const monthEnd = endOfMonth(monthStart);
-        const monthName = format(monthStart, 'MMM');
+      const revenue = await Payment.aggregate([
+        { $match: { organizationId: req.user.organizationId, paymentDate: { $gte: monthStart, $lte: monthEnd }, status: 'completed' } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]);
 
-        const revenueResult = await Payment.aggregate([ }
-            { $match: { }
-                organizationId, 
+      const expenses = await Expense.aggregate([
+        { $match: { organizationId: req.user.organizationId, date: { $gte: monthStart, $lte: monthEnd } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]);
 
-                paymentDate: { $gte: monthStart, $lte: monthEnd }, 
-                status: 'Paid' 
-            }},
-            { $group: { _id: null, totalRevenue: { $sum: '$amount' } }}
-        ]);
-
-        const expensesResult = await Expense.aggregate([
-            { $match: { }
-                organizationId, 
-
-                date: { $gte: monthStart, $lte: monthEnd } 
-            }},
-            { $group: { _id: null, totalExpenses: { $sum: '$amount' } }}
-        ]);
-
-        monthlyData.push({
-            name: monthName,
-            Revenue: revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0,
-            Expenses: expensesResult.length > 0 ? expensesResult[0].totalExpenses : 0,
-        });
-
-    res.status(200).json({ success: true, data: monthlyData });
-});
-
-export const getOccupancySummary = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
-
-
-    const { organizationId } = req.user;
-
-    const sixMonthsAgo = subMonths(new Date(), 5);
-    const monthlyData: { name: string; 'New Tenants': number; }[] = [];
-
-    for (let i = 0; i < 6; i++) { const monthStart = startOfMonth(addMonthsDateFns(sixMonthsAgo, i));
-        const monthEnd = endOfMonth(monthStart);
-        const monthName = format(monthStart, 'MMM');
-
-        const newTenantsCount = await Tenant.countDocuments({ }
-
-            organizationId,
-            createdAt: { $gte: monthStart, $lte: monthEnd }
-        });
-
-        monthlyData.push({
-            name: monthName,
-            'New Tenants': newTenantsCount,
-        });
+      monthlyData.push({
+        name: monthName,
+        Revenue: revenue[0]?.total || 0,
+        Expenses: expenses[0]?.total || 0
+      });
+    }
 
     res.status(200).json({ success: true, data: monthlyData });
-});
-
-export const getRentStatus = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
-
-
-    const { organizationId } = req.user;
-
-    const activeCount = await Tenant.countDocuments({ organizationId, status: 'Active' });
-    const lateCount = await Tenant.countDocuments({ organizationId, status: 'Late' });
-
-    const data = [
-        { name: 'Paid / Current', value: activeCount },
-        { name: 'Overdue', value: lateCount },
-    ];
-
-    res.status(200).json({ success: true, data });
-});
-
-export const getRecentActivity = asyncHandler(async (req: Request, res: Response) => { if (!req.user?.organizationId) { }
-        throw new Error('User or organization not found');
-
-
-    const { organizationId } = req.user;
-
-    const activities = await AuditLog.find({ organizationId })
-        .populate('user', 'name')
-        .sort({ timestamp: -1 })
-        .limit(5);
-
-    res.status(200).json({ success: true, data: activities });
-});
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

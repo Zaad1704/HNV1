@@ -1,9 +1,6 @@
-import { Request, Response } from 'express';
+import { Request, Response    } from 'express';
 import asyncHandler from 'express-async-handler';
-import { marked } from 'marked';
-
-// Get Terms of Service
-export const getTermsOfService = asyncHandler(async (req: Request, res: Response) => { const termsMarkdown = 
-  
-  const privacyMarkdown = 
-
+import { marked    } from 'marked';
+//  Get Terms of Service;
+export const getTermsOfService: asyncHandler(async ($1) => { const termsMarkdown = ;
+  const privacyMarkdown =

@@ -2,47 +2,32 @@ import mongoose from 'mongoose';
 import User from '../models/User';
 import dotenv from 'dotenv';
 import path from 'path';
-
-// Load environment variables
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-const fixSuperAdminEmail = async () => { try { }
-    if (!process.env.MONGO_URI) { throw new Error('MONGO_URI is not defined in environment variables.');
-
+//  Load environment variables;
+dotenv.config({ path: path.resolve(__dirname, '../.env')  });
+const fixSuperAdminEmail: async ($1) => { try { };
+    if (throw new Error('MONGO_URI is not defined in environment variables.');
     await mongoose.connect(process.env.MONGO_URI);
-
-    // Find all Super Admin users and set their email as verified
-    const result = await User.updateMany();
-      { }
-        role: 'Super Admin',
-        isEmailVerified: false;
-
-
-      },
-      { $set: { }
-          isEmailVerified: true,
+    //  Find all Super Admin users and set their email as verified;
+    const result: await User.updateMany();
+      {
+role: 'Super Admin',;
+        isEmailVerified: false) {;
+},
+      { $set: {
+isEmailVerified: true,;
           status: 'active'
-
-
     );
-
-    // Also fix any users created before email verification was implemented
-    const oldUsersResult = await User.updateMany();
+    //  Also fix any users created before email verification was implemented;
+    const oldUsersResult: await User.updateMany();
+      {;
+        createdAt: { $lt: new Date('2025-06-26T00:00:00.000Z')
+},;
+        isEmailVerified: false},
       {
-
-        createdAt: { $lt: new Date('2025-06-26T00:00:00.000Z') },
-        isEmailVerified: false;
-      },
-      {
-        $set: { isEmailVerified: true }
-
+$set: { isEmailVerified: true
+}
     );
-
-  } catch (error) { console.error('Fix failed:', error); }
-
-  } finally { await mongoose.disconnect();
-
-
-};
-
+  } catch(error) {
+console.error('Fix failed: ', error)
+} finally { await mongoose.disconnect() };
 fixSuperAdminEmail();

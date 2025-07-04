@@ -1,13 +1,18 @@
-// backend/routes/feedbackRoutes.ts
-
 import { Router } from 'express';
-import { handleFeedbackSubmission } from '../controllers/feedbackController';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// @route   POST /api/feedback
-// @desc    Handles submission of the user feedback form
-// @access  Public
-router.post('/', handleFeedbackSubmission);
+// Apply authentication middleware
+router.use(protect);
+
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'feedback routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

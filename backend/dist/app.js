@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
@@ -57,6 +58,7 @@ const authMiddleware_1 = require("./middleware/authMiddleware");
 const passport_1 = __importDefault(require("passport"));
 require("./config/passport-setup");
 const app = (0, express_1.default)();
+exports.app = app;
 app.set('trust proxy', 1);
 app.use(securityMiddleware_1.securityHeaders);
 app.use((0, compression_1.default)());
@@ -69,28 +71,29 @@ const allowedOrigins = [
     'https://hnv.onrender.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
-app.use((0, cors_1.default)({ origin: (origin, callback) => { },
-    console, : .log('CORS origin check:', origin),
-    if(, origin) { }, return: callback(null, true),
-    if(allowedOrigins) { }, : .includes(origin) }), { return: callback(null, true) });
-if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    return callback(null, true);
-}
-if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
-    return callback(null, true);
-}
-console.warn('CORS blocked origin:', origin);
-callback(null, true);
-credentials: true,
-    methods;
-['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders;
-['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
-    preflightContinue;
-false,
-    optionsSuccessStatus;
-204;
-;
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        console.log('CORS origin check:', origin);
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+        if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
+            return callback(null, true);
+        }
+        console.warn('CORS blocked origin:', origin);
+        callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
 app.use('/api/auth', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 10));
 app.use('/api', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 100));
 app.use((0, express_mongo_sanitize_1.default)());
@@ -101,13 +104,24 @@ app.use(passport_1.default.initialize());
 app.use(securityMiddleware_1.sanitizeInput);
 app.use(securityMiddleware_1.requestLogger);
 app.get('/', (req, res) => {
-    res.json({}, status, 'OK', service, 'HNV Property Management API', version, '1.0.0', timestamp, new Date().toISOString());
+    res.json({
+        status: 'OK',
+        service: 'HNV Property Management API',
+        version: '1.0.0',
+        timestamp: new Date().toISOString()
+    });
 });
-;
 app.get('/api/debug', (req, res) => {
-    res.json({}, status, 'OK', origin, req.get('Origin'), userAgent, req.get('User-Agent'), headers, req.headers, timestamp, new Date().toISOString(), environment, process.env.NODE_ENV, frontendUrl, process.env.FRONTEND_URL);
+    res.json({
+        status: 'OK',
+        origin: req.get('Origin'),
+        userAgent: req.get('User-Agent'),
+        headers: req.headers,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        frontendUrl: process.env.FRONTEND_URL
+    });
 });
-;
 app.options('*', (req, res) => {
     res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
@@ -119,7 +133,8 @@ app.use('/api', (req, res, next) => {
     console.log(`API Request: ${req.method} ${req.originalUrl}`);
     next();
 });
-app.use('/api/test', require('./routes/testRoutes').default);
+const testRoutes_1 = __importDefault(require("./routes/testRoutes"));
+app.use('/api/test', testRoutes_1.default);
 app.use('/api/health', healthRoutes_1.default);
 app.use('/health', healthRoutes_1.default);
 const routeErrorHandler = (err, req, res, next) => {

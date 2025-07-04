@@ -1,97 +1,80 @@
 import nodemailer from 'nodemailer';
-import fs from 'fs';
-import path from 'path';
 
-class EmailService { private transporter: any = null;
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  from?: string;
+}
 
-  private fromEmail: string; }
+class EmailService {
+  private transporter: any;
 
+  constructor() {
+    this.transporter = nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || '587'),
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  }
 
-  isConfigured(): boolean { return !!this.transporter; }
+  async sendEmail(options: EmailOptions) {
+    try {
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('Email service not configured - skipping email send');
+        return { success: false, message: 'Email service not configured' };
+      }
 
-
-  constructor() { this.fromEmail = 'HNV Property Management <noreply@hnvmp.com>';
-
-    try { }
-      this.transporter = nodemailer.createTransport({ host: process.env.SMTP_HOST || 'smtp.resend.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false,
-        auth: { }
-          user: process.env.SMTP_USER || 'resend',
-          pass: process.env.SMTP_PASS || process.env.RESEND_API_KEY;
-
-
-      });
-
-    } catch (error) { console.error('❌ Failed to initialize email service:', error); }
-
-
-
-  async sendEmail(to: string, subject: string, templateName: string, templateData: Record<string, string>) { if (!this.transporter) { }
-      throw new Error('Email service not configured');
-
-
-
-    try { let htmlContent = '';
-      
-      try { }
-
-        const templatePath = path.join(__dirname, '..', 'templates', `${templateName}.html`);
-        htmlContent = fs.readFileSync(templatePath, 'utf8');
-      } catch (templateError) { ` }
-
-        console.warn(`Template ${templateName} not found, using fallback`);`
-        htmlContent = `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>${templateData.subject || 'Notification'}</h2>`
-            ${Object.entries(templateData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
-          </div>`
-        `;
-
-      // Replace template variables
-      Object.entries(templateData).forEach(([key, value]) => { ` }
-
-        const regex = new RegExp(`{{${key}}}`, 'g');
-        htmlContent = htmlContent.replace(regex, value);
-      });
-
-      const mailOptions = { from: this.fromEmail,
-        to,
-        subject,
-        html: htmlContent; }
-
+      const mailOptions = {
+        from: options.from || process.env.EMAIL_FROM || process.env.EMAIL_USER,
+        to: options.to,
+        subject: options.subject,
+        html: options.html
       };
 
-      await this.transporter.sendMail(mailOptions);`
-      console.log(`✅ Email sent successfully to ${to}`);
-    } catch (error) { ` }
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log('Email sent successfully:', result.messageId);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      return { success: false, error: error.message };
+    }
+  }
 
-      console.error(`Error sending email to ${to}:`, error);`
-      throw new Error(`Failed to send email: ${error}`);
-
-
-  async sendContactForm(formData: any) { `
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; padding: 20px;">
-        <h2>New Contact Form Submission</h2> }
-
-        <p><strong>Name:</strong> ${formData.name}</p>
-        <p><strong>Email:</strong> ${formData.email}</p>
-        <p><strong>Phone:</strong> ${formData.phone || 'Not provided'}</p>
-        <p><strong>Company:</strong> ${formData.company || 'Not provided'}</p>
-        <p><strong>Message:</strong></p>
-        <p>${formData.message}</p>
-      </div>`
+  async sendWelcomeEmail(to: string, name: string) {
+    const html = `
+      <h1>Welcome to HNV Property Management!</h1>
+      <p>Hello ${name},</p>
+      <p>Thank you for joining our platform. We're excited to help you manage your properties efficiently.</p>
+      <p>Best regards,<br>The HNV Team</p>
     `;
 
-    const mailOptions = { from: this.fromEmail,
-      to: 'contact@hnvpm.com',` }
+    return this.sendEmail({
+      to,
+      subject: 'Welcome to HNV Property Management',
+      html
+    });
+  }
 
-      subject: `Contact Form: ${formData.subject || 'New Inquiry'}`,
-      html: htmlContent;
-    };
+  async sendVerificationEmail(to: string, token: string) {
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
+    const html = `
+      <h1>Verify Your Email</h1>
+      <p>Please click the link below to verify your email address:</p>
+      <a href="${verificationUrl}">Verify Email</a>
+      <p>This link will expire in 1 hour.</p>
+    `;
 
-    await this.transporter.sendMail(mailOptions);
+    return this.sendEmail({
+      to,
+      subject: 'Verify Your Email Address',
+      html
+    });
+  }
+}
 
-
-export default new EmailService();`
+export default new EmailService();

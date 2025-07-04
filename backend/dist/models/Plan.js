@@ -24,12 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-name: string;
-price: number;
-duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
-features: string[];
-limits: IPlanLimits;
-isPublic: boolean;
 const planSchema = new mongoose_1.Schema({
     name: { type: String, required: true, unique: true },
     price: { type: Number, required: true },

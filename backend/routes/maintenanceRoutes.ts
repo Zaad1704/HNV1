@@ -1,24 +1,22 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { createMaintenanceRequest,
-    getOrgMaintenanceRequests,
-    getMaintenanceRequestById,
-    updateMaintenanceRequest,
-    deleteMaintenanceRequest; }
-
-} from '../controllers/maintenanceController';
 import { protect } from '../middleware/authMiddleware';
+import {
+  createMaintenanceRequest,
+  getMaintenanceRequests,
+  updateMaintenanceRequest,
+  deleteMaintenanceRequest
+} from '../controllers/maintenanceController';
 
 const router = Router();
+
 router.use(protect);
 
 router.route('/')
-    .post(asyncHandler(createMaintenanceRequest))
-    .get(asyncHandler(getOrgMaintenanceRequests));
-    
+  .get(getMaintenanceRequests)
+  .post(createMaintenanceRequest);
+
 router.route('/:id')
-    .get(asyncHandler(getMaintenanceRequestById))
-    .put(asyncHandler(updateMaintenanceRequest))
-    .delete(asyncHandler(deleteMaintenanceRequest));
+  .put(updateMaintenanceRequest)
+  .delete(deleteMaintenanceRequest);
 
 export default router;

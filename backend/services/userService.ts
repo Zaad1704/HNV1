@@ -1,38 +1,59 @@
-import User from '../models/User';
+import { User } from '../models/User';
 import bcrypt from 'bcryptjs';
 
 class UserService {
-  async createUser(userData: any): Promise<any> {
+  async createUser(userData: any) {
     try {
-      const user = await User.create(userData);
+      const hashedPassword = await bcrypt.hash(userData.password, 12);
+      const user = new User({
+        ...userData,
+        password: hashedPassword
+      });
+      
+      await user.save();
       return user;
     } catch (error) {
-      console.error('User creation error:', error);
+      console.error('Failed to create user:', error);
       throw error;
     }
   }
 
-  async updateUser(userId: string, updates: any): Promise<any> {
+  async getUserById(userId: string) {
     try {
-      if (updates.password) {
-        const salt = await bcrypt.genSalt(10);
-        updates.password = await bcrypt.hash(updates.password, salt);
-      }
-      const user = await User.findByIdAndUpdate(userId, updates, { new: true });
+      const user = await User.findById(userId).select('-password');
       return user;
     } catch (error) {
-      console.error('User update error:', error);
+      console.error('Failed to get user by ID:', error);
+      return null;
+    }
+  }
+
+  async getUserByEmail(email: string) {
+    try {
+      const user = await User.findOne({ email });
+      return user;
+    } catch (error) {
+      console.error('Failed to get user by email:', error);
+      return null;
+    }
+  }
+
+  async updateUser(userId: string, updateData: any) {
+    try {
+      const user = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-password');
+      return user;
+    } catch (error) {
+      console.error('Failed to update user:', error);
       throw error;
     }
   }
 
-  async getUsersByOrganization(organizationId: string): Promise<any[]> {
+  async validatePassword(plainPassword: string, hashedPassword: string) {
     try {
-      const users = await User.find({ organizationId }).select('-password');
-      return users;
+      return await bcrypt.compare(plainPassword, hashedPassword);
     } catch (error) {
-      console.error('Get users error:', error);
-      throw error;
+      console.error('Failed to validate password:', error);
+      return false;
     }
   }
 }

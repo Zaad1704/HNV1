@@ -1,24 +1,22 @@
 import { Router } from 'express';
-import { createCashFlowRecord,
+import { protect } from '../middleware/authMiddleware';
+import {
+  createCashFlowRecord,
   getCashFlowRecords,
   updateCashFlowRecord,
-  deleteCashFlowRecord; }
-
+  deleteCashFlowRecord
 } from '../controllers/cashFlowController';
-import uploadMiddleware from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Get all cash flow records
-router.get('/', getCashFlowRecords);
+router.use(protect);
 
-// Create new cash flow record
-router.post('/', uploadMiddleware.single('document'), createCashFlowRecord);
+router.route('/')
+  .get(getCashFlowRecords)
+  .post(createCashFlowRecord);
 
-// Update cash flow record
-router.put('/:id', updateCashFlowRecord);
-
-// Delete cash flow record
-router.delete('/:id', deleteCashFlowRecord);
+router.route('/:id')
+  .put(updateCashFlowRecord)
+  .delete(deleteCashFlowRecord);
 
 export default router;

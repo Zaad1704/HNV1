@@ -1,10 +1,21 @@
-// backend/middleware/rbac.ts
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
 
-export const authorize = (roles: string[]) => (req: Request, res: Response, next: NextFunction) => { if (!req.user || !roles.includes(req.user.role)) { }
+export const authorize = (...roles: string[]) => {
+  return (req: any, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
 
-    res.status(403).json({ message: "Forbidden" });
-    return; // Re-added return to terminate request processing
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
 
-  next();
+    next();
+  };
 };

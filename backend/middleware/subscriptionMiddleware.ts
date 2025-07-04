@@ -1,96 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
 import Subscription from '../models/Subscription';
-import Plan from '../models/Plan';
 
-export const checkSubscriptionStatus = async (req: Request, res: Response, next: NextFunction) => { try { }
-    // Skip for super admin and public routes
-    if (req.user?.role === 'Super Admin' || req.user?.role === 'Super Moderator') { return next();
+export const checkSubscriptionStatus = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user || !req.user.organizationId) {
+      return next();
+    }
 
-    if (!req.user?.organizationId) { }
-      return res.status(403).json({ success: false,
-        message: 'No organization associated',
-        code: 'NO_ORGANIZATION' }
+    const subscription = await Subscription.findOne({
+      organizationId: req.user.organizationId
+    });
 
-
-      });
-
-    const subscription = await Subscription.findOne({ organizationId: req.user.organizationId; }
-
-    }).populate('planId');
-
-    if (!subscription) { return res.status(403).json({ }
+    if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
+      return res.status(403).json({
         success: false,
-        message: 'No subscription found',
-        code: 'NO_SUBSCRIPTION',
-        action: 'REDIRECT_TO_PRICING'
-
-
+        message: 'Subscription required'
       });
+    }
 
-    // Check if trial expired
-    if (subscription.status === 'trialing' && subscription.trialExpiresAt && new Date() > subscription.trialExpiresAt) { subscription.status = 'inactive';
-      await subscription.save();
-
-    // Check if subscription expired
-    if (subscription.status === 'inactive' || subscription.status === 'canceled' || subscription.status === 'past_due') { }
-      return res.status(403).json({ success: false,
-        message: 'Subscription expired or inactive',
-        code: 'SUBSCRIPTION_EXPIRED',
-        action: 'REDIRECT_TO_BILLING',
-        subscriptionStatus: subscription.status; }
-
-
-      });
-
-    // Add subscription info to request
-    (req as any).subscription = subscription;
     next();
-  } catch (error) { console.error('Subscription check error:', error);
+  } catch (error) {
+    console.error('Subscription check error:', error);
     next();
-
-
+  }
 };
-
-export const checkUsageLimits = (resource: 'properties' | 'tenants' | 'agents') => { return async (req: Request, res: Response, next: NextFunction) => { }
-    try { // Skip for super admin
-      if (req.user?.role === 'Super Admin' || req.user?.role === 'Super Moderator') { }
-        return next();
-
-      const subscription = (req as any).subscription;
-      if (!subscription || !subscription.planId) { return res.status(403).json({ }
-          success: false,
-          message: 'No active subscription',
-          code: 'NO_SUBSCRIPTION'
-
-
-        });
-
-      const plan = subscription.planId;
-      let currentCount = 0;
-      let limit = 0;
-
-      switch (resource) { case 'properties':
-          const Property = require('../models/Property'); }
-
-          currentCount = await Property.countDocuments({ organizationId: req.user?.organizationId });
-          limit = plan.limits?.maxProperties || 1;
-          break;
-        case 'tenants':
-          const Tenant = require('../models/Tenant');
-          currentCount = await Tenant.countDocuments({ organizationId: req.user?.organizationId });
-          limit = plan.limits?.maxTenants || 5;
-          break;
-        case 'agents':
-          const User = require('../models/User');
-          currentCount = await User.countDocuments({ organizationId: req.user?.organizationId,
-            role: 'Agent' }
-
-          });
-          limit = plan.limits?.maxAgents || 0;
-          break;
-
-      if (currentCount >= limit) { return res.status(403).json({ }
-
-          success: false,
-
-          message: `You've reached your ${resource} limit (${limit}). Upgrade your plan to add more.`

@@ -1,25 +1,31 @@
-import mongoose, { Schema, Document, model } from 'mongoose';
-import { IUser } from './User';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IMaintenanceRequest extends Document { propertyId: mongoose.Schema.Types.ObjectId;
-    organizationId: mongoose.Schema.Types.ObjectId;
-    requestedBy: mongoose.Schema.Types.ObjectId | IUser;
-    description: string;
-    priority: 'Low' | 'Medium' | 'High';
-    status: 'Open' | 'In Progress' | 'Completed';
-    createdAt: Date; // FIX: Added createdAt property;
+export interface IMaintenanceRequest extends Document {
+  propertyId: mongoose.Types.ObjectId;
+  organizationId: mongoose.Types.ObjectId;
+  requestedBy: mongoose.Types.ObjectId;
+  tenantId?: mongoose.Types.ObjectId;
+  description: string;
+  priority: 'Low' | 'Medium' | 'High';
+  status: 'Open' | 'In Progress' | 'Completed';
+  category?: string;
+  notes?: string;
+  assignedTo?: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-    updatedAt: Date; // FIX: Added updatedAt property; }
-
-
-const MaintenanceRequestSchema: Schema<IMaintenanceRequest> = new Schema({
-    propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
-    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-    requestedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    description: { type: String, required: true },
-    priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
-    status: { type: String, enum: ['Open', 'In Progress', 'Completed'], default: 'Open' },
+const MaintenanceRequestSchema = new Schema<IMaintenanceRequest>({
+  propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
+  organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+  requestedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+  description: { type: String, required: true },
+  priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
+  status: { type: String, enum: ['Open', 'In Progress', 'Completed'], default: 'Open' },
+  category: { type: String },
+  notes: { type: String },
+  assignedTo: { type: Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
-export default model
-export default model<IMaintenanceRequest>('MaintenanceRequest', MaintenanceRequestSchema);
+export default mongoose.model<IMaintenanceRequest>('MaintenanceRequest', MaintenanceRequestSchema);

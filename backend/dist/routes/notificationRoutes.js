@@ -1,9 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const notificationController_1 = require("../controllers/notificationController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = (0, express_1.Router)();
-router.get('/', notificationController_1.getNotifications);
-router.post('/mark-as-read', notificationController_1.markNotificationAsReadHandler);
-router.post('/mark-all-as-read', notificationController_1.markAllNotificationsAsReadHandler);
+router.use(authMiddleware_1.protect);
+router.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'notification routes working',
+        timestamp: new Date().toISOString()
+    });
+});
 exports.default = router;

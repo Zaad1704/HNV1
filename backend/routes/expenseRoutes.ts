@@ -1,29 +1,22 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { getExpenses, 
-    createExpense,
-    getExpenseById,    
-    updateExpense,     
-    deleteExpense; }
-
-} from '../controllers/expenseController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac';
-import upload from '../middleware/uploadMiddleware';
+import {
+  getExpenses,
+  createExpense,
+  updateExpense,
+  deleteExpense
+} from '../controllers/expenseController';
 
 const router = Router();
 
-router.use(protect, authorize(['Super Admin', 'Super Moderator', 'Landlord', 'Agent']));
+router.use(protect);
 
-// This route handles getting the list of expenses and creating a new one
 router.route('/')
-    .get(asyncHandler(getExpenses))
-    .post(upload.single('document'), asyncHandler(createExpense));
+  .get(getExpenses)
+  .post(createExpense);
 
-// --- NEW: Add routes for handling a single expense document ---
 router.route('/:id')
-    .get(asyncHandler(getExpenseById))
-    .put(upload.single('document'), asyncHandler(updateExpense))
-    .delete(asyncHandler(deleteExpense));
+  .put(updateExpense)
+  .delete(deleteExpense);
 
 export default router;

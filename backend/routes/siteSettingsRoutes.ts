@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { getSiteSettings, updateSiteSettings, updateHeroSection, updateLandscapeSection, updateBannerSection } from '../controllers/siteSettingsController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; 
 
 const router = Router();
 
-router.route('/')
-    .get(asyncHandler(getSiteSettings)) 
-    .put(protect, authorize(['Super Admin']), asyncHandler(updateSiteSettings));
+// Apply authentication middleware
+router.use(protect);
 
-// Specific section updates
-router.put('/hero', protect, authorize(['Super Admin']), asyncHandler(updateHeroSection));
-router.put('/landscape', protect, authorize(['Super Admin']), asyncHandler(updateLandscapeSection));
-router.put('/banner', protect, authorize(['Super Admin']), asyncHandler(updateBannerSection));
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'siteSettings routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

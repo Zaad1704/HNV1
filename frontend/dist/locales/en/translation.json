@@ -90,6 +90,8 @@
     "profile": "Profile",
     "settings": "Settings",
     "search": "Search...",
+    "search_placeholder": "Search properties, tenants, payments...",
+    "search_placeholder": "Search properties, tenants, payments...",
     "filter": "Filters",
     "clear_all": "Clear All",
     "all": "All",
@@ -105,7 +107,9 @@
     "select_language": "Select Language",
     "toggle_language": "Toggle Language",
     "switch_to": "Switch to",
-    "current_language": "Current Language"
+    "current_language": "Current Language",
+    "start_date": "Start Date",
+    "end_date": "End Date"
   },
   "dashboard": {
     "overview": "Overview",
@@ -122,6 +126,7 @@
     "billing": "Billing",
     "audit_log": "Audit Log",
     "admin_panel": "Admin Panel",
+    "tenant_portal": "My Portal",
     "monthly_revenue": "Monthly Revenue",
     "total_properties": "Total Properties",
     "active_tenants": "Active Tenants",
@@ -258,10 +263,28 @@
   "install_app": {
     "title": "Install Our App",
     "subtitle": "Get the native mobile experience",
-    "description": "Download our mobile app for the best property management experience on the go.",
+    "description": "Get the native app experience with offline access and push notifications.",
     "download_ios": "Download for iOS",
     "download_android": "Download for Android",
-    "scan_qr": "Scan QR Code"
+    "scan_qr": "Scan QR Code",
+    "install_android": "Install HNV App",
+    "add_to_home": "Add to Home Screen",
+    "install_desktop": "Install Desktop App",
+    "install_button": "Install App",
+    "features": "One-click install • Works offline • Native experience",
+    "best_experience": "Install for the best experience",
+    "android_step1": "Tap the menu (⋮) in your browser",
+    "android_step2": "Select Add to Home screen or Install app",
+    "android_step3": "Tap Add or Install",
+    "ios_step1": "Tap the Share button (□↗) in Safari",
+    "ios_step2": "Scroll down and tap Add to Home Screen",
+    "ios_step3": "Tap Add in the top right corner",
+    "desktop_step1": "Look for the install icon (⊕) in your address bar",
+    "desktop_step2": "Click it and select Install",
+    "desktop_step3": "Or use browser menu → Install HNV Property Management",
+    "generic_step1": "Look for the install icon in your browser",
+    "generic_step2": "Or check browser menu for Install option",
+    "generic_step3": "Add to home screen for native experience"
   },
   "leadership": {
     "title": "Meet Our Team",
@@ -312,7 +335,8 @@
     "property_image": "Property Image",
     "save_property": "Save Property",
     "street_address": "Street Address",
-    "units": "Units"
+    "units": "Units",
+    "update_property": "Update Property"
   },
   "tenant": {
     "add_tenant": "Add Tenant",
@@ -324,6 +348,9 @@
     "late": "Late",
     "id_front": "ID Front",
     "id_back": "ID Back"
+  },
+  "payments": {
+    "payment_description": "Payment description"
   },
   "expense": {
     "add_expense": "Add Expense",
@@ -337,10 +364,14 @@
     "advertising": "Advertising",
     "legal_professional": "Legal & Professional",
     "travel": "Travel",
-    "office_supplies": "Office Supplies"
+    "office_supplies": "Office Supplies",
+    "repairs": "Repairs",
+    "management_fees": "Management Fees",
+    "other": "Other"
   },
   "footer": {
     "company_description": "The leading property management platform trusted by thousands of property managers worldwide.",
+    "company_address": "123 Property Lane, Suite 400, Management City, MC 54321",
     "quick_links": "Quick Links",
     "support": "Support",
     "legal": "Legal",
@@ -349,6 +380,7 @@
     "newsletter_subtitle": "Subscribe to our newsletter for the latest updates",
     "enter_email": "Enter your email",
     "subscribe": "Subscribe",
-    "all_rights_reserved": "All rights reserved"
+    "all_rights_reserved": "All rights reserved",
+    "privacy_policy": "Privacy Policy"
   }
 }

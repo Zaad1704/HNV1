@@ -1,16 +1,14 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const module_1 = require();
-from;
-'../controllers/cashFlowController';
-const uploadMiddleware_1 = __importDefault(require("../middleware/uploadMiddleware"));
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const cashFlowController_1 = require("../controllers/cashFlowController");
 const router = (0, express_1.Router)();
-router.get('/', module_1.getCashFlowRecords);
-router.post('/', uploadMiddleware_1.default.single('document'), module_1.createCashFlowRecord);
-router.put('/:id', module_1.updateCashFlowRecord);
-router.delete('/:id', module_1.deleteCashFlowRecord);
+router.use(authMiddleware_1.protect);
+router.route('/')
+    .get(cashFlowController_1.getCashFlowRecords)
+    .post(cashFlowController_1.createCashFlowRecord);
+router.route('/:id')
+    .put(cashFlowController_1.updateCashFlowRecord)
+    .delete(cashFlowController_1.deleteCashFlowRecord);
 exports.default = router;

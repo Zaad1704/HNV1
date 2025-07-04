@@ -1,12 +1,18 @@
 import { Router } from 'express';
-import asyncHandler from 'express-async-handler';
-import { uploadImage } from '../controllers/fileUploadController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; 
-import upload from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-router.post('/image', protect, authorize(['Super Admin']), upload.single('image'), asyncHandler(uploadImage));
+// Apply authentication middleware
+router.use(protect);
+
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'fileUpload routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

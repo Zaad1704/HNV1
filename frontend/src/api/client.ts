@@ -7,20 +7,20 @@ const getApiUrl = () => {
   // Check environment variable first
   const viteApiUrl = import.meta.env.VITE_API_URL;
   if (viteApiUrl) {
-
-    return viteApiUrl;
+    console.log('Using API URL from environment:', viteApiUrl);
+    return viteApiUrl.endsWith('/api') ? viteApiUrl : `${viteApiUrl}/api`;
   }
   
   // Force production URL when not on localhost
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
     const prodUrl = 'https://hnv.onrender.com/api';
-
+    console.log('Using production API URL:', prodUrl);
     return prodUrl;
   }
   
   // Development fallback
   const devUrl = 'http://localhost:5001/api';
-
+  console.log('Using development API URL:', devUrl);
   return devUrl;
 };
 

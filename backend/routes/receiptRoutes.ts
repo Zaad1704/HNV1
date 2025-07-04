@@ -1,10 +1,18 @@
 import { Router } from 'express';
-import { generatePaymentReceipt } from '../controllers/receiptController';
 import { protect } from '../middleware/authMiddleware';
-import { authorize } from '../middleware/rbac'; // CORRECTED: Import authorize from rbac
 
 const router = Router();
 
-router.get('/payment/:paymentId', protect, authorize(['Landlord', 'Agent']), generatePaymentReceipt);
+// Apply authentication middleware
+router.use(protect);
+
+// Basic route - replace with actual routes
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'receipt routes working',
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default router;

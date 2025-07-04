@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "baseUrl": "./",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
+  },
+  "include": [
+    "server.ts",
+    "app-minimal.ts",
+    "config/index.ts",
+    "services/masterDataService.ts",
+    "services/notificationService.ts",
+    "services/paymentService.ts",
+    "services/subscriptionService.ts",
+    "services/optimizationService.ts",
+    "services/searchService.ts",
+    "services/smsService.ts",
+    "services/whatsAppService.ts",
+    "services/rentCollectionService.ts",
+    "services/translationService.ts",
+    "services/userService.ts",
+    "services/realTimeService.ts",
+    "models/**/*.ts",
+    "middleware/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

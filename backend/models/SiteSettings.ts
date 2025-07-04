@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface ISiteSettings extends Document { siteName: string;
+export interface ISiteSettings extends Document {
+  siteName: string;
   contactEmail: string;
   siteDescription: string;
   heroTitle: string;
@@ -21,9 +22,8 @@ export interface ISiteSettings extends Document { siteName: string;
   aboutSubtitle?: string;
   contactTitle?: string;
   contactSubtitle?: string;
-
-  updatedAt: Date; }
-
+  updatedAt: Date;
+}
 
 const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   siteName: { type: String, default: 'HNV Property Management' },
@@ -47,10 +47,10 @@ const SiteSettingsSchema: Schema<ISiteSettings> = new Schema({
   aboutSubtitle: { type: String, default: 'Built for modern property managers' },
   contactTitle: { type: String, default: 'Get in Touch' },
   contactSubtitle: { type: String, default: "We'd love to hear from you. Send us a message and we'll respond as soon as possible." }
-}, { timestamps: true,
+}, {
+  timestamps: true,
   strict: false,
-  minimize: false; }
-
+  minimize: false
 });
 
 export default mongoose.model<ISiteSettings>('SiteSettings', SiteSettingsSchema);

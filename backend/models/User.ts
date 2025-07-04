@@ -1,22 +1,19 @@
-import mongoose, { Schema, Document, model, Types } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-// The IUser interface now includes all the necessary fields and method signatures.
-export interface IUser extends Document { name: string;
+export interface IUser extends Document {
+  name: string;
   email: string;
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
-  organizationId: mongoose.Types.ObjectId;
-  isIndependentAgent?: boolean;
+  organizationId?: mongoose.Types.ObjectId;
   createdAt: Date;
   googleId?: string;
-  status: 'active' | 'suspended' | 'pending' | 'inactive';
+  status: 'active' | 'suspended' | 'pending';
   permissions: string[];
-  managedAgentIds?: mongoose.Types.ObjectId[];
-  
-  // --- Fields to fix the build error ---
+  managedAgentIds: mongoose.Types.ObjectId[];
   isEmailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
@@ -24,39 +21,33 @@ export interface IUser extends Document { name: string;
   passwordResetExpires?: Date;
   phone?: string;
   profilePicture?: string;
-  twoFactorEnabled?: boolean;
+  twoFactorEnabled: boolean;
   twoFactorSecret?: string;
   twoFactorToken?: string;
-
-  twoFactorExpires?: Date; }
-
-
-  // --- Method signatures ---
+  twoFactorExpires?: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
-  getEmailVerificationToken(): string; // Added method
+  getEmailVerificationToken(): string;
   getPasswordResetToken(): string;
+}
 
-const UserSchema: Schema<IUser> = new Schema({
+const UserSchema = new Schema<IUser>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String,
-    required: function(this: IUser): boolean { }
+  password: {
+    type: String,
+    required: function() {
       return !this.googleId;
-
     },
-    select: false;
+    select: false
   },
   role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
-  isIndependentAgent: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   googleId: String,
-  status: { type: String, enum: ['active', 'suspended', 'pending', 'inactive'], default: 'active' },
+  status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-
-  // --- Schema definitions for the new fields ---
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String, select: false },
   emailVerificationExpires: { type: Date, select: false },
@@ -70,62 +61,44 @@ const UserSchema: Schema<IUser> = new Schema({
   twoFactorExpires: { type: Date, select: false }
 });
 
-// --- Lifecycle Hooks (pre-save for password hashing) ---
-UserSchema.pre<IUser>('save', async function(next) { if (!this.isModified('password') || !this.password) { }
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password') || !this.password) {
     return next();
-
-
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-// --- Instance Methods ---
-
-UserSchema.methods.matchPassword = async function(enteredPassword: string): Promise<boolean> { if (!this.password || !enteredPassword) { }
-    return false;
-
-
-
-  try { const result = await bcrypt.compare(enteredPassword, this.password);
-
-    return result; }
-
-
-  } catch (error) { console.error('Password comparison error:', error);
-    return false; }
-
-
+UserSchema.methods.matchPassword = async function(enteredPassword: string) {
+  if (!this.password) return false;
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-UserSchema.methods.getSignedJwtToken = function(): string { if (!process.env.JWT_SECRET) { }
+UserSchema.methods.getSignedJwtToken = function() {
+  if (!process.env.JWT_SECRET) {
     throw new Error('JWT Secret is not defined in environment variables.');
-
-
-
-  const payload = { id: (this._id as Types.ObjectId).toString(), role: this.role, name: this.name };
-  const secret: Secret = process.env.JWT_SECRET;
-  const options: SignOptions = { // @ts-ignore; }
-
+  }
+  const payload = { id: this._id.toString(), role: this.role, name: this.name };
+  const secret = process.env.JWT_SECRET;
+  const options = {
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  };
+  } as any;
   return jwt.sign(payload, secret, options);
 };
 
-// Implementation for the email verification token method
-UserSchema.methods.getEmailVerificationToken = function(): string { const verificationToken = crypto.randomBytes(32).toString('hex');
+UserSchema.methods.getEmailVerificationToken = function() {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
   this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
-  this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
-  return verificationToken; }
-
+  this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000);
+  return verificationToken;
 };
 
-// Implementation for the password reset token method
-UserSchema.methods.getPasswordResetToken = function(): string { const resetToken = crypto.randomBytes(20).toString('hex');
+UserSchema.methods.getPasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(20).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-  return resetToken; }
-
+  this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  return resetToken;
 };
 
-export default model<IUser>('User', UserSchema);
+export default mongoose.model<IUser>('User', UserSchema);

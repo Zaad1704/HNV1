@@ -1,8 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const setupController_1 = require("../controllers/setupController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = (0, express_1.Router)();
-router.post('/create-super-admin', setupController_1.createSuperAdmin);
-router.post('/create-default-plans', setupController_1.createDefaultPlans);
+router.use(authMiddleware_1.protect);
+router.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'setup routes working',
+        timestamp: new Date().toISOString()
+    });
+});
 exports.default = router;
