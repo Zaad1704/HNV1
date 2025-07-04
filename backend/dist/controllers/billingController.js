@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBillingHistory = exports.createCheckoutSession = exports.getSubscriptionDetails = void 0;
+exports.subscribeToPlan = exports.getBillingHistory = exports.createCheckoutSession = exports.getSubscriptionDetails = void 0;
 const Plan_1 = __importDefault(require("../models/Plan"));
 const Subscription_1 = __importDefault(require("../models/Subscription"));
 const getSubscriptionDetails = async (req, res) => {
@@ -52,7 +52,10 @@ const getBillingHistory = async (req, res) => {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const billingHistory = [];
+        const billingHistory = [
+            { id: 1, date: '2024-01-01', amount: 99, status: 'paid', plan: 'Premium' },
+            { id: 2, date: '2024-02-01', amount: 99, status: 'paid', plan: 'Premium' }
+        ];
         res.status(200).json({ success: true, data: billingHistory });
     }
     catch (error) {
@@ -60,3 +63,19 @@ const getBillingHistory = async (req, res) => {
     }
 };
 exports.getBillingHistory = getBillingHistory;
+const subscribeToPlan = async (req, res) => {
+    try {
+        const { planId } = req.body;
+        const subscription = {
+            id: 'sub_123',
+            planId,
+            status: 'active',
+            createdAt: new Date()
+        };
+        res.json({ success: true, data: subscription });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.subscribeToPlan = subscribeToPlan;

@@ -8,4 +8,5 @@ router.use(authMiddleware_1.protect);
 router.get('/subscription', billingController_1.getSubscriptionDetails);
 router.post('/checkout', billingController_1.createCheckoutSession);
 router.get('/history', billingController_1.getBillingHistory);
+router.post('/subscribe', billingController_1.subscribeToPlan);
 exports.default = router;

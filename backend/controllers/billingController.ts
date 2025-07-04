@@ -59,10 +59,30 @@ export const getBillingHistory = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    // Mock billing history
-    const billingHistory = [];
+    const billingHistory = [
+      { id: 1, date: '2024-01-01', amount: 99, status: 'paid', plan: 'Premium' },
+      { id: 2, date: '2024-02-01', amount: 99, status: 'paid', plan: 'Premium' }
+    ];
 
     res.status(200).json({ success: true, data: billingHistory });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const subscribeToPlan = async (req: AuthRequest, res: Response) => {
+  try {
+    const { planId } = req.body;
+    
+    // Mock subscription creation
+    const subscription = {
+      id: 'sub_123',
+      planId,
+      status: 'active',
+      createdAt: new Date()
+    };
+
+    res.json({ success: true, data: subscription });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
