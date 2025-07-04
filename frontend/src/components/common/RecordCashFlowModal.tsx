@@ -1,266 +1,156 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, DollarSign, User, Calendar } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-import { DollarSign, Upload, X } from 'lucide-react';
-import { useCurrency } from '../../contexts/CurrencyContext';
 
-interface CashFlowData {
-  type: 'handover' | 'deposit';
-  amount: number;
-  description: string;
-  date: string;
-  bankName?: string;
-  accountNumber?: string;
-  transactionId?: string;
-  handedOverTo?: string;
-  receivedBy?: string;
-  documentation?: File;
+interface RecordCashFlowModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onRecorded: () => void;
 }
 
-const RecordCashFlowModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const queryClient = useQueryClient();
-  const { currency } = useCurrency();
-  const [formData, setFormData] = useState<CashFlowData>({
-    type: 'handover',
-    amount: 0,
-    description: '',
-    date: new Date().toISOString().split('T')[0],
+const RecordCashFlowModal: React.FC<RecordCashFlowModalProps> = ({ isOpen, onClose, onRecorded }) => {
+  const [formData, setFormData] = useState({
+    type: 'cash_handover',
+    amount: '',
+    toUser: '',
+    transactionDate: new Date().toISOString().split('T')[0],
+    notes: ''
   });
-  const [documentation, setDocumentation] = useState<File | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: async (data: FormData) => {
-      const response = await apiClient.post('/cashflow/record', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+  const recordMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/cashflow', data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cashflow'] });
-      queryClient.invalidateQueries({ queryKey: ['auditLog'] });
-      onClose();
+      alert('Cash flow recorded successfully!');
+      onRecorded();
       setFormData({
-        type: 'handover',
-        amount: 0,
-        description: '',
-        date: new Date().toISOString().split('T')[0],
+        type: 'cash_handover',
+        amount: '',
+        toUser: '',
+        transactionDate: new Date().toISOString().split('T')[0],
+        notes: ''
       });
-      setDocumentation(null);
+    },
+    onError: (error: any) => {
+      alert(`Failed to record cash flow: ${error.response?.data?.message || error.message}`);
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const submitData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') {
-        submitData.append(key, value.toString());
-      }
-    });
-    
-    if (documentation) {
-      submitData.append('documentation', documentation);
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
     }
-    
-    mutation.mutate(submitData);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    recordMutation.mutate(formData);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-2xl">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <DollarSign size={24} />
-              Record Cash Flow
-            </h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <X size={24} />
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="app-surface rounded-3xl p-6 w-full max-w-md border border-app-border">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-text-primary flex items-center gap-2">
+            <DollarSign size={24} className="text-blue-500" />
+            Record Cash Flow
+          </h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-app-bg">
+            <X size={20} />
+          </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Transaction Type
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="handover">Cash Handover</option>
-                <option value="deposit">Bank Deposit</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Amount ({currency})
-              </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Transaction Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              required
+            >
+              <option value="cash_handover">Cash Handover</option>
+              <option value="bank_deposit">Bank Deposit</option>
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Date
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Amount
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              placeholder="Enter amount"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              To User (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.toUser}
+              onChange={(e) => setFormData({ ...formData, toUser: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              placeholder="Recipient name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Transaction Date
             </label>
             <input
               type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={formData.transactionDate}
+              onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Notes (Optional)
             </label>
             <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="Describe the transaction..."
-              required
+              placeholder="Additional notes..."
             />
           </div>
 
-          {formData.type === 'deposit' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bank Name
-                </label>
-                <input
-                  type="text"
-                  name="bankName"
-                  value={formData.bankName || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Account Number
-                </label>
-                <input
-                  type="text"
-                  name="accountNumber"
-                  value={formData.accountNumber || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Transaction ID
-                </label>
-                <input
-                  type="text"
-                  name="transactionId"
-                  value={formData.transactionId || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          )}
-
-          {formData.type === 'handover' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Handed Over To
-                </label>
-                <input
-                  type="text"
-                  name="handedOverTo"
-                  value={formData.handedOverTo || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Received By
-                </label>
-                <input
-                  type="text"
-                  name="receivedBy"
-                  value={formData.receivedBy || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Documentation (Receipt/Image)
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="file"
-                onChange={(e) => setDocumentation(e.target.files?.[0] || null)}
-                accept="image/*,.pdf"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <Upload size={20} className="text-gray-400" />
-            </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={recordMutation.isPending}
+              className="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {recordMutation.isPending ? 'Recording...' : 'Record Cash Flow'}
+            </button>
           </div>
         </form>
-        
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={mutation.isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            {mutation.isLoading ? 'Recording...' : 'Record Transaction'}
-          </button>
-        </div>
-        
-        <div className="px-6 pb-4 text-xs text-gray-500 text-center">
-          Powered by HNV Property Management Solutions
-        </div>
       </div>
     </div>
   );

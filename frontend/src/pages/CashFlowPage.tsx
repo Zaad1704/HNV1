@@ -6,6 +6,7 @@ import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
 import { PlusCircle, DollarSign, ArrowRight, Edit, Trash2, Download } from 'lucide-react';
+import RecordCashFlowModal from '../components/common/RecordCashFlowModal';
 import { useAuthStore } from '../store/authStore';
 import { useDataExport } from '../hooks/useDataExport';
 
@@ -158,15 +159,13 @@ const CashFlowPage: React.FC = () => {
                             <Download size={16} />
                             Export
                         </button>
-                        {user?.role === 'Agent' && (
-                          <button
-                              onClick={() => setIsRecordModalOpen(true)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                          >
-                              <PlusCircle size={18} />
-                              <span>Record Transaction</span>
-                          </button>
-                        )}
+                        <button
+                            onClick={() => setIsRecordModalOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-colors"
+                        >
+                            <PlusCircle size={18} />
+                            <span>Record Cash Flow</span>
+                        </button>
                     </div>
                 </div>
 
@@ -251,6 +250,15 @@ const CashFlowPage: React.FC = () => {
                 onClose={() => setShowExportModal(false)}
                 section="cashflow"
                 title="Cash Flow Records"
+            />
+
+            <RecordCashFlowModal
+                isOpen={isRecordModalOpen}
+                onClose={() => setIsRecordModalOpen(false)}
+                onRecorded={() => {
+                    refetch();
+                    setIsRecordModalOpen(false);
+                }}
             />
             </div>
         );

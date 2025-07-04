@@ -15,28 +15,53 @@ import { motion } from 'framer-motion';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 const fetchOverviewStats = async () => {
-  const { data } = await apiClient.get('/dashboard/overview-stats');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/dashboard/overview-stats');
+    return data.data || {};
+  } catch (error) {
+    console.error('Overview stats error:', error);
+    return { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' };
+  }
 };
 
 const fetchLateTenants = async () => {
-  const { data } = await apiClient.get('/dashboard/late-tenants');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/dashboard/late-tenants');
+    return data.data || [];
+  } catch (error) {
+    console.error('Late tenants error:', error);
+    return [];
+  }
 };
 
 const fetchExpiringLeases = async (): Promise<IExpiringLease[]> => {
-  const { data } = await apiClient.get('/dashboard/expiring-leases');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/dashboard/expiring-leases');
+    return data.data || [];
+  } catch (error) {
+    console.error('Expiring leases error:', error);
+    return [];
+  }
 };
 
 const fetchFinancialSummary = async () => {
-  const { data } = await apiClient.get('/dashboard/financial-summary');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/dashboard/financial-summary');
+    return data.data || [];
+  } catch (error) {
+    console.error('Financial summary error:', error);
+    return [];
+  }
 };
 
 const fetchRentStatus = async () => {
-  const { data } = await apiClient.get('/dashboard/rent-status');
-  return data.data;
+  try {
+    const { data } = await apiClient.get('/dashboard/rent-status');
+    return data.data || [];
+  } catch (error) {
+    console.error('Rent status error:', error);
+    return [];
+  }
 };
 
 const sendRentReminder = async (tenantId: string) => {
@@ -113,23 +138,33 @@ const OverviewPage = () => {
 
   const { data: stats, isLoading: isLoadingStats } = useQuery({ 
     queryKey: ['overviewStats'], 
-    queryFn: fetchOverviewStats 
+    queryFn: fetchOverviewStats,
+    retry: 1,
+    staleTime: 30000
   });
   const { data: lateTenants } = useQuery({ 
     queryKey: ['lateTenants'], 
-    queryFn: fetchLateTenants 
+    queryFn: fetchLateTenants,
+    retry: 1,
+    staleTime: 30000
   });
   const { data: expiringLeases } = useQuery({ 
     queryKey: ['expiringLeases'], 
-    queryFn: fetchExpiringLeases 
+    queryFn: fetchExpiringLeases,
+    retry: 1,
+    staleTime: 30000
   });
   const { data: financialData } = useQuery({ 
     queryKey: ['financialSummary'], 
-    queryFn: fetchFinancialSummary 
+    queryFn: fetchFinancialSummary,
+    retry: 1,
+    staleTime: 30000
   });
   const { data: rentStatusData } = useQuery({ 
     queryKey: ['rentStatus'], 
-    queryFn: fetchRentStatus 
+    queryFn: fetchRentStatus,
+    retry: 1,
+    staleTime: 30000
   });
 
   const reminderMutation = useMutation({

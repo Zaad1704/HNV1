@@ -9,13 +9,23 @@ import { Link } from 'react-router-dom';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchBillingInfo = async () => {
-  const { data } = await apiClient.get("/billing");
-  return data.data;
+  try {
+    const { data } = await apiClient.get("/billing");
+    return data.data || null;
+  } catch (error) {
+    console.error('Billing info error:', error);
+    return null;
+  }
 };
 
 const fetchBillingHistory = async () => {
-  const { data } = await apiClient.get("/billing/history");
-  return data.data || [];
+  try {
+    const { data } = await apiClient.get("/billing/history");
+    return data.data || [];
+  } catch (error) {
+    console.error('Billing history error:', error);
+    return [];
+  }
 };
 
 const BillingPage: React.FC = () => {
@@ -29,13 +39,16 @@ const BillingPage: React.FC = () => {
   const { data: billingInfo, isLoading, isError, error } = useQuery({
       queryKey: ['billingInfo'],
       queryFn: fetchBillingInfo,
-      retry: false
+      retry: 1,
+      staleTime: 30000
   });
 
   const { data: billingHistory = [] } = useQuery({
       queryKey: ['billingHistory'],
       queryFn: fetchBillingHistory,
-      enabled: showHistory
+      enabled: showHistory,
+      retry: 1,
+      staleTime: 30000
   });
 
   const filteredHistory = useMemo(() => {
@@ -96,7 +109,19 @@ const BillingPage: React.FC = () => {
 
   if (isLoading) return <div className="text-center p-8 text-dark-text">Loading Billing Information...</div>;
   
-  if (isError) return <div className="text-center text-red-400 p-8">Error loading subscription details: {(error as Error).message}</div>;
+  if (isError) {
+    return (
+      <div className="text-center p-8">
+        <div className="text-red-500 mb-4">Error loading billing information</div>
+        <div className="text-sm text-gray-500 mb-4">
+          {error instanceof Error ? error.message : 'Unknown error occurred'}
+        </div>
+        <Link to="/pricing" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          View Plans
+        </Link>
+      </div>
+    );
+  }
 
   if (!billingInfo || !billingInfo.planId) {
     return (

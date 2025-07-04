@@ -1,4 +1,3 @@
-// frontend/src/pages/ApprovalRequestsPage.tsx
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -14,16 +13,23 @@ interface IEditRequest {
 }
 
 const fetchApprovalRequests = async (): Promise<IEditRequest[]> => {
-    const { data } = await apiClient.get('/edit-requests');
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/edit-requests');
+        return data.data || [];
+    } catch (error) {
+        console.error('Approval requests error:', error);
+        return [];
+    }
 };
 
 const ApprovalRequestsPage: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const { data: requests = [], isLoading, isError } = useQuery({
+    const { data: requests = [], isLoading, isError, error } = useQuery({
         queryKey: ['approvalRequests'],
         queryFn: fetchApprovalRequests,
+        retry: 1,
+        staleTime: 30000
     });
 
     const approveMutation = useMutation({
@@ -38,8 +44,21 @@ const ApprovalRequestsPage: React.FC = () => {
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to reject request.'),
     });
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading approval requests...</div>;
-    if (isError) return <div className="text-center p-8 text-red-400 dark:text-red-400">Failed to load requests.</div>;
+    if (isLoading) return <div className="text-center p-8 text-text-primary">Loading approval requests...</div>;
+    
+    if (isError) {
+        return (
+            <div className="text-center p-8">
+                <div className="text-red-500 mb-4">Failed to load approval requests</div>
+                <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
 
     const pageVariants = {
         initial: { opacity: 0, y: 20 },
@@ -54,38 +73,46 @@ const ApprovalRequestsPage: React.FC = () => {
             exit="out"
             variants={pageVariants}
             transition={{ duration: 0.4 }}
-            className="text-dark-text dark:text-dark-text-dark"
+            className="text-text-primary"
         >
             <h1 className="text-3xl font-bold mb-8">Pending Approval Requests</h1>
 
             {requests.length === 0 ? (
-                <div className="text-center py-16 bg-light-card rounded-xl border-2 border-dashed border-border-color dark:bg-dark-card dark:border-border-color-dark">
-                    <FileWarning size={48} className="mx-auto text-light-text mb-4 dark:text-light-text-dark" />
-                    <h3 className="text-xl font-semibold text-dark-text dark:text-dark-text-dark">No Pending Requests</h3>
-                    <p className="text-light-text mt-2 dark:text-light-text-dark">There are currently no pending edit requests from your agents.</p>
+                <div className="text-center py-16 app-surface rounded-3xl border-2 border-dashed border-app-border">
+                    <FileWarning size={48} className="mx-auto text-text-secondary mb-4" />
+                    <h3 className="text-xl font-semibold text-text-primary">No Pending Requests</h3>
+                    <p className="text-text-secondary mt-2">There are currently no pending edit requests from your agents.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
                     {requests.map((req) => (
-                        <div key={req._id} className="bg-light-card p-4 rounded-xl border border-border-color shadow-sm flex flex-col sm:flex-row justify-between items-start gap-4 dark:bg-dark-card dark:border-border-color-dark">
+                        <div key={req._id} className="app-surface p-4 rounded-xl border border-app-border shadow-sm flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex-grow">
-                                <p className="font-semibold text-dark-text dark:text-dark-text-dark">
-                                    <span className="font-bold text-brand-primary">{req.requester.name}</span> is requesting to edit a cash flow record:
+                                <p className="font-semibold text-text-primary">
+                                    <span className="font-bold text-blue-500">{req.requester.name}</span> is requesting to edit a cash flow record:
                                 </p>
-                                <p className="text-sm text-light-text mt-1 dark:text-light-text-dark">
-                                    Amount: <span className="font-semibold text-dark-text dark:text-dark-text-dark">${req.resourceId.amount.toFixed(2)}</span> | 
-                                    Date: <span className="font-semibold text-dark-text dark:text-dark-text-dark">{new Date(req.resourceId.transactionDate).toLocaleDateString()}</span>
+                                <p className="text-sm text-text-secondary mt-1">
+                                    Amount: <span className="font-semibold text-text-primary">${req.resourceId.amount.toFixed(2)}</span> | 
+                                    Date: <span className="font-semibold text-text-primary">{new Date(req.resourceId.transactionDate).toLocaleDateString()}</span>
                                 </p>
-                                <div className="mt-2 p-3 bg-light-bg border border-dashed border-border-color rounded-md dark:bg-dark-bg/50 dark:border-border-color-dark">
-                                    <p className="text-sm text-light-text font-semibold dark:text-light-text-dark">Reason:</p>
-                                    <p className="text-sm text-dark-text dark:text-dark-text-dark">{req.reason}</p>
+                                <div className="mt-2 p-3 bg-app-bg border border-dashed border-app-border rounded-md">
+                                    <p className="text-sm text-text-secondary font-semibold">Reason:</p>
+                                    <p className="text-sm text-text-primary">{req.reason}</p>
                                 </div>
                             </div>
                             <div className="flex-shrink-0 flex items-center gap-2 w-full sm:w-auto">
-                                <button onClick={() => rejectMutation.mutate(req._id)} disabled={rejectMutation.isLoading} className="w-1/2 sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-red-500/20 text-red-300 font-bold rounded-lg hover:bg-red-500/30">
+                                <button 
+                                    onClick={() => rejectMutation.mutate(req._id)} 
+                                    disabled={rejectMutation.isPending} 
+                                    className="w-1/2 sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-red-500/20 text-red-600 font-bold rounded-lg hover:bg-red-500/30"
+                                >
                                     <X size={16}/> Reject
                                 </button>
-                                <button onClick={() => approveMutation.mutate(req._id)} disabled={approveMutation.isLoading} className="w-1/2 sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-500/20 text-green-300 font-bold rounded-lg hover:bg-green-500/30">
+                                <button 
+                                    onClick={() => approveMutation.mutate(req._id)} 
+                                    disabled={approveMutation.isPending} 
+                                    className="w-1/2 sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-green-500/20 text-green-600 font-bold rounded-lg hover:bg-green-500/30"
+                                >
                                     <Check size={16}/> Approve
                                 </button>
                             </div>
