@@ -13,6 +13,13 @@ import itTranslations from '../public/locales/it/translation.json';
 import ptTranslations from '../public/locales/pt/translation.json';
 import ruTranslations from '../public/locales/ru/translation.json';
 import jaTranslations from '../public/locales/ja/translation.json';
+import zhTranslations from '../public/locales/zh/translation.json';
+import koTranslations from '../public/locales/ko/translation.json';
+import thTranslations from '../public/locales/th/translation.json';
+import viTranslations from '../public/locales/vi/translation.json';
+import idTranslations from '../public/locales/id/translation.json';
+import msTranslations from '../public/locales/ms/translation.json';
+import tlTranslations from '../public/locales/tl/translation.json';
 
 const resources = {
   en: { translation: enTranslations },
@@ -25,22 +32,43 @@ const resources = {
   it: { translation: itTranslations },
   pt: { translation: ptTranslations },
   ru: { translation: ruTranslations },
-  ja: { translation: jaTranslations }
+  ja: { translation: jaTranslations },
+  zh: { translation: zhTranslations },
+  ko: { translation: koTranslations },
+  th: { translation: thTranslations },
+  vi: { translation: viTranslations },
+  id: { translation: idTranslations },
+  ms: { translation: msTranslations },
+  tl: { translation: tlTranslations }
 };
+
+console.log('i18n resources loaded:', {
+  languages: Object.keys(resources),
+  totalKeys: Object.keys(enTranslations).length
+});
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem('language') || 'en',
+    lng: localStorage.getItem('selectedLanguage') || 'en',
     fallbackLng: 'en',
-    debug: false,
+    debug: true,
     interpolation: {
       escapeValue: false,
     },
     react: {
       useSuspense: false,
-    }
+    },
+    initImmediate: false
+  })
+  .then(() => {
+    console.log('i18n initialized successfully');
+    console.log('Current language:', i18n.language);
+    console.log('Available resources:', Object.keys(resources));
+  })
+  .catch((error) => {
+    console.error('i18n initialization failed:', error);
   });
 
 export default i18n;

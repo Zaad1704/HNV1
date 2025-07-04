@@ -80,23 +80,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const language = getLanguageByCode(languageCode);
       console.log('Changing language to:', language);
       
-      setCurrentLanguage(language);
-      
-      // Force language change
+      // Change i18n language first
       await i18n.changeLanguage(language.code);
       console.log('i18n language changed to:', i18n.language);
+      
+      // Update state
+      setCurrentLanguage(language);
       
       // Save preferences
       localStorage.setItem('selectedLanguage', language.code);
       localStorage.setItem('selectedCurrency', language.currency);
       
-      // Force re-render by updating state
-      setCurrentLanguage({...language});
-      
       // Dispatch event for other components to react
       window.dispatchEvent(new CustomEvent('languageChanged', { 
         detail: { language, currency: language.currency } 
       }));
+      
+      // Force page refresh to ensure all components update
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (error) {
       console.error('Language change failed:', error);
     }
