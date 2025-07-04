@@ -29,7 +29,7 @@ const planSchema = new Schema<IPlan>({
   },
   interval: {
     type: String,
-    enum: ['monthly', 'yearly'],
+    enum: ['month', 'monthly', 'yearly'],
     default: 'monthly'
   },
   features: { type: [String], default: [] },
