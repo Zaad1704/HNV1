@@ -39,7 +39,6 @@ const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen,
   };
 
   const getPastDueMonths = (tenantId: string) => {
-    // Mock calculation - in real app, check payment history
     const currentDate = new Date();
     const selectedDate = new Date(selectedMonth);
     const monthsDiff = (currentDate.getFullYear() - selectedDate.getFullYear()) * 12 + 
@@ -156,4 +155,59 @@ const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen,
                           {paymentStatus === 'paid' ? (
                             <>
                               <Check size={16} className="text-green-500" />
-                              <span className="text-green-600 font-medium">Paid</span>\n                            </>\n                          ) : (\n                            <>\n                              <AlertCircle size={16} className=\"text-red-500\" />\n                              <span className=\"text-red-600 font-medium\">Pending</span>\n                            </>\n                          )}\n                        </div>\n                      </td>\n                      <td className=\"py-4 px-4\">\n                        {pastDueMonths > 0 ? (\n                          <span className=\"px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium\">\n                            {pastDueMonths} month{pastDueMonths > 1 ? 's' : ''}\n                          </span>\n                        ) : (\n                          <span className=\"text-text-secondary text-sm\">Current</span>\n                        )}\n                      </td>\n                      <td className=\"py-4 px-4\">\n                        <input\n                          type=\"text\"\n                          placeholder=\"Add notes...\"\n                          className=\"w-full p-2 text-sm border border-app-border rounded-lg bg-app-surface text-text-primary\"\n                        />\n                      </td>\n                    </tr>\n                  );\n                })}\n              </tbody>\n            </table>\n          </div>\n        )}\n\n        <div className=\"flex justify-between items-center mt-6 pt-4 border-t border-app-border\">\n          <div className=\"text-sm text-text-secondary\">\n            {checkedTenants.size} of {tenants?.length || 0} tenants selected\n          </div>\n          <div className=\"flex gap-3\">\n            <button\n              onClick={onClose}\n              className=\"px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors\"\n            >\n              Close\n            </button>\n            <button className=\"px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors\">\n              Export Sheet\n            </button>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nexport default MonthlyCollectionSheet;
+                              <span className="text-green-600 font-medium">Paid</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle size={16} className="text-red-500" />
+                              <span className="text-red-600 font-medium">Pending</span>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        {pastDueMonths > 0 ? (
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                            {pastDueMonths} month{pastDueMonths > 1 ? 's' : ''}
+                          </span>
+                        ) : (
+                          <span className="text-text-secondary text-sm">Current</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        <input
+                          type="text"
+                          placeholder="Add notes..."
+                          className="w-full p-2 text-sm border border-app-border rounded-lg bg-app-surface text-text-primary"
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center mt-6 pt-4 border-t border-app-border">
+          <div className="text-sm text-text-secondary">
+            {checkedTenants.size} of {tenants?.length || 0} tenants selected
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors"
+            >
+              Close
+            </button>
+            <button className="px-6 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors">
+              Export Sheet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MonthlyCollectionSheet;
