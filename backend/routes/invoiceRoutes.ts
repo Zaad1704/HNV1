@@ -1,18 +1,14 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import { getInvoices, generateInvoices, getInvoiceById, printInvoice } from '../controllers/invoiceController';
 
 const router = Router();
 
-// Apply authentication middleware
 router.use(protect);
 
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'invoice routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getInvoices);
+router.post('/generate', generateInvoices);
+router.get('/:id', getInvoiceById);
+router.get('/:id/print', printInvoice);
 
 export default router;
