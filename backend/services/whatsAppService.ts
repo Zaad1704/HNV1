@@ -1,32 +1,65 @@
-// backend/services/whatsAppService.ts
+import axios from 'axios';
 
-// This is a placeholder for your WhatsApp integration service.
-// Full WhatsApp Business API integration is complex and requires Meta approval.
-// You would typically use a provider like Twilio's WhatsApp API, MessageBird, or direct Meta Business API.
+interface WhatsAppConfig {
+  apiUrl: string;
+  accessToken: string;
+  phoneNumberId: string;
+}
 
 class WhatsAppService {
+  private config: WhatsAppConfig;
+
   constructor() {
-    // Initialize your WhatsApp provider's SDK here
-    // Example for Twilio WhatsApp:
-    // this.twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    this.config = {
+      apiUrl: process.env.WHATSAPP_API_URL || 'https://graph.facebook.com/v17.0',
+      accessToken: process.env.WHATSAPP_ACCESS_TOKEN || '',
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || ''
+    };
+  }
 
-  /**
-   * Sends a WhatsApp message to a given phone number.
-   * Note: This is a simplified mock. Real WhatsApp API requires templates, media, etc.
-   * @param to The recipient's phone number (WhatsApp enabled).
-   * @param message The text message to send.
-   * @returns A promise that resolves when the message is sent.
-   */
-  async sendMessage(to: string, message: string): Promise<void> {
+  async sendMessage(to: string, message: string): Promise<boolean> {
+    if (!this.config.accessToken || !this.config.phoneNumberId) {
+      console.warn('WhatsApp service not configured');
+      return false;
+    }
+
     try {
-      if (!process.env.WHATSAPP_PHONE_NUMBER_ID) {
-        console.warn('WhatsApp Service: WHATSAPP_PHONE_NUMBER_ID is not set. Skipping sending WhatsApp message.');
-        return;
+      await axios.post(
+        `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`,
+        {
+          messaging_product: 'whatsapp',
+          to: to,
+          text: { body: message }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.config.accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return true;
+    } catch (error) {
+      console.error('WhatsApp message sending failed:', error);
+      return false;
+    }
+  }
 
-      // Example using Twilio for WhatsApp:
-      // await this.twilioClient.messages.create({
-      //   body: message,
-      //   from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}
-      //   to: `whatsapp:${to}
-      Sent WhatsApp message to ${to}: "${message.substring(0, 50)}..."
-    const fullMessage = `${message}\nDocument: ${documentUrl}
+  async sendBulkMessage(recipients: string[], message: string): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+
+    for (const recipient of recipients) {
+      const sent = await this.sendMessage(recipient, message);
+      if (sent) {
+        success++;
+      } else {
+        failed++;
+      }
+    }
+
+    return { success, failed };
+  }
+}
+
+export default new WhatsAppService();

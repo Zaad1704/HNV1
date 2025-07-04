@@ -1,31 +1,61 @@
-// backend/services/smsService.ts
+import twilio from 'twilio';
 
-// This is a placeholder for your SMS integration service.
-// You would integrate with a third-party SMS provider like Twilio, Nexmo, Vonage here.
+interface SMSConfig {
+  accountSid: string;
+  authToken: string;
+  fromNumber: string;
+}
 
-class SmsService {
+class SMSService {
+  private client: any;
+  private config: SMSConfig;
+
   constructor() {
-    // Initialize your SMS provider's SDK here
-    // Example for Twilio:
-    // this.twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    this.config = {
+      accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+      authToken: process.env.TWILIO_AUTH_TOKEN || '',
+      fromNumber: process.env.TWILIO_FROM_NUMBER || ''
+    };
 
-  /**
-   * Sends an SMS message to a given phone number.
-   * @param to The recipient's phone number.
-   * @param message The text message to send.
-   * @returns A promise that resolves when the message is sent.
-   */
-  async sendSms(to: string, message: string): Promise<void> {
+    if (this.config.accountSid && this.config.authToken) {
+      this.client = twilio(this.config.accountSid, this.config.authToken);
+    }
+  }
+
+  async sendSMS(to: string, message: string): Promise<boolean> {
+    if (!this.client) {
+      console.warn('SMS service not configured');
+      return false;
+    }
+
     try {
-      if (!process.env.TWILIO_PHONE_NUMBER) {
-        console.warn('SMS Service: TWILIO_PHONE_NUMBER is not set. Skipping sending SMS.');
-        return;
+      await this.client.messages.create({
+        body: message,
+        from: this.config.fromNumber,
+        to: to
+      });
+      return true;
+    } catch (error) {
+      console.error('SMS sending failed:', error);
+      return false;
+    }
+  }
 
-      // Example for Twilio:
-      // await this.twilioClient.messages.create({
-      //   body: message,
-      //   from: process.env.TWILIO_PHONE_NUMBER,
-      //   to: to,
-      // });
-      Sent SMS to ${to}: "${message.substring(0, 50)}..."
-    const fullMessage = `${message}\n${linkUrl}
+  async sendBulkSMS(recipients: string[], message: string): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+
+    for (const recipient of recipients) {
+      const sent = await this.sendSMS(recipient, message);
+      if (sent) {
+        success++;
+      } else {
+        failed++;
+      }
+    }
+
+    return { success, failed };
+  }
+}
+
+export default new SMSService();
