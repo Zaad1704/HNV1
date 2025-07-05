@@ -7,38 +7,38 @@ const QuickActions = React.memo(() => {
   const actions = useMemo(() => [
     {
       icon: Building2,
-      label: 'Add Property',
-      to: '/dashboard/properties/new',
+      label: 'Properties',
+      to: '/dashboard/properties',
       color: 'gradient-dark-orange-blue'
     },
     {
       icon: Users,
-      label: 'Add Tenant',
-      to: '/dashboard/tenants/new',
+      label: 'Tenants',
+      to: '/dashboard/tenants',
       color: 'gradient-orange-blue'
     },
     {
       icon: DollarSign,
-      label: 'Record Payment',
-      to: '/dashboard/payments/new',
+      label: 'Payments',
+      to: '/dashboard/payments',
       color: 'gradient-dark-orange-blue'
     },
     {
       icon: Wrench,
       label: 'Maintenance',
-      to: '/dashboard/maintenance/new',
+      to: '/dashboard/maintenance',
       color: 'gradient-orange-blue'
     },
     {
       icon: FileText,
-      label: 'Add Expense',
-      to: '/dashboard/expenses/new',
+      label: 'Expenses',
+      to: '/dashboard/expenses',
       color: 'gradient-dark-orange-blue'
     },
     {
       icon: Plus,
-      label: 'Quick Add',
-      to: '/dashboard/quick-add',
+      label: 'Cash Flow',
+      to: '/dashboard/cashflow',
       color: 'gradient-orange-blue'
     }
   ], []);

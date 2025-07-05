@@ -347,7 +347,7 @@ const OverviewPage = () => {
             { to: '/dashboard/cashflow', icon: TrendingUp, label: 'Cash Flow', color: 'gradient-orange-blue' },
             { to: '/dashboard/reminders', icon: Bell, label: 'Reminders', color: 'gradient-dark-orange-blue' },
             { to: '/dashboard/approvals', icon: CheckSquare, label: 'Approvals', color: 'gradient-orange-blue' },
-            { to: '/dashboard/users', icon: Users, label: 'Team', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/users', icon: UserCheck, label: 'Team', color: 'gradient-dark-orange-blue' },
             { to: '/dashboard/billing', icon: CreditCard, label: 'Billing', color: 'gradient-orange-blue' },
             { to: '/dashboard/audit-log', icon: FileText, label: 'Audit Log', color: 'gradient-dark-orange-blue' },
             { to: '/dashboard/settings', icon: Settings, label: 'Settings', color: 'gradient-orange-blue' }
