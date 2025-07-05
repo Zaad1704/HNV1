@@ -93,9 +93,10 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     try {
       const emailService = (await import('../services/emailService')).default;
       await emailService.sendVerificationEmail(user.email, verificationToken, user.name);
+      console.log('✅ Verification email sent successfully to:', user.email);
     } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      // Don't fail registration if email fails
+      console.error('❌ Failed to send verification email:', emailError);
+      // Continue with registration even if email fails
     }
 
     res.status(201).json({
@@ -171,12 +172,19 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
       await user.save();
     }
 
-    // Allow Super Admin to bypass all checks
-    if (user.role !== 'Super Admin') {
+    // Allow Super Admin and Google users to bypass verification checks
+    if (user.role !== 'Super Admin' && !user.googleId) {
       if (user.status === 'suspended') {
         return res.status(401).json({ 
           success: false, 
           message: 'Account is suspended. Please contact support.' 
+        });
+      }
+      
+      if (!user.isEmailVerified) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Please verify your email address to continue.' 
         });
       }
     }
