@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Shield, Calendar, MoreVertical } from 'lucide-react';
+import { Users, Plus, Mail, Shield, Calendar, MoreVertical, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import MessageButtons from '../components/common/MessageButtons';
 import OrganizationCode from '../components/common/OrganizationCode';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 import { useAuthStore } from '../store/authStore';
 
 const fetchUsers = async () => {
@@ -37,6 +39,14 @@ const UsersPage = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Agent');
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   const queryClient = useQueryClient();
   
   const { data: users = [], isLoading: usersLoading } = useQuery({
@@ -87,13 +97,22 @@ const UsersPage = () => {
           <h1 className="text-3xl font-bold text-text-primary">Users & Invites</h1>
           <p className="text-text-secondary mt-1">Manage team members and invitations</p>
         </div>
-        <button 
-          onClick={() => setShowInviteModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Plus size={20} />
-          Invite User
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExport(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button 
+            onClick={() => setShowInviteModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Plus size={20} />
+            Invite User
+          </button>
+        </div>
       </div>
 
       {/* Organization Code */}
@@ -103,6 +122,17 @@ const UsersPage = () => {
           organizationName={user.organizationId.name || 'Your Organization'}
         />
       )}
+      
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search users and invites..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'active', label: 'Active' },
+          { value: 'pending', label: 'Pending' },
+          { value: 'inactive', label: 'Inactive' }
+        ]}
+      />
 
       {/* Active Users */}
       <div className="app-surface rounded-3xl p-6 border border-app-border">
@@ -241,6 +271,15 @@ const UsersPage = () => {
           </div>
         </div>
       )}
+      
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={[...users, ...invites]}
+        filename="users-and-invites"
+        filters={searchFilters}
+        title="Export Users & Invites"
+      />
     </motion.div>
   );
 };

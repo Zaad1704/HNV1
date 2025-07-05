@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { CheckSquare, Clock, User, Building, Check, X } from 'lucide-react';
+import { CheckSquare, Clock, User, Building, Check, X, Download } from 'lucide-react';
 import apiClient from '../api/client';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchApprovals = async () => {
   try {
@@ -21,6 +24,14 @@ const updateApproval = async ({ id, status }: { id: string; status: string }) =>
 
 const ApprovalRequestsPage = () => {
   const queryClient = useQueryClient();
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: approvals = [], isLoading } = useQuery({
     queryKey: ['approvals'],
@@ -54,10 +65,30 @@ const ApprovalRequestsPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Approval Requests</h1>
-        <p className="text-text-secondary mt-1">Manage pending approvals</p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Approval Requests</h1>
+          <p className="text-text-secondary mt-1">Manage pending approvals ({approvals.length} requests)</p>
+        </div>
+        <button
+          onClick={() => setShowExport(true)}
+          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+        >
+          <Download size={16} />
+          Export
+        </button>
       </div>
+
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search approval requests..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'Pending', label: 'Pending' },
+          { value: 'Approved', label: 'Approved' },
+          { value: 'Rejected', label: 'Rejected' }
+        ]}
+      />
 
       {approvals.length > 0 ? (
         <div className="space-y-4">
@@ -111,26 +142,34 @@ const ApprovalRequestsPage = () => {
                   </div>
                 </div>
                 
-                {approval.status === 'Pending' && (
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleApproval(approval._id, 'Approved')}
-                      disabled={mutation.isPending}
-                      className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <Check size={16} />
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleApproval(approval._id, 'Rejected')}
-                      disabled={mutation.isPending}
-                      className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <X size={16} />
-                      Reject
-                    </button>
-                  </div>
-                )}
+                <div className="flex flex-col gap-2 ml-4">
+                  {approval.status === 'Pending' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleApproval(approval._id, 'Approved')}
+                        disabled={mutation.isPending}
+                        className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2 disabled:opacity-50"
+                      >
+                        <Check size={16} />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleApproval(approval._id, 'Rejected')}
+                        disabled={mutation.isPending}
+                        className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-2 disabled:opacity-50"
+                      >
+                        <X size={16} />
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  <MessageButtons
+                    phone={approval.requestedBy?.phone}
+                    email={approval.requestedBy?.email}
+                    name={approval.requestedBy?.name}
+                    customMessage={`Your ${approval.type} request has been ${approval.status.toLowerCase()}.`}
+                  />
+                </div>
               </div>
             </motion.div>
           ))}
@@ -146,6 +185,14 @@ const ApprovalRequestsPage = () => {
           </p>
         </div>
       )}
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={approvals}
+        filename="approval-requests"
+        filters={searchFilters}
+        title="Export Approval Requests"
+      />
     </motion.div>
   );
 };

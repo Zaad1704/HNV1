@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { FileText, User, Calendar, Activity, Filter, Search } from 'lucide-react';
+import { FileText, User, Calendar, Activity, Filter, Search, Download } from 'lucide-react';
 import apiClient from '../api/client';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 
 const fetchAuditLogs = async () => {
   try {
@@ -17,6 +19,14 @@ const fetchAuditLogs = async () => {
 const AuditLogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['auditLogs'],
@@ -63,10 +73,31 @@ const AuditLogPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Audit Log</h1>
-        <p className="text-text-secondary mt-1">View system activity and changes</p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Audit Log</h1>
+          <p className="text-text-secondary mt-1">View system activity and changes ({filteredLogs.length} entries)</p>
+        </div>
+        <button
+          onClick={() => setShowExport(true)}
+          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+        >
+          <Download size={16} />
+          Export
+        </button>
       </div>
+
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search audit logs..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'user', label: 'User Actions' },
+          { value: 'property', label: 'Property Changes' },
+          { value: 'payment', label: 'Payment Activities' },
+          { value: 'system', label: 'System Events' }
+        ]}
+      />
 
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4">
@@ -168,6 +199,15 @@ const AuditLogPage = () => {
           </div>
         )}
       </div>
+      
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredLogs}
+        filename="audit-logs"
+        filters={searchFilters}
+        title="Export Audit Logs"
+      />
     </motion.div>
   );
 };
