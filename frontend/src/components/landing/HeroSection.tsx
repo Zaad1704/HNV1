@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { Building2, Users, CreditCard, BarChart3, Settings, ArrowRight, Play } from 'lucide-react';
+import { Building2, Users, CreditCard, BarChart3, ArrowRight, Play } from 'lucide-react';
 
 const HeroSection = () => {
   const { t } = useTranslation();
-  const { data: settings } = useSiteSettings();
+  const { data: settings = {} } = useSiteSettings();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -49,7 +49,7 @@ const HeroSection = () => {
                 {settings?.heroSection?.title || t('landing.hero_title')}
               </h1>
               <h2 className="text-3xl text-white/90 mb-4 drop-shadow-md">
-                {t('hero.subtitle', 'Streamline your property management with our comprehensive solution')}
+                {t('hero.subtitle')}
               </h2>
               <p className="text-xl text-white/80 leading-relaxed drop-shadow-sm">
                 {settings?.heroSection?.subtitle || t('landing.hero_subtitle')}
@@ -60,7 +60,7 @@ const HeroSection = () => {
                 to="/register" 
                 className="gradient-dark-orange-blue text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-2 hover:shadow-xl hover:scale-105 transition-all shadow-lg"
               >
-                {t('landing.hero_cta', 'Start Your Free Trial')}
+                {t('landing.hero_cta')}
                 <ArrowRight size={20} />
               </Link>
               <button 
@@ -80,16 +80,7 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative"
           >
-            {settings?.heroSection?.customImageUrl ? (
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src={settings.heroSection.customImageUrl}
-                  alt="Property Management Platform"
-                  className="w-full h-auto object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-              </div>
-            ) : (
+(
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { icon: Building2, title: t('dashboard.properties'), color: 'gradient-dark-orange-blue', section: 'features' },
@@ -112,7 +103,7 @@ const HeroSection = () => {
                   </motion.div>
                 ))}
               </div>
-            )}
+
           </motion.div>
         </div>
 
@@ -137,15 +128,7 @@ const HeroSection = () => {
             </div>
             
             {/* Custom Image for Mobile */}
-            {settings?.heroSection?.customImageUrl && (
-              <div className="mb-8 mx-auto w-64 h-64 rounded-3xl overflow-hidden shadow-2xl">
-                <img
-                  src={settings.heroSection.customImageUrl}
-                  alt="Property Management"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+
 
             <h1 className="text-4xl font-bold text-text-primary mb-4 leading-tight px-4">
               {settings?.heroSection?.title || t('landing.hero_title')}
@@ -160,7 +143,7 @@ const HeroSection = () => {
                 to="/register" 
                 className="w-full gradient-dark-orange-blue text-white py-4 rounded-full font-semibold text-lg flex items-center justify-center gap-2 hover:shadow-lg transition-all"
               >
-                {t('landing.hero_cta', 'Start Your Free Trial')}
+                {t('landing.hero_cta')}
                 <ArrowRight size={20} />
               </Link>
               <button 

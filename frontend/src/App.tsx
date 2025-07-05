@@ -1,21 +1,15 @@
-// frontend/src/App.tsx
 import React, { Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
-import TranslationDebug from './components/debug/TranslationDebug';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { LanguageProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './components/common/Toast';
 import HelpCenter from './components/common/HelpCenter';
 import FeedbackWidget from './components/common/FeedbackWidget';
 import SkipLink from './components/common/SkipLink';
-import './i18n'; // Initialize i18n
-import { CurrencyProvider } from './contexts/CurrencyContext';
 
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -82,11 +76,7 @@ function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
   
-  // Initialize performance monitoring
-  useEffect(() => {
-    const monitor = PerformanceMonitor.getInstance();
-    monitor.measureWebVitals();
-  }, []);
+
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -109,18 +99,14 @@ function App() {
   }
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <CurrencyProvider>
-          <ToastProvider>
-            <ErrorBoundary>
-              <SkipLink />
-              <OfflineIndicator />
-              <PWAInstallPrompt />
-              <TranslationDebug />
-              <HelpCenter />
-              <FeedbackWidget />
-              <Suspense fallback={<FullScreenLoader />}>
+    <ToastProvider>
+      <ErrorBoundary>
+        <SkipLink />
+        <OfflineIndicator />
+        <PWAInstallPrompt />
+        <HelpCenter />
+        <FeedbackWidget />
+        <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
@@ -191,13 +177,10 @@ function App() {
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
-              </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </ToastProvider>
-        </CurrencyProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+        </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </ToastProvider>
   );
 }
 

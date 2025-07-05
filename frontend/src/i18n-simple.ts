@@ -42,33 +42,27 @@ const resources = {
   tl: { translation: tlTranslations }
 };
 
-console.log('i18n resources loaded:', {
-  languages: Object.keys(resources),
-  totalKeys: Object.keys(enTranslations).length
-});
+const getInitialLanguage = () => {
+  try {
+    return localStorage.getItem('selectedLanguage') || 'en';
+  } catch {
+    return 'en';
+  }
+};
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: localStorage.getItem('selectedLanguage') || 'en',
+    lng: getInitialLanguage(),
     fallbackLng: 'en',
-    debug: true,
+    debug: false,
     interpolation: {
       escapeValue: false,
     },
     react: {
       useSuspense: false,
-    },
-    initImmediate: false
-  })
-  .then(() => {
-    console.log('i18n initialized successfully');
-    console.log('Current language:', i18n.language);
-    console.log('Available resources:', Object.keys(resources));
-  })
-  .catch((error) => {
-    console.error('i18n initialization failed:', error);
+    }
   });
 
 export default i18n;
