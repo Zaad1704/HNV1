@@ -32,12 +32,37 @@ const LoginPage: React.FC = () => {
     checkGoogleOAuth();
   }, []);
 
-  // Check for URL parameters (error messages)
+  // Check for URL parameters (error messages and success)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const errorParam = urlParams.get('error');
     const messageParam = urlParams.get('message');
+    const tokenParam = urlParams.get('token');
+    const userParam = urlParams.get('user');
     
+    // Handle successful Google authentication
+    if (tokenParam && userParam) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        login(tokenParam, userData);
+        
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Redirect based on user role
+        if (userData.role === 'Super Admin' || userData.role === 'Super Moderator') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
+        return;
+      } catch (parseError) {
+        console.error('Failed to parse user data:', parseError);
+        setError('Authentication successful but failed to process user data. Please try logging in again.');
+      }
+    }
+    
+    // Handle authentication errors
     if (errorParam) {
       let errorMessage = 'An error occurred';
       
@@ -46,7 +71,7 @@ const LoginPage: React.FC = () => {
           errorMessage = messageParam || 'Google authentication failed. Please try again.';
           break;
         case 'auth-verification-failed':
-          errorMessage = messageParam || 'Failed to verify authentication. Please try again.';
+          errorMessage = messageParam || 'Failed to verify Google authentication. Please try again.';
           break;
         case 'no-token':
           errorMessage = messageParam || 'Authentication token not received. Please try again.';
@@ -54,16 +79,23 @@ const LoginPage: React.FC = () => {
         case 'invalid-token':
           errorMessage = messageParam || 'Invalid authentication token. Please try again.';
           break;
+        case 'state-mismatch':
+          errorMessage = 'Security validation failed. Please try again.';
+          break;
+        case 'google-profile-error':
+          errorMessage = 'Failed to retrieve Google profile. Please try again.';
+          break;
         default:
-          errorMessage = messageParam || 'An authentication error occurred.';
+          errorMessage = messageParam || 'Google authentication failed. Please try again.';
       }
       
       setError(errorMessage);
+      setLoading(false);
       
       // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [login, navigate]);
 
   const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault();
@@ -176,8 +208,22 @@ const LoginPage: React.FC = () => {
       return;
     }
     
-    const baseURL = apiClient.defaults.baseURL;
-    window.location.href = `${baseURL}/auth/google`;
+    try {
+      const baseURL = apiClient.defaults.baseURL;
+      // Clear any existing errors
+      setError('');
+      setLoading(true);
+      
+      // Add state parameter for security
+      const state = Math.random().toString(36).substring(2, 15);
+      sessionStorage.setItem('google_auth_state', state);
+      
+      window.location.href = `${baseURL}/auth/google?state=${state}`;
+    } catch (error) {
+      console.error('Google login error:', error);
+      setError('Failed to initiate Google login. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (

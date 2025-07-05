@@ -76,10 +76,11 @@ apiClient.interceptors.response.use(
     // Handle HTTP status codes
     if (error.response?.status === 401) {
       const { token, isAuthenticated } = useAuthStore.getState();
-      // Only auto-logout on auth endpoints, not on missing data endpoints
+      // Only auto-logout on specific auth endpoints, not on missing data endpoints or Google auth
       const isAuthEndpoint = error.config?.url?.includes('/auth/me') || error.config?.url?.includes('/auth/login');
+      const isGoogleAuth = error.config?.url?.includes('/auth/google');
       
-      if (token && isAuthenticated && isAuthEndpoint) {
+      if (token && isAuthenticated && isAuthEndpoint && !isGoogleAuth) {
         console.log('Auth token invalid, logging out');
         useAuthStore.getState().logout();
         setTimeout(() => {
