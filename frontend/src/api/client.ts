@@ -71,16 +71,20 @@ apiClient.interceptors.response.use(
     // Handle HTTP status codes
     if (error.response?.status === 401) {
       const { token, isAuthenticated } = useAuthStore.getState();
-      // Only auto-logout if user was previously authenticated
-      if (token && isAuthenticated) {
-
+      // Only auto-logout on specific auth endpoints or if explicitly unauthorized
+      const isAuthEndpoint = error.config?.url?.includes('/auth/') || error.config?.url?.includes('/me');
+      const isTokenInvalid = error.response?.data?.message?.includes('token') || error.response?.data?.message?.includes('unauthorized');
+      
+      if (token && isAuthenticated && (isAuthEndpoint || isTokenInvalid)) {
+        console.log('Token invalid, logging out');
         useAuthStore.getState().logout();
-        // Don't redirect immediately, let the component handle it
         setTimeout(() => {
           if (window.location.pathname !== '/login') {
             window.location.href = '/login?session=expired';
           }
         }, 100);
+      } else {
+        console.warn('401 error but not logging out:', error.config?.url);
       }
     } else if (error.response?.status === 403) {
       // Don't auto-logout on 403 - might be subscription or permission issue

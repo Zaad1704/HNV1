@@ -16,7 +16,7 @@ const fetchTenants = async () => {
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch tenants:', error);
-    throw error;
+    return [];
   }
 };
 
@@ -32,8 +32,8 @@ const TenantsPage = () => {
   const { data: tenants = [], isLoading, error } = useQuery({
     queryKey: ['tenants'],
     queryFn: fetchTenants,
-    retry: 1,
-    retryDelay: 1000,
+    retry: 0,
+    refetchOnWindowFocus: false,
     onError: (error) => {
       console.error('Tenants query error:', error);
     }

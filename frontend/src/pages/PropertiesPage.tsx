@@ -18,7 +18,8 @@ const fetchProperties = async () => {
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch properties:', error);
-    throw error;
+    // Don't throw error to prevent query failures from causing redirects
+    return [];
   }
 };
 
@@ -36,8 +37,8 @@ const PropertiesPage = () => {
   const { data: properties = [], isLoading, error } = useQuery({
     queryKey: ['properties'],
     queryFn: fetchProperties,
-    retry: 1,
-    retryDelay: 1000,
+    retry: 0,
+    refetchOnWindowFocus: false,
     onError: (error) => {
       console.error('Properties query error:', error);
     }
