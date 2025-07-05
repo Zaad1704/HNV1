@@ -5,8 +5,13 @@ import { Link } from 'react-router-dom';
 import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
-import QuickActions from '../components/dashboard/QuickActions';
-import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings } from 'lucide-react';
+import AddPropertyModal from '../components/common/AddPropertyModal';
+import QuickPaymentModal from '../components/common/QuickPaymentModal';
+import ExportModal from '../components/common/ExportModal';
+import CashHandoverModal from '../components/common/CashHandoverModal';
+import BankTransferModal from '../components/common/BankTransferModal';
+import ManualCollectionModal from '../components/common/ManualCollectionModal';
+import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings, Download, Upload, Banknote, Wallet, Receipt } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useAuthStore } from '../store/authStore';
@@ -122,6 +127,20 @@ const OverviewPage = () => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
+  
+  // Modal states for action buttons
+  const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
+  const [showAddTenantModal, setShowAddTenantModal] = useState(false);
+  const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
+  const [showRecordExpenseModal, setShowRecordExpenseModal] = useState(false);
+  const [showRecordMaintenanceModal, setShowRecordMaintenanceModal] = useState(false);
+  const [showRecordReminderModal, setShowRecordReminderModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showCashHandoverModal, setShowCashHandoverModal] = useState(false);
+  const [showBankTransferModal, setShowBankTransferModal] = useState(false);
+  const [showManualCollectionModal, setShowManualCollectionModal] = useState(false);
+  const [showRecordReceiptModal, setShowRecordReceiptModal] = useState(false);
   
   const refreshData = async () => {
     await queryClient.invalidateQueries({ queryKey: ['overviewStats'] });
@@ -326,8 +345,40 @@ const OverviewPage = () => {
         </motion.div>
       </div>
 
-      {/* Quick Actions */}
-      <QuickActions />
+      {/* Action Buttons */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="app-surface rounded-3xl p-8 border border-app-border"
+      >
+        <h2 className="text-xl font-bold text-text-primary mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[
+            { icon: Building2, label: 'Record Property', action: () => setShowAddPropertyModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: Users, label: 'Record Tenant', action: () => setShowAddTenantModal(true), color: 'gradient-orange-blue' },
+            { icon: DollarSign, label: 'Record Payment', action: () => setShowRecordPaymentModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: FileText, label: 'Record Expense', action: () => setShowRecordExpenseModal(true), color: 'gradient-orange-blue' },
+            { icon: Wrench, label: 'Record Maintenance', action: () => setShowRecordMaintenanceModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: Bell, label: 'Record Reminder', action: () => setShowRecordReminderModal(true), color: 'gradient-orange-blue' },
+            { icon: Download, label: 'Export Data', action: () => setShowExportModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: Upload, label: 'Import Data', action: () => setShowImportModal(true), color: 'gradient-orange-blue' },
+            { icon: CreditCard, label: 'Cash Handover', action: () => setShowCashHandoverModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: Banknote, label: 'Bank Transfer', action: () => setShowBankTransferModal(true), color: 'gradient-orange-blue' },
+            { icon: Wallet, label: 'Manual Collection', action: () => setShowManualCollectionModal(true), color: 'gradient-dark-orange-blue' },
+            { icon: Receipt, label: 'Record Receipt', action: () => setShowRecordReceiptModal(true), color: 'gradient-orange-blue' }
+          ].map((item, index) => (
+            <button
+              key={item.label}
+              onClick={item.action}
+              className={`${item.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all text-center`}
+            >
+              <item.icon size={24} />
+              <span className="text-sm font-semibold">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Quick Access to All Sections */}
       <motion.div 
@@ -401,6 +452,35 @@ const OverviewPage = () => {
         </motion.div>
       </div>
       </motion.div>
+      
+      {/* Modals */}
+      <AddPropertyModal
+        isOpen={showAddPropertyModal}
+        onClose={() => setShowAddPropertyModal(false)}
+        onPropertyAdded={() => {}}
+      />
+      <QuickPaymentModal
+        isOpen={showRecordPaymentModal}
+        onClose={() => setShowRecordPaymentModal(false)}
+      />
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        section="overview"
+        title="Dashboard Data"
+      />
+      <CashHandoverModal
+        isOpen={showCashHandoverModal}
+        onClose={() => setShowCashHandoverModal(false)}
+      />
+      <BankTransferModal
+        isOpen={showBankTransferModal}
+        onClose={() => setShowBankTransferModal(false)}
+      />
+      <ManualCollectionModal
+        isOpen={showManualCollectionModal}
+        onClose={() => setShowManualCollectionModal(false)}
+      />
     </div>
   );
 };
