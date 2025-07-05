@@ -29,7 +29,8 @@ export const useDataExport = () => {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export failed:', error);
-      throw error;
+      // Don't throw error, just log it
+      alert('Export feature is not available yet.');
     } finally {
       setIsExporting(false);
     }
@@ -53,6 +54,7 @@ export const useDataExport = () => {
 
   return {
     isExporting,
+    exportData,
     exportProperties,
     exportTenants,
     exportPayments,
