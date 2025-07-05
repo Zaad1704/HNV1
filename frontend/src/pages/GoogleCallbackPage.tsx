@@ -83,6 +83,8 @@ const GoogleCallbackPage: React.FC = () => {
                 email: payload.email || ''
               };
               
+              // Mark as Google login
+              localStorage.setItem('auth-method', 'google');
               login(token, userData);
               
               if (userData.role === 'Super Admin' || userData.role === 'Super Moderator') {

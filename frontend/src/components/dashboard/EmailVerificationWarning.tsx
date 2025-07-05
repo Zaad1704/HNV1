@@ -53,7 +53,11 @@ const EmailVerificationWarning: React.FC = () => {
   };
 
   // Don't show if user is Super Admin, Google user, or email is already verified
-  if (user?.role === 'Super Admin' || (user as any)?.googleId || verificationStatus?.isEmailVerified || isDismissed || isLoading) {
+  // Check for Google user by checking if they have googleId or if they logged in via Google
+  const isGoogleUser = (user as any)?.googleId || (user as any)?.provider === 'google' || 
+                      localStorage.getItem('auth-method') === 'google';
+  
+  if (user?.role === 'Super Admin' || isGoogleUser || verificationStatus?.isEmailVerified || isDismissed || isLoading) {
     return null;
   }
 
