@@ -116,30 +116,39 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
   }
 
   try {
-    console.log('Login attempt for email:', email);
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Email:', email);
+    console.log('Password provided:', !!password);
+    
     const user = await User.findOne({ email }).select('+password');
-    console.log('User found:', user ? 'Yes' : 'No');
+    console.log('User found:', !!user);
+    
     if (!user) {
-      console.log('User not found for email:', email);
+      console.log('❌ User not found for email:', email);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
       });
     }
 
-    console.log('User role:', user.role);
-    console.log('User status:', user.status);
-    console.log('Email verified:', user.isEmailVerified);
+    console.log('User details:');
+    console.log('- Role:', user.role);
+    console.log('- Status:', user.status);
+    console.log('- Email verified:', user.isEmailVerified);
+    console.log('- Has password:', !!user.password);
     
     const isMatch = await user.matchPassword(password);
-    console.log('Password match:', isMatch);
+    console.log('Password match result:', isMatch);
+    
     if (!isMatch) {
-      console.log('Password mismatch for user:', email);
+      console.log('❌ Password mismatch for user:', email);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
       });
     }
+    
+    console.log('✅ Password verified successfully');
 
     // Allow Super Admin to bypass email verification and status checks
     if (user.role !== 'Super Admin') {
