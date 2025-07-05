@@ -168,14 +168,14 @@
     "trusted_by": "Trusted by property managers worldwide"
   },
   "landing": {
-    "hero_title": "The All-in-One Platform for Modern Property Management",
-    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease.",
-    "hero_cta": "Start Your Free Trial",
-    "real_stats_title": "Trusted by Property Managers Worldwide",
-    "properties_managed": "Properties Managed",
-    "active_users": "Active Users",
-    "countries_served": "Countries Served",
-    "uptime_guarantee": "Uptime Guarantee"
+    "hero_title": "La plateforme tout-en-un pour la gestion immobilière moderne",
+    "hero_subtitle": "Automatisez les tâches, suivez les finances et gérez les locataires facilement.",
+    "hero_cta": "Commencez votre essai gratuit",
+    "real_stats_title": "Fait confiance par les gestionnaires immobiliers du monde entier",
+    "properties_managed": "Propriétés gérées",
+    "active_users": "Utilisateurs actifs",
+    "countries_served": "Pays desservis",
+    "uptime_guarantee": "Garantie de temps de fonctionnement"
   },
   "about": {
     "title": "Why Choose Our Platform?",

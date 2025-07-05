@@ -10,6 +10,10 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import TranslationDebug from './components/debug/TranslationDebug';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { ToastProvider } from './components/common/Toast';
+import HelpCenter from './components/common/HelpCenter';
+import FeedbackWidget from './components/common/FeedbackWidget';
+import SkipLink from './components/common/SkipLink';
 import './i18n'; // Initialize i18n
 import { CurrencyProvider } from './contexts/CurrencyContext';
 
@@ -77,6 +81,12 @@ const FullScreenLoader = () => (
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
+  
+  // Initialize performance monitoring
+  useEffect(() => {
+    const monitor = PerformanceMonitor.getInstance();
+    monitor.measureWebVitals();
+  }, []);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -102,11 +112,15 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <CurrencyProvider>
-          <ErrorBoundary>
-          <OfflineIndicator />
-          <PWAInstallPrompt />
-          <TranslationDebug />
-          <Suspense fallback={<FullScreenLoader />}>
+          <ToastProvider>
+            <ErrorBoundary>
+              <SkipLink />
+              <OfflineIndicator />
+              <PWAInstallPrompt />
+              <TranslationDebug />
+              <HelpCenter />
+              <FeedbackWidget />
+              <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
@@ -177,9 +191,10 @@ function App() {
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
-          </Routes>
-          </Suspense>
-          </ErrorBoundary>
+              </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </ToastProvider>
         </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>
