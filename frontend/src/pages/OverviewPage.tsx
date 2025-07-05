@@ -6,7 +6,7 @@ import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import QuickActions from '../components/dashboard/QuickActions';
-import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
+import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useAuthStore } from '../store/authStore';
@@ -328,6 +328,41 @@ const OverviewPage = () => {
 
       {/* Quick Actions */}
       <QuickActions />
+
+      {/* Quick Access to All Sections */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.5 }}
+        className="app-surface rounded-3xl p-8 border border-app-border"
+      >
+        <h2 className="text-xl font-bold text-text-primary mb-6">Quick Access</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[
+            { to: '/dashboard/properties', icon: Building2, label: 'Properties', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/tenants', icon: Users, label: 'Tenants', color: 'gradient-orange-blue' },
+            { to: '/dashboard/payments', icon: CreditCard, label: 'Payments', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/expenses', icon: DollarSign, label: 'Expenses', color: 'gradient-orange-blue' },
+            { to: '/dashboard/maintenance', icon: Wrench, label: 'Maintenance', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/cashflow', icon: TrendingUp, label: 'Cash Flow', color: 'gradient-orange-blue' },
+            { to: '/dashboard/reminders', icon: Bell, label: 'Reminders', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/approvals', icon: CheckSquare, label: 'Approvals', color: 'gradient-orange-blue' },
+            { to: '/dashboard/users', icon: Users, label: 'Team', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/billing', icon: CreditCard, label: 'Billing', color: 'gradient-orange-blue' },
+            { to: '/dashboard/audit-log', icon: FileText, label: 'Audit Log', color: 'gradient-dark-orange-blue' },
+            { to: '/dashboard/settings', icon: Settings, label: 'Settings', color: 'gradient-orange-blue' }
+          ].map((item, index) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`${item.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all text-center`}
+            >
+              <item.icon size={24} />
+              <span className="text-sm font-semibold">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Action Items */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
