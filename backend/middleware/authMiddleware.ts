@@ -26,17 +26,21 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         });
       }
 
-      if (req.user.status === "suspended" || req.user.status === "pending") {
+      if (req.user.status === "suspended") {
         return res.status(401).json({ 
           success: false, 
-          message: "User account is not active." 
+          message: "User account is suspended." 
         });
       }
 
-      // Allow Super Admin access regardless of subscription
+      // Allow Super Admin access regardless of verification/subscription
       if (req.user.role === 'Super Admin') {
         return next();
       }
+
+      // Check email verification status (24-hour grace period)
+      const isEmailVerificationExpired = !req.user.isEmailVerified && req.user.createdAt && 
+        new Date() > new Date(req.user.createdAt.getTime() + 24 * 60 * 60 * 1000);
 
       // For regular users, check organization and subscription
       if (req.user.organizationId) {
@@ -44,28 +48,49 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
           organizationId: req.user.organizationId 
         });
         
-        // Allow access if subscription is active, trialing, or doesn't exist (free tier)
-        if (!subscription || subscription.status === 'active' || subscription.status === 'trialing') {
-          return next();
+        const isSubscriptionInactive = subscription && subscription.status !== 'active' && subscription.status !== 'trialing';
+        
+        // If either email verification expired OR subscription inactive, restrict to view-only
+        if (isEmailVerificationExpired || isSubscriptionInactive) {
+          const viewOnlyRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments', '/api/expenses', '/api/maintenance'];
+          const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
+          const isGetRequest = req.method === 'GET';
+          
+          if (isViewOnlyRoute && isGetRequest) {
+            return next();
+          }
+          
+          const restrictionMessage = isEmailVerificationExpired 
+            ? "Please verify your email address to restore full functionality. You can view existing data but cannot add, edit, or delete items."
+            : "Your subscription has expired. You can view existing data but cannot add, edit, or delete items. Please reactivate your subscription to restore full functionality.";
+          
+          return res.status(403).json({ 
+            success: false, 
+            message: restrictionMessage,
+            action: isEmailVerificationExpired ? "verify_email" : "renew_subscription",
+            upgradeUrl: isEmailVerificationExpired ? "/dashboard/settings" : "/billing"
+          });
         }
         
-        // For inactive subscriptions, allow only view-only access
-        const viewOnlyRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments'];
-        const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
-        const isGetRequest = req.method === 'GET';
-        
-        if (isViewOnlyRoute && isGetRequest) {
-          return next();
-        }
-        
-        return res.status(403).json({ 
-          success: false, 
-          message: "Your subscription has expired. You can view existing data but cannot add, edit, or delete items. Please reactivate your subscription to restore full functionality.",
-          action: "renew_subscription",
-          upgradeUrl: "/billing"
-        });
+        return next();
       } else {
-        // Allow users without organization to access basic features
+        // Users without organization - still check email verification
+        if (isEmailVerificationExpired) {
+          const viewOnlyRoutes = ['/api/dashboard', '/api/auth'];
+          const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
+          const isGetRequest = req.method === 'GET';
+          
+          if (isViewOnlyRoute && isGetRequest) {
+            return next();
+          }
+          
+          return res.status(403).json({ 
+            success: false, 
+            message: "Please verify your email address to restore full functionality.",
+            action: "verify_email",
+            upgradeUrl: "/dashboard/settings"
+          });
+        }
         return next();
       }
 

@@ -5,6 +5,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const billingController_1 = require("../controllers/billingController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
+router.get('/', billingController_1.getSubscriptionDetails);
 router.get('/subscription', billingController_1.getSubscriptionDetails);
 router.post('/checkout', billingController_1.createCheckoutSession);
 router.get('/history', billingController_1.getBillingHistory);

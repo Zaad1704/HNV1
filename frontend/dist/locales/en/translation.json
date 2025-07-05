@@ -109,7 +109,9 @@
     "switch_to": "Switch to",
     "current_language": "Current Language",
     "start_date": "Start Date",
-    "end_date": "End Date"
+    "end_date": "End Date",
+    "change_language": "Change Language",
+    "select_language": "Select Language"
   },
   "dashboard": {
     "overview": "Overview",

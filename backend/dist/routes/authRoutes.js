@@ -15,4 +15,8 @@ router.get('/google', passport_1.default.authenticate('google', { scope: ['profi
 router.get('/google/callback', passport_1.default.authenticate('google', { session: false }), authController_1.googleAuthCallback);
 router.get('/me', authMiddleware_1.protect, authController_1.getMe);
 router.put('/profile', authMiddleware_1.protect, authController_1.updateProfile);
+router.put('/change-password', authMiddleware_1.protect, authController_1.changePassword);
+router.post('/resend-verification', authMiddleware_1.protect, authController_1.resendVerificationEmail);
+router.put('/update-email', authMiddleware_1.protect, authController_1.updateEmail);
+router.get('/verification-status', authMiddleware_1.protect, authController_1.getVerificationStatus);
 exports.default = router;

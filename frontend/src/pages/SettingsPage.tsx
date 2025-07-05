@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import { User, Mail, Lock, Save, Bell, Globe, Palette, Trash2, Download } from 'lucide-react';
+import { User, Mail, Lock, Save, Bell, Globe, Palette, Trash2, Download, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLang } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -14,6 +14,8 @@ const SettingsPage = () => {
   const { currency, currencyCode } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState<any>(null);
+  const [emailChangeLoading, setEmailChangeLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -24,9 +26,61 @@ const SettingsPage = () => {
     confirmPassword: ''
   });
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [originalEmail] = useState(user?.email || '');
+
+  useEffect(() => {
+    fetchVerificationStatus();
+  }, []);
+
+  const fetchVerificationStatus = async () => {
+    try {
+      const { data } = await apiClient.get('/auth/verification-status');
+      if (data.success) {
+        setVerificationStatus(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch verification status:', error);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleEmailChange = async () => {
+    if (formData.email === originalEmail) {
+      setMessage('Email address is the same as current');
+      return;
+    }
+
+    setEmailChangeLoading(true);
+    try {
+      const { data } = await apiClient.put('/auth/update-email', {
+        newEmail: formData.email
+      });
+      
+      if (data.success) {
+        setMessage(data.message);
+        await fetchVerificationStatus();
+        // Update user data
+        setUser({ ...user, email: formData.email, isEmailVerified: false });
+      }
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || 'Failed to update email');
+    } finally {
+      setEmailChangeLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const { data } = await apiClient.post('/auth/resend-verification');
+      if (data.success) {
+        setMessage('Verification email sent successfully!');
+      }
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || 'Failed to send verification email');
+    }
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -35,36 +89,39 @@ const SettingsPage = () => {
     setMessage('');
 
     try {
-      const updateData = new FormData();
-      updateData.append('name', formData.name);
-      updateData.append('email', formData.email);
-      if (formData.organizationName) {
-        updateData.append('organizationName', formData.organizationName);
-      }
-      if (profileImage) {
-        updateData.append('profileImage', profileImage);
-      }
-
+      // Handle password change separately if provided
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
           setMessage('New passwords do not match');
           setLoading(false);
           return;
         }
-        updateData.append('currentPassword', formData.currentPassword);
-        updateData.append('newPassword', formData.newPassword);
+        
+        await apiClient.put('/auth/change-password', {
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword
+        });
       }
 
+      // Update profile (excluding email as it's handled separately)
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone || '',
+        profilePicture: profileImage ? 'updated' : undefined // Handle file upload separately if needed
+      };
+
       const { data } = await apiClient.put('/auth/profile', updateData);
-      setUser(data.data);
-      setMessage('Profile updated successfully!');
-      
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      }));
+      if (data.success) {
+        setUser({ ...user, ...data.user });
+        setMessage('Profile updated successfully!');
+        
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+      }
     } catch (error: any) {
       setMessage(error.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -119,14 +176,54 @@ const SettingsPage = () => {
                   <Mail size={16} className="inline mr-2" />
                   Email Address
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full"
-                />
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                  />
+                  
+                  {/* Email Verification Status */}
+                  {verificationStatus && (
+                    <div className="flex items-center gap-2 text-sm">
+                      {verificationStatus.isEmailVerified ? (
+                        <div className="flex items-center gap-1 text-green-600">
+                          <CheckCircle size={14} />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 text-orange-600">
+                            <AlertTriangle size={14} />
+                            <span>Unverified ({verificationStatus.hoursRemaining}h remaining)</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleResendVerification}
+                            className="text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Resend
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Email Change Button */}
+                  {formData.email !== originalEmail && (
+                    <button
+                      type="button"
+                      onClick={handleEmailChange}
+                      disabled={emailChangeLoading}
+                      className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50"
+                    >
+                      {emailChangeLoading ? 'Updating...' : 'Update Email (Requires Re-verification)'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

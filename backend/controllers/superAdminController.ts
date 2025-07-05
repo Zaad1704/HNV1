@@ -570,10 +570,30 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
 
 export const activatePlan = async (req: AuthRequest, res: Response) => {
   try {
-    const plan = await Plan.findByIdAndUpdate(req.params.id, { isActive: true }, { new: true });
+    const plan = await Plan.findById(req.params.id);
+    if (!plan) {
+      return res.json({ success: false, message: 'Plan not found' });
+    }
+    
+    plan.isActive = !plan.isActive;
+    await plan.save();
+    
+    // Create audit log
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: plan.isActive ? 'plan_activated' : 'plan_deactivated',
+      resource: 'plan',
+      resourceId: plan._id,
+      details: { planName: plan.name, status: plan.isActive ? 'activated' : 'deactivated' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
     res.json({ success: true, data: plan });
   } catch (error) {
-    res.json({ success: false, message: 'Error activating plan' });
+    res.json({ success: false, message: 'Error updating plan status' });
   }
 };
 

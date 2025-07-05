@@ -92,7 +92,7 @@ UserSchema.methods.getSignedJwtToken = function() {
 UserSchema.methods.getEmailVerificationToken = function() {
   const verificationToken = crypto.randomBytes(32).toString('hex');
   this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
-  this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000);
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
   return verificationToken;
 };
 

@@ -1,8 +1,8 @@
 {
-  "app_name": "HNV Property Management Solutions",
+  "app_name": "HNV Penyelesaian Pengurusan Hartanah",
   "app_name_short": "HNV Solutions",
   "header": {
-    "login": "Login",
+    "login": "Log Masuk",
     "get_started": "Get Started"
   },
   "nav": {
@@ -12,8 +12,8 @@
     "services": "Services",
     "pricing": "Pricing",
     "contact": "Contact",
-    "login": "Login",
-    "dashboard": "Dashboard"
+    "login": "Log Masuk",
+    "dashboard": "Papan Pemuka"
   },
   "auth": {
     "welcome_back": "Welcome Back!",
@@ -46,11 +46,11 @@
     "verification_sent": "Verification email sent"
   },
   "common": {
-    "loading": "Loading...",
+    "loading": "Memuatkan...",
     "error": "Error",
     "success": "Success",
-    "cancel": "Cancel",
-    "save": "Save",
+    "cancel": "Batal",
+    "save": "Simpan",
     "edit": "Edit",
     "delete": "Delete",
     "add": "Add",
@@ -63,7 +63,7 @@
     "happening_today": "Here's what's happening with your properties today.",
     "learn_more": "Learn More",
     "analytics": "Analytics",
-    "payments": "Payments",
+    "payments": "Pembayaran",
     "actions": "Actions",
     "status": "Status",
     "name": "Name",
@@ -91,7 +91,6 @@
     "settings": "Settings",
     "search": "Search...",
     "search_placeholder": "Search properties, tenants, payments...",
-    "search_placeholder": "Search properties, tenants, payments...",
     "filter": "Filters",
     "clear_all": "Clear All",
     "all": "All",
@@ -113,8 +112,8 @@
   },
   "dashboard": {
     "overview": "Overview",
-    "properties": "Properties",
-    "tenants": "Tenants",
+    "properties": "Hartanah",
+    "tenants": "Penyewa",
     "settings": "Settings",
     "logout": "Logout",
     "maintenance": "Maintenance",
@@ -154,7 +153,7 @@
     "tenant": "Tenant",
     "next_send": "Next Send",
     "frequency": "Frequency",
-    "payments": "Payments",
+    "payments": "Pembayaran",
     "welcome_message": "Welcome to your dashboard",
     "good_morning": "Good morning",
     "good_afternoon": "Good afternoon",

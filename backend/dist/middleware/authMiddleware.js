@@ -12,10 +12,8 @@ const protect = async (req, res, next) => {
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
         try {
             token = req.headers.authorization.split(" ")[1];
-            if (!process.env.JWT_SECRET) {
-                throw new Error("JWT_SECRET not defined");
-            }
-            const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+            const secret = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
+            const decoded = jsonwebtoken_1.default.verify(token, secret);
             const foundUser = await User_1.default.findById(decoded.id).select("-password");
             req.user = foundUser;
             if (!req.user) {
@@ -24,31 +22,57 @@ const protect = async (req, res, next) => {
                     message: "Not authorized, user not found"
                 });
             }
-            if (req.user.status === "suspended" || req.user.status === "pending") {
+            if (req.user.status === "suspended") {
                 return res.status(401).json({
                     success: false,
-                    message: "User account is not active."
+                    message: "User account is suspended."
                 });
             }
+            if (req.user.role === 'Super Admin') {
+                return next();
+            }
+            const isEmailVerificationExpired = !req.user.isEmailVerified && req.user.createdAt &&
+                new Date() > new Date(req.user.createdAt.getTime() + 24 * 60 * 60 * 1000);
             if (req.user.organizationId) {
                 const subscription = await Subscription_1.default.findOne({
                     organizationId: req.user.organizationId
                 });
-                if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
-                    if (req.user.role === 'Super Admin') {
+                const isSubscriptionInactive = subscription && subscription.status !== 'active' && subscription.status !== 'trialing';
+                if (isEmailVerificationExpired || isSubscriptionInactive) {
+                    const viewOnlyRoutes = ['/api/dashboard', '/api/properties', '/api/tenants', '/api/payments', '/api/expenses', '/api/maintenance'];
+                    const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
+                    const isGetRequest = req.method === 'GET';
+                    if (isViewOnlyRoute && isGetRequest) {
+                        return next();
+                    }
+                    const restrictionMessage = isEmailVerificationExpired
+                        ? "Please verify your email address to restore full functionality. You can view existing data but cannot add, edit, or delete items."
+                        : "Your subscription has expired. You can view existing data but cannot add, edit, or delete items. Please reactivate your subscription to restore full functionality.";
+                    return res.status(403).json({
+                        success: false,
+                        message: restrictionMessage,
+                        action: isEmailVerificationExpired ? "verify_email" : "renew_subscription",
+                        upgradeUrl: isEmailVerificationExpired ? "/dashboard/settings" : "/billing"
+                    });
+                }
+                return next();
+            }
+            else {
+                if (isEmailVerificationExpired) {
+                    const viewOnlyRoutes = ['/api/dashboard', '/api/auth'];
+                    const isViewOnlyRoute = viewOnlyRoutes.some(route => req.originalUrl.startsWith(route));
+                    const isGetRequest = req.method === 'GET';
+                    if (isViewOnlyRoute && isGetRequest) {
                         return next();
                     }
                     return res.status(403).json({
                         success: false,
-                        message: "Your organization's subscription is not active. Please renew to continue accessing features."
+                        message: "Please verify your email address to restore full functionality.",
+                        action: "verify_email",
+                        upgradeUrl: "/dashboard/settings"
                     });
                 }
-            }
-            else {
-                return res.status(403).json({
-                    success: false,
-                    message: "User is not associated with an organization."
-                });
+                return next();
             }
             return next();
         }

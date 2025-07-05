@@ -73,20 +73,22 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 UserSchema.methods.getSignedJwtToken = function () {
-    if (!process.env.JWT_SECRET) {
-        throw new Error('JWT Secret is not defined in environment variables.');
-    }
-    const payload = { id: this._id.toString(), role: this.role, name: this.name };
-    const secret = process.env.JWT_SECRET;
+    const secret = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
+    const payload = {
+        id: this._id.toString(),
+        role: this.role,
+        name: this.name,
+        organizationId: this.organizationId?.toString()
+    };
     const options = {
-        expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+        expiresIn: process.env.JWT_EXPIRES_IN || '30d',
     };
     return jsonwebtoken_1.default.sign(payload, secret, options);
 };
 UserSchema.methods.getEmailVerificationToken = function () {
     const verificationToken = crypto_1.default.randomBytes(32).toString('hex');
     this.emailVerificationToken = crypto_1.default.createHash('sha256').update(verificationToken).digest('hex');
-    this.emailVerificationExpires = new Date(Date.now() + 60 * 60 * 1000);
+    this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     return verificationToken;
 };
 UserSchema.methods.getPasswordResetToken = function () {

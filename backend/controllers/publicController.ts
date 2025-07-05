@@ -3,6 +3,7 @@ import Organization from '../models/Organization';
 import User from '../models/User';
 import Property from '../models/Property';
 import SiteSettings from '../models/SiteSettings';
+import Plan from '../models/Plan';
 
 export const getPublicStats = async (req: Request, res: Response) => {
   try {
@@ -57,6 +58,23 @@ export const getSiteSettings = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Site settings error:', error);
     res.json({ success: true, data: {} });
+  }
+};
+
+export const getPublicPlans = async (req: Request, res: Response) => {
+  try {
+    const plans = await Plan.find({ isPublic: true, isActive: { $ne: false } }).sort({ price: 1 });
+    
+    res.set({
+      'Cache-Control': 'public, max-age=300',
+      'ETag': `"${Date.now()}"`,
+      'Last-Modified': new Date().toUTCString()
+    });
+
+    res.json({ success: true, data: plans });
+  } catch (error) {
+    console.error('Public plans error:', error);
+    res.json({ success: true, data: [] });
   }
 };
 

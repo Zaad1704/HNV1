@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { getPublicStats, getSiteSettings, getPublicData } from '../controllers/publicController';
+import { getPublicStats, getSiteSettings, getPublicData, getPublicPlans } from '../controllers/publicController';
 
 const router = Router();
 
 // Public endpoints - no authentication required
 router.get('/stats', getPublicStats);
 router.get('/site-settings', getSiteSettings);
+router.get('/plans', getPublicPlans);
 router.get('/data', getPublicData);
 
 // Health check

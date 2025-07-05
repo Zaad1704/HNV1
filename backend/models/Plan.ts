@@ -11,8 +11,13 @@ export interface IPlan extends Document {
     maxTenants: number;
     maxAgents: number;
   };
+  maxProperties: number;
+  maxUsers: number;
+  maxTenants: number;
+  maxAgents: number;
   isPublic: boolean;
   isActive: boolean;
+  isPopular: boolean;
   trialDays: number;
   createdAt: Date;
   updatedAt: Date;
@@ -38,8 +43,13 @@ const planSchema = new Schema<IPlan>({
     maxTenants: { type: Number, default: 5 },
     maxAgents: { type: Number, default: 0 },
   },
+  maxProperties: { type: Number, default: 1 },
+  maxUsers: { type: Number, default: 1 },
+  maxTenants: { type: Number, default: 5 },
+  maxAgents: { type: Number, default: 0 },
   isPublic: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true },
+  isPopular: { type: Boolean, default: false },
   trialDays: { type: Number, default: 14 },
 }, { timestamps: true });
 

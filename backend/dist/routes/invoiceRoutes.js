@@ -2,13 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
+const invoiceController_1 = require("../controllers/invoiceController");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
-router.get('/', (req, res) => {
-    res.json({
-        success: true,
-        message: 'invoice routes working',
-        timestamp: new Date().toISOString()
-    });
-});
+router.get('/', invoiceController_1.getInvoices);
+router.post('/generate', invoiceController_1.generateInvoices);
+router.get('/bulk-download', invoiceController_1.bulkDownloadInvoices);
+router.get('/:id', invoiceController_1.getInvoiceById);
+router.get('/:id/print', invoiceController_1.printInvoice);
+router.get('/:id/pdf', invoiceController_1.printInvoice);
+router.post('/:id/send-whatsapp', invoiceController_1.sendWhatsAppInvoice);
+router.post('/:id/send-email', invoiceController_1.sendEmailInvoice);
 exports.default = router;

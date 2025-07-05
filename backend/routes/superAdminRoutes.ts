@@ -27,39 +27,56 @@ import {
   uploadImage,
   getBilling
 } from '../controllers/superAdminController';
-import { authorize } from '../middleware/authMiddleware';
+import { protect, authorize } from '../middleware/authMiddleware';
 import upload from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Note: Individual routes will check authorization as needed
+// Apply protection and authorization to all routes
+router.use(protect);
+router.use(authorize('Super Admin', 'Super Moderator'));
 
+// Dashboard routes
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/plan-distribution', getPlanDistribution);
 router.get('/platform-growth', getPlatformGrowth);
 router.get('/email-status', getEmailStatus);
+
+// Organization management
 router.get('/organizations', getOrganizations);
-router.delete('/organizations/:orgId', deleteOrganization);
+router.delete('/organizations/:orgId', authorize('Super Admin'), deleteOrganization);
 router.patch('/organizations/:orgId/activate', activateOrganization);
 router.patch('/organizations/:orgId/deactivate', deactivateOrganization);
-router.patch('/organizations/:orgId/grant-lifetime', grantLifetime);
-router.patch('/organizations/:orgId/revoke-lifetime', revokeLifetime);
+router.patch('/organizations/:orgId/grant-lifetime', authorize('Super Admin'), grantLifetime);
+router.patch('/organizations/:orgId/revoke-lifetime', authorize('Super Admin'), revokeLifetime);
+
+// User management
 router.get('/users', getUsers);
-router.delete('/users/:userId', deleteUser);
+router.delete('/users/:userId', authorize('Super Admin'), deleteUser);
 router.put('/users/:userId/plan', updateUserPlan);
+
+// Plan management
 router.get('/plans', getPlans);
 router.post('/plans', authorize('Super Admin'), createPlan);
 router.put('/plans/:id', authorize('Super Admin'), updatePlan);
 router.delete('/plans/:id', authorize('Super Admin'), deletePlan);
-router.put('/plans/:id/activate', activatePlan);
-router.get('/moderators', getModerators);
-router.post('/moderators', createModerator);
-router.put('/moderators/:id', updateModerator);
-router.delete('/moderators/:id', deleteModerator);
-router.put('/site-settings', updateSiteSettings);
-router.put('/site-content/:section', updateSiteContent);
-router.post('/upload-image', upload.single('image'), uploadImage);
+router.put('/plans/:id/activate', authorize('Super Admin'), activatePlan);
+
+// Moderator management
+router.get('/moderators', authorize('Super Admin'), getModerators);
+router.post('/moderators', authorize('Super Admin'), createModerator);
+router.put('/moderators/:id', authorize('Super Admin'), updateModerator);
+router.delete('/moderators/:id', authorize('Super Admin'), deleteModerator);
+
+// Site management
+router.put('/site-settings', authorize('Super Admin'), updateSiteSettings);
+router.put('/site-content/:section', authorize('Super Admin'), updateSiteContent);
+router.post('/upload-image', authorize('Super Admin'), upload.single('image'), uploadImage);
+
+// Billing
 router.get('/billing', getBilling);
+
+// Settings
 router.get('/settings', (req: any, res) => {
   res.json({ success: true, data: { role: req.user?.role, name: req.user?.name } });
 });

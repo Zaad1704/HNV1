@@ -18,6 +18,7 @@ import MobileBottomNav from './MobileBottomNav';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
 import RealTimeNotifications from '../dashboard/RealTimeNotifications';
+import EmailVerificationWarning from '../dashboard/EmailVerificationWarning';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DashboardLayout = () => {
@@ -159,8 +160,9 @@ const DashboardLayout = () => {
           )}
         </AnimatePresence>
         
-        <main className="pt-16 pb-20 px-4 mobile-content scroll-container">
-          <div className="max-w-7xl mx-auto">
+        <main className="pt-16 pb-20 mobile-content scroll-container">
+          <EmailVerificationWarning />
+          <div className="max-w-7xl mx-auto px-4">
             <AnimatePresence mode="wait">
               <Outlet />
             </AnimatePresence>
@@ -255,8 +257,9 @@ const DashboardLayout = () => {
         </header>
         
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8 overflow-y-auto pb-4 lg:pb-8 scroll-container">
-          <div className="max-w-7xl mx-auto">
+        <div className="flex-1 overflow-y-auto pb-4 lg:pb-8 scroll-container">
+          <EmailVerificationWarning />
+          <div className="max-w-7xl mx-auto p-4 lg:p-8">
             <AnimatePresence mode="wait">
               <Outlet />
             </AnimatePresence>

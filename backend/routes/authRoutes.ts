@@ -6,7 +6,10 @@ import {
   verifyEmail,
   googleAuthCallback,
   updateProfile,
-  changePassword
+  changePassword,
+  resendVerificationEmail,
+  updateEmail,
+  getVerificationStatus
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import passport from 'passport';
@@ -29,5 +32,8 @@ router.get('/google/callback',
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
+router.post('/resend-verification', protect, resendVerificationEmail);
+router.put('/update-email', protect, updateEmail);
+router.get('/verification-status', protect, getVerificationStatus);
 
 export default router;

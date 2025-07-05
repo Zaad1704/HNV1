@@ -17,6 +17,8 @@ const sendTokenResponse = async (user: any, statusCode: number, res: Response) =
       name: user.name,
       email: user.email,
       role: user.role,
+      isEmailVerified: user.isEmailVerified,
+      createdAt: user.createdAt
     },
     userStatus: subscription?.status || 'inactive'
   });
@@ -67,14 +69,16 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       password,
       role,
       organizationId: organization._id,
-      status: 'active',
-      isEmailVerified: true
+      status: 'pending',
+      isEmailVerified: false
     });
 
     organization.owner = user._id;
     organization.members = [user._id];
     await organization.save();
 
+    // Generate verification token
+    const verificationToken = user.getEmailVerificationToken();
     await user.save();
 
     const subscription = new Subscription({
@@ -85,14 +89,24 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     });
     await subscription.save();
 
+    // Send verification email
+    try {
+      const emailService = (await import('../services/emailService')).default;
+      await emailService.sendVerificationEmail(user.email, verificationToken, user.name);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail registration if email fails
+    }
+
     res.status(201).json({
       success: true,
-      message: 'User registered successfully. Please check your email for verification.',
+      message: 'Registration successful! Please check your email and verify your account within 24 hours to maintain access.',
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isEmailVerified: user.isEmailVerified
       }
     });
 
@@ -150,16 +164,16 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     
     console.log('✅ Password verified successfully');
 
-    // Allow Super Admin to bypass email verification and status checks
-    if (user.role !== 'Super Admin') {
-      if (!user.isEmailVerified) {
-        return res.status(401).json({ 
-          success: false, 
-          message: 'Please verify your email before logging in' 
-        });
-      }
+    // Auto-verify Google users
+    if (user.googleId && !user.isEmailVerified) {
+      user.isEmailVerified = true;
+      user.status = 'active';
+      await user.save();
+    }
 
-      if (user.status !== 'active') {
+    // Allow Super Admin to bypass all checks
+    if (user.role !== 'Super Admin') {
+      if (user.status === 'suspended') {
         return res.status(401).json({ 
           success: false, 
           message: 'Account is suspended. Please contact support.' 
@@ -335,6 +349,129 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
     res.status(500).json({ 
       success: false, 
       message: 'Server error during password change' 
+    });
+  }
+};
+
+export const resendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findById((req.user as any)._id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email is already verified' 
+      });
+    }
+
+    // Generate new verification token
+    const verificationToken = user.getEmailVerificationToken();
+    await user.save();
+
+    // Send verification email
+    const emailService = (await import('../services/emailService')).default;
+    await emailService.sendVerificationEmail(user.email, verificationToken, user.name);
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent successfully'
+    });
+
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during email resend' 
+    });
+  }
+};
+
+export const updateEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { newEmail } = req.body;
+    const user = await User.findById((req.user as any)._id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Check if email is already in use
+    const existingUser = await User.findOne({ email: newEmail });
+    if (existingUser) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email is already in use' 
+      });
+    }
+
+    // Update email and reset verification
+    user.email = newEmail;
+    user.isEmailVerified = false;
+    user.status = 'pending';
+    
+    // Generate new verification token
+    const verificationToken = user.getEmailVerificationToken();
+    await user.save();
+
+    // Send verification email to new address
+    const emailService = (await import('../services/emailService')).default;
+    await emailService.sendVerificationEmail(newEmail, verificationToken, user.name);
+
+    res.status(200).json({
+      success: true,
+      message: 'Email updated. Please verify your new email address within 24 hours.'
+    });
+
+  } catch (error) {
+    console.error('Update email error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during email update' 
+    });
+  }
+};
+
+export const getVerificationStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findById((req.user as any)._id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    const verificationDeadline = new Date(user.createdAt.getTime() + 24 * 60 * 60 * 1000);
+    const timeRemaining = verificationDeadline.getTime() - new Date().getTime();
+    const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        isEmailVerified: user.isEmailVerified,
+        email: user.email,
+        verificationDeadline,
+        hoursRemaining: Math.max(0, hoursRemaining),
+        isExpired: timeRemaining <= 0 && !user.isEmailVerified
+      }
+    });
+
+  } catch (error) {
+    console.error('Get verification status error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
     });
   }
 };

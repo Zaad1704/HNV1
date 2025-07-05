@@ -41,12 +41,18 @@ const getProperties = async (req, res) => {
         return;
     }
     try {
-        const properties = await Property_1.default.find({ organizationId: user.organizationId }) || [];
+        const properties = await Property_1.default.find({ organizationId: user.organizationId })
+            .lean()
+            .exec() || [];
         res.status(200).json({ success: true, data: properties });
     }
     catch (error) {
         console.error('Get properties error:', error);
-        res.status(200).json({ success: true, data: [] });
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch properties',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 };
 exports.getProperties = getProperties;
