@@ -9,6 +9,7 @@ import DashboardMonitor from '../components/dashboard/DashboardMonitor';
 import { SkeletonStats } from '../components/common/SkeletonLoader';
 import EmptyDashboard from '../components/dashboard/EmptyDashboard';
 import FloatingHelpCenter from '../components/common/FloatingHelpCenter';
+import FloatingQuickActions from '../components/common/FloatingQuickActions';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -150,6 +151,7 @@ const DashboardPage = () => {
     <>
       <DashboardMonitor />
       <FloatingHelpCenter />
+      <FloatingQuickActions />
       <motion.main
         className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
         initial={{ opacity: 0 }}
@@ -282,28 +284,7 @@ const DashboardPage = () => {
             View Activity Log →
           </Link>
         </motion.div>
-        {/* Quick Actions */}
-        <motion.div className="app-surface border border-app-border rounded-3xl p-6 sm:col-span-2 lg:col-span-4" variants={cardVariants} custom={6} initial="hidden" animate="visible">
-          <h3 className="text-text-secondary font-semibold text-sm mb-2">Quick Actions</h3>
-          <h2 className="text-2xl font-bold text-text-primary mb-6">Frequently Used</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: Building2, label: 'Add Property', to: '/dashboard/properties/new', color: 'gradient-dark-orange-blue' },
-              { icon: Users, label: 'Manage Tenants', to: '/dashboard/tenants', color: 'gradient-orange-blue' },
-              { icon: DollarSign, label: 'View Payments', to: '/dashboard/payments', color: 'gradient-dark-orange-blue' },
-              { icon: Settings, label: 'Settings', to: '/dashboard/settings', color: 'gradient-orange-blue' }
-            ].map((action, index) => (
-              <Link
-                key={action.label}
-                to={action.to}
-                className={`${action.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all`}
-              >
-                <action.icon size={24} />
-                <span className="text-sm font-semibold text-center">{action.label}</span>
-              </Link>
-            ))}
-          </div>
-        </motion.div>
+
       </div>
     </motion.main>
     </>

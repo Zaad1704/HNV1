@@ -53,40 +53,52 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
           const imageResponse = await apiClient.post('/upload/image', imageFormData, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
-          imageUrl = imageResponse.data.data.url;
+          imageUrl = imageResponse.data?.data?.url || imageResponse.data?.url || '';
         } catch (error) {
           console.error('Failed to upload image:', error);
+          // Continue without image
         }
       }
       
       const propertyData = {
-        ...formData,
-        imageUrl,
+        name: formData.name,
         address: {
-          ...formData.address,
-          formattedAddress: `${formData.address.street}, ${formData.address.city}, ${formData.address.state}`
-        }
+          street: formData.address.street,
+          city: formData.address.city,
+          state: formData.address.state,
+          zipCode: formData.address.zipCode,
+          formattedAddress: `${formData.address.street}, ${formData.address.city}, ${formData.address.state} ${formData.address.zipCode}`.trim()
+        },
+        numberOfUnits: formData.numberOfUnits,
+        propertyType: formData.propertyType,
+        imageUrl,
+        status: 'Active'
       };
       
-      const { data } = await apiClient.post('/properties', propertyData);
-      onPropertyAdded(data.data);
-      alert('Property added successfully!');
-      onClose();
+      const response = await apiClient.post('/properties', propertyData);
       
-      // Reset form
-      setFormData({
-        name: '',
-        address: { street: '', city: '', state: '', zipCode: '' },
-        numberOfUnits: 1,
-        propertyType: 'Apartment',
-        imageUrl: ''
-      });
-      setImageFile(null);
-      setImagePreview('');
-    } catch (error) {
+      if (response.data?.success) {
+        onPropertyAdded(response.data.data);
+        alert('Property added successfully!');
+        onClose();
+        
+        // Reset form
+        setFormData({
+          name: '',
+          address: { street: '', city: '', state: '', zipCode: '' },
+          numberOfUnits: 1,
+          propertyType: 'Apartment',
+          imageUrl: ''
+        });
+        setImageFile(null);
+        setImagePreview('');
+      } else {
+        throw new Error(response.data?.message || 'Failed to add property');
+      }
+    } catch (error: any) {
       console.error('Failed to add property:', error);
-      alert('Property saved locally. Will sync when backend is available.');
-      onClose();
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add property';
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -156,6 +168,34 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Zip Code
+            </label>
+            <input
+              type="text"
+              value={formData.address.zipCode}
+              onChange={(e) => setFormData({ ...formData, address: { ...formData.address, zipCode: e.target.value } })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Property Type
+            </label>
+            <select
+              value={formData.propertyType}
+              onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Commercial">Commercial</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div>
