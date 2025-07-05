@@ -4,6 +4,7 @@ import { Settings, User, Bell, Shield, Save, Lock, Key, Building } from 'lucide-
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import OrganizationSettings from '../components/common/OrganizationSettings';
+import QRCodeGenerator from '../components/common/QRCodeGenerator';
 
 const ChangePasswordForm = () => {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
@@ -69,18 +70,25 @@ const ChangePasswordForm = () => {
 };
 
 const TwoFactorSetup = () => {
+  const { user } = useAuthStore();
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isEnabling, setIsEnabling] = useState(false);
+  const [secretKey, setSecretKey] = useState('');
 
   const handleEnable2FA = async () => {
     setIsEnabling(true);
     try {
-      await apiClient.post('/auth/2fa/setup');
+      // Generate a secret key for 2FA
+      const secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      setSecretKey(secret);
       setShowSetup(true);
     } catch (error) {
-      alert('2FA setup initiated. Check your authenticator app.');
+      console.error('2FA setup error:', error);
+      // Generate fallback secret
+      const secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      setSecretKey(secret);
       setShowSetup(true);
     } finally {
       setIsEnabling(false);
@@ -90,7 +98,7 @@ const TwoFactorSetup = () => {
   const handleVerify2FA = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiClient.post('/auth/2fa/verify', { code: verificationCode });
+      await apiClient.post('/auth/2fa/verify', { code: verificationCode, secret: secretKey });
       setIs2FAEnabled(true);
       setShowSetup(false);
       alert('2FA enabled successfully!');
@@ -116,13 +124,16 @@ const TwoFactorSetup = () => {
   }
 
   if (showSetup) {
+    const qrData = `otpauth://totp/HNV Property Management:${user?.email}?secret=${secretKey}&issuer=HNV Property Management`;
+    
     return (
       <div className="space-y-4">
         <div className="text-center p-4 bg-blue-50 rounded-xl">
-          <p className="text-blue-800 text-sm mb-4">Setup your authenticator app with these details:</p>
-          <div className="bg-white p-4 rounded-xl">
-            <p className="font-mono text-sm">Account: {useAuthStore.getState().user?.email}</p>
-            <p className="font-mono text-sm">Service: HNV Property Management</p>
+          <p className="text-blue-800 text-sm mb-4">Scan this QR code with your authenticator app:</p>
+          <QRCodeGenerator text={qrData} size={200} />
+          <div className="bg-white p-4 rounded-xl mt-4">
+            <p className="text-xs text-gray-600 mb-2">Manual entry:</p>
+            <p className="font-mono text-sm break-all">{secretKey}</p>
           </div>
         </div>
         <form onSubmit={handleVerify2FA} className="space-y-4">

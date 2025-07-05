@@ -15,7 +15,7 @@ import ExportModal from '../components/common/ExportModal';
 import CashHandoverModal from '../components/common/CashHandoverModal';
 import BankTransferModal from '../components/common/BankTransferModal';
 import ManualCollectionModal from '../components/common/ManualCollectionModal';
-import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings, Download, Upload, Banknote, Wallet, Receipt } from 'lucide-react';
+import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings, Download, Upload, Banknote, Wallet, Receipt, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useAuthStore } from '../store/authStore';

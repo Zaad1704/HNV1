@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, ArrowUp, ArrowDown } from 'lucide-react';
+import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
+import AddCashFlowModal from '../components/common/AddCashFlowModal';
 
 const fetchCashFlow = async () => {
   try {
@@ -17,6 +18,7 @@ const fetchCashFlow = async () => {
 
 const CashFlowPage = () => {
   const { currency } = useCurrency();
+  const [showAddModal, setShowAddModal] = useState(false);
   
   const { data: cashFlow, isLoading } = useQuery({
     queryKey: ['cashFlow'],
@@ -39,9 +41,18 @@ const CashFlowPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Cash Flow</h1>
-        <p className="text-text-secondary mt-1">Track income and expenses</p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Cash Flow</h1>
+          <p className="text-text-secondary mt-1">Track income and expenses</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+        >
+          <Plus size={20} />
+          Add Record
+        </button>
       </div>
 
       {/* Summary Cards */}
@@ -119,6 +130,11 @@ const CashFlowPage = () => {
           </div>
         )}
       </div>
+      
+      <AddCashFlowModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
     </motion.div>
   );
 };
