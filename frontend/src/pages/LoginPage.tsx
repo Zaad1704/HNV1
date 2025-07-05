@@ -49,7 +49,13 @@ const LoginPage: React.FC = () => {
         login(response.data.token, response.data.user);
         // Add success feedback
         setError('');
-        navigate('/dashboard', { replace: true });
+        
+        // Redirect based on user role
+        if (response.data.user.role === 'Super Admin' || response.data.user.role === 'Super Moderator') {
+          navigate('/admin', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } else {
         setError('Invalid response from server. Please try again.');
       }
