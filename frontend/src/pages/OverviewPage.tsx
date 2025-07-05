@@ -144,6 +144,7 @@ const OverviewPage = () => {
   const [showBankTransferModal, setShowBankTransferModal] = useState(false);
   const [showManualCollectionModal, setShowManualCollectionModal] = useState(false);
   const [showRecordReceiptModal, setShowRecordReceiptModal] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
   
   const refreshData = async () => {
     await queryClient.invalidateQueries({ queryKey: ['overviewStats'] });
@@ -265,59 +266,109 @@ const OverviewPage = () => {
           transition: isPulling ? 'none' : 'transform 0.3s ease'
         }}
       >
-      {/* Welcome Section */}
-      <div className="app-gradient rounded-3xl p-8 text-white relative overflow-hidden">
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {user?.name}!
-            {user?.organizationId?.name && (
-              <span className="block text-xl font-normal text-white/90 mt-1">
-                to {user.organizationId.name}
-              </span>
-            )}
-          </h1>
-          <p className="text-white/80">
-            Here's what's happening with your properties today.
-          </p>
+      {/* Welcome Section - Redesigned */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Welcome Card */}
+        <div className="lg:col-span-2 app-gradient rounded-3xl p-8 text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                {user?.organizationId?.logo ? (
+                  <img src={user.organizationId.logo} alt="Logo" className="w-12 h-12 rounded-xl" />
+                ) : (
+                  <Building2 size={32} className="text-white" />
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">
+                  {user?.organizationId?.name || `${user?.name}'s Properties`}
+                </h1>
+                <p className="text-white/80">Welcome back, {user?.name}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-white/80 text-sm">Today's Revenue</p>
+                <p className="text-2xl font-bold">{currency}{stats?.todayRevenue?.toLocaleString() || '0'}</p>
+              </div>
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-white/80 text-sm">Active Properties</p>
+                <p className="text-2xl font-bold">{stats?.totalProperties || 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/5 rounded-full" />
+          <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full" />
         </div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
+        
+        {/* Quick Stats */}
+        <div className="space-y-4">
+          <div className="app-surface rounded-2xl p-6 border border-app-border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-text-secondary text-sm">Occupancy Rate</span>
+              <TrendingUp size={16} className="text-green-500" />
+            </div>
+            <p className="text-3xl font-bold text-text-primary">{stats?.occupancyRate || '0%'}</p>
+          </div>
+          <div className="app-surface rounded-2xl p-6 border border-app-border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-text-secondary text-sm">Monthly Revenue</span>
+              <DollarSign size={16} className="text-blue-500" />
+            </div>
+            <p className="text-3xl font-bold text-text-primary">{currency}{stats?.monthlyRevenue?.toLocaleString() || '0'}</p>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          delay={0.1} 
-          title={t('dashboard.monthly_revenue')} 
-          value={`${currency}${stats?.monthlyRevenue?.toLocaleString() || 0}`} 
-          icon={<DollarSign size={24} />} 
-          to="/dashboard/cashflow"
-          trend={{ value: 12, isPositive: true }}
-        />
-        <StatCard 
-          delay={0.2} 
-          title={t('dashboard.total_properties')} 
-          value={stats?.totalProperties || 0} 
-          icon={<Building2 size={24} />} 
-          to="/dashboard/properties"
-          trend={{ value: 5, isPositive: true }}
-        />
-        <StatCard 
-          delay={0.3} 
-          title={t('dashboard.active_tenants')} 
-          value={stats?.activeTenants || 0} 
-          icon={<Users size={24} />} 
-          to="/dashboard/tenants"
-          trend={{ value: 8, isPositive: true }}
-        />
-        <StatCard 
-          delay={0.4} 
-          title={t('dashboard.occupancy_rate')} 
-          value={stats?.occupancyRate || '0%'} 
-          icon={<UserCheck size={24} />} 
-          to="/dashboard/tenants"
-          trend={{ value: 3, isPositive: false }}
-        />
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Link to="/dashboard/tenants" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Users size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text-primary">{stats?.activeTenants || 0}</p>
+              <p className="text-sm text-text-secondary">Active Tenants</p>
+            </div>
+          </div>
+        </Link>
+        
+        <Link to="/dashboard/properties" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Building2 size={20} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text-primary">{stats?.totalProperties || 0}</p>
+              <p className="text-sm text-text-secondary">Properties</p>
+            </div>
+          </div>
+        </Link>
+        
+        <Link to="/dashboard/payments" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <CreditCard size={20} className="text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text-primary">{stats?.totalPayments || 0}</p>
+              <p className="text-sm text-text-secondary">Payments</p>
+            </div>
+          </div>
+        </Link>
+        
+        <Link to="/dashboard/maintenance" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Wrench size={20} className="text-orange-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-text-primary">{stats?.pendingMaintenance || 0}</p>
+              <p className="text-sm text-text-secondary">Maintenance</p>
+            </div>
+          </div>
+        </Link>
       </div>
       
       {/* Charts Section */}
@@ -353,40 +404,45 @@ const OverviewPage = () => {
         </motion.div>
       </div>
 
-      {/* Action Buttons */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="app-surface rounded-3xl p-8 border border-app-border"
-      >
-        <h2 className="text-xl font-bold text-text-primary mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {[
-            { icon: Building2, label: 'Record Property', action: () => setShowAddPropertyModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: Users, label: 'Record Tenant', action: () => setShowAddTenantModal(true), color: 'gradient-orange-blue' },
-            { icon: DollarSign, label: 'Record Payment', action: () => setShowRecordPaymentModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: FileText, label: 'Record Expense', action: () => setShowRecordExpenseModal(true), color: 'gradient-orange-blue' },
-            { icon: Wrench, label: 'Record Maintenance', action: () => setShowRecordMaintenanceModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: Bell, label: 'Record Reminder', action: () => setShowRecordReminderModal(true), color: 'gradient-orange-blue' },
-            { icon: Download, label: 'Export Data', action: () => setShowExportModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: Upload, label: 'Import Data', action: () => setShowImportModal(true), color: 'gradient-orange-blue' },
-            { icon: CreditCard, label: 'Cash Handover', action: () => setShowCashHandoverModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: Banknote, label: 'Bank Transfer', action: () => setShowBankTransferModal(true), color: 'gradient-orange-blue' },
-            { icon: Wallet, label: 'Manual Collection', action: () => setShowManualCollectionModal(true), color: 'gradient-dark-orange-blue' },
-            { icon: Receipt, label: 'Record Receipt', action: () => setShowRecordReceiptModal(true), color: 'gradient-orange-blue' }
-          ].map((item, index) => (
-            <button
-              key={item.label}
-              onClick={item.action}
-              className={`${item.color} text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:shadow-lg hover:scale-105 transition-all text-center`}
-            >
-              <item.icon size={24} />
-              <span className="text-sm font-semibold">{item.label}</span>
-            </button>
-          ))}
+      {/* Floating Quick Actions */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <div className="relative">
+          <button
+            onClick={() => setShowQuickActions(!showQuickActions)}
+            className="w-16 h-16 app-gradient rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all"
+          >
+            <Plus size={24} className={showQuickActions ? 'rotate-45' : ''} style={{ transition: 'transform 0.3s' }} />
+          </button>
+          
+          {showQuickActions && (
+            <div className="absolute bottom-20 right-0 bg-white rounded-2xl shadow-2xl border border-app-border p-4 w-80">
+              <h3 className="font-bold text-text-primary mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { icon: Building2, label: 'Property', action: () => setShowAddPropertyModal(true), color: 'bg-blue-500' },
+                  { icon: Users, label: 'Tenant', action: () => setShowAddTenantModal(true), color: 'bg-green-500' },
+                  { icon: DollarSign, label: 'Payment', action: () => setShowRecordPaymentModal(true), color: 'bg-purple-500' },
+                  { icon: FileText, label: 'Expense', action: () => setShowRecordExpenseModal(true), color: 'bg-red-500' },
+                  { icon: Wrench, label: 'Maintenance', action: () => setShowRecordMaintenanceModal(true), color: 'bg-orange-500' },
+                  { icon: Download, label: 'Export', action: () => setShowExportModal(true), color: 'bg-indigo-500' },
+                  { icon: CreditCard, label: 'Cash', action: () => setShowCashHandoverModal(true), color: 'bg-teal-500' },
+                  { icon: Banknote, label: 'Transfer', action: () => setShowBankTransferModal(true), color: 'bg-cyan-500' },
+                  { icon: Wallet, label: 'Collection', action: () => setShowManualCollectionModal(true), color: 'bg-pink-500' }
+                ].map((item, index) => (
+                  <button
+                    key={item.label}
+                    onClick={() => { item.action(); setShowQuickActions(false); }}
+                    className={`${item.color} text-white p-3 rounded-xl flex flex-col items-center gap-1 hover:scale-105 transition-all text-center`}
+                  >
+                    <item.icon size={16} />
+                    <span className="text-xs font-medium">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </motion.div>
+      </div>
 
 
 

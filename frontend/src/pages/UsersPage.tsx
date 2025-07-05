@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Shield, Calendar, MoreVertical } from 'lucide-react';
 import apiClient from '../api/client';
 import MessageButtons from '../components/common/MessageButtons';
+import OrganizationCode from '../components/common/OrganizationCode';
+import { useAuthStore } from '../store/authStore';
 
 const fetchUsers = async () => {
   try {
@@ -31,6 +33,7 @@ const sendInvite = async (email: string, role: string) => {
 };
 
 const UsersPage = () => {
+  const { user } = useAuthStore();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Agent');
@@ -92,6 +95,14 @@ const UsersPage = () => {
           Invite User
         </button>
       </div>
+
+      {/* Organization Code */}
+      {user?.organizationId && (
+        <OrganizationCode
+          organizationId={user.organizationId._id || user.organizationId}
+          organizationName={user.organizationId.name || 'Your Organization'}
+        />
+      )}
 
       {/* Active Users */}
       <div className="app-surface rounded-3xl p-6 border border-app-border">
