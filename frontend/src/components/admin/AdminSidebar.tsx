@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import { LayoutDashboard, Building, Users, CreditCard, Brush, LifeBuoy, LogOut, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Building, Users, CreditCard, Brush, LifeBuoy, LogOut, ShieldCheck, ArrowLeft, Settings } from 'lucide-react';
 
 const AdminSidebar: React.FC = () => {
     const location = useLocation();
@@ -33,6 +33,7 @@ const AdminSidebar: React.FC = () => {
                 <Link to="/admin/plans" className={getLinkClass('/admin/plans')}><CreditCard size={18}/> Manage Plans</Link>
                 <Link to="/admin/site-editor" className={getLinkClass('/admin/site-editor')}><Brush size={18}/> Site Editor</Link>
                 <Link to="/admin/billing" className={getLinkClass('/admin/billing')}><LifeBuoy size={18}/> Billing</Link>
+                <Link to="/admin/settings" className={getLinkClass('/admin/settings')}><Settings size={18}/> Settings</Link>
             </nav>
             <div className="p-4 border-t border-app-border space-y-2">
                 <Link to="/dashboard" className="flex items-center justify-center gap-2 w-full text-center px-4 py-3 rounded-2xl font-medium text-text-secondary bg-app-bg hover:bg-app-border transition-colors">
