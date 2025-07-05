@@ -8,6 +8,8 @@ import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import BulkPaymentModal from '../components/common/BulkPaymentModal';
 import ActionButtons from '../components/common/ActionButtons';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
@@ -32,6 +34,14 @@ const PropertiesPage = () => {
   const [filters, setFilters] = useState<any>({});
   const [showExportModal, setShowExportModal] = useState(false);
   const [showBulkPayment, setShowBulkPayment] = useState(false);
+  const [showUniversalExport, setShowUniversalExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport() || { exportProperties: () => {}, isExporting: false };
 
@@ -48,21 +58,92 @@ const PropertiesPage = () => {
   const filteredProperties = useMemo(() => {
     if (!properties) return [];
     
-    return properties.filter((property: any) => {
+    let filtered = properties.filter((property: any) => {
       if (!property) return false;
       
+      // Universal search
+      const matchesUniversalSearch = !searchFilters.query || 
+        (property.name && property.name.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
+        (property.address?.formattedAddress && property.address.formattedAddress.toLowerCase().includes(searchFilters.query.toLowerCase()));
+      
+      // Legacy search
       const matchesSearch = !searchQuery || 
         (property.name && property.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (property.address?.city && property.address.city.toLowerCase().includes(searchQuery.toLowerCase()));
       
-      const matchesStatus = !filters.status || property.status === filters.status;
+      const matchesStatus = (!filters.status || property.status === filters.status) &&
+                           (!searchFilters.status || property.status === searchFilters.status);
+      
       const matchesUnits = !filters.units || 
         (filters.units === 'single' && property.numberOfUnits === 1) ||
         (filters.units === 'multiple' && property.numberOfUnits > 1);
       
-      return matchesSearch && matchesStatus && matchesUnits;
+      return matchesUniversalSearch && matchesSearch && matchesStatus && matchesUnits;
     });
-  }, [properties, searchQuery, filters]);
+
+    // Apply date filtering
+    if (searchFilters.dateRange !== 'all') {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (searchFilters.dateRange) {
+        case 'today':
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          startDate.setMonth(now.getMonth() - 1);
+          break;
+        case 'quarter':
+          startDate.setMonth(now.getMonth() - 3);
+          break;
+        case 'year':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+        case 'custom':
+          if (searchFilters.startDate) startDate = new Date(searchFilters.startDate);
+          break;
+      }
+      
+      filtered = filtered.filter(property => {
+        const propertyDate = new Date(property.createdAt || property.updatedAt || Date.now());
+        return propertyDate >= startDate;
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (searchFilters.sortBy) {
+        case 'name':
+          aValue = a.name || '';
+          bValue = b.name || '';
+          break;
+        case 'status':
+          aValue = a.status || '';
+          bValue = b.status || '';
+          break;
+        default:
+          aValue = new Date(a.createdAt || a.updatedAt || 0);
+          bValue = new Date(b.createdAt || b.updatedAt || 0);
+      }
+      
+      if (searchFilters.sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [properties, searchQuery, filters, searchFilters]);
+
+  const handleUniversalSearch = (filters: SearchFilters) => {
+    setSearchFilters(filters);
+  };
 
   const filterOptions = [
     {
@@ -158,7 +239,7 @@ const PropertiesPage = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.properties')}</h1>
-          <p className="text-text-secondary mt-1">{t('property.manage_portfolio')}</p>
+          <p className="text-text-secondary mt-1">{t('property.manage_portfolio')} ({filteredProperties.length} properties)</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -169,7 +250,7 @@ const PropertiesPage = () => {
             Bulk Payment
           </button>
           <button
-            onClick={() => setShowExportModal(true)}
+            onClick={() => setShowUniversalExport(true)}
             className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
           >
             <Download size={16} />
@@ -185,12 +266,24 @@ const PropertiesPage = () => {
         </div>
       </div>
 
-      {/* Search & Filter */}
+      {/* Universal Search */}
+      <UniversalSearch
+        onSearch={handleUniversalSearch}
+        placeholder="Search properties by name or address..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+          { value: 'Maintenance', label: 'Under Maintenance' }
+        ]}
+      />
+      
+      {/* Legacy Search & Filter */}
       <SearchFilter
         onSearch={setSearchQuery}
         onFilter={setFilters}
         filters={filters}
-        placeholder="Search properties..."
+        placeholder="Additional filters..."
         filterOptions={filterOptions}
       />
 
@@ -339,6 +432,15 @@ const PropertiesPage = () => {
       <BulkPaymentModal
         isOpen={showBulkPayment}
         onClose={() => setShowBulkPayment(false)}
+      />
+      
+      <UniversalExport
+        isOpen={showUniversalExport}
+        onClose={() => setShowUniversalExport(false)}
+        data={filteredProperties}
+        filename="properties"
+        filters={searchFilters}
+        title="Export Properties"
       />
     </motion.div>
   );

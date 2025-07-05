@@ -375,20 +375,61 @@ const SettingsPage = () => {
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Theme</h3>
                     <p className="text-sm text-text-secondary mb-4">Choose your preferred theme</p>
-                    <select className="p-2 border border-app-border rounded-xl">
-                      <option>Light</option>
-                      <option>Dark</option>
-                      <option>System</option>
+                    <select 
+                      className="p-2 border border-app-border rounded-xl"
+                      onChange={(e) => {
+                        localStorage.setItem('theme', e.target.value);
+                        document.documentElement.setAttribute('data-theme', e.target.value);
+                        alert('Theme updated successfully!');
+                      }}
+                      defaultValue={localStorage.getItem('theme') || 'system'}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="system">System</option>
                     </select>
                   </div>
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Language</h3>
                     <p className="text-sm text-text-secondary mb-4">Select your language</p>
-                    <select className="p-2 border border-app-border rounded-xl">
-                      <option>English</option>
-                      <option>Spanish</option>
-                      <option>French</option>
+                    <select 
+                      className="p-2 border border-app-border rounded-xl"
+                      onChange={(e) => {
+                        localStorage.setItem('language', e.target.value);
+                        alert('Language preference saved!');
+                      }}
+                      defaultValue={localStorage.getItem('language') || 'en'}
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                      <option value="zh">Chinese</option>
                     </select>
+                  </div>
+                  <div className="p-4 bg-app-bg rounded-xl">
+                    <h3 className="font-medium text-text-primary mb-2">Notifications</h3>
+                    <p className="text-sm text-text-secondary mb-4">Configure notification preferences</p>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          defaultChecked={localStorage.getItem('notifications-email') !== 'false'}
+                          onChange={(e) => localStorage.setItem('notifications-email', e.target.checked.toString())}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm">Email notifications</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          defaultChecked={localStorage.getItem('notifications-push') !== 'false'}
+                          onChange={(e) => localStorage.setItem('notifications-push', e.target.checked.toString())}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm">Push notifications</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
