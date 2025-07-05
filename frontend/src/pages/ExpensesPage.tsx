@@ -9,6 +9,7 @@ import UniversalExport from '../components/common/UniversalExport';
 import AddExpenseModal from '../components/common/AddExpenseModal';
 import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
+import { deleteExpense, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 
 const fetchExpenses = async () => {
   try {
@@ -41,6 +42,20 @@ const ExpensesPage = () => {
 
   const handleExpenseAdded = (newExpense: any) => {
     queryClient.setQueryData(['expenses'], (old: any) => [...(old || []), newExpense]);
+  };
+
+  const handleDeleteExpense = async (expenseId: string, description: string) => {
+    if (confirmDelete(description, 'expense')) {
+      try {
+        await deleteExpense(expenseId);
+        queryClient.setQueryData(['expenses'], (old: any) => 
+          (old || []).filter((e: any) => e._id !== expenseId)
+        );
+        handleDeleteSuccess('expense');
+      } catch (error: any) {
+        handleDeleteError(error, 'expense');
+      }
+    }
   };
 
   const filteredExpenses = useMemo(() => {
@@ -163,12 +178,20 @@ const ExpensesPage = () => {
                 </div>
               </div>
               
-              <MessageButtons
-                phone={expense.vendorPhone}
-                email={expense.vendorEmail}
-                name={expense.vendorName || 'Vendor'}
-                customMessage={`Expense record: ${expense.description} - ${currency}${expense.amount}`}
-              />
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleDeleteExpense(expense._id, expense.description)}
+                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-colors"
+                >
+                  Delete
+                </button>
+                <MessageButtons
+                  phone={expense.vendorPhone}
+                  email={expense.vendorEmail}
+                  name={expense.vendorName || 'Vendor'}
+                  customMessage={`Expense record: ${expense.description} - ${currency}${expense.amount}`}
+                />
+              </div>
             </motion.div>
           ))}
         </div>

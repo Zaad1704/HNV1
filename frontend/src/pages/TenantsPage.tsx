@@ -14,6 +14,7 @@ import UniversalExport from '../components/common/UniversalExport';
 import AddTenantModal from '../components/common/AddTenantModal';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
+import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 
 const fetchTenants = async () => {
   try {
@@ -46,6 +47,20 @@ const TenantsPage = () => {
 
   const handleTenantAdded = (newTenant: any) => {
     queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
+  };
+
+  const handleDeleteTenant = async (tenantId: string, tenantName: string) => {
+    if (confirmDelete(tenantName, 'tenant')) {
+      try {
+        await deleteTenant(tenantId);
+        queryClient.setQueryData(['tenants'], (old: any) => 
+          (old || []).filter((t: any) => t._id !== tenantId)
+        );
+        handleDeleteSuccess('tenant');
+      } catch (error: any) {
+        handleDeleteError(error, 'tenant');
+      }
+    }
   };
 
   const { data: tenants = [], isLoading, error } = useQuery({
@@ -265,6 +280,12 @@ const TenantsPage = () => {
               <div className="flex gap-2 mt-4">
                 <button className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors">
                   View Details
+                </button>
+                <button 
+                  onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
+                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-colors"
+                >
+                  Delete
                 </button>
                 <MessageButtons
                   phone={tenant.phone}

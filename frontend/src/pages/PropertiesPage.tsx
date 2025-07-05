@@ -4,6 +4,7 @@ import apiClient from '../api/client';
 import { motion } from 'framer-motion';
 import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
+import EditPropertyModal from '../components/common/EditPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import BulkPaymentModal from '../components/common/BulkPaymentModal';
@@ -29,6 +30,8 @@ const fetchProperties = async () => {
 const PropertiesPage = () => {
   const { t } = useTranslation();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<any>(null);
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -202,6 +205,31 @@ const PropertiesPage = () => {
     queryClient.setQueryData(['properties'], (old: any) => [...(old || []), newProperty]);
   };
 
+  const handlePropertyUpdated = (updatedProperty: any) => {
+    queryClient.setQueryData(['properties'], (old: any) => 
+      (old || []).map((p: any) => p._id === updatedProperty._id ? updatedProperty : p)
+    );
+  };
+
+  const handleEditProperty = (property: any) => {
+    setEditingProperty(property);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteProperty = async (propertyId: string) => {
+    if (confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+      try {
+        await apiClient.delete(`/properties/${propertyId}`);
+        queryClient.setQueryData(['properties'], (old: any) => 
+          (old || []).filter((p: any) => p._id !== propertyId)
+        );
+        alert('Property deleted successfully!');
+      } catch (error: any) {
+        alert(`Error: ${error.response?.data?.message || 'Failed to delete property'}`);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -364,18 +392,17 @@ const PropertiesPage = () => {
                       <Eye size={14} />
                       {t('property.view')}
                     </Link>
-                    <button className="app-gradient text-white py-2 px-3 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center gap-2">
+                    <button 
+                      onClick={() => handleEditProperty(property)}
+                      className="app-gradient text-white py-2 px-3 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center gap-2"
+                    >
                       <Edit size={14} />
                       {t('property.edit')}
                     </button>
                   </div>
                   <ActionButtons
                     onExport={() => exportProperties({ format: 'xlsx', filters: { ids: [property._id] } })}
-                    onDelete={() => {
-                      if (confirm('Delete this property?')) {
-                        console.log('Delete property:', property._id);
-                      }
-                    }}
+                    onDelete={() => handleDeleteProperty(property._id)}
                     showPrint={false}
                     showShare={false}
                   />
@@ -412,6 +439,16 @@ const PropertiesPage = () => {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onPropertyAdded={handlePropertyAdded}
+      />
+
+      <EditPropertyModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingProperty(null);
+        }}
+        onPropertyUpdated={handlePropertyUpdated}
+        property={editingProperty}
       />
 
       <BulkActions

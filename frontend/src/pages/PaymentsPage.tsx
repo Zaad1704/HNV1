@@ -9,6 +9,7 @@ import UniversalExport from '../components/common/UniversalExport';
 import RecordPaymentModal from '../components/common/RecordPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
+import { deletePayment, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 
 const fetchPayments = async () => {
   try {
@@ -41,6 +42,20 @@ const PaymentsPage = () => {
 
   const handlePaymentAdded = (newPayment: any) => {
     queryClient.setQueryData(['payments'], (old: any) => [...(old || []), newPayment]);
+  };
+
+  const handleDeletePayment = async (paymentId: string, amount: number) => {
+    if (confirmDelete(`${currency}${amount}`, 'payment')) {
+      try {
+        await deletePayment(paymentId);
+        queryClient.setQueryData(['payments'], (old: any) => 
+          (old || []).filter((p: any) => p._id !== paymentId)
+        );
+        handleDeleteSuccess('payment');
+      } catch (error: any) {
+        handleDeleteError(error, 'payment');
+      }
+    }
   };
 
   if (isLoading) {
@@ -130,16 +145,24 @@ const PaymentsPage = () => {
                 </div>
               </div>
               
-              <MessageButtons
-                phone={payment.tenantId?.phone}
-                email={payment.tenantId?.email}
-                name={payment.tenantId?.name}
-                messageType="paymentConfirmation"
-                additionalData={{
-                  amount: payment.amount,
-                  date: payment.date ? new Date(payment.date).toLocaleDateString() : 'Today'
-                }}
-              />
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleDeletePayment(payment._id, payment.amount)}
+                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-colors"
+                >
+                  Delete
+                </button>
+                <MessageButtons
+                  phone={payment.tenantId?.phone}
+                  email={payment.tenantId?.email}
+                  name={payment.tenantId?.name}
+                  messageType="paymentConfirmation"
+                  additionalData={{
+                    amount: payment.amount,
+                    date: payment.date ? new Date(payment.date).toLocaleDateString() : 'Today'
+                  }}
+                />
+              </div>
             </motion.div>
           ))}
         </div>

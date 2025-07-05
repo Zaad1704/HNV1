@@ -6,8 +6,17 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit } from 'lucide-react';
 
 const fetchPropertyDetails = async (propertyId: string) => {
-  const { data } = await apiClient.get(`/api/properties/${propertyId}`);
+  const { data } = await apiClient.get(`/properties/${propertyId}`);
   return data.data;
+};
+
+const fetchPropertyTenants = async (propertyId: string) => {
+  try {
+    const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+    return data.data || [];
+  } catch (error) {
+    return [];
+  }
 };
 
 const PropertyDetailsPage = () => {
@@ -16,6 +25,12 @@ const PropertyDetailsPage = () => {
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', propertyId],
     queryFn: () => fetchPropertyDetails(propertyId!),
+    enabled: !!propertyId
+  });
+
+  const { data: tenants = [] } = useQuery({
+    queryKey: ['propertyTenants', propertyId],
+    queryFn: () => fetchPropertyTenants(propertyId!),
     enabled: !!propertyId
   });
 
