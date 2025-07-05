@@ -6,6 +6,9 @@ import { useWindowSize } from '../hooks/useWindowSize';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDataExport } from '../hooks/useDataExport';
@@ -31,6 +34,14 @@ const MaintenanceRequestsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<any>({});
     const [showExportModal, setShowExportModal] = useState(false);
+    const [showUniversalExport, setShowUniversalExport] = useState(false);
+    const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+        query: '',
+        dateRange: 'all',
+        status: '',
+        sortBy: 'date',
+        sortOrder: 'desc'
+    });
     const { exportData } = useDataExport() || { exportData: () => {} };
     const { data: requests = [], isLoading, isError } = useQuery({ 
         queryKey: ['maintenanceRequests'], 
@@ -242,7 +253,7 @@ const MaintenanceRequestsPage = () => {
                 </div>
                 <div className="flex gap-3">
                     <button
-                        onClick={() => setShowExportModal(true)}
+                        onClick={() => setShowUniversalExport(true)}
                         className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
                     >
                         <Download size={16} />
@@ -255,12 +266,16 @@ const MaintenanceRequestsPage = () => {
                 </div>
             </div>
 
-            <SearchFilter
-                onSearch={setSearchQuery}
-                onFilter={setFilters}
-                filters={filters}
+            <UniversalSearch
+                onSearch={setSearchFilters}
                 placeholder="Search maintenance requests..."
-                filterOptions={filterOptions}
+                showStatusFilter={true}
+                statusOptions={[
+                    { value: 'Open', label: 'Open' },
+                    { value: 'In Progress', label: 'In Progress' },
+                    { value: 'Resolved', label: 'Resolved' },
+                    { value: 'Closed', label: 'Closed' }
+                ]}
             />
             {requests.length > 0 ? (
                 width < 768 ? <MobileView /> : <DesktopView />
@@ -284,6 +299,15 @@ const MaintenanceRequestsPage = () => {
                 onClose={() => setShowExportModal(false)}
                 section="maintenance"
                 title="Maintenance Requests"
+            />
+            
+            <UniversalExport
+                isOpen={showUniversalExport}
+                onClose={() => setShowUniversalExport(false)}
+                data={filteredRequests}
+                filename="maintenance-requests"
+                filters={searchFilters}
+                title="Export Maintenance Requests"
             />
         </motion.div>
     );

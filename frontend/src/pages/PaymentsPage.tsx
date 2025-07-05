@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { CreditCard, Plus, DollarSign, Calendar, User } from 'lucide-react';
+import { CreditCard, Plus, DollarSign, Calendar, User, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchPayments = async () => {
   try {
@@ -18,6 +21,14 @@ const fetchPayments = async () => {
 const PaymentsPage = () => {
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: payments = [], isLoading } = useQuery({
     queryKey: ['payments'],
@@ -43,16 +54,36 @@ const PaymentsPage = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">Payments</h1>
-          <p className="text-text-secondary mt-1">Track and manage rent payments</p>
+          <p className="text-text-secondary mt-1">Track and manage rent payments ({payments.length} payments)</p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Plus size={20} />
-          Record Payment
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExport(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Plus size={20} />
+            Record Payment
+          </button>
+        </div>
       </div>
+
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search payments by tenant or property..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'Completed', label: 'Completed' },
+          { value: 'Pending', label: 'Pending' },
+          { value: 'Failed', label: 'Failed' }
+        ]}
+      />
 
       {payments.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -81,7 +112,7 @@ const PaymentsPage = () => {
                 {currency}{payment.amount?.toLocaleString() || '0'}
               </h3>
               
-              <div className="space-y-2 text-sm text-text-secondary">
+              <div className="space-y-2 text-sm text-text-secondary mb-4">
                 <div className="flex items-center gap-2">
                   <User size={14} />
                   <span>{payment.tenantId?.name || 'Unknown Tenant'}</span>
@@ -91,6 +122,17 @@ const PaymentsPage = () => {
                   <span>{payment.date ? new Date(payment.date).toLocaleDateString() : 'No date'}</span>
                 </div>
               </div>
+              
+              <MessageButtons
+                phone={payment.tenantId?.phone}
+                email={payment.tenantId?.email}
+                name={payment.tenantId?.name}
+                messageType="paymentConfirmation"
+                additionalData={{
+                  amount: payment.amount,
+                  date: payment.date ? new Date(payment.date).toLocaleDateString() : 'Today'
+                }}
+              />
             </motion.div>
           ))}
         </div>
@@ -112,6 +154,14 @@ const PaymentsPage = () => {
           </button>
         </div>
       )}
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={payments}
+        filename="payments"
+        filters={searchFilters}
+        title="Export Payments"
+      />
     </motion.div>
   );
 };

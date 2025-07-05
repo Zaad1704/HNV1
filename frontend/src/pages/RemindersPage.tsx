@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Bell, Plus, Calendar, User, Clock } from 'lucide-react';
+import { Bell, Plus, Calendar, User, Clock, Download } from 'lucide-react';
 import apiClient from '../api/client';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 
 const fetchReminders = async () => {
   try {
@@ -16,6 +18,14 @@ const fetchReminders = async () => {
 
 const RemindersPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: reminders = [], isLoading } = useQuery({
     queryKey: ['reminders'],
@@ -43,14 +53,34 @@ const RemindersPage = () => {
           <h1 className="text-3xl font-bold text-text-primary">Reminders</h1>
           <p className="text-text-secondary mt-1">Manage automated reminders</p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Plus size={20} />
-          Add Reminder
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExport(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Plus size={20} />
+            Add Reminder
+          </button>
+        </div>
       </div>
+
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search reminders..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'Active', label: 'Active' },
+          { value: 'Paused', label: 'Paused' },
+          { value: 'Completed', label: 'Completed' }
+        ]}
+      />
 
       {reminders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,6 +148,14 @@ const RemindersPage = () => {
           </button>
         </div>
       )}
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={reminders}
+        filename="reminders"
+        filters={searchFilters}
+        title="Export Reminders"
+      />
     </motion.div>
   );
 };
