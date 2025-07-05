@@ -1,128 +1,91 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, DollarSign, Calendar, Users, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, DollarSign } from 'lucide-react';
 import apiClient from '../api/client';
 
-interface Plan {
-  _id: string;
-  name: string;
-  price: number;
-  duration: string;
-  features: string[];
-  isPopular: boolean;
-  isPublic: boolean;
-  maxProperties: number;
-  maxUsers: number;
-}
-
-const fetchPlans = async (): Promise<Plan[]> => {
+const fetchPlans = async () => {
   const { data } = await apiClient.get('/super-admin/plans');
-  return data.data;
+  return data.data || [];
 };
 
 const AdminPlansPage = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const queryClient = useQueryClient();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
-    price: 0,
+    price: '',
     duration: 'monthly',
-    features: [],
-    isPopular: false,
-    isPublic: true,
-    maxProperties: 10,
-    maxUsers: 5,
-    maxTenants: 50,
-    maxAgents: 3
+    features: [''],
+    isActive: true
   });
 
-  const availableFeatures = [
-    { id: 'property_management', name: 'Property Management', category: 'core' },
-    { id: 'tenant_portal', name: 'Tenant Portal', category: 'core' },
-    { id: 'payment_processing', name: 'Payment Processing', category: 'core' },
-    { id: 'maintenance_requests', name: 'Maintenance Requests', category: 'core' },
-    { id: 'financial_reporting', name: 'Financial Reporting', category: 'reports' },
-    { id: 'advanced_analytics', name: 'Advanced Analytics', category: 'reports' },
-    { id: 'custom_reports', name: 'Custom Reports', category: 'reports' },
-    { id: 'multi_user_access', name: 'Multi-User Access', category: 'collaboration' },
-    { id: 'agent_management', name: 'Agent Management', category: 'collaboration' },
-    { id: 'role_permissions', name: 'Role & Permissions', category: 'collaboration' },
-    { id: 'api_access', name: 'API Access', category: 'integration' },
-    { id: 'third_party_integrations', name: 'Third-Party Integrations', category: 'integration' },
-    { id: 'white_label', name: 'White Label Branding', category: 'premium' },
-    { id: 'priority_support', name: 'Priority Support', category: 'premium' },
-    { id: 'custom_domain', name: 'Custom Domain', category: 'premium' }
-  ];
-
-  const queryClient = useQueryClient();
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['adminPlans'],
     queryFn: fetchPlans
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: (planData: any) => apiClient.post('/super-admin/plans', planData),
+    mutationFn: async (planData: any) => {
+      const response = await apiClient.post('/super-admin/plans', planData);
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
-      setShowModal(false);
+      setShowAddModal(false);
       resetForm();
     }
   });
 
   const updatePlanMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => 
-      apiClient.put(`/super-admin/plans/${id}`, data),
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiClient.put(`/super-admin/plans/${id}`, data);
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
-      setShowModal(false);
+      setEditingPlan(null);
       resetForm();
     }
   });
 
   const deletePlanMutation = useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/super-admin/plans/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminPlans'] })
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`/super-admin/plans/${id}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
+    }
+  });
+
+  const togglePlanMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.put(`/super-admin/plans/${id}/activate`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminPlans'] });
+    }
   });
 
   const resetForm = () => {
     setFormData({
       name: '',
-      price: 0,
+      price: '',
       duration: 'monthly',
-      features: [],
-      isPopular: false,
-      isPublic: true,
-      maxProperties: 10,
-      maxUsers: 5,
-      maxTenants: 50,
-      maxAgents: 3
+      features: [''],
+      isActive: true
     });
-    setEditingPlan(null);
-  };
-
-  const handleEdit = (plan: Plan) => {
-    setEditingPlan(plan);
-    setFormData({
-      name: plan.name,
-      price: plan.price / 100,
-      duration: plan.duration,
-      features: plan.features,
-      isPopular: plan.isPopular,
-      isPublic: plan.isPublic,
-      maxProperties: plan.maxProperties,
-      maxUsers: plan.maxUsers,
-      maxTenants: (plan as any).maxTenants || 50,
-      maxAgents: (plan as any).maxAgents || 3
-    });
-    setShowModal(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const planData = {
       ...formData,
-      price: formData.price * 100
+      price: Number(formData.price) * 100, // Convert to cents
+      features: formData.features.filter(f => f.trim())
     };
 
     if (editingPlan) {
@@ -132,312 +95,250 @@ const AdminPlansPage = () => {
     }
   };
 
-  const toggleFeature = (featureId: string) => {
+  const handleEdit = (plan: any) => {
+    setEditingPlan(plan);
+    setFormData({
+      name: plan.name,
+      price: (plan.price / 100).toString(),
+      duration: plan.duration,
+      features: plan.features || [''],
+      isActive: plan.isActive
+    });
+    setShowAddModal(true);
+  };
+
+  const handleDelete = (plan: any) => {
+    if (confirm(`Delete plan "${plan.name}"? This action cannot be undone.`)) {
+      deletePlanMutation.mutate(plan._id);
+    }
+  };
+
+  const addFeature = () => {
     setFormData(prev => ({
       ...prev,
-      features: prev.features.includes(featureId)
-        ? prev.features.filter(f => f !== featureId)
-        : [...prev.features, featureId]
+      features: [...prev.features, '']
     }));
   };
 
-  const getFeatureName = (featureId: string) => {
-    return availableFeatures.find(f => f.id === featureId)?.name || featureId;
+  const updateFeature = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.map((f, i) => i === index ? value : f)
+    }));
   };
 
-  const getFeaturesByCategory = (category: string) => {
-    return availableFeatures.filter(f => f.category === category);
+  const removeFeature = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }));
   };
 
   if (isLoading) {
-    return <div className="text-center p-8 text-text-secondary">Loading plans...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
+        <span className="ml-3 text-text-secondary">Loading plans...</span>
+      </div>
+    );
   }
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-8"
+      className="space-y-6 lg:space-y-8"
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Subscription Plans</h1>
-          <p className="text-text-secondary mt-1">Manage pricing plans and features</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-text-primary">Subscription Plans</h1>
+          <p className="text-sm lg:text-base text-text-secondary mt-1">Manage pricing plans</p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          onClick={() => setShowAddModal(true)}
+          className="btn-gradient px-4 py-2 lg:px-6 lg:py-3 rounded-2xl flex items-center gap-2 font-semibold text-sm lg:text-base"
         >
-          <Plus size={20} />
-          Create Plan
+          <Plus size={16} className="lg:w-5 lg:h-5" />
+          Add Plan
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {plans.map((plan) => (
-          <div
+      {/* Plans Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        {plans.map((plan: any, index: number) => (
+          <motion.div
             key={plan._id}
-            className={`app-surface rounded-3xl p-6 border transition-all hover:shadow-app-lg ${
-              plan.isPopular ? 'border-brand-orange shadow-app' : 'border-app-border'
-            }`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border"
           >
-            {plan.isPopular && (
-              <div className="text-center mb-4">
-                <span className="bg-brand-orange text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg lg:text-xl font-bold text-text-primary">{plan.name}</h3>
+              <button
+                onClick={() => togglePlanMutation.mutate(plan._id)}
+                className="p-1"
+              >
+                {plan.isActive ? (
+                  <ToggleRight size={24} className="text-green-500" />
+                ) : (
+                  <ToggleLeft size={24} className="text-gray-400" />
+                )}
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl lg:text-3xl font-bold text-text-primary">
+                  ${(plan.price / 100).toFixed(0)}
                 </span>
-              </div>
-            )}
-            
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-text-primary mb-2">{plan.name}</h3>
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-text-primary">
-                  ${(plan.price / 100).toFixed(2)}
-                </span>
-                <span className="text-text-secondary">/{plan.duration}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs text-text-secondary">
-                <div className="flex items-center gap-1">
-                  <Users size={12} />
-                  {plan.maxUsers} users
-                </div>
-                <div className="flex items-center gap-1">
-                  <DollarSign size={12} />
-                  {plan.maxProperties} properties
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users size={12} />
-                  {(plan as any).maxTenants || 50} tenants
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users size={12} />
-                  {(plan as any).maxAgents || 3} agents
-                </div>
+                <span className="text-sm text-text-secondary">/{plan.duration}</span>
               </div>
             </div>
 
-            <ul className="space-y-2 mb-6">
-              {plan.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm text-text-secondary">
-                  <Check size={14} className="text-green-500 flex-shrink-0" />
-                  {getFeatureName(feature)}
-                </li>
-              ))}
-            </ul>
+            <div className="mb-6">
+              <h4 className="font-semibold text-text-primary mb-2 text-sm">Features:</h4>
+              <ul className="space-y-1">
+                {plan.features?.slice(0, 3).map((feature: string, i: number) => (
+                  <li key={i} className="text-xs lg:text-sm text-text-secondary flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                    {feature}
+                  </li>
+                ))}
+                {plan.features?.length > 3 && (
+                  <li className="text-xs text-text-muted">+{plan.features.length - 3} more</li>
+                )}
+              </ul>
+            </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => handleEdit(plan)}
-                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Edit size={14} />
                 Edit
               </button>
               <button
-                onClick={() => {
-                  if (confirm(`Delete plan "${plan.name}"?`)) {
-                    deletePlanMutation.mutate(plan._id);
-                  }
-                }}
-                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                onClick={() => handleDelete(plan)}
+                className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Trash2 size={14} />
                 Delete
               </button>
             </div>
-
-            <div className="mt-4 flex justify-between text-xs text-text-muted">
-              <span>{plan.isPublic ? 'Public' : 'Private'}</span>
-              <span>ID: {plan._id.slice(-6)}</span>
-            </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Plan Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-app-surface rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-text-primary mb-6">
-              {editingPlan ? 'Edit Plan' : 'Create New Plan'}
-            </h2>
+      {/* Add/Edit Plan Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
+          <div className="app-surface rounded-2xl lg:rounded-3xl shadow-app-xl w-full max-w-md border border-app-border max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 lg:p-6 border-b border-app-border">
+              <h2 className="text-lg lg:text-xl font-bold text-text-primary">
+                {editingPlan ? 'Edit Plan' : 'Add Plan'}
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingPlan(null);
+                  resetForm();
+                }}
+                className="text-text-secondary hover:text-text-primary"
+              >
+                ×
+              </button>
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="p-4 lg:p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Plan Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required
+                  className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-sm lg:text-base"
+                  placeholder="e.g., Professional"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Plan Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                    placeholder="e.g., Professional"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Price (USD)
-                  </label>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Price ($)</label>
                   <input
                     type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
                     required
                     min="0"
                     step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-sm lg:text-base"
                     placeholder="29.99"
                   />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Duration
-                  </label>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">Duration</label>
                   <select
                     value={formData.duration}
-                    onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
+                    onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-sm lg:text-base"
                   >
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                     <option value="weekly">Weekly</option>
-                    <option value="daily">Daily</option>
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Max Properties
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.maxProperties}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxProperties: parseInt(e.target.value) }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Max Users
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.maxUsers}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxUsers: parseInt(e.target.value) }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Max Tenants
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.maxTenants}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxTenants: parseInt(e.target.value) }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Max Agents
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.maxAgents}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxAgents: parseInt(e.target.value) }))}
-                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface text-text-primary"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-4">
-                  Select Features
-                </label>
-                <div className="space-y-6">
-                  {['core', 'reports', 'collaboration', 'integration', 'premium'].map(category => (
-                    <div key={category}>
-                      <h4 className="font-medium text-text-primary mb-3 capitalize">
-                        {category === 'core' ? 'Core Features' : 
-                         category === 'reports' ? 'Reporting & Analytics' :
-                         category === 'collaboration' ? 'Team Collaboration' :
-                         category === 'integration' ? 'Integrations' : 'Premium Features'}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {getFeaturesByCategory(category).map(feature => (
-                          <label key={feature.id} className="flex items-center gap-3 p-3 border border-app-border rounded-xl hover:bg-app-bg cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={formData.features.includes(feature.id)}
-                              onChange={() => toggleFeature(feature.id)}
-                              className="w-4 h-4 text-brand-blue"
-                            />
-                            <span className="text-sm text-text-primary">{feature.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Features</label>
+                {formData.features.map((feature, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={feature}
+                      onChange={(e) => updateFeature(index, e.target.value)}
+                      className="flex-1 p-2 border border-app-border rounded-xl bg-app-surface text-sm"
+                      placeholder="Feature description"
+                    />
+                    {formData.features.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeFeature(index)}
+                        className="text-red-500 hover:text-red-700 px-2"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addFeature}
+                  className="text-blue-500 hover:text-blue-700 text-sm"
+                >
+                  + Add Feature
+                </button>
               </div>
 
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPopular}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isPopular: e.target.checked }))}
-                    className="w-4 h-4 text-brand-blue"
-                  />
-                  <span className="text-text-secondary">Mark as Popular</span>
-                </label>
-                
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublic}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
-                    className="w-4 h-4 text-brand-blue"
-                  />
-                  <span className="text-text-secondary">Public Plan</span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setShowModal(false);
+                    setShowAddModal(false);
+                    setEditingPlan(null);
                     resetForm();
                   }}
-                  className="px-6 py-3 border border-app-border text-text-secondary rounded-2xl hover:bg-app-bg transition-colors"
+                  className="px-4 py-2 lg:px-6 lg:py-3 rounded-2xl border border-app-border text-text-secondary hover:text-text-primary text-sm lg:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createPlanMutation.isPending || updatePlanMutation.isPending}
-                  className="btn-gradient px-6 py-3 rounded-2xl font-semibold disabled:opacity-50"
+                  className="btn-gradient px-4 py-2 lg:px-6 lg:py-3 rounded-2xl text-sm lg:text-base"
                 >
                   {editingPlan ? 'Update Plan' : 'Create Plan'}
                 </button>

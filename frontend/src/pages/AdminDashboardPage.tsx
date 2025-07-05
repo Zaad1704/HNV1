@@ -128,17 +128,20 @@ const AdminDashboardPage = () => {
     );
   }
 
-  if (statsError || growthError || planError) {
+  // Don't show error for individual chart failures, show with fallback data
+  const hasAnyData = stats || growthData || planData;
+  
+  if (!hasAnyData && (statsError || growthError || planError)) {
     return (
-      <div className="text-center p-8">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle size={32} className="text-red-600" />
+      <div className="text-center p-4 lg:p-8">
+        <div className="w-12 h-12 lg:w-16 lg:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle size={24} className="lg:w-8 lg:h-8 text-red-600" />
         </div>
-        <h2 className="text-xl font-bold text-text-primary mb-2">Data Loading Error</h2>
-        <p className="text-text-secondary mb-4">Some dashboard data failed to load. Please refresh the page.</p>
+        <h2 className="text-lg lg:text-xl font-bold text-text-primary mb-2">Dashboard Unavailable</h2>
+        <p className="text-sm lg:text-base text-text-secondary mb-4">Unable to load dashboard data. Please try again.</p>
         <button 
           onClick={() => window.location.reload()}
-          className="btn-gradient px-6 py-3 rounded-2xl font-semibold"
+          className="btn-gradient px-4 py-2 lg:px-6 lg:py-3 rounded-2xl font-semibold text-sm lg:text-base"
         >
           Refresh Dashboard
         </button>
@@ -153,20 +156,20 @@ const AdminDashboardPage = () => {
       className="space-y-8"
     >
       {/* Admin Header */}
-      <div className="app-gradient rounded-3xl p-8 text-white">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-            <Shield size={32} />
+      <div className="app-gradient rounded-2xl lg:rounded-3xl p-4 lg:p-8 text-white">
+        <div className="flex items-center gap-3 lg:gap-4 mb-4">
+          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-white/20 rounded-xl lg:rounded-2xl flex items-center justify-center">
+            <Shield size={24} className="lg:w-8 lg:h-8" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Super Admin Dashboard</h1>
-            <p className="text-white/80">Platform overview and management</p>
+            <h1 className="text-xl lg:text-3xl font-bold">Super Admin Dashboard</h1>
+            <p className="text-sm lg:text-base text-white/80">Platform overview and management</p>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <StatCard
           delay={0.1}
           title="Total Users"
@@ -190,7 +193,7 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -230,7 +233,7 @@ const AdminDashboardPage = () => {
         className="app-surface rounded-3xl p-8 border border-app-border"
       >
         <h2 className="text-xl font-bold text-text-primary mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
           {[
             { title: 'Manage Organizations', icon: Building, href: '/admin/organizations' },
             { title: 'User Management', icon: Users, href: '/admin/users' },
