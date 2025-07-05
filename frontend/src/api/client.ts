@@ -42,6 +42,11 @@ apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    if (import.meta.env.DEV) {
+      console.log('API Request with token:', config.url, 'Token exists:', !!token);
+    }
+  } else {
+    console.warn('No auth token available for request:', config.url);
   }
 
   // Add security headers
@@ -71,12 +76,11 @@ apiClient.interceptors.response.use(
     // Handle HTTP status codes
     if (error.response?.status === 401) {
       const { token, isAuthenticated } = useAuthStore.getState();
-      // Only auto-logout on specific auth endpoints or if explicitly unauthorized
-      const isAuthEndpoint = error.config?.url?.includes('/auth/') || error.config?.url?.includes('/me');
-      const isTokenInvalid = error.response?.data?.message?.includes('token') || error.response?.data?.message?.includes('unauthorized');
+      // Only auto-logout on auth endpoints, not on missing data endpoints
+      const isAuthEndpoint = error.config?.url?.includes('/auth/me') || error.config?.url?.includes('/auth/login');
       
-      if (token && isAuthenticated && (isAuthEndpoint || isTokenInvalid)) {
-        console.log('Token invalid, logging out');
+      if (token && isAuthenticated && isAuthEndpoint) {
+        console.log('Auth token invalid, logging out');
         useAuthStore.getState().logout();
         setTimeout(() => {
           if (window.location.pathname !== '/login') {
@@ -84,7 +88,8 @@ apiClient.interceptors.response.use(
           }
         }, 100);
       } else {
-        console.warn('401 error but not logging out:', error.config?.url);
+        console.warn('401 error on endpoint (likely missing backend route):', error.config?.url);
+        // Don't logout, just log the error
       }
     } else if (error.response?.status === 403) {
       // Don't auto-logout on 403 - might be subscription or permission issue
