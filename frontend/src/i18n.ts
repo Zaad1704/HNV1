@@ -20,6 +20,21 @@ import svTranslations from './locales/sv/translation.json';
 import trTranslations from './locales/tr/translation.json';
 import bnTranslations from './locales/bn/translation.json';
 import tlTranslations from './locales/tl/translation.json';
+import viTranslations from './locales/vi/translation.json';
+import idTranslations from './locales/id/translation.json';
+import msTranslations from './locales/ms/translation.json';
+import urTranslations from './locales/ur/translation.json';
+import swTranslations from './locales/sw/translation.json';
+import amTranslations from './locales/am/translation.json';
+import haTranslations from './locales/ha/translation.json';
+import yoTranslations from './locales/yo/translation.json';
+import zuTranslations from './locales/zu/translation.json';
+import afTranslations from './locales/af/translation.json';
+import noTranslations from './locales/no/translation.json';
+import daTranslations from './locales/da/translation.json';
+import fiTranslations from './locales/fi/translation.json';
+import plTranslations from './locales/pl/translation.json';
+import elTranslations from './locales/el/translation.json';
 
 const resources = {
   en: { translation: enTranslations },
@@ -39,7 +54,22 @@ const resources = {
   sv: { translation: svTranslations },
   tr: { translation: trTranslations },
   bn: { translation: bnTranslations },
-  tl: { translation: tlTranslations }
+  tl: { translation: tlTranslations },
+  vi: { translation: viTranslations },
+  id: { translation: idTranslations },
+  ms: { translation: msTranslations },
+  ur: { translation: urTranslations },
+  sw: { translation: swTranslations },
+  am: { translation: amTranslations },
+  ha: { translation: haTranslations },
+  yo: { translation: yoTranslations },
+  zu: { translation: zuTranslations },
+  af: { translation: afTranslations },
+  no: { translation: noTranslations },
+  da: { translation: daTranslations },
+  fi: { translation: fiTranslations },
+  pl: { translation: plTranslations },
+  el: { translation: elTranslations }
 };
 
 console.log('Translation resources loaded:', {
