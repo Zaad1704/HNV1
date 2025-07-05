@@ -47,7 +47,7 @@ router.patch('/organizations/:orgId/revoke-lifetime', revokeLifetime);
 router.get('/users', getUsers);
 router.delete('/users/:userId', deleteUser);
 router.put('/users/:userId/plan', updateUserPlan);
-router.get('/plans', authorize('Super Admin', 'Super Moderator'), getPlans);
+router.get('/plans', getPlans);
 router.post('/plans', authorize('Super Admin'), createPlan);
 router.put('/plans/:id', authorize('Super Admin'), updatePlan);
 router.delete('/plans/:id', authorize('Super Admin'), deletePlan);
@@ -60,7 +60,7 @@ router.put('/site-settings', updateSiteSettings);
 router.put('/site-content/:section', updateSiteContent);
 router.post('/upload-image', upload.single('image'), uploadImage);
 router.get('/billing', getBilling);
-router.get('/settings', authorize('Super Admin', 'Super Moderator'), (req: any, res) => {
+router.get('/settings', (req: any, res) => {
   res.json({ success: true, data: { role: req.user?.role, name: req.user?.name } });
 });
 

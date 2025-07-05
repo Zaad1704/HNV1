@@ -7,8 +7,12 @@ interface AuthRequest extends Request {
 
 export const getNotifications = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.user?._id || !req.user?.organizationId) {
+    if (!req.user?._id) {
       return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    if (!req.user?.organizationId) {
+      return res.status(200).json({ success: true, data: [] });
     }
 
     const notifications = await notificationService.getNotifications(

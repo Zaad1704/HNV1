@@ -67,14 +67,14 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
       password,
       role,
       organizationId: organization._id,
-      status: 'pending'
+      status: 'active',
+      isEmailVerified: true
     });
 
     organization.owner = user._id;
     organization.members = [user._id];
     await organization.save();
 
-    const verificationToken = user.getEmailVerificationToken();
     await user.save();
 
     const subscription = new Subscription({

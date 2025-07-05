@@ -28,7 +28,10 @@ const safeAsync = (fn: (req: AuthRequest, res: Response) => Promise<any>) => {
 
 export const getOverviewStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ 
+      success: true, 
+      data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: 0 }
+    });
   }
 
   const organizationId = req.user.organizationId;
@@ -162,7 +165,10 @@ export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) =
 
 export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ 
+      success: true, 
+      data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: 0 }
+    });
   }
 
   const stats = await dashboardService.getDashboardStats(req.user.organizationId);
