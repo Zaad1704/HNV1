@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
@@ -20,8 +20,23 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // Check if Google OAuth is enabled
+  useEffect(() => {
+    const checkGoogleOAuth = async () => {
+      try {
+        const response = await apiClient.get('/auth/google/status');
+        setGoogleOAuthEnabled(response.data.googleOAuthEnabled);
+      } catch (err) {
+        console.warn('Could not check Google OAuth status:', err);
+        setGoogleOAuthEnabled(false);
+      }
+    };
+    checkGoogleOAuth();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -70,6 +85,11 @@ const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
+    if (!googleOAuthEnabled) {
+      setError('Google signup is currently unavailable. Please use email and password.');
+      return;
+    }
+    
     if (!formData.role) {
       setError('Please select your role before continuing with Google signup');
       return;
@@ -277,22 +297,27 @@ const RegisterPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="relative flex items-center justify-center my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-app-border"></div>
-            </div>
-            <div className="relative bg-app-surface px-4">
-              <span className="text-text-muted text-sm font-medium">{t('auth.or')}</span>
-            </div>
-          </div>
+          {/* Google Signup Section - Only show if enabled */}
+          {googleOAuthEnabled && (
+            <>
+              <div className="relative flex items-center justify-center my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-app-border"></div>
+                </div>
+                <div className="relative bg-app-surface px-4">
+                  <span className="text-text-muted text-sm font-medium">{t('auth.or')}</span>
+                </div>
+              </div>
 
-          <button
-            onClick={handleGoogleSignup}
-            className="w-full flex justify-center items-center gap-3 py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app"
-          >
-            <Chrome size={20} />
-            {t('auth.continue_google')}
-          </button>
+              <button
+                onClick={handleGoogleSignup}
+                className="w-full flex justify-center items-center gap-3 py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app"
+              >
+                <Chrome size={20} />
+                {t('auth.continue_google')}
+              </button>
+            </>
+          )}
 
           <div className="mt-8 text-center">
             <p className="text-text-secondary">
