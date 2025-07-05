@@ -6,6 +6,7 @@ import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchExpenses = async () => {
   try {
@@ -144,7 +145,7 @@ const ExpensesPage = () => {
                 {expense.description || 'No description'}
               </p>
               
-              <div className="space-y-2 text-sm text-text-secondary">
+              <div className="space-y-2 text-sm text-text-secondary mb-4">
                 <div className="flex items-center gap-2">
                   <Building size={14} />
                   <span>{expense.propertyId?.name || 'General'}</span>
@@ -154,6 +155,13 @@ const ExpensesPage = () => {
                   <span>{expense.date ? new Date(expense.date).toLocaleDateString() : 'No date'}</span>
                 </div>
               </div>
+              
+              <MessageButtons
+                phone={expense.vendorPhone}
+                email={expense.vendorEmail}
+                name={expense.vendorName || 'Vendor'}
+                customMessage={`Expense record: ${expense.description} - ${currency}${expense.amount}`}
+              />
             </motion.div>
           ))}
         </div>

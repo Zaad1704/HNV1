@@ -5,6 +5,7 @@ import { Bell, Plus, Calendar, User, Clock, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchReminders = async () => {
   try {
@@ -126,6 +127,15 @@ const RemindersPage = () => {
                   <Calendar size={14} />
                   <span>Next: {reminder.nextSend ? new Date(reminder.nextSend).toLocaleDateString() : 'Not scheduled'}</span>
                 </div>
+              </div>
+              
+              <div className="mt-4">
+                <MessageButtons
+                  phone={reminder.tenantId?.phone}
+                  email={reminder.tenantId?.email}
+                  name={reminder.tenantId?.name || 'All Tenants'}
+                  customMessage={reminder.message || 'Automated reminder notification'}
+                />
               </div>
             </motion.div>
           ))}

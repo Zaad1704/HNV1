@@ -7,6 +7,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import AddCashFlowModal from '../components/common/AddCashFlowModal';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchCashFlow = async () => {
   try {
@@ -135,9 +136,16 @@ const CashFlowPage = () => {
                   <p className="font-medium text-text-primary">{month.month}</p>
                   <p className="text-sm text-text-secondary">Net: {currency}{month.net?.toLocaleString() || '0'}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-green-500">+{currency}{month.income?.toLocaleString() || '0'}</p>
-                  <p className="text-sm text-red-500">-{currency}{month.expenses?.toLocaleString() || '0'}</p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-sm text-green-500">+{currency}{month.income?.toLocaleString() || '0'}</p>
+                    <p className="text-sm text-red-500">-{currency}{month.expenses?.toLocaleString() || '0'}</p>
+                  </div>
+                  <MessageButtons
+                    email="finance@company.com"
+                    name="Finance Team"
+                    customMessage={`Cash flow report for ${month.month}: Net ${currency}${month.net?.toLocaleString() || '0'}`}
+                  />
                 </div>
               </div>
             ))}
