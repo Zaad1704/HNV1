@@ -24,6 +24,7 @@ const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const GoogleCallbackPage = React.lazy(() => import('./pages/GoogleCallbackPage'));
+const GoogleDebugPage = React.lazy(() => import('./pages/GoogleDebugPage'));
 const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvitePage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -117,6 +118,7 @@ function App() {
           <Route path="reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
           <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
+          <Route path="auth/google/debug" element={<GoogleDebugPage />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="pricing" element={<PricingPage />} />

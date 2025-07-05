@@ -16,8 +16,22 @@ const GoogleCallbackPage: React.FC = () => {
         const error = urlParams.get('error');
         const message = urlParams.get('message');
         const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        
+        // Debug logging
+        console.log('Google Callback URL:', window.location.href);
+        console.log('URL Parameters:', {
+          token: token ? 'Present' : 'Missing',
+          user: userParam ? 'Present' : 'Missing', 
+          error,
+          message,
+          code: code ? 'Present' : 'Missing',
+          state,
+          allParams: Object.fromEntries(urlParams.entries())
+        });
 
         if (error) {
+          console.log('Google auth error received:', error, message);
           navigate(`/login?error=${error}&message=${encodeURIComponent(message || 'Google authentication failed')}`, { replace: true });
           return;
         }
@@ -62,8 +76,10 @@ const GoogleCallbackPage: React.FC = () => {
           }
         }
 
-        // If no token, user, or code - show error
-        navigate('/login?error=no-token&message=Authentication token not received', { replace: true });
+        // If no token, user, or code - show detailed error
+        console.log('No authentication data received. URL params:', Object.fromEntries(urlParams.entries()));
+        const debugInfo = `URL: ${window.location.href}, Params: ${JSON.stringify(Object.fromEntries(urlParams.entries()))}`;
+        navigate(`/login?error=no-token&message=${encodeURIComponent('Authentication token not received. Debug: ' + debugInfo)}`, { replace: true });
         
       } catch (error) {
         console.error('Google callback error:', error);
