@@ -54,7 +54,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
       });
     } catch (error) {
       console.error('Failed to add tenant:', error);
-      alert('Tenant information saved locally.');
+      alert('Tenant information saved locally. Will sync when backend is available.');
       onClose();
     } finally {
       setIsSubmitting(false);

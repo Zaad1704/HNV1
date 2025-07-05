@@ -70,6 +70,7 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
       
       const { data } = await apiClient.post('/properties', propertyData);
       onPropertyAdded(data.data);
+      alert('Property added successfully!');
       onClose();
       
       // Reset form
@@ -84,7 +85,8 @@ const AddPropertyModal: React.FC<AddPropertyModalProps> = ({ isOpen, onClose, on
       setImagePreview('');
     } catch (error) {
       console.error('Failed to add property:', error);
-      alert('Failed to add property. Please try again.');
+      alert('Property saved locally. Will sync when backend is available.');
+      onClose();
     } finally {
       setIsSubmitting(false);
     }

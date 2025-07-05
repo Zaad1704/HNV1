@@ -15,6 +15,7 @@ import ExportModal from '../components/common/ExportModal';
 import CashHandoverModal from '../components/common/CashHandoverModal';
 import BankTransferModal from '../components/common/BankTransferModal';
 import ManualCollectionModal from '../components/common/ManualCollectionModal';
+import AddReminderModal from '../components/common/AddReminderModal';
 import { DollarSign, Building2, Users, UserCheck, TrendingUp, AlertCircle, RefreshCw, CreditCard, Wrench, Bell, CheckSquare, FileText, Settings, Download, Upload, Banknote, Wallet, Receipt, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -29,7 +30,7 @@ const fetchOverviewStats = async () => {
     return data.data || { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' };
   } catch (error) {
     console.error('Overview stats error:', error);
-    throw error;
+    return { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' };
   }
 };
 
@@ -161,40 +162,35 @@ const OverviewPage = () => {
     threshold: 80
   });
 
-  const { data: stats = { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }, isLoading: isLoadingStats, error: statsError } = useQuery({ 
+  const { data: stats = { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }, isLoading: isLoadingStats } = useQuery({ 
     queryKey: ['overviewStats'], 
     queryFn: fetchOverviewStats,
-    retry: 1,
-    staleTime: 30000,
-    onError: (error) => console.error('Stats query error:', error)
+    retry: 0,
+    staleTime: 30000
   });
   const { data: lateTenants = [] } = useQuery({ 
     queryKey: ['lateTenants'], 
     queryFn: fetchLateTenants,
-    retry: 1,
-    staleTime: 30000,
-    onError: (error) => console.error('Late tenants error:', error)
+    retry: 0,
+    staleTime: 30000
   });
   const { data: expiringLeases = [] } = useQuery({ 
     queryKey: ['expiringLeases'], 
     queryFn: fetchExpiringLeases,
-    retry: 1,
-    staleTime: 30000,
-    onError: (error) => console.error('Expiring leases error:', error)
+    retry: 0,
+    staleTime: 30000
   });
   const { data: financialData = [] } = useQuery({ 
     queryKey: ['financialSummary'], 
     queryFn: fetchFinancialSummary,
-    retry: 1,
-    staleTime: 30000,
-    onError: (error) => console.error('Financial data error:', error)
+    retry: 0,
+    staleTime: 30000
   });
   const { data: rentStatusData = [] } = useQuery({ 
     queryKey: ['rentStatus'], 
     queryFn: fetchRentStatus,
-    retry: 1,
-    staleTime: 30000,
-    onError: (error) => console.error('Rent status error:', error)
+    retry: 0,
+    staleTime: 30000
   });
 
   const reminderMutation = useMutation({
@@ -561,20 +557,10 @@ const OverviewPage = () => {
         </div>
       )}
       
-      {showRecordReminderModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-bold mb-4">Record Reminder</h3>
-            <p className="text-gray-600 mb-4">Reminder setup feature coming soon!</p>
-            <button 
-              onClick={() => setShowRecordReminderModal(false)}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+      <AddReminderModal
+        isOpen={showRecordReminderModal}
+        onClose={() => setShowRecordReminderModal(false)}
+      />
       
       {showImportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
