@@ -11,8 +11,13 @@ import { motion } from 'framer-motion';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchRequests = async () => {
-    const { data } = await apiClient.get('/maintenance'); 
-    return data.data;
+    try {
+        const { data } = await apiClient.get('/maintenance'); 
+        return data.data || [];
+    } catch (error) {
+        console.error('Failed to fetch maintenance requests:', error);
+        return [];
+    }
 };
 
 const updateRequestStatus = async ({ id, status }: { id: string, status: string }) => {
@@ -26,9 +31,14 @@ const MaintenanceRequestsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<any>({});
     const [showExportModal, setShowExportModal] = useState(false);
-    const { exportData } = useDataExport();
-    const { data: requests = [], isLoading, isError } = useQuery(['maintenanceRequests'], fetchRequests);
-    const { width } = useWindowSize();
+    const { exportData } = useDataExport() || { exportData: () => {} };
+    const { data: requests = [], isLoading, isError } = useQuery({ 
+        queryKey: ['maintenanceRequests'], 
+        queryFn: fetchRequests,
+        retry: 1,
+        onError: (error) => console.error('Maintenance requests error:', error)
+    });
+    const { width } = useWindowSize() || { width: 1024 };
 
     const filteredRequests = useMemo(() => {
         if (!requests) return [];
