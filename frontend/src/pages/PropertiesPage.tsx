@@ -7,6 +7,7 @@ import AddPropertyModal from '../components/common/AddPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import BulkPaymentModal from '../components/common/BulkPaymentModal';
+import ActionButtons from '../components/common/ActionButtons';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
@@ -261,18 +262,30 @@ const PropertiesPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <Link
-                    to={`/dashboard/properties/${property._id}`}
-                    className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Eye size={14} />
-                    {t('property.view')}
-                  </Link>
-                  <button className="flex-1 app-gradient text-white py-2 px-4 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center justify-center gap-2">
-                    <Edit size={14} />
-                    {t('property.edit')}
-                  </button>
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/dashboard/properties/${property._id}`}
+                      className="bg-app-bg hover:bg-app-border text-text-primary py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                      <Eye size={14} />
+                      {t('property.view')}
+                    </Link>
+                    <button className="app-gradient text-white py-2 px-3 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center gap-2">
+                      <Edit size={14} />
+                      {t('property.edit')}
+                    </button>
+                  </div>
+                  <ActionButtons
+                    onExport={() => exportProperties({ format: 'xlsx', filters: { ids: [property._id] } })}
+                    onDelete={() => {
+                      if (confirm('Delete this property?')) {
+                        console.log('Delete property:', property._id);
+                      }
+                    }}
+                    showPrint={false}
+                    showShare={false}
+                  />
                 </div>
               </div>
             </motion.div>

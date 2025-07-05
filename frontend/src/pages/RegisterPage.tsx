@@ -68,12 +68,23 @@ const RegisterPage: React.FC = () => {
     setError('');
     
     try {
-      const response = await apiClient.post('/auth/register', {
+      const registrationData = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role
-      });
+        role: formData.role,
+        organizationCode: formData.organizationCode || undefined
+      };
+      
+      // For landlords, create organization
+      if (formData.role === 'Landlord') {
+        registrationData.createOrganization = {
+          name: `${formData.name}'s Properties`,
+          type: 'property_management'
+        };
+      }
+      
+      const response = await apiClient.post('/auth/register', registrationData);
 
       setSuccess(true);
     } catch (err: any) {

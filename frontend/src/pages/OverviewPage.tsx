@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import ActionButtons from '../components/common/ActionButtons';
 import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
@@ -128,6 +129,7 @@ const OverviewPage = () => {
   const { t } = useTranslation();
   const { currency } = useCurrency();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
   
@@ -379,13 +381,23 @@ const OverviewPage = () => {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="lg:col-span-2 app-surface rounded-3xl p-8 border border-app-border touch-feedback"
         >
-          <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
-              <TrendingUp size={16} className="text-white" />
-            </div>
-            {t('dashboard.financials_chart_title')}
-          </h2>
-          <FinancialChart data={financialData || []} />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-3">
+              <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
+                <TrendingUp size={16} className="text-white" />
+              </div>
+              {t('dashboard.financials_chart_title')}
+            </h2>
+            <ActionButtons
+              onExport={() => setShowExportModal(true)}
+              onPrint={() => window.print()}
+              showDelete={false}
+              showShare={true}
+            />
+          </div>
+          <div onClick={() => navigate('/dashboard/cashflow')} className="cursor-pointer">
+            <FinancialChart data={financialData || []} />
+          </div>
         </motion.div>
         
         <motion.div 
@@ -394,13 +406,23 @@ const OverviewPage = () => {
           transition={{ delay: 0.6, duration: 0.5 }}
           className="app-surface rounded-3xl p-8 border border-app-border touch-feedback"
         >
-          <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-3">
-            <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
-              <AlertCircle size={16} className="text-white" />
-            </div>
-            {t('dashboard.rent_status_chart_title')}
-          </h2>
-          <RentStatusChart data={rentStatusData || []} />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-3">
+              <div className="w-8 h-8 app-gradient rounded-lg flex items-center justify-center">
+                <AlertCircle size={16} className="text-white" />
+              </div>
+              {t('dashboard.rent_status_chart_title')}
+            </h2>
+            <ActionButtons
+              onExport={() => setShowExportModal(true)}
+              onPrint={() => window.print()}
+              showDelete={false}
+              showShare={true}
+            />
+          </div>
+          <div onClick={() => navigate('/dashboard/payments')} className="cursor-pointer">
+            <RentStatusChart data={rentStatusData || []} />
+          </div>
         </motion.div>
       </div>
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Save, Lock, Key } from 'lucide-react';
+import { Settings, User, Bell, Shield, Save, Lock, Key, Building } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
+import OrganizationSettings from '../components/common/OrganizationSettings';
 
 const ChangePasswordForm = () => {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
@@ -179,8 +180,11 @@ const SettingsPage = () => {
     alert('Notification settings saved!');
   };
 
+  const [showOrgSettings, setShowOrgSettings] = useState(false);
+  
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
+    { id: 'organization', label: 'Organization', icon: Building },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'preferences', label: 'Preferences', icon: Settings }
@@ -319,6 +323,40 @@ const SettingsPage = () => {
               </div>
             )}
 
+            {activeTab === 'organization' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-text-primary">Organization Settings</h2>
+                <div className="space-y-4">
+                  <div className="p-4 bg-app-bg rounded-xl">
+                    <h3 className="font-medium text-text-primary mb-2">Organization Details</h3>
+                    <p className="text-sm text-text-secondary mb-4">Manage your organization information and branding</p>
+                    <button
+                      onClick={() => setShowOrgSettings(true)}
+                      className="btn-gradient px-4 py-2 rounded-xl text-sm font-semibold"
+                    >
+                      Manage Organization
+                    </button>
+                  </div>
+                  <div className="p-4 bg-app-bg rounded-xl">
+                    <h3 className="font-medium text-text-primary mb-2">Current Organization</h3>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        {user?.organizationId?.logo ? (
+                          <img src={user.organizationId.logo} alt="Logo" className="w-10 h-10 rounded-lg" />
+                        ) : (
+                          <Building size={24} className="text-blue-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-text-primary">{user?.organizationId?.name || 'No Organization'}</p>
+                        <p className="text-sm text-text-secondary">{user?.organizationId?.description || 'No description'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'preferences' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-text-primary">App Preferences</h2>
@@ -347,6 +385,11 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
+      
+      <OrganizationSettings
+        isOpen={showOrgSettings}
+        onClose={() => setShowOrgSettings(false)}
+      />
     </motion.div>
   );
 };
