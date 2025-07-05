@@ -14,9 +14,12 @@ interface AuthRequest extends Request {
 
 export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
-    const totalOrgs = await Organization.countDocuments();
-    const totalUsers = await User.countDocuments();
-    const activeOrgs = await Organization.countDocuments({ status: 'active' });
+    const [totalOrgs, totalUsers, activeOrgs, inactiveOrgs] = await Promise.all([
+      Organization.countDocuments(),
+      User.countDocuments(),
+      Organization.countDocuments({ status: 'active' }),
+      Organization.countDocuments({ status: 'inactive' })
+    ]);
     
     res.json({
       success: true,
@@ -25,12 +28,15 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
         totalUsers: totalUsers,
         totalOrgs: totalOrgs,
         activeOrganizations: activeOrgs,
+        inactiveOrganizations: inactiveOrgs,
         activeSubscriptions: activeOrgs,
-        revenue: totalOrgs * 99
+        revenue: activeOrgs * 99,
+        conversionRate: totalOrgs > 0 ? ((activeOrgs / totalOrgs) * 100).toFixed(1) : 0
       }
     });
   } catch (error) {
-    res.json({ success: true, data: { totalOrganizations: 0, totalUsers: 0, totalOrgs: 0, activeOrganizations: 0, activeSubscriptions: 0, revenue: 0 } });
+    console.error('Dashboard stats error:', error);
+    res.json({ success: true, data: { totalOrganizations: 0, totalUsers: 0, totalOrgs: 0, activeOrganizations: 0, inactiveOrganizations: 0, activeSubscriptions: 0, revenue: 0, conversionRate: 0 } });
   }
 };
 

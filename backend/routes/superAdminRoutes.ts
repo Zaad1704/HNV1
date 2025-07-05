@@ -60,7 +60,7 @@ router.put('/site-settings', updateSiteSettings);
 router.put('/site-content/:section', updateSiteContent);
 router.post('/upload-image', upload.single('image'), uploadImage);
 router.get('/billing', getBilling);
-router.get('/settings', authorize('Super Admin', 'Super Moderator'), (req, res) => {
+router.get('/settings', authorize('Super Admin', 'Super Moderator'), (req: any, res) => {
   res.json({ success: true, data: { role: req.user?.role, name: req.user?.name } });
 });
 
