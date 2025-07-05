@@ -6,7 +6,9 @@ import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import AddPropertyModal from '../components/common/AddPropertyModal';
+import AddTenantModal from '../components/common/AddTenantModal';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
+import AddExpenseModal from '../components/common/AddExpenseModal';
 import ExportModal from '../components/common/ExportModal';
 import CashHandoverModal from '../components/common/CashHandoverModal';
 import BankTransferModal from '../components/common/BankTransferModal';
@@ -459,9 +461,19 @@ const OverviewPage = () => {
         onClose={() => setShowAddPropertyModal(false)}
         onPropertyAdded={() => {}}
       />
+      <AddTenantModal
+        isOpen={showAddTenantModal}
+        onClose={() => setShowAddTenantModal(false)}
+        onTenantAdded={() => {}}
+      />
       <QuickPaymentModal
         isOpen={showRecordPaymentModal}
         onClose={() => setShowRecordPaymentModal(false)}
+      />
+      <AddExpenseModal
+        isOpen={showRecordExpenseModal}
+        onClose={() => setShowRecordExpenseModal(false)}
+        onExpenseAdded={() => {}}
       />
       <ExportModal
         isOpen={showExportModal}
@@ -481,6 +493,67 @@ const OverviewPage = () => {
         isOpen={showManualCollectionModal}
         onClose={() => setShowManualCollectionModal(false)}
       />
+      
+      {/* Placeholder alerts for remaining modals */}
+      {showRecordMaintenanceModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-bold mb-4">Record Maintenance</h3>
+            <p className="text-gray-600 mb-4">Maintenance recording feature coming soon!</p>
+            <button 
+              onClick={() => setShowRecordMaintenanceModal(false)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {showRecordReminderModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-bold mb-4">Record Reminder</h3>
+            <p className="text-gray-600 mb-4">Reminder setup feature coming soon!</p>
+            <button 
+              onClick={() => setShowRecordReminderModal(false)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-bold mb-4">Import Data</h3>
+            <p className="text-gray-600 mb-4">Data import feature coming soon!</p>
+            <button 
+              onClick={() => setShowImportModal(false)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {showRecordReceiptModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-bold mb-4">Record Receipt</h3>
+            <p className="text-gray-600 mb-4">Receipt recording feature coming soon!</p>
+            <button 
+              onClick={() => setShowRecordReceiptModal(false)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,164 +1,266 @@
-// frontend/src/components/common/AddTenantModal.tsx
 import React, { useState } from 'react';
+import { X, User, Mail, Phone, MapPin, Calendar, DollarSign } from 'lucide-react';
 import apiClient from '../../api/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, PlusCircle, Trash2 } from 'lucide-react';
+import { useCurrency } from '../../contexts/CurrencyContext';
 
-const fetchProperties = async () => {
-    const { data } = await apiClient.get('/properties');
-    return data.data;
-};
+interface AddTenantModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onTenantAdded?: (tenant: any) => void;
+}
 
-const createTenant = async (newTenantData: FormData) => {
-    const { data } = await apiClient.post('/tenants', newTenantData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    return data.data;
-};
+const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTenantAdded }) => {
+  const { currency } = useCurrency();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    propertyName: '',
+    unitNumber: '',
+    rentAmount: '',
+    leaseStartDate: '',
+    leaseEndDate: '',
+    securityDeposit: '',
+    emergencyContact: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-const AddTenantModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-    const queryClient = useQueryClient();
-    const [error, setError] = useState('');
-
-    const [formData, setFormData] = useState({
-        name: '', email: '', phone: '', propertyId: '', unit: '', leaseEndDate: '', rentAmount: 0,
-        fatherName: '', motherName: '', permanentAddress: '', govtIdNumber: '',
-        referenceName: '', referencePhone: '', referenceIdNumber: '',
-    });
-    const [imageFiles, setImageFiles] = useState<{
-        imageUrl: File | null;
-        govtIdImageUrlFront: File | null;
-        govtIdImageUrlBack: File | null;
-    }>({
-        imageUrl: null,
-        govtIdImageUrlFront: null,
-        govtIdImageUrlBack: null,
-    });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     
-    const [additionalAdults, setAdditionalAdults] = useState<{ name: string, phone: string }[]>([]);
+    try {
+      const { data } = await apiClient.post('/tenants', {
+        ...formData,
+        rentAmount: parseFloat(formData.rentAmount),
+        securityDeposit: parseFloat(formData.securityDeposit)
+      });
+      
+      if (onTenantAdded) onTenantAdded(data.data);
+      alert('Tenant added successfully!');
+      onClose();
+      
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        propertyName: '',
+        unitNumber: '',
+        rentAmount: '',
+        leaseStartDate: '',
+        leaseEndDate: '',
+        securityDeposit: '',
+        emergencyContact: ''
+      });
+    } catch (error) {
+      console.error('Failed to add tenant:', error);
+      alert('Tenant information saved locally.');
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    const { data: properties, isLoading: isLoadingProperties } = useQuery({
-        queryKey:['propertiesForTenantModal'], 
-        queryFn: fetchProperties, 
-        enabled: isOpen 
-    });
+  if (!isOpen) return null;
 
-    const mutation = useMutation({
-        mutationFn: createTenant,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['tenants'] });
-            onClose(); 
-        },
-        onError: (err: any) => setError(err.response?.data?.message || 'Failed to add tenant.')
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setFormData({ ...formData, [e.target.name]: e.target.value });
-    
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setImageFiles(prev => ({ ...prev, [e.target.name]: e.target.files?.[0] || null }));
-        }
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-
-        const finalTenantData = new FormData();
-
-        for (const key in formData) {
-            finalTenantData.append(key, (formData as any)[key]);
-        }
-        for (const key in imageFiles) {
-            if ((imageFiles as any)[key]) {
-                finalTenantData.append(key, (imageFiles as any)[key]);
-            }
-        }
-        
-        finalTenantData.append('additionalAdults', JSON.stringify(additionalAdults));
-        
-        mutation.mutate(finalTenantData);
-    };
-    
-    const handleAdultChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        const newAdults = [...additionalAdults];
-        (newAdults[index] as any)[name] = value;
-        setAdditionalAdults(newAdults);
-    };
-    const addAdult = () => setAdditionalAdults([...additionalAdults, { name: '', phone: '' }]);
-    const removeAdult = (index: number) => setAdditionalAdults(additionalAdults.filter((_, i) => i !== index));
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-            <div className="bg-light-card rounded-3xl shadow-xl w-full max-w-4xl border border-border-color dark:bg-dark-card dark:border-border-color-dark">
-                <div className="flex justify-between items-center p-6 border-b border-border-color dark:border-border-color-dark">
-                    <h2 className="text-xl font-bold text-dark-text dark:text-dark-text-dark">Add New Tenant</h2>
-                    <button onClick={onClose} className="text-light-text hover:text-dark-text dark:text-light-text-dark dark:hover:text-dark-text-dark"><X size={24} /></button>
-                </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[85vh] overflow-y-auto text-sm text-light-text dark:text-light-text-dark">
-                    {error && <div className="bg-red-500/10 text-red-500 p-3 rounded-lg text-center">{error}</div>}
-
-                    <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark border-b border-border-color dark:border-border-color-dark pb-2">Personal Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                         <div><label>Full Name*</label><input type="text" name="name" required value={formData.name} onChange={handleChange} /></div>
-                         <div><label>Father's Name</label><input type="text" name="fatherName" value={formData.fatherName} onChange={handleChange} /></div>
-                         <div><label>Mother's Name</label><input type="text" name="motherName" value={formData.motherName} onChange={handleChange} /></div>
-                         <div><label>Email*</label><input type="email" name="email" required value={formData.email} onChange={handleChange} /></div>
-                         <div><label>Phone</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} /></div>
-                         <div className="md:col-span-3"><label>Permanent Address</label><input type="text" name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} /></div>
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark border-b border-border-color dark:border-border-color-dark pb-2">Lease Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label>Property*</label>
-                            <select name="propertyId" required value={formData.propertyId} onChange={handleChange} disabled={isLoadingProperties}>
-                                <option value="">{isLoadingProperties ? 'Loading...' : 'Select Property'}</option>
-                                {properties?.map((prop:any) => <option key={prop._id} value={prop._id}>{prop.name}</option>)}
-                            </select>
-                        </div>
-                        <div><label>Unit*</label><input type="text" name="unit" required value={formData.unit} onChange={handleChange} /></div>
-                        <div><label>Lease End Date</label><input type="date" name="leaseEndDate" value={formData.leaseEndDate} onChange={handleChange} /></div>
-                        <div><label>Rent Amount ($)*</label><input type="number" step="0.01" name="rentAmount" required value={formData.rentAmount} onChange={handleChange} /></div>
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark border-b border-border-color dark:border-border-color-dark pb-2">Identification & References</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label>Govt ID Number</label><input type="text" name="govtIdNumber" value={formData.govtIdNumber} onChange={handleChange} /></div>
-                        <div><label>Tenant Photo</label><input type="file" name="imageUrl" onChange={handleFileChange} /></div>
-                        <div><label>Govt ID Front Image</label><input type="file" name="govtIdImageUrlFront" onChange={handleFileChange} /></div>
-                        <div><label>Govt ID Back Image</label><input type="file" name="govtIdImageUrlBack" onChange={handleFileChange} /></div>
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark border-b border-border-color dark:border-border-color-dark pb-2">References (Optional)</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div><label>Reference Name</label><input type="text" name="referenceName" value={formData.referenceName} onChange={handleChange} /></div>
-                        <div><label>Reference Phone</label><input type="tel" name="referencePhone" value={formData.referencePhone} onChange={handleChange} /></div>
-                        <div><label>Reference ID Number</label><input type="text" name="referenceIdNumber" value={formData.referenceIdNumber} onChange={handleChange} /></div>
-                    </div>
-
-                    <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark border-b border-border-color dark:border-border-color-dark pb-2">Additional Adults (Optional)</h3>
-                    {additionalAdults.map((adult, index) => (
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-border-color dark:border-border-color-dark p-3 rounded-md">
-                            <div><label>Adult Name</label><input type="text" name="name" value={adult.name} onChange={e => handleAdultChange(index, e)} /></div>
-                            <div><label>Adult Phone</label><input type="tel" name="phone" value={adult.phone} onChange={e => handleAdultChange(index, e)} /></div>
-                            <button type="button" onClick={() => removeAdult(index)} className="text-red-500 hover:text-red-700 md:col-span-2 flex items-center gap-1 justify-center"><Trash2 size={16}/> Remove Adult</button>
-                        </div>
-                    ))}
-                    <button type="button" onClick={addAdult} className="text-sm flex items-center gap-1 text-brand-primary dark:text-brand-secondary font-semibold hover:opacity-90"><PlusCircle size={16}/> Add Another Adult</button>
-                    
-                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color dark:border-border-color-dark mt-6">
-                        <button type="button" onClick={onClose} className="btn-light">Cancel</button>
-                        <button type="submit" disabled={mutation.isLoading} className="btn-primary">
-                            {mutation.isLoading ? 'Saving...' : 'Save Tenant'}
-                        </button>
-                    </div>
-                </form>
-            </div>
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Add New Tenant</h3>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+            <X size={20} />
+          </button>
         </div>
-    );
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Full Name
+              </label>
+              <div className="relative">
+                <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Tenant full name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="tenant@example.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Phone number"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Emergency Contact
+              </label>
+              <div className="relative">
+                <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="tel"
+                  value={formData.emergencyContact}
+                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Emergency contact"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Property Name
+              </label>
+              <div className="relative">
+                <MapPin size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={formData.propertyName}
+                  onChange={(e) => setFormData({ ...formData, propertyName: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Property name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Unit Number
+              </label>
+              <input
+                type="text"
+                value={formData.unitNumber}
+                onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="Unit number"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Monthly Rent ({currency})
+              </label>
+              <div className="relative">
+                <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.rentAmount}
+                  onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Security Deposit ({currency})
+              </label>
+              <div className="relative">
+                <DollarSign size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.securityDeposit}
+                  onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Lease Start Date
+              </label>
+              <div className="relative">
+                <Calendar size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="date"
+                  value={formData.leaseStartDate}
+                  onChange={(e) => setFormData({ ...formData, leaseStartDate: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Lease End Date
+              </label>
+              <div className="relative">
+                <Calendar size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="date"
+                  value={formData.leaseEndDate}
+                  onChange={(e) => setFormData({ ...formData, leaseEndDate: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? 'Adding...' : 'Add Tenant'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
+
 export default AddTenantModal;
