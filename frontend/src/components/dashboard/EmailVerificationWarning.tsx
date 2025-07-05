@@ -52,8 +52,8 @@ const EmailVerificationWarning: React.FC = () => {
     }
   };
 
-  // Don't show if user is Super Admin or email is already verified
-  if (user?.role === 'Super Admin' || verificationStatus?.isEmailVerified || isDismissed || isLoading) {
+  // Don't show if user is Super Admin, Google user, or email is already verified
+  if (user?.role === 'Super Admin' || (user as any)?.googleId || verificationStatus?.isEmailVerified || isDismissed || isLoading) {
     return null;
   }
 

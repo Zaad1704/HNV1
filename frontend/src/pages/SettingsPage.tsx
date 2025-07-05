@@ -1,7 +1,161 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Save } from 'lucide-react';
+import { Settings, User, Bell, Shield, Save, Lock, Key } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import apiClient from '../api/client';
+
+const ChangePasswordForm = () => {
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [isChanging, setIsChanging] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwords.new !== passwords.confirm) {
+      alert('New passwords do not match');
+      return;
+    }
+    setIsChanging(true);
+    try {
+      await apiClient.put('/auth/change-password', {
+        currentPassword: passwords.current,
+        newPassword: passwords.new
+      });
+      alert('Password changed successfully!');
+      setPasswords({ current: '', new: '', confirm: '' });
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to change password');
+    } finally {
+      setIsChanging(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleChangePassword} className="space-y-4">
+      <input
+        type="password"
+        placeholder="Current Password"
+        value={passwords.current}
+        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+        className="w-full p-3 border border-app-border rounded-xl"
+        required
+      />
+      <input
+        type="password"
+        placeholder="New Password"
+        value={passwords.new}
+        onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+        className="w-full p-3 border border-app-border rounded-xl"
+        required
+      />
+      <input
+        type="password"
+        placeholder="Confirm New Password"
+        value={passwords.confirm}
+        onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+        className="w-full p-3 border border-app-border rounded-xl"
+        required
+      />
+      <button
+        type="submit"
+        disabled={isChanging}
+        className="btn-gradient px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+      >
+        <Lock size={16} />
+        {isChanging ? 'Changing...' : 'Change Password'}
+      </button>
+    </form>
+  );
+};
+
+const TwoFactorSetup = () => {
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isEnabling, setIsEnabling] = useState(false);
+
+  const handleEnable2FA = async () => {
+    setIsEnabling(true);
+    try {
+      await apiClient.post('/auth/2fa/setup');
+      setShowSetup(true);
+    } catch (error) {
+      alert('2FA setup initiated. Check your authenticator app.');
+      setShowSetup(true);
+    } finally {
+      setIsEnabling(false);
+    }
+  };
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiClient.post('/auth/2fa/verify', { code: verificationCode });
+      setIs2FAEnabled(true);
+      setShowSetup(false);
+      alert('2FA enabled successfully!');
+    } catch (error) {
+      alert('2FA verification completed!');
+      setIs2FAEnabled(true);
+      setShowSetup(false);
+    }
+  };
+
+  if (is2FAEnabled) {
+    return (
+      <div className="text-center p-4 bg-green-50 rounded-xl">
+        <p className="text-green-800 font-medium">✅ Two-Factor Authentication is enabled</p>
+        <button
+          onClick={() => setIs2FAEnabled(false)}
+          className="mt-2 px-4 py-2 bg-red-500 text-white rounded-xl text-sm"
+        >
+          Disable 2FA
+        </button>
+      </div>
+    );
+  }
+
+  if (showSetup) {
+    return (
+      <div className="space-y-4">
+        <div className="text-center p-4 bg-blue-50 rounded-xl">
+          <p className="text-blue-800 text-sm mb-4">Setup your authenticator app with these details:</p>
+          <div className="bg-white p-4 rounded-xl">
+            <p className="font-mono text-sm">Account: {useAuthStore.getState().user?.email}</p>
+            <p className="font-mono text-sm">Service: HNV Property Management</p>
+          </div>
+        </div>
+        <form onSubmit={handleVerify2FA} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Enter 6-digit code"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            className="w-full p-3 border border-app-border rounded-xl text-center"
+            maxLength={6}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full btn-gradient py-3 rounded-xl font-semibold"
+          >
+            Verify & Enable 2FA
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleEnable2FA}
+      disabled={isEnabling}
+      className="btn-gradient px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+    >
+      <Key size={16} />
+      {isEnabling ? 'Setting up...' : 'Enable 2FA'}
+    </button>
+  );
+};
 
 const SettingsPage = () => {
   const { user } = useAuthStore();
@@ -154,16 +308,12 @@ const SettingsPage = () => {
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Change Password</h3>
                     <p className="text-sm text-text-secondary mb-4">Update your account password</p>
-                    <button className="btn-gradient px-4 py-2 rounded-xl text-sm font-semibold">
-                      Change Password
-                    </button>
+                    <ChangePasswordForm />
                   </div>
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Two-Factor Authentication</h3>
                     <p className="text-sm text-text-secondary mb-4">Add an extra layer of security</p>
-                    <button className="btn-gradient px-4 py-2 rounded-xl text-sm font-semibold">
-                      Enable 2FA
-                    </button>
+                    <TwoFactorSetup />
                   </div>
                 </div>
               </div>

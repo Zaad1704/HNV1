@@ -7,6 +7,8 @@ interface User {
   email: string;
   role: string;
   organizationId?: any;
+  googleId?: string;
+  isEmailVerified?: boolean;
 }
 
 interface AuthState {
