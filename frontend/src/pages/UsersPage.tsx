@@ -174,7 +174,6 @@ const UsersPage = () => {
                     companyName: 'Property Management'
                   }}
                 />
-                </div>
               </motion.div>
             ))}
           </div>
