@@ -26,7 +26,7 @@ const apiClient = axios.create({
     'X-Requested-With': 'XMLHttpRequest',
     'X-Client-Version': '1.0.0',
   },
-  timeout: 30000
+  timeout: 30000,
   withCredentials: true,
 });
 
