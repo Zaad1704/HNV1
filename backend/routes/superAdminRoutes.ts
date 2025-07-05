@@ -32,8 +32,7 @@ import upload from '../middleware/uploadMiddleware';
 
 const router = Router();
 
-// Apply Super Admin authorization to all routes
-router.use(authorize('Super Admin'));
+// Note: Individual routes will check authorization as needed
 
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/plan-distribution', getPlanDistribution);
@@ -48,10 +47,10 @@ router.patch('/organizations/:orgId/revoke-lifetime', revokeLifetime);
 router.get('/users', getUsers);
 router.delete('/users/:userId', deleteUser);
 router.put('/users/:userId/plan', updateUserPlan);
-router.get('/plans', getPlans);
-router.post('/plans', createPlan);
-router.put('/plans/:id', updatePlan);
-router.delete('/plans/:id', deletePlan);
+router.get('/plans', authorize('Super Admin', 'Super Moderator'), getPlans);
+router.post('/plans', authorize('Super Admin'), createPlan);
+router.put('/plans/:id', authorize('Super Admin'), updatePlan);
+router.delete('/plans/:id', authorize('Super Admin'), deletePlan);
 router.put('/plans/:id/activate', activatePlan);
 router.get('/moderators', getModerators);
 router.post('/moderators', createModerator);
@@ -61,5 +60,8 @@ router.put('/site-settings', updateSiteSettings);
 router.put('/site-content/:section', updateSiteContent);
 router.post('/upload-image', upload.single('image'), uploadImage);
 router.get('/billing', getBilling);
+router.get('/settings', authorize('Super Admin', 'Super Moderator'), (req, res) => {
+  res.json({ success: true, data: { role: req.user?.role, name: req.user?.name } });
+});
 
 export default router;

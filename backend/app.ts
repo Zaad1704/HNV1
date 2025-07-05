@@ -56,6 +56,7 @@ import webhookRoutes from './routes/webhookRoutes';
 import bulkPaymentRoutes from './routes/bulkPaymentRoutes';
 import reportRoutes from './routes/reportRoutes';
 import statementRoutes from './routes/statementRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
@@ -217,6 +218,7 @@ app.use('/api/invitations', protect, invitationRoutes);
 app.use('/api/bulk', bulkPaymentRoutes);
 app.use('/api/reports', protect, reportRoutes);
 app.use('/api/statements', protect, statementRoutes);
+app.use('/api/settings', protect, settingsRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // Serve uploaded files
