@@ -32,11 +32,17 @@ const LanguageDropdown: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="btn-glass p-3 rounded-full flex items-center gap-2"
+        className="flex items-center gap-2 px-3 py-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-surface transition-colors"
         title={t('common.change_language', 'Change Language')}
       >
-        <Globe size={20} />
-        <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <Globe size={18} />
+        <span className="hidden sm:inline text-sm font-medium">
+          {currentLanguage.nativeName}
+        </span>
+        <span className="sm:hidden text-sm">
+          {currentLanguage.flag}
+        </span>
+        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
@@ -46,34 +52,34 @@ const LanguageDropdown: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto"
+            className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-[140] max-h-96 overflow-y-auto"
           >
             <div className="p-2">
-              <div className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 mb-2">
+              <div className="text-xs font-semibold text-gray-500 px-3 py-2 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
                 {t('common.select_language', 'Select Language')}
               </div>
-              {languages.map((language) => (
-                <button
-                  key={language.code}
-                  onClick={() => handleLanguageSelect(language.code)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                    lang === language.code 
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  <span className="text-lg">{language.flag}</span>
-                  <div className="flex-1">
-                    <div className="font-medium">{language.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {language.nativeName}
+              <div className="py-1">
+                {languages.map((language) => (
+                  <button
+                    key={language.code}
+                    onClick={() => handleLanguageSelect(language.code)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                      lang === language.code
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    <span className="text-xl">{language.flag}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{language.nativeName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{language.name}</div>
                     </div>
-                  </div>
-                  {lang === language.code && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  )}
-                </button>
-              ))}
+                    {lang === language.code && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}

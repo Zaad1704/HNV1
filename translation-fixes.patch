@@ -1,0 +1,2153 @@
+From cc0b062391aac21246ffe9624bb7f6e0e7c18d32 Mon Sep 17 00:00:00 2001
+From: "M.A Halim" <sabersajib@sabers-MacBook-Air.local>
+Date: Sat, 5 Jul 2025 20:40:12 +0600
+Subject: [PATCH] Fix translations: Add proper Bengali and Arabic translations,
+ update i18n config for all languages
+
+---
+ complete-translations.js                    | 221 ++++++++++++
+ frontend/src/i18n.ts                        |  32 +-
+ frontend/src/locales/af/translation.json    |   1 -
+ frontend/src/locales/am/translation.json    |   1 -
+ frontend/src/locales/ar/translation.json    | 377 ++++++++++----------
+ frontend/src/locales/bn/translation.json    | 377 ++++++++++----------
+ frontend/src/locales/da/translation.json    |   1 -
+ frontend/src/locales/de/translation.json    |   1 -
+ frontend/src/locales/el/translation.json    |   1 -
+ frontend/src/locales/en-AU/translation.json |   1 -
+ frontend/src/locales/en-NZ/translation.json |   1 -
+ frontend/src/locales/es-AR/translation.json |   1 -
+ frontend/src/locales/es-MX/translation.json |   1 -
+ frontend/src/locales/es/translation.json    | 125 ++++---
+ frontend/src/locales/fi/translation.json    |   1 -
+ frontend/src/locales/fr-CA/translation.json |   1 -
+ frontend/src/locales/fr/translation.json    | 125 ++++---
+ frontend/src/locales/ha/translation.json    |   1 -
+ frontend/src/locales/hi/translation.json    |   1 -
+ frontend/src/locales/id/translation.json    |   1 -
+ frontend/src/locales/it/translation.json    |   1 -
+ frontend/src/locales/ja/translation.json    |   1 -
+ frontend/src/locales/ko/translation.json    |   1 -
+ frontend/src/locales/ms/translation.json    |   1 -
+ frontend/src/locales/nl/translation.json    |   1 -
+ frontend/src/locales/no/translation.json    |   1 -
+ frontend/src/locales/pl/translation.json    |   1 -
+ frontend/src/locales/pt-BR/translation.json |   1 -
+ frontend/src/locales/pt/translation.json    |   1 -
+ frontend/src/locales/ru/translation.json    |   1 -
+ frontend/src/locales/sv/translation.json    |   1 -
+ frontend/src/locales/sw/translation.json    |   1 -
+ frontend/src/locales/th/translation.json    |   1 -
+ frontend/src/locales/tl/translation.json    |   1 -
+ frontend/src/locales/tr/translation.json    |   1 -
+ frontend/src/locales/ur/translation.json    |   1 -
+ frontend/src/locales/vi/translation.json    |   1 -
+ frontend/src/locales/yo/translation.json    |   1 -
+ frontend/src/locales/zh/translation.json    |   1 -
+ frontend/src/locales/zu/translation.json    |   1 -
+ generate-translations.js                    | 276 ++++++++++++++
+ 41 files changed, 1028 insertions(+), 539 deletions(-)
+ create mode 100644 complete-translations.js
+ create mode 100644 generate-translations.js
+
+diff --git a/complete-translations.js b/complete-translations.js
+new file mode 100644
+index 00000000..ab689a88
+--- /dev/null
++++ b/complete-translations.js
+@@ -0,0 +1,221 @@
++const fs = require('fs');
++const path = require('path');
++
++// Complete Bengali translations
++const bnTranslations = {
++  "dashboard": {
++    "overview": "সংক্ষিপ্ত বিবরণ",
++    "properties": "সম্পত্তি",
++    "tenants": "ভাড়াটিয়া",
++    "settings": "সেটিংস",
++    "logout": "লগআউট",
++    "maintenance": "রক্ষণাবেক্ষণ",
++    "expenses": "খরচ",
++    "cash_flow": "নগদ প্রবাহ",
++    "reminders": "অনুস্মারক",
++    "approvals": "অনুমোদন",
++    "users_invites": "ব্যবহারকারী ও আমন্ত্রণ",
++    "billing": "বিলিং",
++    "audit_log": "অডিট লগ",
++    "admin_panel": "অ্যাডমিন প্যানেল",
++    "tenant_portal": "আমার পোর্টাল",
++    "monthly_revenue": "মাসিক আয়",
++    "total_properties": "মোট সম্পত্তি",
++    "active_tenants": "সক্রিয় ভাড়াটিয়া",
++    "occupancy_rate": "দখলের হার",
++    "loading_data": "ড্যাশবোর্ড ডেটা লোড হচ্ছে...",
++    "overdue_rent_reminders": "বকেয়া ভাড়ার অনুস্মারক",
++    "send_reminder": "অনুস্মারক পাঠান",
++    "no_overdue_rent": "কোন বকেয়া ভাড়া পেমেন্ট নেই",
++    "upcoming_lease_expirations": "আসন্ন লিজ মেয়াদ শেষ",
++    "renew_lease": "লিজ নবায়ন",
++    "no_expiring_leases": "কোন মেয়াদ শেষ হওয়া লিজ নেই",
++    "financials_chart_title": "আর্থিক সংক্ষিপ্ত বিবরণ",
++    "rent_status_chart_title": "ভাড়ার অবস্থা",
++    "tenant_profile": "ভাড়াটিয়ার প্রোফাইল",
++    "lease_information": "লিজের তথ্য",
++    "pending_approval_requests": "অপেক্ষমাণ অনুমোদনের অনুরোধ",
++    "no_pending_requests": "কোন অপেক্ষমাণ অনুরোধ নেই",
++    "manage_account_preferences": "আপনার অ্যাকাউন্ট এবং পছন্দ পরিচালনা করুন",
++    "profile_information": "প্রোফাইল তথ্য",
++    "email_notifications": "ইমেইল বিজ্ঞপ্তি",
++    "push_notifications": "পুশ বিজ্ঞপ্তি",
++    "automated_reminders": "স্বয়ংক্রিয় অনুস্মারক",
++    "add_new_reminder": "নতুন অনুস্মারক যোগ করুন",
++    "no_automated_reminders": "কোন স্বয়ংক্রিয় অনুস্মারক কনফিগার করা হয়নি",
++    "tenant": "ভাড়াটিয়া",
++    "next_send": "পরবর্তী পাঠানো",
++    "frequency": "ফ্রিকোয়েন্সি",
++    "payments": "পেমেন্ট",
++    "welcome_message": "আপনার ড্যাশবোর্ডে স্বাগতম",
++    "good_morning": "সুপ্রভাত",
++    "good_afternoon": "শুভ বিকাল",
++    "good_evening": "শুভ সন্ধ্যা"
++  },
++  "hero": {
++    "title": "আধুনিক সম্পত্তি ব্যবস্থাপনার জন্য সর্বাত্মক প্ল্যাটফর্ম",
++    "subtitle": "আমাদের ব্যাপক সমাধানের সাথে আপনার সম্পত্তি ব্যবস্থাপনা সহজ করুন",
++    "cta_primary": "আপনার বিনামূল্যে ট্রায়াল শুরু করুন",
++    "cta_secondary": "ডেমো দেখুন",
++    "trusted_by": "বিশ্বব্যাপী সম্পত্তি ব্যবস্থাপকদের দ্বারা বিশ্বস্ত"
++  },
++  "property": {
++    "add_property": "সম্পত্তি যোগ করুন",
++    "edit_property": "সম্পত্তি সম্পাদনা",
++    "property_name": "সম্পত্তির নাম",
++    "property_type": "সম্পত্তির ধরন",
++    "apartment": "অ্যাপার্টমেন্ট",
++    "house": "বাড়ি",
++    "commercial": "বাণিজ্যিক",
++    "other": "অন্যান্য",
++    "rent_amount": "ভাড়ার পরিমাণ",
++    "security_deposit": "জামানত",
++    "available_units": "উপলব্ধ ইউনিট",
++    "total_units": "মোট ইউনিট",
++    "loading_properties": "সম্পত্তি লোড হচ্ছে...",
++    "manage_portfolio": "আপনার সম্পত্তি পোর্টফোলিও পরিচালনা করুন",
++    "view": "দেখুন",
++    "edit": "সম্পাদনা",
++    "no_properties_yet": "এখনও কোন সম্পত্তি নেই",
++    "add_first_property": "আপনার প্রথম সম্পত্তি যোগ করুন",
++    "add_new_property": "নতুন সম্পত্তি যোগ করুন",
++    "address": "ঠিকানা",
++    "city": "শহর",
++    "state": "রাজ্য",
++    "zip_code": "জিপ কোড",
++    "click_to_upload": "ছবি আপলোড করতে ক্লিক করুন",
++    "enter_property_name": "সম্পত্তির নাম লিখুন",
++    "inactive": "নিষ্ক্রিয়",
++    "active": "সক্রিয়",
++    "number_of_units": "ইউনিটের সংখ্যা",
++    "property_image": "সম্পত্তির ছবি",
++    "save_property": "সম্পত্তি সংরক্ষণ",
++    "street_address": "রাস্তার ঠিকানা",
++    "units": "ইউনিট",
++    "update_property": "সম্পত্তি আপডেট"
++  }
++};
++
++// Complete Arabic translations
++const arTranslations = {
++  "dashboard": {
++    "overview": "نظرة عامة",
++    "properties": "العقارات",
++    "tenants": "المستأجرين",
++    "settings": "الإعدادات",
++    "logout": "تسجيل الخروج",
++    "maintenance": "الصيانة",
++    "expenses": "المصروفات",
++    "cash_flow": "التدفق النقدي",
++    "reminders": "التذكيرات",
++    "approvals": "الموافقات",
++    "users_invites": "المستخدمين والدعوات",
++    "billing": "الفواتير",
++    "audit_log": "سجل المراجعة",
++    "admin_panel": "لوحة الإدارة",
++    "tenant_portal": "بوابتي",
++    "monthly_revenue": "الإيرادات الشهرية",
++    "total_properties": "إجمالي العقارات",
++    "active_tenants": "المستأجرين النشطين",
++    "occupancy_rate": "معدل الإشغال",
++    "loading_data": "جاري تحميل بيانات لوحة التحكم...",
++    "overdue_rent_reminders": "تذكيرات الإيجار المتأخر",
++    "send_reminder": "إرسال تذكير",
++    "no_overdue_rent": "لا توجد مدفوعات إيجار متأخرة",
++    "upcoming_lease_expirations": "انتهاء صلاحية عقود الإيجار القادمة",
++    "renew_lease": "تجديد عقد الإيجار",
++    "no_expiring_leases": "لا توجد عقود إيجار منتهية الصلاحية",
++    "financials_chart_title": "نظرة عامة مالية",
++    "rent_status_chart_title": "حالة الإيجار",
++    "tenant_profile": "ملف المستأجر",
++    "lease_information": "معلومات عقد الإيجار",
++    "pending_approval_requests": "طلبات الموافقة المعلقة",
++    "no_pending_requests": "لا توجد طلبات معلقة",
++    "manage_account_preferences": "إدارة حسابك وتفضيلاتك",
++    "profile_information": "معلومات الملف الشخصي",
++    "email_notifications": "إشعارات البريد الإلكتروني",
++    "push_notifications": "الإشعارات المنبثقة",
++    "automated_reminders": "التذكيرات التلقائية",
++    "add_new_reminder": "إضافة تذكير جديد",
++    "no_automated_reminders": "لم يتم تكوين تذكيرات تلقائية",
++    "tenant": "مستأجر",
++    "next_send": "الإرسال التالي",
++    "frequency": "التكرار",
++    "payments": "المدفوعات",
++    "welcome_message": "مرحباً بك في لوحة التحكم",
++    "good_morning": "صباح الخير",
++    "good_afternoon": "مساء الخير",
++    "good_evening": "مساء الخير"
++  },
++  "hero": {
++    "title": "المنصة الشاملة لإدارة العقارات الحديثة",
++    "subtitle": "بسّط إدارة عقاراتك مع حلولنا الشاملة",
++    "cta_primary": "ابدأ تجربتك المجانية",
++    "cta_secondary": "شاهد العرض التوضيحي",
++    "trusted_by": "موثوق به من قبل مديري العقارات في جميع أنحاء العالم"
++  },
++  "property": {
++    "add_property": "إضافة عقار",
++    "edit_property": "تعديل العقار",
++    "property_name": "اسم العقار",
++    "property_type": "نوع العقار",
++    "apartment": "شقة",
++    "house": "منزل",
++    "commercial": "تجاري",
++    "other": "أخرى",
++    "rent_amount": "مبلغ الإيجار",
++    "security_deposit": "التأمين",
++    "available_units": "الوحدات المتاحة",
++    "total_units": "إجمالي الوحدات",
++    "loading_properties": "جاري تحميل العقارات...",
++    "manage_portfolio": "إدارة محفظة عقاراتك",
++    "view": "عرض",
++    "edit": "تعديل",
++    "no_properties_yet": "لا توجد عقارات بعد",
++    "add_first_property": "أضف عقارك الأول",
++    "add_new_property": "إضافة عقار جديد",
++    "address": "العنوان",
++    "city": "المدينة",
++    "state": "الولاية",
++    "zip_code": "الرمز البريدي",
++    "click_to_upload": "انقر لتحميل الصورة",
++    "enter_property_name": "أدخل اسم العقار",
++    "inactive": "غير نشط",
++    "active": "نشط",
++    "number_of_units": "عدد الوحدات",
++    "property_image": "صورة العقار",
++    "save_property": "حفظ العقار",
++    "street_address": "عنوان الشارع",
++    "units": "وحدات",
++    "update_property": "تحديث العقار"
++  }
++};
++
++// Function to merge translations
++function mergeTranslations(baseTranslations, additionalTranslations) {
++  const result = { ...baseTranslations };
++  
++  for (const [key, value] of Object.entries(additionalTranslations)) {
++    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
++      result[key] = { ...(result[key] || {}), ...value };
++    } else {
++      result[key] = value;
++    }
++  }
++  
++  return result;
++}
++
++// Update Bengali translations
++const bnPath = path.join(__dirname, 'frontend/src/locales/bn/translation.json');
++const currentBn = JSON.parse(fs.readFileSync(bnPath, 'utf8'));
++const updatedBn = mergeTranslations(currentBn, bnTranslations);
++fs.writeFileSync(bnPath, JSON.stringify(updatedBn, null, 2), 'utf8');
++
++// Update Arabic translations
++const arPath = path.join(__dirname, 'frontend/src/locales/ar/translation.json');
++const currentAr = JSON.parse(fs.readFileSync(arPath, 'utf8'));
++const updatedAr = mergeTranslations(currentAr, arTranslations);
++fs.writeFileSync(arPath, JSON.stringify(updatedAr, null, 2), 'utf8');
++
++console.log('Complete translations updated for Bengali and Arabic!');
+\ No newline at end of file
+diff --git a/frontend/src/i18n.ts b/frontend/src/i18n.ts
+index c8ce0298..b69b7d57 100644
+--- a/frontend/src/i18n.ts
++++ b/frontend/src/i18n.ts
+@@ -20,6 +20,21 @@ import svTranslations from './locales/sv/translation.json';
+ import trTranslations from './locales/tr/translation.json';
+ import bnTranslations from './locales/bn/translation.json';
+ import tlTranslations from './locales/tl/translation.json';
++import viTranslations from './locales/vi/translation.json';
++import idTranslations from './locales/id/translation.json';
++import msTranslations from './locales/ms/translation.json';
++import urTranslations from './locales/ur/translation.json';
++import swTranslations from './locales/sw/translation.json';
++import amTranslations from './locales/am/translation.json';
++import haTranslations from './locales/ha/translation.json';
++import yoTranslations from './locales/yo/translation.json';
++import zuTranslations from './locales/zu/translation.json';
++import afTranslations from './locales/af/translation.json';
++import noTranslations from './locales/no/translation.json';
++import daTranslations from './locales/da/translation.json';
++import fiTranslations from './locales/fi/translation.json';
++import plTranslations from './locales/pl/translation.json';
++import elTranslations from './locales/el/translation.json';
+ 
+ const resources = {
+   en: { translation: enTranslations },
+@@ -39,7 +54,22 @@ const resources = {
+   sv: { translation: svTranslations },
+   tr: { translation: trTranslations },
+   bn: { translation: bnTranslations },
+-  tl: { translation: tlTranslations }
++  tl: { translation: tlTranslations },
++  vi: { translation: viTranslations },
++  id: { translation: idTranslations },
++  ms: { translation: msTranslations },
++  ur: { translation: urTranslations },
++  sw: { translation: swTranslations },
++  am: { translation: amTranslations },
++  ha: { translation: haTranslations },
++  yo: { translation: yoTranslations },
++  zu: { translation: zuTranslations },
++  af: { translation: afTranslations },
++  no: { translation: noTranslations },
++  da: { translation: daTranslations },
++  fi: { translation: fiTranslations },
++  pl: { translation: plTranslations },
++  el: { translation: elTranslations }
+ };
+ 
+ console.log('Translation resources loaded:', {
+diff --git a/frontend/src/locales/af/translation.json b/frontend/src/locales/af/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/af/translation.json
++++ b/frontend/src/locales/af/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/am/translation.json b/frontend/src/locales/am/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/am/translation.json
++++ b/frontend/src/locales/am/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ar/translation.json b/frontend/src/locales/ar/translation.json
+index 92c7c259..756b4618 100644
+--- a/frontend/src/locales/ar/translation.json
++++ b/frontend/src/locales/ar/translation.json
+@@ -1,171 +1,170 @@
+ {
+-  "app_name": "HNV Property Management Solutions",
+-  "app_name_short": "HNV Solutions",
++  "app_name": "حلول إدارة العقارات HNV",
++  "app_name_short": "حلول HNV",
+   "header": {
+-    "login": "Login",
+-    "get_started": "Get Started"
++    "login": "تسجيل الدخول",
++    "get_started": "ابدأ الآن"
+   },
+   "nav": {
+-    "home": "Home",
+-    "about": "About",
+-    "features": "Features",
+-    "services": "Services",
+-    "pricing": "Pricing",
+-    "contact": "Contact",
+-    "login": "Login",
+-    "dashboard": "Dashboard"
++    "home": "الرئيسية",
++    "about": "حول",
++    "features": "المميزات",
++    "services": "الخدمات",
++    "pricing": "الأسعار",
++    "contact": "اتصل بنا",
++    "login": "تسجيل الدخول",
++    "dashboard": "لوحة التحكم"
+   },
+   "auth": {
+-    "welcome_back": "Welcome Back!",
+-    "sign_in_subtitle": "Sign in to continue to your dashboard",
+-    "email_address": "Email Address",
+-    "password": "Password",
+-    "sign_in": "Sign In",
+-    "continue_google": "Continue with Google",
+-    "no_account": "Don't have an account?",
+-    "sign_up": "Sign Up",
+-    "or": "OR",
+-    "forgot_password": "Forgot Password?",
+-    "enter_email": "Enter your email address",
+-    "enter_password": "Enter your password",
+-    "remember_me": "Remember me",
+-    "create_account": "Create Account",
+-    "full_name": "Full Name",
+-    "confirm_password": "Confirm Password",
+-    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
+-    "agent": "Agent",
+-    "check_email": "Check your email for verification link",
+-    "create_password": "Create a strong password",
+-    "enter_full_name": "Enter your full name",
+-    "go_to_login": "Go to Login",
+-    "have_account": "Already have an account?",
+-    "join_thousands": "Join thousands of property managers",
+-    "landlord": "Landlord",
+-    "role": "Role",
+-    "tenant": "Tenant",
+-    "verification_sent": "Verification email sent"
++    "welcome_back": "مرحباً بعودتك!",
++    "sign_in_subtitle": "سجل دخولك للمتابعة إلى لوحة التحكم",
++    "email_address": "عنوان البريد الإلكتروني",
++    "password": "كلمة المرور",
++    "sign_in": "تسجيل الدخول",
++    "continue_google": "المتابعة مع جوجل",
++    "no_account": "ليس لديك حساب؟",
++    "sign_up": "إنشاء حساب",
++    "or": "أو",
++    "forgot_password": "نسيت كلمة المرور؟",
++    "enter_email": "أدخل عنوان بريدك الإلكتروني",
++    "enter_password": "أدخل كلمة المرور",
++    "remember_me": "تذكرني",
++    "create_account": "إنشاء حساب",
++    "full_name": "الاسم الكامل",
++    "confirm_password": "تأكيد كلمة المرور",
++    "agree_terms": "أوافق على شروط الخدمة وسياسة الخصوصية",
++    "agent": "وكيل",
++    "check_email": "تحقق من بريدك الإلكتروني للحصول على رابط التحقق",
++    "create_password": "إنشاء كلمة مرور قوية",
++    "enter_full_name": "أدخل اسمك الكامل",
++    "go_to_login": "الذهاب لتسجيل الدخول",
++    "have_account": "لديك حساب بالفعل؟",
++    "join_thousands": "انضم إلى آلاف مديري العقارات",
++    "landlord": "مالك العقار",
++    "role": "الدور",
++    "tenant": "مستأجر",
++    "verification_sent": "تم إرسال بريد التحقق"
+   },
+   "common": {
+-    "loading": "Loading...",
+-    "error": "Error",
+-    "success": "Success",
+-    "cancel": "Cancel",
+-    "save": "Save",
+-    "edit": "Edit",
+-    "delete": "Delete",
+-    "add": "Add",
+-    "view": "View",
+-    "close": "Close",
+-    "confirm": "Confirm",
+-    "yes": "Yes",
+-    "no": "No",
+-    "welcome_back_user": "Welcome back, {{name}}!",
+-    "happening_today": "Here's what's happening with your properties today.",
+-    "learn_more": "Learn More",
+-    "analytics": "Analytics",
+-    "payments": "Payments",
+-    "actions": "Actions",
+-    "status": "Status",
+-    "name": "Name",
+-    "email": "Email",
+-    "phone": "Phone",
+-    "address": "Address",
+-    "city": "City",
+-    "state": "State",
+-    "zip_code": "Zip Code",
+-    "country": "Country",
+-    "date": "Date",
+-    "amount": "Amount",
+-    "description": "Description",
+-    "type": "Type",
+-    "active": "Active",
+-    "inactive": "Inactive",
+-    "pending": "Pending",
+-    "approved": "Approved",
+-    "rejected": "Rejected",
+-    "all_languages": "All Languages",
+-    "theme": "Theme",
+-    "language": "Language",
+-    "notifications": "Notifications",
+-    "profile": "Profile",
+-    "settings": "Settings",
+-    "search": "Search...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+-    "filter": "Filters",
+-    "clear_all": "Clear All",
+-    "all": "All",
+-    "more_options": "More Options",
+-    "quick_links": "Quick Links",
+-    "legal": "Legal",
+-    "about": "About",
+-    "features": "Features",
+-    "privacy_policy": "Privacy Policy",
+-    "terms_of_service": "Terms of Service",
+-    "property_management": "Property Management",
+-    "change_language": "Change Language",
+-    "select_language": "Select Language",
+-    "toggle_language": "Toggle Language",
+-    "switch_to": "Switch to",
+-    "current_language": "Current Language",
+-    "start_date": "Start Date",
+-    "end_date": "End Date"
++    "loading": "جاري التحميل...",
++    "error": "خطأ",
++    "success": "نجح",
++    "cancel": "إلغاء",
++    "save": "حفظ",
++    "edit": "تعديل",
++    "delete": "حذف",
++    "add": "إضافة",
++    "view": "عرض",
++    "close": "إغلاق",
++    "confirm": "تأكيد",
++    "yes": "نعم",
++    "no": "لا",
++    "welcome_back_user": "مرحباً بعودتك، {{name}}!",
++    "happening_today": "إليك ما يحدث مع عقاراتك اليوم.",
++    "learn_more": "تعلم المزيد",
++    "analytics": "التحليلات",
++    "payments": "المدفوعات",
++    "actions": "الإجراءات",
++    "status": "الحالة",
++    "name": "الاسم",
++    "email": "البريد الإلكتروني",
++    "phone": "الهاتف",
++    "address": "العنوان",
++    "city": "المدينة",
++    "state": "الولاية",
++    "zip_code": "الرمز البريدي",
++    "country": "البلد",
++    "date": "التاريخ",
++    "amount": "المبلغ",
++    "description": "الوصف",
++    "type": "النوع",
++    "active": "نشط",
++    "inactive": "غير نشط",
++    "pending": "معلق",
++    "approved": "موافق عليه",
++    "rejected": "مرفوض",
++    "all_languages": "جميع اللغات",
++    "theme": "المظهر",
++    "language": "اللغة",
++    "notifications": "الإشعارات",
++    "profile": "الملف الشخصي",
++    "settings": "الإعدادات",
++    "search": "بحث...",
++    "search_placeholder": "البحث في العقارات والمستأجرين والمدفوعات...",
++    "filter": "المرشحات",
++    "clear_all": "مسح الكل",
++    "all": "الكل",
++    "more_options": "المزيد من الخيارات",
++    "quick_links": "روابط سريعة",
++    "legal": "قانوني",
++    "about": "حول",
++    "features": "المميزات",
++    "privacy_policy": "سياسة الخصوصية",
++    "terms_of_service": "شروط الخدمة",
++    "property_management": "إدارة العقارات",
++    "change_language": "تغيير اللغة",
++    "select_language": "اختر اللغة",
++    "toggle_language": "تبديل اللغة",
++    "switch_to": "التبديل إلى",
++    "current_language": "اللغة الحالية",
++    "start_date": "تاريخ البداية",
++    "end_date": "تاريخ النهاية"
+   },
+   "dashboard": {
+-    "overview": "Overview",
+-    "properties": "Properties",
+-    "tenants": "Tenants",
+-    "settings": "Settings",
+-    "logout": "Logout",
+-    "maintenance": "Maintenance",
+-    "expenses": "Expenses",
+-    "cash_flow": "Cash Flow",
+-    "reminders": "Reminders",
+-    "approvals": "Approvals",
+-    "users_invites": "Users & Invites",
+-    "billing": "Billing",
+-    "audit_log": "Audit Log",
+-    "admin_panel": "Admin Panel",
+-    "tenant_portal": "My Portal",
+-    "monthly_revenue": "Monthly Revenue",
+-    "total_properties": "Total Properties",
+-    "active_tenants": "Active Tenants",
+-    "occupancy_rate": "Occupancy Rate",
+-    "loading_data": "Loading dashboard data...",
+-    "overdue_rent_reminders": "Overdue Rent Reminders",
+-    "send_reminder": "Send Reminder",
+-    "no_overdue_rent": "No overdue rent payments",
+-    "upcoming_lease_expirations": "Upcoming Lease Expirations",
+-    "renew_lease": "Renew Lease",
+-    "no_expiring_leases": "No expiring leases",
+-    "financials_chart_title": "Financial Overview",
+-    "rent_status_chart_title": "Rent Status",
+-    "tenant_profile": "Tenant Profile",
+-    "lease_information": "Lease Information",
+-    "pending_approval_requests": "Pending Approval Requests",
+-    "no_pending_requests": "No Pending Requests",
+-    "manage_account_preferences": "Manage your account and preferences",
+-    "profile_information": "Profile Information",
+-    "email_notifications": "Email Notifications",
+-    "push_notifications": "Push Notifications",
+-    "automated_reminders": "Automated Reminders",
+-    "add_new_reminder": "Add New Reminder",
+-    "no_automated_reminders": "No Automated Reminders Configured",
+-    "tenant": "Tenant",
+-    "next_send": "Next Send",
+-    "frequency": "Frequency",
+-    "payments": "Payments",
+-    "welcome_message": "Welcome to your dashboard",
+-    "good_morning": "Good morning",
+-    "good_afternoon": "Good afternoon",
+-    "good_evening": "Good evening"
++    "overview": "نظرة عامة",
++    "properties": "العقارات",
++    "tenants": "المستأجرين",
++    "settings": "الإعدادات",
++    "logout": "تسجيل الخروج",
++    "maintenance": "الصيانة",
++    "expenses": "المصروفات",
++    "cash_flow": "التدفق النقدي",
++    "reminders": "التذكيرات",
++    "approvals": "الموافقات",
++    "users_invites": "المستخدمين والدعوات",
++    "billing": "الفواتير",
++    "audit_log": "سجل المراجعة",
++    "admin_panel": "لوحة الإدارة",
++    "tenant_portal": "بوابتي",
++    "monthly_revenue": "الإيرادات الشهرية",
++    "total_properties": "إجمالي العقارات",
++    "active_tenants": "المستأجرين النشطين",
++    "occupancy_rate": "معدل الإشغال",
++    "loading_data": "جاري تحميل بيانات لوحة التحكم...",
++    "overdue_rent_reminders": "تذكيرات الإيجار المتأخر",
++    "send_reminder": "إرسال تذكير",
++    "no_overdue_rent": "لا توجد مدفوعات إيجار متأخرة",
++    "upcoming_lease_expirations": "انتهاء صلاحية عقود الإيجار القادمة",
++    "renew_lease": "تجديد عقد الإيجار",
++    "no_expiring_leases": "لا توجد عقود إيجار منتهية الصلاحية",
++    "financials_chart_title": "نظرة عامة مالية",
++    "rent_status_chart_title": "حالة الإيجار",
++    "tenant_profile": "ملف المستأجر",
++    "lease_information": "معلومات عقد الإيجار",
++    "pending_approval_requests": "طلبات الموافقة المعلقة",
++    "no_pending_requests": "لا توجد طلبات معلقة",
++    "manage_account_preferences": "إدارة حسابك وتفضيلاتك",
++    "profile_information": "معلومات الملف الشخصي",
++    "email_notifications": "إشعارات البريد الإلكتروني",
++    "push_notifications": "الإشعارات المنبثقة",
++    "automated_reminders": "التذكيرات التلقائية",
++    "add_new_reminder": "إضافة تذكير جديد",
++    "no_automated_reminders": "لم يتم تكوين تذكيرات تلقائية",
++    "tenant": "مستأجر",
++    "next_send": "الإرسال التالي",
++    "frequency": "التكرار",
++    "payments": "المدفوعات",
++    "welcome_message": "مرحباً بك في لوحة التحكم",
++    "good_morning": "صباح الخير",
++    "good_afternoon": "مساء الخير",
++    "good_evening": "مساء الخير"
+   },
+   "hero": {
+-    "title": "The All-in-One Platform for Modern Property Management",
+-    "subtitle": "Streamline your property management with our comprehensive solution",
+-    "cta_primary": "Start Your Free Trial",
+-    "cta_secondary": "Watch Demo",
+-    "trusted_by": "Trusted by property managers worldwide"
++    "title": "المنصة الشاملة لإدارة العقارات الحديثة",
++    "subtitle": "بسّط إدارة عقاراتك مع حلولنا الشاملة",
++    "cta_primary": "ابدأ تجربتك المجانية",
++    "cta_secondary": "شاهد العرض التوضيحي",
++    "trusted_by": "موثوق به من قبل مديري العقارات في جميع أنحاء العالم"
+   },
+   "landing": {
+     "hero_title": "The All-in-One Platform for Modern Property Management",
+@@ -304,39 +303,39 @@
+     "passwords_dont_match": "Passwords don't match"
+   },
+   "property": {
+-    "add_property": "Add Property",
+-    "edit_property": "Edit Property",
+-    "property_name": "Property Name",
+-    "property_type": "Property Type",
+-    "apartment": "Apartment",
+-    "house": "House",
+-    "commercial": "Commercial",
+-    "other": "Other",
+-    "rent_amount": "Rent Amount",
+-    "security_deposit": "Security Deposit",
+-    "available_units": "Available Units",
+-    "total_units": "Total Units",
+-    "loading_properties": "Loading properties...",
+-    "manage_portfolio": "Manage your property portfolio",
+-    "view": "View",
+-    "edit": "Edit",
+-    "no_properties_yet": "No Properties Yet",
+-    "add_first_property": "Add Your First Property",
+-    "add_new_property": "Add New Property",
+-    "address": "Address",
+-    "city": "City",
+-    "state": "State",
+-    "zip_code": "Zip Code",
+-    "click_to_upload": "Click to upload image",
+-    "enter_property_name": "Enter property name",
+-    "inactive": "Inactive",
+-    "active": "Active",
+-    "number_of_units": "Number of Units",
+-    "property_image": "Property Image",
+-    "save_property": "Save Property",
+-    "street_address": "Street Address",
+-    "units": "Units",
+-    "update_property": "Update Property"
++    "add_property": "إضافة عقار",
++    "edit_property": "تعديل العقار",
++    "property_name": "اسم العقار",
++    "property_type": "نوع العقار",
++    "apartment": "شقة",
++    "house": "منزل",
++    "commercial": "تجاري",
++    "other": "أخرى",
++    "rent_amount": "مبلغ الإيجار",
++    "security_deposit": "التأمين",
++    "available_units": "الوحدات المتاحة",
++    "total_units": "إجمالي الوحدات",
++    "loading_properties": "جاري تحميل العقارات...",
++    "manage_portfolio": "إدارة محفظة عقاراتك",
++    "view": "عرض",
++    "edit": "تعديل",
++    "no_properties_yet": "لا توجد عقارات بعد",
++    "add_first_property": "أضف عقارك الأول",
++    "add_new_property": "إضافة عقار جديد",
++    "address": "العنوان",
++    "city": "المدينة",
++    "state": "الولاية",
++    "zip_code": "الرمز البريدي",
++    "click_to_upload": "انقر لتحميل الصورة",
++    "enter_property_name": "أدخل اسم العقار",
++    "inactive": "غير نشط",
++    "active": "نشط",
++    "number_of_units": "عدد الوحدات",
++    "property_image": "صورة العقار",
++    "save_property": "حفظ العقار",
++    "street_address": "عنوان الشارع",
++    "units": "وحدات",
++    "update_property": "تحديث العقار"
+   },
+   "tenant": {
+     "add_tenant": "Add Tenant",
+diff --git a/frontend/src/locales/bn/translation.json b/frontend/src/locales/bn/translation.json
+index 92c7c259..04e20c93 100644
+--- a/frontend/src/locales/bn/translation.json
++++ b/frontend/src/locales/bn/translation.json
+@@ -1,171 +1,170 @@
+ {
+-  "app_name": "HNV Property Management Solutions",
+-  "app_name_short": "HNV Solutions",
++  "app_name": "HNV সম্পত্তি ব্যবস্থাপনা সমাধান",
++  "app_name_short": "HNV সমাধান",
+   "header": {
+-    "login": "Login",
+-    "get_started": "Get Started"
++    "login": "লগইন",
++    "get_started": "শুরু করুন"
+   },
+   "nav": {
+-    "home": "Home",
+-    "about": "About",
+-    "features": "Features",
+-    "services": "Services",
+-    "pricing": "Pricing",
+-    "contact": "Contact",
+-    "login": "Login",
+-    "dashboard": "Dashboard"
++    "home": "হোম",
++    "about": "সম্পর্কে",
++    "features": "বৈশিষ্ট্য",
++    "services": "সেবা",
++    "pricing": "মূল্য",
++    "contact": "যোগাযোগ",
++    "login": "লগইন",
++    "dashboard": "ড্যাশবোর্ড"
+   },
+   "auth": {
+-    "welcome_back": "Welcome Back!",
+-    "sign_in_subtitle": "Sign in to continue to your dashboard",
+-    "email_address": "Email Address",
+-    "password": "Password",
+-    "sign_in": "Sign In",
+-    "continue_google": "Continue with Google",
+-    "no_account": "Don't have an account?",
+-    "sign_up": "Sign Up",
+-    "or": "OR",
+-    "forgot_password": "Forgot Password?",
+-    "enter_email": "Enter your email address",
+-    "enter_password": "Enter your password",
+-    "remember_me": "Remember me",
+-    "create_account": "Create Account",
+-    "full_name": "Full Name",
+-    "confirm_password": "Confirm Password",
+-    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
+-    "agent": "Agent",
+-    "check_email": "Check your email for verification link",
+-    "create_password": "Create a strong password",
+-    "enter_full_name": "Enter your full name",
+-    "go_to_login": "Go to Login",
+-    "have_account": "Already have an account?",
+-    "join_thousands": "Join thousands of property managers",
+-    "landlord": "Landlord",
+-    "role": "Role",
+-    "tenant": "Tenant",
+-    "verification_sent": "Verification email sent"
++    "welcome_back": "স্বাগতম!",
++    "sign_in_subtitle": "আপনার ড্যাশবোর্ডে যেতে সাইন ইন করুন",
++    "email_address": "ইমেইল ঠিকানা",
++    "password": "পাসওয়ার্ড",
++    "sign_in": "সাইন ইন",
++    "continue_google": "গুগল দিয়ে চালিয়ে যান",
++    "no_account": "কোন অ্যাকাউন্ট নেই?",
++    "sign_up": "সাইন আপ",
++    "or": "অথবা",
++    "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?",
++    "enter_email": "আপনার ইমেইল ঠিকানা লিখুন",
++    "enter_password": "আপনার পাসওয়ার্ড লিখুন",
++    "remember_me": "আমাকে মনে রাখুন",
++    "create_account": "অ্যাকাউন্ট তৈরি করুন",
++    "full_name": "পূর্ণ নাম",
++    "confirm_password": "পাসওয়ার্ড নিশ্চিত করুন",
++    "agree_terms": "আমি সেবার শর্তাবলী এবং গোপনীয়তা নীতিতে সম্মত",
++    "agent": "এজেন্ট",
++    "check_email": "যাচাইকরণ লিঙ্কের জন্য আপনার ইমেইল চেক করুন",
++    "create_password": "একটি শক্তিশালী পাসওয়ার্ড তৈরি করুন",
++    "enter_full_name": "আপনার পূর্ণ নাম লিখুন",
++    "go_to_login": "লগইনে যান",
++    "have_account": "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?",
++    "join_thousands": "হাজার হাজার সম্পত্তি ব্যবস্থাপকদের সাথে যোগ দিন",
++    "landlord": "বাড়িওয়ালা",
++    "role": "ভূমিকা",
++    "tenant": "ভাড়াটিয়া",
++    "verification_sent": "যাচাইকরণ ইমেইল পাঠানো হয়েছে"
+   },
+   "common": {
+-    "loading": "Loading...",
+-    "error": "Error",
+-    "success": "Success",
+-    "cancel": "Cancel",
+-    "save": "Save",
+-    "edit": "Edit",
+-    "delete": "Delete",
+-    "add": "Add",
+-    "view": "View",
+-    "close": "Close",
+-    "confirm": "Confirm",
+-    "yes": "Yes",
+-    "no": "No",
+-    "welcome_back_user": "Welcome back, {{name}}!",
+-    "happening_today": "Here's what's happening with your properties today.",
+-    "learn_more": "Learn More",
+-    "analytics": "Analytics",
+-    "payments": "Payments",
+-    "actions": "Actions",
+-    "status": "Status",
+-    "name": "Name",
+-    "email": "Email",
+-    "phone": "Phone",
+-    "address": "Address",
+-    "city": "City",
+-    "state": "State",
+-    "zip_code": "Zip Code",
+-    "country": "Country",
+-    "date": "Date",
+-    "amount": "Amount",
+-    "description": "Description",
+-    "type": "Type",
+-    "active": "Active",
+-    "inactive": "Inactive",
+-    "pending": "Pending",
+-    "approved": "Approved",
+-    "rejected": "Rejected",
+-    "all_languages": "All Languages",
+-    "theme": "Theme",
+-    "language": "Language",
+-    "notifications": "Notifications",
+-    "profile": "Profile",
+-    "settings": "Settings",
+-    "search": "Search...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+-    "filter": "Filters",
+-    "clear_all": "Clear All",
+-    "all": "All",
+-    "more_options": "More Options",
+-    "quick_links": "Quick Links",
+-    "legal": "Legal",
+-    "about": "About",
+-    "features": "Features",
+-    "privacy_policy": "Privacy Policy",
+-    "terms_of_service": "Terms of Service",
+-    "property_management": "Property Management",
+-    "change_language": "Change Language",
+-    "select_language": "Select Language",
+-    "toggle_language": "Toggle Language",
+-    "switch_to": "Switch to",
+-    "current_language": "Current Language",
+-    "start_date": "Start Date",
+-    "end_date": "End Date"
++    "loading": "লোড হচ্ছে...",
++    "error": "ত্রুটি",
++    "success": "সফল",
++    "cancel": "বাতিল",
++    "save": "সংরক্ষণ",
++    "edit": "সম্পাদনা",
++    "delete": "মুছুন",
++    "add": "যোগ করুন",
++    "view": "দেখুন",
++    "close": "বন্ধ",
++    "confirm": "নিশ্চিত",
++    "yes": "হ্যাঁ",
++    "no": "না",
++    "welcome_back_user": "স্বাগতম, {{name}}!",
++    "happening_today": "আজ আপনার সম্পত্তিগুলির সাথে কী ঘটছে তা এখানে।",
++    "learn_more": "আরও জানুন",
++    "analytics": "বিশ্লেষণ",
++    "payments": "পেমেন্ট",
++    "actions": "কর্ম",
++    "status": "অবস্থা",
++    "name": "নাম",
++    "email": "ইমেইল",
++    "phone": "ফোন",
++    "address": "ঠিকানা",
++    "city": "শহর",
++    "state": "রাজ্য",
++    "zip_code": "জিপ কোড",
++    "country": "দেশ",
++    "date": "তারিখ",
++    "amount": "পরিমাণ",
++    "description": "বিবরণ",
++    "type": "ধরন",
++    "active": "সক্রিয়",
++    "inactive": "নিষ্ক্রিয়",
++    "pending": "অপেক্ষমাণ",
++    "approved": "অনুমোদিত",
++    "rejected": "প্রত্যাখ্যাত",
++    "all_languages": "সব ভাষা",
++    "theme": "থিম",
++    "language": "ভাষা",
++    "notifications": "বিজ্ঞপ্তি",
++    "profile": "প্রোফাইল",
++    "settings": "সেটিংস",
++    "search": "অনুসন্ধান...",
++    "search_placeholder": "সম্পত্তি, ভাড়াটিয়া, পেমেন্ট অনুসন্ধান করুন...",
++    "filter": "ফিল্টার",
++    "clear_all": "সব পরিষ্কার",
++    "all": "সব",
++    "more_options": "আরও বিকল্প",
++    "quick_links": "দ্রুত লিঙ্ক",
++    "legal": "আইনি",
++    "about": "সম্পর্কে",
++    "features": "বৈশিষ্ট্য",
++    "privacy_policy": "গোপনীয়তা নীতি",
++    "terms_of_service": "সেবার শর্তাবলী",
++    "property_management": "সম্পত্তি ব্যবস্থাপনা",
++    "change_language": "ভাষা পরিবর্তন",
++    "select_language": "ভাষা নির্বাচন",
++    "toggle_language": "ভাষা টগল",
++    "switch_to": "পরিবর্তন করুন",
++    "current_language": "বর্তমান ভাষা",
++    "start_date": "শুরুর তারিখ",
++    "end_date": "শেষ তারিখ"
+   },
+   "dashboard": {
+-    "overview": "Overview",
+-    "properties": "Properties",
+-    "tenants": "Tenants",
+-    "settings": "Settings",
+-    "logout": "Logout",
+-    "maintenance": "Maintenance",
+-    "expenses": "Expenses",
+-    "cash_flow": "Cash Flow",
+-    "reminders": "Reminders",
+-    "approvals": "Approvals",
+-    "users_invites": "Users & Invites",
+-    "billing": "Billing",
+-    "audit_log": "Audit Log",
+-    "admin_panel": "Admin Panel",
+-    "tenant_portal": "My Portal",
+-    "monthly_revenue": "Monthly Revenue",
+-    "total_properties": "Total Properties",
+-    "active_tenants": "Active Tenants",
+-    "occupancy_rate": "Occupancy Rate",
+-    "loading_data": "Loading dashboard data...",
+-    "overdue_rent_reminders": "Overdue Rent Reminders",
+-    "send_reminder": "Send Reminder",
+-    "no_overdue_rent": "No overdue rent payments",
+-    "upcoming_lease_expirations": "Upcoming Lease Expirations",
+-    "renew_lease": "Renew Lease",
+-    "no_expiring_leases": "No expiring leases",
+-    "financials_chart_title": "Financial Overview",
+-    "rent_status_chart_title": "Rent Status",
+-    "tenant_profile": "Tenant Profile",
+-    "lease_information": "Lease Information",
+-    "pending_approval_requests": "Pending Approval Requests",
+-    "no_pending_requests": "No Pending Requests",
+-    "manage_account_preferences": "Manage your account and preferences",
+-    "profile_information": "Profile Information",
+-    "email_notifications": "Email Notifications",
+-    "push_notifications": "Push Notifications",
+-    "automated_reminders": "Automated Reminders",
+-    "add_new_reminder": "Add New Reminder",
+-    "no_automated_reminders": "No Automated Reminders Configured",
+-    "tenant": "Tenant",
+-    "next_send": "Next Send",
+-    "frequency": "Frequency",
+-    "payments": "Payments",
+-    "welcome_message": "Welcome to your dashboard",
+-    "good_morning": "Good morning",
+-    "good_afternoon": "Good afternoon",
+-    "good_evening": "Good evening"
++    "overview": "সংক্ষিপ্ত বিবরণ",
++    "properties": "সম্পত্তি",
++    "tenants": "ভাড়াটিয়া",
++    "settings": "সেটিংস",
++    "logout": "লগআউট",
++    "maintenance": "রক্ষণাবেক্ষণ",
++    "expenses": "খরচ",
++    "cash_flow": "নগদ প্রবাহ",
++    "reminders": "অনুস্মারক",
++    "approvals": "অনুমোদন",
++    "users_invites": "ব্যবহারকারী ও আমন্ত্রণ",
++    "billing": "বিলিং",
++    "audit_log": "অডিট লগ",
++    "admin_panel": "অ্যাডমিন প্যানেল",
++    "tenant_portal": "আমার পোর্টাল",
++    "monthly_revenue": "মাসিক আয়",
++    "total_properties": "মোট সম্পত্তি",
++    "active_tenants": "সক্রিয় ভাড়াটিয়া",
++    "occupancy_rate": "দখলের হার",
++    "loading_data": "ড্যাশবোর্ড ডেটা লোড হচ্ছে...",
++    "overdue_rent_reminders": "বকেয়া ভাড়ার অনুস্মারক",
++    "send_reminder": "অনুস্মারক পাঠান",
++    "no_overdue_rent": "কোন বকেয়া ভাড়া পেমেন্ট নেই",
++    "upcoming_lease_expirations": "আসন্ন লিজ মেয়াদ শেষ",
++    "renew_lease": "লিজ নবায়ন",
++    "no_expiring_leases": "কোন মেয়াদ শেষ হওয়া লিজ নেই",
++    "financials_chart_title": "আর্থিক সংক্ষিপ্ত বিবরণ",
++    "rent_status_chart_title": "ভাড়ার অবস্থা",
++    "tenant_profile": "ভাড়াটিয়ার প্রোফাইল",
++    "lease_information": "লিজের তথ্য",
++    "pending_approval_requests": "অপেক্ষমাণ অনুমোদনের অনুরোধ",
++    "no_pending_requests": "কোন অপেক্ষমাণ অনুরোধ নেই",
++    "manage_account_preferences": "আপনার অ্যাকাউন্ট এবং পছন্দ পরিচালনা করুন",
++    "profile_information": "প্রোফাইল তথ্য",
++    "email_notifications": "ইমেইল বিজ্ঞপ্তি",
++    "push_notifications": "পুশ বিজ্ঞপ্তি",
++    "automated_reminders": "স্বয়ংক্রিয় অনুস্মারক",
++    "add_new_reminder": "নতুন অনুস্মারক যোগ করুন",
++    "no_automated_reminders": "কোন স্বয়ংক্রিয় অনুস্মারক কনফিগার করা হয়নি",
++    "tenant": "ভাড়াটিয়া",
++    "next_send": "পরবর্তী পাঠানো",
++    "frequency": "ফ্রিকোয়েন্সি",
++    "payments": "পেমেন্ট",
++    "welcome_message": "আপনার ড্যাশবোর্ডে স্বাগতম",
++    "good_morning": "সুপ্রভাত",
++    "good_afternoon": "শুভ বিকাল",
++    "good_evening": "শুভ সন্ধ্যা"
+   },
+   "hero": {
+-    "title": "The All-in-One Platform for Modern Property Management",
+-    "subtitle": "Streamline your property management with our comprehensive solution",
+-    "cta_primary": "Start Your Free Trial",
+-    "cta_secondary": "Watch Demo",
+-    "trusted_by": "Trusted by property managers worldwide"
++    "title": "আধুনিক সম্পত্তি ব্যবস্থাপনার জন্য সর্বাত্মক প্ল্যাটফর্ম",
++    "subtitle": "আমাদের ব্যাপক সমাধানের সাথে আপনার সম্পত্তি ব্যবস্থাপনা সহজ করুন",
++    "cta_primary": "আপনার বিনামূল্যে ট্রায়াল শুরু করুন",
++    "cta_secondary": "ডেমো দেখুন",
++    "trusted_by": "বিশ্বব্যাপী সম্পত্তি ব্যবস্থাপকদের দ্বারা বিশ্বস্ত"
+   },
+   "landing": {
+     "hero_title": "The All-in-One Platform for Modern Property Management",
+@@ -304,39 +303,39 @@
+     "passwords_dont_match": "Passwords don't match"
+   },
+   "property": {
+-    "add_property": "Add Property",
+-    "edit_property": "Edit Property",
+-    "property_name": "Property Name",
+-    "property_type": "Property Type",
+-    "apartment": "Apartment",
+-    "house": "House",
+-    "commercial": "Commercial",
+-    "other": "Other",
+-    "rent_amount": "Rent Amount",
+-    "security_deposit": "Security Deposit",
+-    "available_units": "Available Units",
+-    "total_units": "Total Units",
+-    "loading_properties": "Loading properties...",
+-    "manage_portfolio": "Manage your property portfolio",
+-    "view": "View",
+-    "edit": "Edit",
+-    "no_properties_yet": "No Properties Yet",
+-    "add_first_property": "Add Your First Property",
+-    "add_new_property": "Add New Property",
+-    "address": "Address",
+-    "city": "City",
+-    "state": "State",
+-    "zip_code": "Zip Code",
+-    "click_to_upload": "Click to upload image",
+-    "enter_property_name": "Enter property name",
+-    "inactive": "Inactive",
+-    "active": "Active",
+-    "number_of_units": "Number of Units",
+-    "property_image": "Property Image",
+-    "save_property": "Save Property",
+-    "street_address": "Street Address",
+-    "units": "Units",
+-    "update_property": "Update Property"
++    "add_property": "সম্পত্তি যোগ করুন",
++    "edit_property": "সম্পত্তি সম্পাদনা",
++    "property_name": "সম্পত্তির নাম",
++    "property_type": "সম্পত্তির ধরন",
++    "apartment": "অ্যাপার্টমেন্ট",
++    "house": "বাড়ি",
++    "commercial": "বাণিজ্যিক",
++    "other": "অন্যান্য",
++    "rent_amount": "ভাড়ার পরিমাণ",
++    "security_deposit": "জামানত",
++    "available_units": "উপলব্ধ ইউনিট",
++    "total_units": "মোট ইউনিট",
++    "loading_properties": "সম্পত্তি লোড হচ্ছে...",
++    "manage_portfolio": "আপনার সম্পত্তি পোর্টফোলিও পরিচালনা করুন",
++    "view": "দেখুন",
++    "edit": "সম্পাদনা",
++    "no_properties_yet": "এখনও কোন সম্পত্তি নেই",
++    "add_first_property": "আপনার প্রথম সম্পত্তি যোগ করুন",
++    "add_new_property": "নতুন সম্পত্তি যোগ করুন",
++    "address": "ঠিকানা",
++    "city": "শহর",
++    "state": "রাজ্য",
++    "zip_code": "জিপ কোড",
++    "click_to_upload": "ছবি আপলোড করতে ক্লিক করুন",
++    "enter_property_name": "সম্পত্তির নাম লিখুন",
++    "inactive": "নিষ্ক্রিয়",
++    "active": "সক্রিয়",
++    "number_of_units": "ইউনিটের সংখ্যা",
++    "property_image": "সম্পত্তির ছবি",
++    "save_property": "সম্পত্তি সংরক্ষণ",
++    "street_address": "রাস্তার ঠিকানা",
++    "units": "ইউনিট",
++    "update_property": "সম্পত্তি আপডেট"
+   },
+   "tenant": {
+     "add_tenant": "Add Tenant",
+diff --git a/frontend/src/locales/da/translation.json b/frontend/src/locales/da/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/da/translation.json
++++ b/frontend/src/locales/da/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/de/translation.json b/frontend/src/locales/de/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/de/translation.json
++++ b/frontend/src/locales/de/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/el/translation.json b/frontend/src/locales/el/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/el/translation.json
++++ b/frontend/src/locales/el/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/en-AU/translation.json b/frontend/src/locales/en-AU/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/en-AU/translation.json
++++ b/frontend/src/locales/en-AU/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/en-NZ/translation.json b/frontend/src/locales/en-NZ/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/en-NZ/translation.json
++++ b/frontend/src/locales/en-NZ/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/es-AR/translation.json b/frontend/src/locales/es-AR/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/es-AR/translation.json
++++ b/frontend/src/locales/es-AR/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/es-MX/translation.json b/frontend/src/locales/es-MX/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/es-MX/translation.json
++++ b/frontend/src/locales/es-MX/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/es/translation.json b/frontend/src/locales/es/translation.json
+index b0dc146f..c4c07441 100644
+--- a/frontend/src/locales/es/translation.json
++++ b/frontend/src/locales/es/translation.json
+@@ -16,48 +16,48 @@
+     "dashboard": "Dashboard"
+   },
+   "auth": {
+-    "welcome_back": "¡Bienvenido de nuevo!",
+-    "sign_in_subtitle": "Inicia sesión para continuar a tu panel",
+-    "email_address": "Dirección de correo electrónico",
+-    "password": "Contraseña",
+-    "sign_in": "Iniciar sesión",
+-    "continue_google": "Continuar con Google",
+-    "no_account": "¿No tienes una cuenta?",
+-    "sign_up": "Registrarse",
+-    "or": "O",
+-    "forgot_password": "¿Olvidaste tu contraseña?",
+-    "enter_email": "Ingresa tu dirección de correo electrónico",
+-    "enter_password": "Ingresa tu contraseña",
+-    "remember_me": "Recordarme",
+-    "create_account": "Crear cuenta",
+-    "full_name": "Nombre completo",
+-    "confirm_password": "Confirmar contraseña",
+-    "agree_terms": "Acepto los Términos de Servicio y la Política de Privacidad",
+-    "agent": "Agente",
+-    "check_email": "Revisa tu correo electrónico para el enlace de verificación",
+-    "create_password": "Crea una contraseña segura",
+-    "enter_full_name": "Ingresa tu nombre completo",
+-    "go_to_login": "Ir al inicio de sesión",
+-    "have_account": "¿Ya tienes una cuenta?",
+-    "join_thousands": "Únete a miles de administradores de propiedades",
+-    "landlord": "Propietario",
+-    "role": "Rol",
+-    "tenant": "Inquilino",
+-    "verification_sent": "Correo de verificación enviado"
++    "welcome_back": "Welcome Back!",
++    "sign_in_subtitle": "Sign in to continue to your dashboard",
++    "email_address": "Email Address",
++    "password": "Password",
++    "sign_in": "Sign In",
++    "continue_google": "Continue with Google",
++    "no_account": "Don't have an account?",
++    "sign_up": "Sign Up",
++    "or": "OR",
++    "forgot_password": "Forgot Password?",
++    "enter_email": "Enter your email address",
++    "enter_password": "Enter your password",
++    "remember_me": "Remember me",
++    "create_account": "Create Account",
++    "full_name": "Full Name",
++    "confirm_password": "Confirm Password",
++    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
++    "agent": "Agent",
++    "check_email": "Check your email for verification link",
++    "create_password": "Create a strong password",
++    "enter_full_name": "Enter your full name",
++    "go_to_login": "Go to Login",
++    "have_account": "Already have an account?",
++    "join_thousands": "Join thousands of property managers",
++    "landlord": "Landlord",
++    "role": "Role",
++    "tenant": "Tenant",
++    "verification_sent": "Verification email sent"
+   },
+   "common": {
+-    "loading": "Cargando...",
++    "loading": "Loading...",
+     "error": "Error",
+-    "success": "Éxito",
+-    "cancel": "Cancelar",
+-    "save": "Guardar",
+-    "edit": "Editar",
+-    "delete": "Eliminar",
+-    "add": "Agregar",
+-    "view": "Ver",
+-    "close": "Cerrar",
+-    "confirm": "Confirmar",
+-    "yes": "Sí",
++    "success": "Success",
++    "cancel": "Cancel",
++    "save": "Save",
++    "edit": "Edit",
++    "delete": "Delete",
++    "add": "Add",
++    "view": "View",
++    "close": "Close",
++    "confirm": "Confirm",
++    "yes": "Yes",
+     "no": "No",
+     "welcome_back_user": "Welcome back, {{name}}!",
+     "happening_today": "Here's what's happening with your properties today.",
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+@@ -112,21 +111,21 @@
+     "end_date": "End Date"
+   },
+   "dashboard": {
+-    "overview": "Resumen",
+-    "properties": "Propiedades",
+-    "tenants": "Inquilinos",
+-    "settings": "Configuración",
+-    "logout": "Cerrar sesión",
+-    "maintenance": "Mantenimiento",
+-    "expenses": "Gastos",
+-    "cash_flow": "Flujo de efectivo",
+-    "reminders": "Recordatorios",
+-    "approvals": "Aprobaciones",
+-    "users_invites": "Usuarios e invitaciones",
+-    "billing": "Facturación",
+-    "audit_log": "Registro de auditoría",
+-    "admin_panel": "Panel de administración",
+-    "tenant_portal": "Mi portal",
++    "overview": "Overview",
++    "properties": "Properties",
++    "tenants": "Tenants",
++    "settings": "Settings",
++    "logout": "Logout",
++    "maintenance": "Maintenance",
++    "expenses": "Expenses",
++    "cash_flow": "Cash Flow",
++    "reminders": "Reminders",
++    "approvals": "Approvals",
++    "users_invites": "Users & Invites",
++    "billing": "Billing",
++    "audit_log": "Audit Log",
++    "admin_panel": "Admin Panel",
++    "tenant_portal": "My Portal",
+     "monthly_revenue": "Monthly Revenue",
+     "total_properties": "Total Properties",
+     "active_tenants": "Active Tenants",
+@@ -168,14 +167,14 @@
+     "trusted_by": "Trusted by property managers worldwide"
+   },
+   "landing": {
+-    "hero_title": "La plataforma todo en uno para la gestión inmobiliaria moderna",
+-    "hero_subtitle": "Automatiza tareas, rastrea finanzas y gestiona inquilinos con facilidad.",
+-    "hero_cta": "Comienza tu prueba gratuita",
+-    "real_stats_title": "Confiado por administradores de propiedades en todo el mundo",
+-    "properties_managed": "Propiedades gestionadas",
+-    "active_users": "Usuarios activos",
+-    "countries_served": "Países atendidos",
+-    "uptime_guarantee": "Garantía de tiempo de actividad"
++    "hero_title": "The All-in-One Platform for Modern Property Management",
++    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease.",
++    "hero_cta": "Start Your Free Trial",
++    "real_stats_title": "Trusted by Property Managers Worldwide",
++    "properties_managed": "Properties Managed",
++    "active_users": "Active Users",
++    "countries_served": "Countries Served",
++    "uptime_guarantee": "Uptime Guarantee"
+   },
+   "about": {
+     "title": "Why Choose Our Platform?",
+diff --git a/frontend/src/locales/fi/translation.json b/frontend/src/locales/fi/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/fi/translation.json
++++ b/frontend/src/locales/fi/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/fr-CA/translation.json b/frontend/src/locales/fr-CA/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/fr-CA/translation.json
++++ b/frontend/src/locales/fr-CA/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/fr/translation.json b/frontend/src/locales/fr/translation.json
+index 1ddbafa3..c4c07441 100644
+--- a/frontend/src/locales/fr/translation.json
++++ b/frontend/src/locales/fr/translation.json
+@@ -16,49 +16,49 @@
+     "dashboard": "Dashboard"
+   },
+   "auth": {
+-    "welcome_back": "Bon retour !",
+-    "sign_in_subtitle": "Connectez-vous pour accéder à votre tableau de bord",
+-    "email_address": "Adresse e-mail",
+-    "password": "Mot de passe",
+-    "sign_in": "Se connecter",
+-    "continue_google": "Continuer avec Google",
+-    "no_account": "Vous n'avez pas de compte ?",
+-    "sign_up": "S'inscrire",
+-    "or": "OU",
+-    "forgot_password": "Mot de passe oublié ?",
+-    "enter_email": "Entrez votre adresse e-mail",
+-    "enter_password": "Entrez votre mot de passe",
+-    "remember_me": "Se souvenir de moi",
+-    "create_account": "Créer un compte",
+-    "full_name": "Nom complet",
+-    "confirm_password": "Confirmer le mot de passe",
+-    "agree_terms": "J'accepte les Conditions de Service et la Politique de Confidentialité",
++    "welcome_back": "Welcome Back!",
++    "sign_in_subtitle": "Sign in to continue to your dashboard",
++    "email_address": "Email Address",
++    "password": "Password",
++    "sign_in": "Sign In",
++    "continue_google": "Continue with Google",
++    "no_account": "Don't have an account?",
++    "sign_up": "Sign Up",
++    "or": "OR",
++    "forgot_password": "Forgot Password?",
++    "enter_email": "Enter your email address",
++    "enter_password": "Enter your password",
++    "remember_me": "Remember me",
++    "create_account": "Create Account",
++    "full_name": "Full Name",
++    "confirm_password": "Confirm Password",
++    "agree_terms": "I agree to the Terms of Service and Privacy Policy",
+     "agent": "Agent",
+-    "check_email": "Vérifiez votre e-mail pour le lien de vérification",
+-    "create_password": "Créez un mot de passe fort",
+-    "enter_full_name": "Entrez votre nom complet",
+-    "go_to_login": "Aller à la connexion",
+-    "have_account": "Vous avez déjà un compte ?",
+-    "join_thousands": "Rejoignez des milliers de gestionnaires immobiliers",
+-    "landlord": "Propriétaire",
+-    "role": "Rôle",
+-    "tenant": "Locataire",
+-    "verification_sent": "E-mail de vérification envoyé"
++    "check_email": "Check your email for verification link",
++    "create_password": "Create a strong password",
++    "enter_full_name": "Enter your full name",
++    "go_to_login": "Go to Login",
++    "have_account": "Already have an account?",
++    "join_thousands": "Join thousands of property managers",
++    "landlord": "Landlord",
++    "role": "Role",
++    "tenant": "Tenant",
++    "verification_sent": "Verification email sent"
+   },
+   "common": {
+-    "loading": "Chargement...",
+-    "error": "Erreur",
+-    "success": "Succès",
+-    "cancel": "Annuler",
+-    "save": "Enregistrer",
+-    "edit": "Modifier",
+-    "delete": "Supprimer",
+-    "add": "Ajouter",
+-    "view": "Voir",
+-    "close": "Fermer",
+-    "confirm": "Confirmer",
+-    "yes": "Oui",
+-    "no": "Non",
++    "loading": "Loading...",
++    "error": "Error",
++    "success": "Success",
++    "cancel": "Cancel",
++    "save": "Save",
++    "edit": "Edit",
++    "delete": "Delete",
++    "add": "Add",
++    "view": "View",
++    "close": "Close",
++    "confirm": "Confirm",
++    "yes": "Yes",
++    "no": "No",
+     "welcome_back_user": "Welcome back, {{name}}!",
+     "happening_today": "Here's what's happening with your properties today.",
+     "learn_more": "Learn More",
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+@@ -112,21 +111,21 @@
+     "end_date": "End Date"
+   },
+   "dashboard": {
+-    "overview": "Aperçu",
+-    "properties": "Propriétés",
+-    "tenants": "Locataires",
+-    "settings": "Paramètres",
+-    "logout": "Déconnexion",
++    "overview": "Overview",
++    "properties": "Properties",
++    "tenants": "Tenants",
++    "settings": "Settings",
++    "logout": "Logout",
+     "maintenance": "Maintenance",
+-    "expenses": "Dépenses",
+-    "cash_flow": "Flux de trésorerie",
+-    "reminders": "Rappels",
+-    "approvals": "Approbations",
+-    "users_invites": "Utilisateurs et invitations",
+-    "billing": "Facturation",
+-    "audit_log": "Journal d'audit",
+-    "admin_panel": "Panneau d'administration",
+-    "tenant_portal": "Mon portail",
++    "expenses": "Expenses",
++    "cash_flow": "Cash Flow",
++    "reminders": "Reminders",
++    "approvals": "Approvals",
++    "users_invites": "Users & Invites",
++    "billing": "Billing",
++    "audit_log": "Audit Log",
++    "admin_panel": "Admin Panel",
++    "tenant_portal": "My Portal",
+     "monthly_revenue": "Monthly Revenue",
+     "total_properties": "Total Properties",
+     "active_tenants": "Active Tenants",
+@@ -168,14 +167,14 @@
+     "trusted_by": "Trusted by property managers worldwide"
+   },
+   "landing": {
+-    "hero_title": "La plateforme tout-en-un pour la gestion immobilière moderne",
+-    "hero_subtitle": "Automatisez les tâches, suivez les finances et gérez les locataires facilement.",
+-    "hero_cta": "Commencez votre essai gratuit",
+-    "real_stats_title": "Fait confiance par les gestionnaires immobiliers du monde entier",
+-    "properties_managed": "Propriétés gérées",
+-    "active_users": "Utilisateurs actifs",
+-    "countries_served": "Pays desservis",
+-    "uptime_guarantee": "Garantie de temps de fonctionnement"
++    "hero_title": "The All-in-One Platform for Modern Property Management",
++    "hero_subtitle": "Automate tasks, track finances, and manage tenants with ease.",
++    "hero_cta": "Start Your Free Trial",
++    "real_stats_title": "Trusted by Property Managers Worldwide",
++    "properties_managed": "Properties Managed",
++    "active_users": "Active Users",
++    "countries_served": "Countries Served",
++    "uptime_guarantee": "Uptime Guarantee"
+   },
+   "about": {
+     "title": "Why Choose Our Platform?",
+diff --git a/frontend/src/locales/ha/translation.json b/frontend/src/locales/ha/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ha/translation.json
++++ b/frontend/src/locales/ha/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/hi/translation.json b/frontend/src/locales/hi/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/hi/translation.json
++++ b/frontend/src/locales/hi/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/id/translation.json b/frontend/src/locales/id/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/id/translation.json
++++ b/frontend/src/locales/id/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/it/translation.json b/frontend/src/locales/it/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/it/translation.json
++++ b/frontend/src/locales/it/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ja/translation.json b/frontend/src/locales/ja/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ja/translation.json
++++ b/frontend/src/locales/ja/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ko/translation.json b/frontend/src/locales/ko/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ko/translation.json
++++ b/frontend/src/locales/ko/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ms/translation.json b/frontend/src/locales/ms/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ms/translation.json
++++ b/frontend/src/locales/ms/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/nl/translation.json b/frontend/src/locales/nl/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/nl/translation.json
++++ b/frontend/src/locales/nl/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/no/translation.json b/frontend/src/locales/no/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/no/translation.json
++++ b/frontend/src/locales/no/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/pl/translation.json b/frontend/src/locales/pl/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/pl/translation.json
++++ b/frontend/src/locales/pl/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/pt-BR/translation.json b/frontend/src/locales/pt-BR/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/pt-BR/translation.json
++++ b/frontend/src/locales/pt-BR/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/pt/translation.json b/frontend/src/locales/pt/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/pt/translation.json
++++ b/frontend/src/locales/pt/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ru/translation.json b/frontend/src/locales/ru/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ru/translation.json
++++ b/frontend/src/locales/ru/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/sv/translation.json b/frontend/src/locales/sv/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/sv/translation.json
++++ b/frontend/src/locales/sv/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/sw/translation.json b/frontend/src/locales/sw/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/sw/translation.json
++++ b/frontend/src/locales/sw/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/th/translation.json b/frontend/src/locales/th/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/th/translation.json
++++ b/frontend/src/locales/th/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/tl/translation.json b/frontend/src/locales/tl/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/tl/translation.json
++++ b/frontend/src/locales/tl/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/tr/translation.json b/frontend/src/locales/tr/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/tr/translation.json
++++ b/frontend/src/locales/tr/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/ur/translation.json b/frontend/src/locales/ur/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/ur/translation.json
++++ b/frontend/src/locales/ur/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/vi/translation.json b/frontend/src/locales/vi/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/vi/translation.json
++++ b/frontend/src/locales/vi/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/yo/translation.json b/frontend/src/locales/yo/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/yo/translation.json
++++ b/frontend/src/locales/yo/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/zh/translation.json b/frontend/src/locales/zh/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/zh/translation.json
++++ b/frontend/src/locales/zh/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/frontend/src/locales/zu/translation.json b/frontend/src/locales/zu/translation.json
+index 92c7c259..c4c07441 100644
+--- a/frontend/src/locales/zu/translation.json
++++ b/frontend/src/locales/zu/translation.json
+@@ -91,7 +91,6 @@
+     "settings": "Settings",
+     "search": "Search...",
+     "search_placeholder": "Search properties, tenants, payments...",
+-    "search_placeholder": "Search properties, tenants, payments...",
+     "filter": "Filters",
+     "clear_all": "Clear All",
+     "all": "All",
+diff --git a/generate-translations.js b/generate-translations.js
+new file mode 100644
+index 00000000..95d58fca
+--- /dev/null
++++ b/generate-translations.js
+@@ -0,0 +1,276 @@
++const fs = require('fs');
++const path = require('path');
++
++// Translation mappings for each language
++const translations = {
++  // Bengali translations
++  bn: {
++    "app_name": "HNV সম্পত্তি ব্যবস্থাপনা সমাধান",
++    "app_name_short": "HNV সমাধান",
++    "header": {
++      "login": "লগইন",
++      "get_started": "শুরু করুন"
++    },
++    "nav": {
++      "home": "হোম",
++      "about": "সম্পর্কে",
++      "features": "বৈশিষ্ট্য",
++      "services": "সেবা",
++      "pricing": "মূল্য",
++      "contact": "যোগাযোগ",
++      "login": "লগইন",
++      "dashboard": "ড্যাশবোর্ড"
++    },
++    "auth": {
++      "welcome_back": "স্বাগতম!",
++      "sign_in_subtitle": "আপনার ড্যাশবোর্ডে যেতে সাইন ইন করুন",
++      "email_address": "ইমেইল ঠিকানা",
++      "password": "পাসওয়ার্ড",
++      "sign_in": "সাইন ইন",
++      "continue_google": "গুগল দিয়ে চালিয়ে যান",
++      "no_account": "কোন অ্যাকাউন্ট নেই?",
++      "sign_up": "সাইন আপ",
++      "or": "অথবা",
++      "forgot_password": "পাসওয়ার্ড ভুলে গেছেন?",
++      "enter_email": "আপনার ইমেইল ঠিকানা লিখুন",
++      "enter_password": "আপনার পাসওয়ার্ড লিখুন",
++      "remember_me": "আমাকে মনে রাখুন",
++      "create_account": "অ্যাকাউন্ট তৈরি করুন",
++      "full_name": "পূর্ণ নাম",
++      "confirm_password": "পাসওয়ার্ড নিশ্চিত করুন",
++      "agree_terms": "আমি সেবার শর্তাবলী এবং গোপনীয়তা নীতিতে সম্মত",
++      "agent": "এজেন্ট",
++      "check_email": "যাচাইকরণ লিঙ্কের জন্য আপনার ইমেইল চেক করুন",
++      "create_password": "একটি শক্তিশালী পাসওয়ার্ড তৈরি করুন",
++      "enter_full_name": "আপনার পূর্ণ নাম লিখুন",
++      "go_to_login": "লগইনে যান",
++      "have_account": "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?",
++      "join_thousands": "হাজার হাজার সম্পত্তি ব্যবস্থাপকদের সাথে যোগ দিন",
++      "landlord": "বাড়িওয়ালা",
++      "role": "ভূমিকা",
++      "tenant": "ভাড়াটিয়া",
++      "verification_sent": "যাচাইকরণ ইমেইল পাঠানো হয়েছে"
++    },
++    "common": {
++      "loading": "লোড হচ্ছে...",
++      "error": "ত্রুটি",
++      "success": "সফল",
++      "cancel": "বাতিল",
++      "save": "সংরক্ষণ",
++      "edit": "সম্পাদনা",
++      "delete": "মুছুন",
++      "add": "যোগ করুন",
++      "view": "দেখুন",
++      "close": "বন্ধ",
++      "confirm": "নিশ্চিত",
++      "yes": "হ্যাঁ",
++      "no": "না",
++      "welcome_back_user": "স্বাগতম, {{name}}!",
++      "happening_today": "আজ আপনার সম্পত্তিগুলির সাথে কী ঘটছে তা এখানে।",
++      "learn_more": "আরও জানুন",
++      "analytics": "বিশ্লেষণ",
++      "payments": "পেমেন্ট",
++      "actions": "কর্ম",
++      "status": "অবস্থা",
++      "name": "নাম",
++      "email": "ইমেইল",
++      "phone": "ফোন",
++      "address": "ঠিকানা",
++      "city": "শহর",
++      "state": "রাজ্য",
++      "zip_code": "জিপ কোড",
++      "country": "দেশ",
++      "date": "তারিখ",
++      "amount": "পরিমাণ",
++      "description": "বিবরণ",
++      "type": "ধরন",
++      "active": "সক্রিয়",
++      "inactive": "নিষ্ক্রিয়",
++      "pending": "অপেক্ষমাণ",
++      "approved": "অনুমোদিত",
++      "rejected": "প্রত্যাখ্যাত",
++      "all_languages": "সব ভাষা",
++      "theme": "থিম",
++      "language": "ভাষা",
++      "notifications": "বিজ্ঞপ্তি",
++      "profile": "প্রোফাইল",
++      "settings": "সেটিংস",
++      "search": "অনুসন্ধান...",
++      "search_placeholder": "সম্পত্তি, ভাড়াটিয়া, পেমেন্ট অনুসন্ধান করুন...",
++      "filter": "ফিল্টার",
++      "clear_all": "সব পরিষ্কার",
++      "all": "সব",
++      "more_options": "আরও বিকল্প",
++      "quick_links": "দ্রুত লিঙ্ক",
++      "legal": "আইনি",
++      "about": "সম্পর্কে",
++      "features": "বৈশিষ্ট্য",
++      "privacy_policy": "গোপনীয়তা নীতি",
++      "terms_of_service": "সেবার শর্তাবলী",
++      "property_management": "সম্পত্তি ব্যবস্থাপনা",
++      "change_language": "ভাষা পরিবর্তন",
++      "select_language": "ভাষা নির্বাচন",
++      "toggle_language": "ভাষা টগল",
++      "switch_to": "পরিবর্তন করুন",
++      "current_language": "বর্তমান ভাষা",
++      "start_date": "শুরুর তারিখ",
++      "end_date": "শেষ তারিখ"
++    }
++  },
++
++  // Arabic translations
++  ar: {
++    "app_name": "حلول إدارة العقارات HNV",
++    "app_name_short": "حلول HNV",
++    "header": {
++      "login": "تسجيل الدخول",
++      "get_started": "ابدأ الآن"
++    },
++    "nav": {
++      "home": "الرئيسية",
++      "about": "حول",
++      "features": "المميزات",
++      "services": "الخدمات",
++      "pricing": "الأسعار",
++      "contact": "اتصل بنا",
++      "login": "تسجيل الدخول",
++      "dashboard": "لوحة التحكم"
++    },
++    "auth": {
++      "welcome_back": "مرحباً بعودتك!",
++      "sign_in_subtitle": "سجل دخولك للمتابعة إلى لوحة التحكم",
++      "email_address": "عنوان البريد الإلكتروني",
++      "password": "كلمة المرور",
++      "sign_in": "تسجيل الدخول",
++      "continue_google": "المتابعة مع جوجل",
++      "no_account": "ليس لديك حساب؟",
++      "sign_up": "إنشاء حساب",
++      "or": "أو",
++      "forgot_password": "نسيت كلمة المرور؟",
++      "enter_email": "أدخل عنوان بريدك الإلكتروني",
++      "enter_password": "أدخل كلمة المرور",
++      "remember_me": "تذكرني",
++      "create_account": "إنشاء حساب",
++      "full_name": "الاسم الكامل",
++      "confirm_password": "تأكيد كلمة المرور",
++      "agree_terms": "أوافق على شروط الخدمة وسياسة الخصوصية",
++      "agent": "وكيل",
++      "check_email": "تحقق من بريدك الإلكتروني للحصول على رابط التحقق",
++      "create_password": "إنشاء كلمة مرور قوية",
++      "enter_full_name": "أدخل اسمك الكامل",
++      "go_to_login": "الذهاب لتسجيل الدخول",
++      "have_account": "لديك حساب بالفعل؟",
++      "join_thousands": "انضم إلى آلاف مديري العقارات",
++      "landlord": "مالك العقار",
++      "role": "الدور",
++      "tenant": "مستأجر",
++      "verification_sent": "تم إرسال بريد التحقق"
++    },
++    "common": {
++      "loading": "جاري التحميل...",
++      "error": "خطأ",
++      "success": "نجح",
++      "cancel": "إلغاء",
++      "save": "حفظ",
++      "edit": "تعديل",
++      "delete": "حذف",
++      "add": "إضافة",
++      "view": "عرض",
++      "close": "إغلاق",
++      "confirm": "تأكيد",
++      "yes": "نعم",
++      "no": "لا",
++      "welcome_back_user": "مرحباً بعودتك، {{name}}!",
++      "happening_today": "إليك ما يحدث مع عقاراتك اليوم.",
++      "learn_more": "تعلم المزيد",
++      "analytics": "التحليلات",
++      "payments": "المدفوعات",
++      "actions": "الإجراءات",
++      "status": "الحالة",
++      "name": "الاسم",
++      "email": "البريد الإلكتروني",
++      "phone": "الهاتف",
++      "address": "العنوان",
++      "city": "المدينة",
++      "state": "الولاية",
++      "zip_code": "الرمز البريدي",
++      "country": "البلد",
++      "date": "التاريخ",
++      "amount": "المبلغ",
++      "description": "الوصف",
++      "type": "النوع",
++      "active": "نشط",
++      "inactive": "غير نشط",
++      "pending": "معلق",
++      "approved": "موافق عليه",
++      "rejected": "مرفوض",
++      "all_languages": "جميع اللغات",
++      "theme": "المظهر",
++      "language": "اللغة",
++      "notifications": "الإشعارات",
++      "profile": "الملف الشخصي",
++      "settings": "الإعدادات",
++      "search": "بحث...",
++      "search_placeholder": "البحث في العقارات والمستأجرين والمدفوعات...",
++      "filter": "المرشحات",
++      "clear_all": "مسح الكل",
++      "all": "الكل",
++      "more_options": "المزيد من الخيارات",
++      "quick_links": "روابط سريعة",
++      "legal": "قانوني",
++      "about": "حول",
++      "features": "المميزات",
++      "privacy_policy": "سياسة الخصوصية",
++      "terms_of_service": "شروط الخدمة",
++      "property_management": "إدارة العقارات",
++      "change_language": "تغيير اللغة",
++      "select_language": "اختر اللغة",
++      "toggle_language": "تبديل اللغة",
++      "switch_to": "التبديل إلى",
++      "current_language": "اللغة الحالية",
++      "start_date": "تاريخ البداية",
++      "end_date": "تاريخ النهاية"
++    }
++  }
++};
++
++// Get English template
++const enPath = path.join(__dirname, 'frontend/src/locales/en/translation.json');
++const enTemplate = JSON.parse(fs.readFileSync(enPath, 'utf8'));
++
++// Function to recursively translate object
++function translateObject(obj, translations, fallback = obj) {
++  const result = {};
++  
++  for (const [key, value] of Object.entries(obj)) {
++    if (typeof value === 'object' && value !== null) {
++      result[key] = translateObject(value, translations[key] || {}, value);
++    } else {
++      result[key] = translations[key] || fallback[key] || value;
++    }
++  }
++  
++  return result;
++}
++
++// Generate translations for each language
++const languageCodes = ['bn', 'ar', 'zh', 'ja', 'ko', 'hi', 'th', 'de', 'fr', 'es', 'it', 'pt', 'ru', 'nl', 'sv', 'tr', 'vi', 'id', 'ms', 'tl', 'ur', 'sw', 'am', 'ha', 'yo', 'zu', 'af', 'pt-BR', 'es-MX', 'es-AR', 'fr-CA', 'en-AU', 'en-NZ', 'no', 'da', 'fi', 'pl', 'el'];
++
++languageCodes.forEach(langCode => {
++  const langPath = path.join(__dirname, `frontend/src/locales/${langCode}/translation.json`);
++  
++  let translatedContent;
++  if (translations[langCode]) {
++    // Use provided translations
++    translatedContent = translateObject(enTemplate, translations[langCode], enTemplate);
++  } else {
++    // Keep English for now (will be translated later)
++    translatedContent = enTemplate;
++  }
++  
++  // Write the file
++  fs.writeFileSync(langPath, JSON.stringify(translatedContent, null, 2), 'utf8');
++  console.log(`Generated translation for ${langCode}`);
++});
++
++console.log('Translation generation completed!');
+\ No newline at end of file
+-- 
+2.37.1 (Apple Git-137.1)
+

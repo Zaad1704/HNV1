@@ -8,6 +8,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
 import { SkeletonStats } from '../components/common/SkeletonLoader';
 import EmptyDashboard from '../components/dashboard/EmptyDashboard';
+import FloatingHelpCenter from '../components/common/FloatingHelpCenter';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -148,6 +149,7 @@ const DashboardPage = () => {
   return (
     <>
       <DashboardMonitor />
+      <FloatingHelpCenter />
       <motion.main
         className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
         initial={{ opacity: 0 }}
@@ -182,10 +184,12 @@ const DashboardPage = () => {
               <div className="bg-white/10 rounded-2xl p-4">
                 <p className="text-white/70 text-sm">Properties</p>
                 <p className="text-2xl font-bold">{dashboardStats.totalProperties}</p>
+                <p className="text-white/60 text-xs mt-1">Active properties</p>
               </div>
               <div className="bg-white/10 rounded-2xl p-4">
                 <p className="text-white/70 text-sm">Tenants</p>
                 <p className="text-2xl font-bold">{dashboardStats.totalTenants}</p>
+                <p className="text-white/60 text-xs mt-1">Total tenants</p>
               </div>
             </div>
           </div>
@@ -202,7 +206,9 @@ const DashboardPage = () => {
           <p className="text-3xl font-bold text-brand-orange mt-2">
             {currency}{dashboardStats.monthlyRevenue.toLocaleString()}
           </p>
-          <p className="text-text-secondary text-sm mt-2 flex-grow">Total revenue this month</p>
+          <p className="text-text-secondary text-sm mt-2 flex-grow">
+            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} earnings
+          </p>
         </motion.div>
 
         <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2} initial="hidden" animate="visible">
@@ -211,7 +217,9 @@ const DashboardPage = () => {
           </div>
           <h2 className="text-2xl font-bold text-text-primary">Occupancy Rate</h2>
           <p className="text-3xl font-bold text-brand-blue mt-2">{dashboardStats.occupancyRate}%</p>
-          <p className="text-text-secondary text-sm mt-2 flex-grow">Current occupancy across all properties</p>
+          <p className="text-text-secondary text-sm mt-2 flex-grow">
+            {dashboardStats.totalTenants} of {dashboardStats.totalProperties} units occupied
+          </p>
           <Link to="/dashboard/properties" className="gradient-dark-orange-blue text-white font-semibold py-2 px-5 rounded-2xl mt-4 self-start text-sm hover:shadow-lg transition-all">View Properties</Link>
         </motion.div>
         
@@ -220,7 +228,9 @@ const DashboardPage = () => {
             <Bell size={20} className="text-white" />
           </div>
           <h2 className="text-xl font-bold">Maintenance</h2>
-          <p className="text-white/80 text-sm mt-1">{dashboardStats.pendingMaintenance} pending requests</p>
+          <p className="text-white/80 text-sm mt-1">
+            {dashboardStats.pendingMaintenance} {dashboardStats.pendingMaintenance === 1 ? 'request' : 'requests'} pending
+          </p>
           <Link to="/dashboard/maintenance" className="bg-white text-brand-orange px-3 py-1 rounded-full text-xs font-semibold mt-3 inline-block hover:shadow-lg transition-all">
             View All
           </Link>
@@ -250,8 +260,12 @@ const DashboardPage = () => {
                 <DollarSign size={16} className="text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-text-primary">{dashboardStats.recentPayments} new payments</p>
-                <p className="text-text-secondary text-sm">Received in the last 24 hours</p>
+                <p className="font-semibold text-text-primary">
+                  {dashboardStats.recentPayments} new {dashboardStats.recentPayments === 1 ? 'payment' : 'payments'}
+                </p>
+                <p className="text-text-secondary text-sm">
+                  {dashboardStats.recentPayments > 0 ? 'Received in the last 24 hours' : 'No recent payments'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 bg-app-bg rounded-2xl">

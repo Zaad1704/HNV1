@@ -6,6 +6,7 @@ import { useLang } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GlobalLanguageSwitcher from '../common/GlobalLanguageSwitcher';
 import LocalLanguageToggle from '../common/LocalLanguageToggle';
+import LanguageDropdown from '../LanguageDropdown';
 import { 
   Home, Building, Users, CreditCard, Shield, Settings, LogOut, 
   Wrench, FileText, DollarSign, Repeat, CheckSquare, Bell, 
@@ -221,9 +222,9 @@ const DashboardLayout = () => {
             </h1>
           </div>
 
-          {/* Center: Company Name - Hidden on mobile */}
-          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 max-w-xs">
-            <span className="text-lg font-bold text-text-primary text-center truncate">
+          {/* Center: Company Name - Always visible */}
+          <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 max-w-xs lg:max-w-sm">
+            <span className="text-base lg:text-lg font-bold text-text-primary text-center truncate">
               {user?.organizationId?.name || user?.organizationId?.branding?.companyName || t('app_name')}
             </span>
           </div>
@@ -233,7 +234,7 @@ const DashboardLayout = () => {
               <LocalLanguageToggle />
             </div>
             <div className="relative z-[120]">
-              <GlobalLanguageSwitcher />
+              <LanguageDropdown />
             </div>
             <button 
               onClick={toggleTheme} 
