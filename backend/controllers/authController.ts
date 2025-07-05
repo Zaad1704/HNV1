@@ -202,15 +202,22 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
+    // Populate organization data if it exists
+    let populatedUser = user;
+    if (user.organizationId) {
+      populatedUser = await User.findById(user._id).populate('organizationId').select('-password');
+    }
+
     res.status(200).json({
       success: true,
       data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        organizationId: user.organizationId,
-        status: user.status
+        _id: populatedUser._id,
+        name: populatedUser.name,
+        email: populatedUser.email,
+        role: populatedUser.role,
+        organizationId: populatedUser.organizationId,
+        status: populatedUser.status,
+        isEmailVerified: populatedUser.isEmailVerified
       }
     });
 
@@ -262,16 +269,25 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
 
 export const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('Google auth callback triggered');
+    
     if (!req.user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+      console.error('No user found in Google auth callback');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed&message=Authentication failed`);
     }
 
-    const token = (req.user as any).getSignedJwtToken();
-    res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+    const user = req.user as any;
+    console.log('Google auth successful for user:', user.email);
+    
+    const token = user.getSignedJwtToken();
+    const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`;
+    
+    console.log('Redirecting to:', redirectUrl);
+    res.redirect(redirectUrl);
 
   } catch (error) {
     console.error('Google auth callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed&message=Server error during authentication`);
   }
 };
 

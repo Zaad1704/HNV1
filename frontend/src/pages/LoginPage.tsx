@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
@@ -12,10 +12,58 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleOAuthEnabled, setGoogleOAuthEnabled] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const { t } = useTranslation();
+
+  // Check if Google OAuth is enabled
+  useEffect(() => {
+    const checkGoogleOAuth = async () => {
+      try {
+        const response = await apiClient.get('/auth/google/status');
+        setGoogleOAuthEnabled(response.data.googleOAuthEnabled);
+      } catch (err) {
+        console.warn('Could not check Google OAuth status:', err);
+        setGoogleOAuthEnabled(false);
+      }
+    };
+    checkGoogleOAuth();
+  }, []);
+
+  // Check for URL parameters (error messages)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+    const messageParam = urlParams.get('message');
+    
+    if (errorParam) {
+      let errorMessage = 'An error occurred';
+      
+      switch (errorParam) {
+        case 'google-auth-failed':
+          errorMessage = messageParam || 'Google authentication failed. Please try again.';
+          break;
+        case 'auth-verification-failed':
+          errorMessage = messageParam || 'Failed to verify authentication. Please try again.';
+          break;
+        case 'no-token':
+          errorMessage = messageParam || 'Authentication token not received. Please try again.';
+          break;
+        case 'invalid-token':
+          errorMessage = messageParam || 'Invalid authentication token. Please try again.';
+          break;
+        default:
+          errorMessage = messageParam || 'An authentication error occurred.';
+      }
+      
+      setError(errorMessage);
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent, retryCount = 0) => {
     e.preventDefault();
@@ -123,6 +171,11 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
+    if (!googleOAuthEnabled) {
+      setError('Google login is currently unavailable. Please use email and password.');
+      return;
+    }
+    
     const baseURL = apiClient.defaults.baseURL;
     window.location.href = `${baseURL}/auth/google`;
   };
@@ -230,24 +283,29 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative flex items-center justify-center my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-app-border"></div>
-            </div>
-            <div className="relative bg-app-surface px-4">
-              <span className="text-text-muted text-sm font-medium">{t('auth.or')}</span>
-            </div>
-          </div>
+          {/* Google Login Section - Only show if enabled */}
+          {googleOAuthEnabled && (
+            <>
+              {/* Divider */}
+              <div className="relative flex items-center justify-center my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-app-border"></div>
+                </div>
+                <div className="relative bg-app-surface px-4">
+                  <span className="text-text-muted text-sm font-medium">{t('auth.or')}</span>
+                </div>
+              </div>
 
-          {/* Google Login */}
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full flex justify-center items-center gap-3 py-3 md:py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app touch-target"
-          >
-            <Chrome size={20} />
-            {t('auth.continue_google')}
-          </button>
+              {/* Google Login */}
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex justify-center items-center gap-3 py-3 md:py-4 border border-app-border rounded-2xl font-semibold text-text-primary bg-app-surface hover:bg-app-bg transition-all duration-300 hover:shadow-app touch-target"
+              >
+                <Chrome size={20} />
+                {t('auth.continue_google')}
+              </button>
+            </>
+          )}
 
           {/* Sign Up Link */}
           <div className="mt-8 text-center">

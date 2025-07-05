@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Performance monitoring utilities
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor;

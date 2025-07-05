@@ -167,7 +167,14 @@ export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
     return res.status(200).json({ 
       success: true, 
-      data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: 0 }
+      data: { 
+        totalProperties: 0, 
+        totalTenants: 0, 
+        monthlyRevenue: 0, 
+        occupancyRate: 0,
+        pendingMaintenance: 0,
+        recentPayments: 0
+      }
     });
   }
 

@@ -7,6 +7,7 @@ import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
 import { SkeletonStats } from '../components/common/SkeletonLoader';
+import EmptyDashboard from '../components/dashboard/EmptyDashboard';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -55,6 +56,9 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 const DashboardPage = () => {
   const { currency } = useCurrency();
+  
+  console.log('DashboardPage rendering...');
+  
   const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
@@ -85,7 +89,10 @@ const DashboardPage = () => {
   const dashboardStats = stats || defaultStats;
   const showContent = !isLoading || stats; // Show content if not loading OR if we have cached data
 
+  console.log('Dashboard state:', { isLoading, error, stats, showContent });
+
   if (isLoading && !stats) {
+    console.log('Showing loading skeleton...');
     return (
       <div className="p-6 pt-0">
         <SkeletonStats />
@@ -94,6 +101,15 @@ const DashboardPage = () => {
   }
 
   if (error && !stats) {
+    console.log('Dashboard error:', error);
+    
+    // If it's a 401/403 error or organization-related, show empty dashboard
+    if (error?.response?.status === 401 || error?.response?.status === 403 || 
+        error?.message?.includes('organization') || error?.message?.includes('Not authorized')) {
+      console.log('Showing empty dashboard for new user');
+      return <EmptyDashboard />;
+    }
+    
     return (
       <div className="p-6 pt-0">
         <div className="text-center py-12">
@@ -121,6 +137,12 @@ const DashboardPage = () => {
         </div>
       </div>
     );
+  }
+  
+  // Show empty dashboard if user has no data (all stats are 0)
+  if (stats && Object.values(stats).every(val => val === 0)) {
+    console.log('Showing empty dashboard - no data');
+    return <EmptyDashboard />;
   }
 
   return (
