@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Shield, Calendar, MoreVertical } from 'lucide-react';
 import apiClient from '../api/client';
+import MessageButtons from '../components/common/MessageButtons';
 
 const fetchUsers = async () => {
   try {
@@ -163,6 +164,16 @@ const UsersPage = () => {
                   <p className="text-xs text-text-secondary mt-1">
                     {invite.createdAt ? new Date(invite.createdAt).toLocaleDateString() : 'Recently'}
                   </p>
+                </div>
+                <MessageButtons
+                  email={invite.email}
+                  name={invite.email.split('@')[0]}
+                  messageType="teamInvite"
+                  additionalData={{
+                    role: invite.role,
+                    companyName: 'Property Management'
+                  }}
+                />
                 </div>
               </motion.div>
             ))}

@@ -8,6 +8,7 @@ import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
+import MessageButtons from '../components/common/MessageButtons';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchTenants = async () => {
@@ -241,9 +242,16 @@ const TenantsPage = () => {
                 <button className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors">
                   View Details
                 </button>
-                <button className="flex-1 app-gradient text-white py-2 px-4 rounded-xl text-sm font-medium hover:shadow-app transition-all">
-                  Contact
-                </button>
+                <MessageButtons
+                  phone={tenant.phone}
+                  email={tenant.email}
+                  name={tenant.name}
+                  messageType="rentReminder"
+                  additionalData={{
+                    amount: tenant.rentAmount,
+                    dueDate: new Date().toLocaleDateString()
+                  }}
+                />
               </div>
             </motion.div>
           ))}

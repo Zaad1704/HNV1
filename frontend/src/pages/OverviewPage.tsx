@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
+import MessageButtons from '../components/common/MessageButtons';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import AddTenantModal from '../components/common/AddTenantModal';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
@@ -209,6 +210,11 @@ const OverviewPage = () => {
   const handleSendReminder = (tenantId: string) => {
     setRemindingTenantId(tenantId);
     reminderMutation.mutate(tenantId);
+  };
+
+  const handleWhatsAppReminder = (tenant: any) => {
+    // This will be called from ActionItemWidget if we modify it
+    console.log('WhatsApp reminder for:', tenant);
   };
 
   if (isLoadingStats) {
