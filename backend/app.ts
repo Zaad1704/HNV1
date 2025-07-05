@@ -205,7 +205,7 @@ app.use('/api/upload', protect, uploadRoutes);
 app.use('/api/file-upload', protect, fileUploadRoutes);
 app.use('/api/invoices', protect, invoiceRoutes);
 app.use('/api/receipts', protect, receiptRoutes);
-app.use('/api/plans', planRoutes);
+app.use('/api/plans', protect, planRoutes);
 app.use('/api/export', protect, exportRoutes);
 app.use('/api/rent-collection', protect, rentCollectionRoutes);
 app.use('/api/analytics', protect, analyticsRoutes);

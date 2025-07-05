@@ -27,8 +27,12 @@ import {
   uploadImage,
   getBilling
 } from '../controllers/superAdminController';
+import { authorize } from '../middleware/authMiddleware';
 
 const router = Router();
+
+// Apply Super Admin authorization to all routes
+router.use(authorize('Super Admin'));
 
 router.get('/dashboard-stats', getDashboardStats);
 router.get('/plan-distribution', getPlanDistribution);
