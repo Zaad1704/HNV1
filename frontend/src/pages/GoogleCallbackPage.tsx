@@ -53,6 +53,50 @@ const GoogleCallbackPage: React.FC = () => {
           }
         }
 
+        // Handle token-only response (decode user from JWT or fetch from API)
+        if (token && !userParam) {
+          try {
+            // Try to get user data from the API using the token
+            const response = await apiClient.get('/auth/me', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (response.data.success && response.data.data) {
+              login(token, response.data.data);
+              
+              if (response.data.data.role === 'Super Admin' || response.data.data.role === 'Super Moderator') {
+                navigate('/admin', { replace: true });
+              } else {
+                navigate('/dashboard', { replace: true });
+              }
+              return;
+            }
+          } catch (apiError: any) {
+            console.error('Failed to fetch user data with token:', apiError);
+            // If API call fails, try to decode JWT manually
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              const userData = {
+                _id: payload.id,
+                name: payload.name,
+                role: payload.role,
+                email: payload.email || ''
+              };
+              
+              login(token, userData);
+              
+              if (userData.role === 'Super Admin' || userData.role === 'Super Moderator') {
+                navigate('/admin', { replace: true });
+              } else {
+                navigate('/dashboard', { replace: true });
+              }
+              return;
+            } catch (jwtError) {
+              console.error('Failed to decode JWT:', jwtError);
+            }
+          }
+        }
+
         // Handle authorization code (exchange for token)
         if (code) {
           try {
