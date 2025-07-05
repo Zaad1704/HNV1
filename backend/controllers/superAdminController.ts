@@ -118,9 +118,14 @@ export const getEmailStatus = async (req: AuthRequest, res: Response) => {
 
 export const getOrganizations = async (req: AuthRequest, res: Response) => {
   try {
-    const orgs = await Organization.find().populate('owner', 'name email').limit(50);
+    const orgs = await Organization.find()
+      .populate('owner', 'name email role')
+      .populate('members', 'name email role')
+      .sort({ createdAt: -1 })
+      .limit(100);
     res.json({ success: true, data: orgs });
   } catch (error) {
+    console.error('Get organizations error:', error);
     res.json({ success: true, data: [] });
   }
 };
@@ -302,9 +307,14 @@ export const revokeLifetime = async (req: AuthRequest, res: Response) => {
 
 export const getUsers = async (req: AuthRequest, res: Response) => {
   try {
-    const users = await User.find().populate('organizationId', 'name').limit(100);
+    const users = await User.find()
+      .populate('organizationId', 'name status')
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .limit(200);
     res.json({ success: true, data: users });
   } catch (error) {
+    console.error('Get users error:', error);
     res.json({ success: true, data: [] });
   }
 };
@@ -516,34 +526,39 @@ export const updateSiteContent = async (req: AuthRequest, res: Response) => {
 
 export const uploadImage = async (req: AuthRequest, res: Response) => {
   try {
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-    
-    // Create audit log for image upload
-    if (imageUrl) {
-      await AuditLog.create({
-        userId: req.user._id,
-        organizationId: null,
-        action: 'site_image_uploaded',
-        resource: 'site_image',
-        resourceId: req.file?.filename,
-        details: {
-          section: req.body.section,
-          field: req.body.field,
-          filename: req.file?.filename,
-          originalName: req.file?.originalname,
-          size: req.file?.size,
-          uploadedBy: 'Super Admin'
-        },
-        ipAddress: req.ip,
-        userAgent: req.get('User-Agent'),
-        timestamp: new Date()
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No file uploaded' 
       });
     }
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    
+    // Create audit log for image upload
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'site_image_uploaded',
+      resource: 'site_image',
+      resourceId: req.file.filename,
+      details: {
+        section: req.body.section || 'general',
+        field: req.body.field || 'image',
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        uploadedBy: 'Super Admin'
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
     
     res.json({ success: true, data: { imageUrl } });
   } catch (error) {
     console.error('Image upload error:', error);
-    res.json({ success: false, message: 'Error uploading image' });
+    res.status(500).json({ success: false, message: 'Error uploading image' });
   }
 };
 

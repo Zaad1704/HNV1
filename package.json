@@ -53,5 +53,9 @@
   "bugs": {
     "url": "https://github.com/Zaad1704/HNV1/issues"
   },
-  "homepage": "https://hnv-property.onrender.com"
+  "homepage": "https://hnv-property.onrender.com",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "mongoose": "^8.16.1"
+  }
 }

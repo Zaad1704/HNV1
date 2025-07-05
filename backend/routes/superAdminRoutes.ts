@@ -28,6 +28,7 @@ import {
   getBilling
 } from '../controllers/superAdminController';
 import { authorize } from '../middleware/authMiddleware';
+import upload from '../middleware/uploadMiddleware';
 
 const router = Router();
 
@@ -58,7 +59,7 @@ router.put('/moderators/:id', updateModerator);
 router.delete('/moderators/:id', deleteModerator);
 router.put('/site-settings', updateSiteSettings);
 router.put('/site-content/:section', updateSiteContent);
-router.post('/upload-image', uploadImage);
+router.post('/upload-image', upload.single('image'), uploadImage);
 router.get('/billing', getBilling);
 
 export default router;

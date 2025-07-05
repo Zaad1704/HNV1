@@ -299,3 +299,42 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     });
   }
 };
+
+export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById((req.user as any)._id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Verify current password
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Current password is incorrect' 
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during password change' 
+    });
+  }
+};
