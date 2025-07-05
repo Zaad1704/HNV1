@@ -9,7 +9,7 @@ export const getPublicStats = async (req: Request, res: Response) => {
   try {
     const [totalOrganizations, totalUsers, totalProperties] = await Promise.all([
       Organization.countDocuments({ status: 'active' }),
-      User.countDocuments({ isActive: true }),
+      User.countDocuments({ status: 'active' }),
       Property.countDocuments()
     ]);
 
@@ -108,7 +108,7 @@ async function getPublicStatsData() {
   try {
     const [totalOrganizations, totalUsers, totalProperties] = await Promise.all([
       Organization.countDocuments({ status: 'active' }),
-      User.countDocuments({ isActive: true }),
+      User.countDocuments({ status: 'active' }),
       Property.countDocuments()
     ]);
 
