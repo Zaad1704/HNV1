@@ -6,6 +6,7 @@ import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, Bar
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
+import { SkeletonStats } from '../components/common/SkeletonLoader';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -31,7 +32,9 @@ interface DashboardStats {
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    const { data } = await apiClient.get('/dashboard/stats');
+    const { data } = await apiClient.get('/dashboard/stats', {
+      headers: { 'Cache-Control': 'max-age=300' } // 5 minutes cache
+    });
     if (!data.success) {
       throw new Error(data.message || 'Failed to fetch dashboard stats');
     }
@@ -55,19 +58,19 @@ const DashboardPage = () => {
   const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
-    refetchInterval: 60000, // Increased to 1 minute
+    refetchInterval: 300000, // 5 minutes
     retry: (failureCount, error: any) => {
-      // Don't retry on 401/403 errors
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         return false;
       }
-      return failureCount < 2; // Reduced retry attempts
+      return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    staleTime: 30000, // Consider data fresh for 30 seconds
-    cacheTime: 5 * 60 * 1000, // Cache for 5 minutes
-    refetchOnWindowFocus: false, // Prevent excessive refetching
-    refetchOnMount: true
+    staleTime: 240000, // 4 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes cache
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Use cache on mount
+    keepPreviousData: true // Keep previous data while fetching new
   });
 
   const defaultStats: DashboardStats = {
@@ -85,15 +88,7 @@ const DashboardPage = () => {
   if (isLoading && !stats) {
     return (
       <div className="p-6 pt-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="app-surface rounded-3xl p-6 animate-pulse border border-app-border">
-              <div className="w-12 h-12 bg-app-bg rounded-full mb-4"></div>
-              <div className="h-6 bg-app-bg rounded mb-2"></div>
-              <div className="h-4 bg-app-bg rounded"></div>
-            </div>
-          ))}
-        </div>
+        <SkeletonStats />
       </div>
     );
   }

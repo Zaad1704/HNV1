@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { IFeaturesPage } from '../../types/siteSettings';
 import { Shield, Users, TrendingUp, Clock } from 'lucide-react';
@@ -8,10 +8,10 @@ interface FeaturesSectionProps {
   data?: IFeaturesPage;
 }
 
-const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
+const FeaturesSection: React.FC<FeaturesSectionProps> = React.memo(({ data }) => {
   const { t } = useTranslation();
   
-  const defaultFeatures = [
+  const defaultFeatures = useMemo(() => [
     {
       icon: 'Shield',
       title: t('features.secure_reliable', 'Secure & Reliable'),
@@ -36,7 +36,7 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
       text: t('features.support_247_desc', 'Round-the-clock customer support when you need it'),
       sectionId: 'support'
     }
-  ];
+  ], [t]);
 
   const features = data?.features || defaultFeatures;
 
@@ -94,6 +94,6 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ data }) => {
       </div>
     </section>
   );
-};
+});
 
 export default FeaturesSection;

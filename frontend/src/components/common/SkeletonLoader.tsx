@@ -1,121 +1,123 @@
 import React from 'react';
 
 interface SkeletonLoaderProps {
-  type?: 'card' | 'list' | 'table' | 'text' | 'avatar' | 'custom';
-  count?: number;
   className?: string;
-  height?: string;
-  width?: string;
+  variant?: 'text' | 'rectangular' | 'circular';
+  width?: string | number;
+  height?: string | number;
+  lines?: number;
 }
 
-const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ 
-  type = 'card', 
-  count = 1, 
+const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   className = '',
+  variant = 'text',
+  width,
   height,
-  width 
+  lines = 1
 }) => {
-  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700 rounded';
-
-  const renderSkeleton = () => {
-    switch (type) {
-      case 'card':
-        return (
-          <div className={`app-surface rounded-3xl p-6 border border-app-border ${className}`}>
-            <div className="flex items-center gap-4 mb-4">
-              <div className={`${baseClasses} w-12 h-12 rounded-2xl`} />
-              <div className="flex-1">
-                <div className={`${baseClasses} h-4 w-3/4 mb-2`} />
-                <div className={`${baseClasses} h-3 w-1/2`} />
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className={`${baseClasses} h-3 w-full`} />
-              <div className={`${baseClasses} h-3 w-5/6`} />
-              <div className={`${baseClasses} h-3 w-4/6`} />
-            </div>
-            <div className="flex gap-3 mt-6">
-              <div className={`${baseClasses} h-10 w-24 rounded-xl`} />
-              <div className={`${baseClasses} h-10 w-20 rounded-xl`} />
-            </div>
-          </div>
-        );
-
-      case 'list':
-        return (
-          <div className={`space-y-4 ${className}`}>
-            {Array.from({ length: count }).map((_, index) => (
-              <div key={index} className="flex items-center gap-4 p-4 app-surface rounded-2xl border border-app-border">
-                <div className={`${baseClasses} w-10 h-10 rounded-full`} />
-                <div className="flex-1">
-                  <div className={`${baseClasses} h-4 w-3/4 mb-2`} />
-                  <div className={`${baseClasses} h-3 w-1/2`} />
-                </div>
-                <div className={`${baseClasses} h-8 w-16 rounded-lg`} />
-              </div>
-            ))}
-          </div>
-        );
-
-      case 'table':
-        return (
-          <div className={`app-surface rounded-2xl border border-app-border overflow-hidden ${className}`}>
-            <div className="p-4 border-b border-app-border">
-              <div className={`${baseClasses} h-6 w-48`} />
-            </div>
-            <div className="divide-y divide-app-border">
-              {Array.from({ length: count }).map((_, index) => (
-                <div key={index} className="p-4 flex items-center gap-4">
-                  <div className={`${baseClasses} w-8 h-8 rounded-full`} />
-                  <div className="flex-1 grid grid-cols-4 gap-4">
-                    <div className={`${baseClasses} h-4`} />
-                    <div className={`${baseClasses} h-4`} />
-                    <div className={`${baseClasses} h-4`} />
-                    <div className={`${baseClasses} h-4 w-3/4`} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-
+  const baseClasses = 'animate-pulse bg-app-border rounded';
+  
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'circular':
+        return 'rounded-full';
+      case 'rectangular':
+        return 'rounded-lg';
       case 'text':
-        return (
-          <div className={`space-y-2 ${className}`}>
-            {Array.from({ length: count }).map((_, index) => (
-              <div key={index} className={`${baseClasses} h-4 ${
-                index === count - 1 ? 'w-3/4' : 'w-full'
-              }`} />
-            ))}
-          </div>
-        );
-
-      case 'avatar':
-        return (
-          <div className={`${baseClasses} ${width || 'w-10'} ${height || 'h-10'} rounded-full ${className}`} />
-        );
-
-      case 'custom':
-        return (
-          <div className={`${baseClasses} ${height || 'h-4'} ${width || 'w-full'} ${className}`} />
-        );
-
       default:
-        return (
-          <div className={`${baseClasses} h-4 w-full ${className}`} />
-        );
+        return 'rounded';
     }
   };
 
+  const getDefaultSize = () => {
+    switch (variant) {
+      case 'circular':
+        return { width: '40px', height: '40px' };
+      case 'rectangular':
+        return { width: '100%', height: '200px' };
+      case 'text':
+      default:
+        return { width: '100%', height: '16px' };
+    }
+  };
+
+  const defaultSize = getDefaultSize();
+  const style = {
+    width: width || defaultSize.width,
+    height: height || defaultSize.height,
+  };
+
+  if (variant === 'text' && lines > 1) {
+    return (
+      <div className={className}>
+        {Array.from({ length: lines }).map((_, index) => (
+          <div
+            key={index}
+            className={`${baseClasses} ${getVariantClasses()} ${index < lines - 1 ? 'mb-2' : ''}`}
+            style={{
+              ...style,
+              width: index === lines - 1 ? '75%' : style.width
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <>
-      {Array.from({ length: type === 'list' || type === 'table' ? 1 : count }).map((_, index) => (
-        <div key={index}>
-          {renderSkeleton()}
-        </div>
-      ))}
-    </>
+    <div
+      className={`${baseClasses} ${getVariantClasses()} ${className}`}
+      style={style}
+    />
   );
 };
+
+// Pre-built skeleton components
+export const SkeletonCard: React.FC = () => (
+  <div className="app-surface rounded-3xl p-6 border border-app-border">
+    <div className="flex items-center gap-4 mb-4">
+      <SkeletonLoader variant="circular" width={48} height={48} />
+      <div className="flex-1">
+        <SkeletonLoader width="60%" height={20} className="mb-2" />
+        <SkeletonLoader width="40%" height={16} />
+      </div>
+    </div>
+    <SkeletonLoader variant="text" lines={3} />
+  </div>
+);
+
+export const SkeletonTable: React.FC<{ rows?: number }> = ({ rows = 5 }) => (
+  <div className="app-surface rounded-3xl border border-app-border overflow-hidden">
+    <div className="p-4 border-b border-app-border">
+      <SkeletonLoader width="30%" height={24} />
+    </div>
+    {Array.from({ length: rows }).map((_, index) => (
+      <div key={index} className="p-4 border-b border-app-border last:border-b-0 flex items-center gap-4">
+        <SkeletonLoader variant="circular" width={32} height={32} />
+        <div className="flex-1 grid grid-cols-4 gap-4">
+          <SkeletonLoader height={16} />
+          <SkeletonLoader height={16} />
+          <SkeletonLoader height={16} />
+          <SkeletonLoader width="60%" height={16} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+export const SkeletonStats: React.FC = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {Array.from({ length: 4 }).map((_, index) => (
+      <div key={index} className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="flex items-center justify-between mb-4">
+          <SkeletonLoader width="60%" height={16} />
+          <SkeletonLoader variant="circular" width={40} height={40} />
+        </div>
+        <SkeletonLoader width="80%" height={32} className="mb-2" />
+        <SkeletonLoader width="40%" height={14} />
+      </div>
+    ))}
+  </div>
+);
 
 export default SkeletonLoader;

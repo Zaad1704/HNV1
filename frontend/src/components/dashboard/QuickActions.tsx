@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Users, DollarSign, Wrench, Plus, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const QuickActions = () => {
-  const actions = [
+const QuickActions = React.memo(() => {
+  const actions = useMemo(() => [
     {
       icon: Building2,
       label: 'Add Property',
@@ -41,7 +41,7 @@ const QuickActions = () => {
       to: '/dashboard/quick-add',
       color: 'gradient-orange-blue'
     }
-  ];
+  ], []);
 
   return (
     <motion.div 
@@ -65,6 +65,6 @@ const QuickActions = () => {
       </div>
     </motion.div>
   );
-};
+});
 
 export default QuickActions;

@@ -36,8 +36,9 @@ const HeroSection = () => {
             <div className="flex items-center gap-4 mb-8">
               <img 
                 src="/logo-min.png" 
-                alt="HNV Logo" 
+                alt="HNV Property Management Solutions - Professional property management platform logo" 
                 className="w-16 h-16 object-contain"
+                loading="eager"
               />
               <div className="text-2xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
                 {settings?.logos?.companyName || 'HNV Property Management Solutions'}
@@ -126,8 +127,9 @@ const HeroSection = () => {
             <div className="flex items-center justify-center gap-3 mb-6">
               <img 
                 src="/logo-min.png" 
-                alt="HNV Logo" 
+                alt="HNV Property Management Solutions logo" 
                 className="w-12 h-12 object-contain"
+                loading="eager"
               />
               <div className="text-xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
                 {settings?.logos?.companyName || 'HNV Property Management Solutions'}

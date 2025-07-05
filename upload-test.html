@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .upload-area { border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; }
+        .result { margin: 20px 0; padding: 10px; background: #f5f5f5; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input[type="file"] { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>File Upload Test</h1>
+    
+    <div class="upload-area">
+        <h3>Test File Upload</h3>
+        <input type="file" id="fileInput" accept="image/*">
+        <br>
+        <button onclick="uploadFile()">Upload File</button>
+    </div>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <div>
+        <h3>Uploaded Files</h3>
+        <button onclick="loadFiles()">Load Files</button>
+        <div id="filesList"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5001/api' 
+            : 'https://hnv.onrender.com/api';
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/upload/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').innerHTML = `
+                    <h4>Upload Result:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+                
+                if (result.success) {
+                    loadFiles();
+                }
+            } catch (error) {
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('result').innerHTML = `
+                    <h4>Upload Error:</h4>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function loadFiles() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/upload/files`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const filesList = document.getElementById('filesList');
+                    filesList.innerHTML = result.data.map(file => `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <strong>${file.filename}</strong><br>
+                            <small>Size: ${(file.size / 1024).toFixed(2)} KB</small><br>
+                            <a href="${API_BASE.replace('/api', '')}${file.url}" target="_blank">View File</a>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('filesList').innerHTML = '<p>No files found</p>';
+                }
+            } catch (error) {
+                document.getElementById('filesList').innerHTML = `<p>Error loading files: ${error.message}</p>`;
+            }
+        }
+        
+        // Load files on page load
+        loadFiles();
+    </script>
+</body>
+</html>

@@ -5,31 +5,36 @@ import AuditLog from '../models/AuditLog';
 import Notification from '../models/Notification';
 import Property from '../models/Property';
 import notificationService from './notificationService';
+import mongoose from 'mongoose';
 
 class ActionChainService {
   // When payment is recorded
   async onPaymentRecorded(paymentData: any, userId: string, organizationId: string) {
+    const session = await mongoose.startSession();
+    
     try {
-      // 1. Update tenant status if late payment
-      await this.updateTenantStatus(paymentData.tenantId, organizationId);
-      
-      // 2. Cancel overdue reminders
-      await this.cancelOverdueReminders(paymentData.tenantId, paymentData.paymentDate);
-      
-      // 3. Update property cash flow
-      await this.updatePropertyCashFlow(paymentData.propertyId, paymentData.amount, 'income');
-      
-      // 4. Create audit log
-      await this.createAuditLog({
-        userId,
-        organizationId,
-        action: 'payment_recorded',
-        resource: 'payment',
-        resourceId: paymentData._id,
-        details: { amount: paymentData.amount, tenant: paymentData.tenantId }
+      await session.withTransaction(async () => {
+        // 1. Update tenant status if late payment
+        await this.updateTenantStatus(paymentData.tenantId, organizationId, session);
+        
+        // 2. Cancel overdue reminders
+        await this.cancelOverdueReminders(paymentData.tenantId, paymentData.paymentDate, session);
+        
+        // 3. Update property cash flow
+        await this.updatePropertyCashFlow(paymentData.propertyId, paymentData.amount, 'income', session);
+        
+        // 4. Create audit log
+        await this.createAuditLog({
+          userId,
+          organizationId,
+          action: 'payment_recorded',
+          resource: 'payment',
+          resourceId: paymentData._id,
+          details: { amount: paymentData.amount, tenant: paymentData.tenantId }
+        }, session);
       });
       
-      // 5. Send notification to landlord
+      // 5. Send notification (outside transaction)
       const tenant = await Tenant.findById(paymentData.tenantId);
       if (tenant) {
         await notificationService.notifyPaymentReceived(
@@ -42,6 +47,9 @@ class ActionChainService {
       
     } catch (error) {
       console.error('Payment chain action error:', error);
+      throw error;
+    } finally {
+      await session.endSession();
     }
   }
 
@@ -139,25 +147,26 @@ class ActionChainService {
   }
 
   // Helper methods
-  private async updateTenantStatus(tenantId: string, organizationId: string) {
+  private async updateTenantStatus(tenantId: string, organizationId: string, session?: any) {
     try {
-      const tenant = await Tenant.findById(tenantId);
+      const tenant = await Tenant.findById(tenantId).session(session);
       if (!tenant) return;
 
       const recentPayment = await Payment.findOne({
         tenantId,
         status: { $in: ['Paid', 'completed', 'Completed'] },
         paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-      });
+      }).session(session);
 
       tenant.status = recentPayment ? 'Active' : 'Late';
-      await tenant.save();
+      await tenant.save({ session });
     } catch (error) {
       console.error('Update tenant status error:', error);
+      throw error;
     }
   }
 
-  private async cancelOverdueReminders(tenantId: string, paymentDate: Date) {
+  private async cancelOverdueReminders(tenantId: string, paymentDate: Date, session?: any) {
     await Reminder.updateMany(
       {
         tenantId,
@@ -165,20 +174,22 @@ class ActionChainService {
         status: 'active',
         nextRunDate: { $lte: paymentDate }
       },
-      { status: 'completed' }
+      { status: 'completed' },
+      { session }
     );
   }
 
-  private async updatePropertyCashFlow(propertyId: string, amount: number, type: 'income' | 'expense') {
+  private async updatePropertyCashFlow(propertyId: string, amount: number, type: 'income' | 'expense', session?: any) {
     try {
-      const property = await Property.findById(propertyId);
+      const property = await Property.findById(propertyId).session(session);
       if (property) {
         if (!property.cashFlow) property.cashFlow = { income: 0, expenses: 0 };
         property.cashFlow[type] += (amount || 0);
-        await property.save();
+        await property.save({ session });
       }
     } catch (error) {
       console.error('Update property cash flow error:', error);
+      throw error;
     }
   }
 
@@ -239,13 +250,13 @@ class ActionChainService {
     });
   }
 
-  private async createAuditLog(data: any) {
-    await AuditLog.create({
+  private async createAuditLog(data: any, session?: any) {
+    await AuditLog.create([{
       ...data,
       ipAddress: '127.0.0.1',
       userAgent: 'System',
       timestamp: new Date()
-    });
+    }], { session });
   }
 
   private async createNotification(data: any) {
