@@ -20,6 +20,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
 import RealTimeNotifications from '../dashboard/RealTimeNotifications';
 import EmailVerificationWarning from '../dashboard/EmailVerificationWarning';
+import LiveChatWidget from '../chat/LiveChatWidget';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DashboardLayout = () => {
@@ -268,6 +269,7 @@ const DashboardLayout = () => {
         </div>
       </main>
 
+      <LiveChatWidget />
       <BottomNavBar />
     </div>
   );
