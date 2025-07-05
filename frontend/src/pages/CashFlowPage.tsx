@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import AddCashFlowModal from '../components/common/AddCashFlowModal';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 
 const fetchCashFlow = async () => {
   try {
@@ -19,6 +21,14 @@ const fetchCashFlow = async () => {
 const CashFlowPage = () => {
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: cashFlow, isLoading } = useQuery({
     queryKey: ['cashFlow'],
@@ -46,13 +56,22 @@ const CashFlowPage = () => {
           <h1 className="text-3xl font-bold text-text-primary">Cash Flow</h1>
           <p className="text-text-secondary mt-1">Track income and expenses</p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Plus size={20} />
-          Add Record
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExport(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Plus size={20} />
+            Add Record
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -131,9 +150,24 @@ const CashFlowPage = () => {
         )}
       </div>
       
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search cash flow records..."
+        showStatusFilter={false}
+      />
+      
       <AddCashFlowModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
+      />
+      
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={cashFlow?.monthlyData || []}
+        filename="cashflow"
+        filters={searchFilters}
+        title="Export Cash Flow"
       />
     </motion.div>
   );

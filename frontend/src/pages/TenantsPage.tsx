@@ -9,6 +9,8 @@ import ExportModal from '../components/common/ExportModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchTenants = async () => {
@@ -28,6 +30,14 @@ const TenantsPage = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
+  const [showUniversalExport, setShowUniversalExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const { data: tenants = [], isLoading, error } = useQuery({
@@ -146,7 +156,7 @@ const TenantsPage = () => {
             Collection Sheet
           </button>
           <button
-            onClick={() => setShowExportModal(true)}
+            onClick={() => setShowUniversalExport(true)}
             className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
           >
             <Download size={16} />
@@ -159,13 +169,16 @@ const TenantsPage = () => {
         </div>
       </div>
 
-      {/* Search & Filter */}
-      <SearchFilter
-        onSearch={setSearchQuery}
-        onFilter={setFilters}
-        filters={filters}
-        placeholder="Search tenants..."
-        filterOptions={filterOptions}
+      {/* Universal Search */}
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search tenants by name, email, or property..."
+        showStatusFilter={true}
+        statusOptions={[
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+          { value: 'Late', label: 'Late Payment' }
+        ]}
       />
 
       {filteredTenants && filteredTenants.length > 0 ? (
@@ -299,6 +312,15 @@ const TenantsPage = () => {
       <QuickPaymentModal
         isOpen={showQuickPayment}
         onClose={() => setShowQuickPayment(false)}
+      />
+      
+      <UniversalExport
+        isOpen={showUniversalExport}
+        onClose={() => setShowUniversalExport(false)}
+        data={filteredTenants}
+        filename="tenants"
+        filters={searchFilters}
+        title="Export Tenants"
       />
     </motion.div>
   );

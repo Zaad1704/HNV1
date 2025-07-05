@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { DollarSign, Plus, Calendar, Tag, Building } from 'lucide-react';
+import { DollarSign, Plus, Calendar, Tag, Building, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import UniversalExport from '../components/common/UniversalExport';
 
 const fetchExpenses = async () => {
   try {
@@ -18,12 +20,58 @@ const fetchExpenses = async () => {
 const ExpensesPage = () => {
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
   
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['expenses'],
     queryFn: fetchExpenses,
-    retry: 1
+    retry: 0
   });
+
+  const filteredExpenses = useMemo(() => {
+    let filtered = [...expenses];
+
+    if (searchFilters.query) {
+      filtered = filtered.filter(expense => 
+        expense.description?.toLowerCase().includes(searchFilters.query.toLowerCase()) ||
+        expense.category?.toLowerCase().includes(searchFilters.query.toLowerCase())
+      );
+    }
+
+    if (searchFilters.dateRange !== 'all') {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (searchFilters.dateRange) {
+        case 'today': startDate.setHours(0, 0, 0, 0); break;
+        case 'week': startDate.setDate(now.getDate() - 7); break;
+        case 'month': startDate.setMonth(now.getMonth() - 1); break;
+        case 'quarter': startDate.setMonth(now.getMonth() - 3); break;
+        case 'year': startDate.setFullYear(now.getFullYear() - 1); break;
+        case 'custom': if (searchFilters.startDate) startDate = new Date(searchFilters.startDate); break;
+      }
+      
+      filtered = filtered.filter(expense => {
+        const expenseDate = new Date(expense.date || expense.createdAt);
+        return expenseDate >= startDate;
+      });
+    }
+
+    filtered.sort((a, b) => {
+      const aValue = searchFilters.sortBy === 'amount' ? a.amount : new Date(a.date || a.createdAt);
+      const bValue = searchFilters.sortBy === 'amount' ? b.amount : new Date(b.date || b.createdAt);
+      return searchFilters.sortOrder === 'asc' ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
+    });
+
+    return filtered;
+  }, [expenses, searchFilters]);
 
   if (isLoading) {
     return (
@@ -43,20 +91,35 @@ const ExpensesPage = () => {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">Expenses</h1>
-          <p className="text-text-secondary mt-1">Track property expenses and costs</p>
+          <p className="text-text-secondary mt-1">Track property expenses and costs ({filteredExpenses.length} expenses)</p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Plus size={20} />
-          Add Expense
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExport(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          >
+            <Download size={16} />
+            Export
+          </button>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
+            <Plus size={20} />
+            Add Expense
+          </button>
+        </div>
       </div>
 
-      {expenses.length > 0 ? (
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search expenses by description or category..."
+        showStatusFilter={false}
+      />
+
+      {filteredExpenses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {expenses.map((expense: any, index: number) => (
+          {filteredExpenses.map((expense: any, index: number) => (
             <motion.div
               key={expense._id}
               initial={{ opacity: 0, y: 20 }}
@@ -112,6 +175,14 @@ const ExpensesPage = () => {
           </button>
         </div>
       )}
+      <UniversalExport
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={filteredExpenses}
+        filename="expenses"
+        filters={searchFilters}
+        title="Export Expenses"
+      />
     </motion.div>
   );
 };
