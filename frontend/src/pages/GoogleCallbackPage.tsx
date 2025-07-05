@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import apiClient from '../api/client';
 
 const GoogleCallbackPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,31 +15,56 @@ const GoogleCallbackPage: React.FC = () => {
         const userParam = urlParams.get('user');
         const error = urlParams.get('error');
         const message = urlParams.get('message');
+        const code = urlParams.get('code');
 
         if (error) {
-          // Redirect to login with error
           navigate(`/login?error=${error}&message=${encodeURIComponent(message || 'Google authentication failed')}`, { replace: true });
           return;
         }
 
+        // Handle direct token/user params (if backend sends them)
         if (token && userParam) {
           try {
             const userData = JSON.parse(decodeURIComponent(userParam));
             login(token, userData);
             
-            // Redirect based on user role
             if (userData.role === 'Super Admin' || userData.role === 'Super Moderator') {
               navigate('/admin', { replace: true });
             } else {
               navigate('/dashboard', { replace: true });
             }
+            return;
           } catch (parseError) {
             console.error('Failed to parse user data:', parseError);
-            navigate('/login?error=auth-verification-failed&message=Failed to process authentication data', { replace: true });
           }
-        } else {
-          navigate('/login?error=no-token&message=Authentication token not received', { replace: true });
         }
+
+        // Handle authorization code (exchange for token)
+        if (code) {
+          try {
+            const response = await apiClient.post('/auth/google/callback', { code });
+            
+            if (response.data.success && response.data.token && response.data.user) {
+              login(response.data.token, response.data.user);
+              
+              if (response.data.user.role === 'Super Admin' || response.data.user.role === 'Super Moderator') {
+                navigate('/admin', { replace: true });
+              } else {
+                navigate('/dashboard', { replace: true });
+              }
+              return;
+            }
+          } catch (apiError: any) {
+            console.error('Google callback API error:', apiError);
+            const errorMsg = apiError.response?.data?.message || 'Failed to complete Google authentication';
+            navigate(`/login?error=auth-verification-failed&message=${encodeURIComponent(errorMsg)}`, { replace: true });
+            return;
+          }
+        }
+
+        // If no token, user, or code - show error
+        navigate('/login?error=no-token&message=Authentication token not received', { replace: true });
+        
       } catch (error) {
         console.error('Google callback error:', error);
         navigate('/login?error=auth-verification-failed&message=Authentication verification failed', { replace: true });

@@ -210,7 +210,6 @@ const LoginPage: React.FC = () => {
     
     try {
       const baseURL = apiClient.defaults.baseURL;
-      // Clear any existing errors
       setError('');
       setLoading(true);
       
@@ -218,7 +217,9 @@ const LoginPage: React.FC = () => {
       const state = Math.random().toString(36).substring(2, 15);
       sessionStorage.setItem('google_auth_state', state);
       
-      window.location.href = `${baseURL}/auth/google?state=${state}`;
+      // Use the callback URL that matches our route
+      const redirectUri = `${window.location.origin}/auth/google/callback`;
+      window.location.href = `${baseURL}/auth/google?state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     } catch (error) {
       console.error('Google login error:', error);
       setError('Failed to initiate Google login. Please try again.');
