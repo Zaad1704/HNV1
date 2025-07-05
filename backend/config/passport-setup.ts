@@ -53,7 +53,7 @@ if (process.env.GOOGLE_CLIENT_ID &&
       if (existingUser) {
         // Link Google account to existing user
         existingUser.googleId = profile.id;
-        existingUser.avatar = profile.photos?.[0]?.value;
+        existingUser.profilePicture = profile.photos?.[0]?.value;
         existingUser.isEmailVerified = true;
         existingUser.status = 'active';
         await existingUser.save();
@@ -77,7 +77,7 @@ if (process.env.GOOGLE_CLIENT_ID &&
         googleId: profile.id,
         name: profile.displayName,
         email: profile.emails?.[0]?.value,
-        avatar: profile.photos?.[0]?.value,
+        profilePicture: profile.photos?.[0]?.value,
         isEmailVerified: true,
         status: 'active',
         role: 'Landlord',
