@@ -94,12 +94,21 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
 
 export const authorize = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
+    console.log('=== AUTHORIZATION CHECK ===');
+    console.log('Required roles:', roles);
+    console.log('User exists:', !!req.user);
+    console.log('User role:', req.user?.role);
+    console.log('Role match:', req.user ? roles.includes(req.user.role) : false);
+    
     if (!req.user || !roles.includes(req.user.role)) {
+      console.log('❌ Authorization failed');
       return res.status(403).json({
         success: false,
         message: `User role ${req.user?.role} is not authorized to access this route`
       });
     }
+    
+    console.log('✅ Authorization passed');
     next();
   };
 };
