@@ -18,7 +18,7 @@ const fetchProperties = async () => {
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch properties:', error);
-    return [];
+    throw error;
   }
 };
 
@@ -31,13 +31,16 @@ const PropertiesPage = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showBulkPayment, setShowBulkPayment] = useState(false);
   const queryClient = useQueryClient();
-  const { exportProperties, isExporting } = useDataExport();
+  const { exportProperties, isExporting } = useDataExport() || { exportProperties: () => {}, isExporting: false };
 
-  const { data: properties, isLoading, error } = useQuery({
+  const { data: properties = [], isLoading, error } = useQuery({
     queryKey: ['properties'],
     queryFn: fetchProperties,
-    retry: 3,
-    retryDelay: 1000
+    retry: 1,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Properties query error:', error);
+    }
   });
 
   const filteredProperties = useMemo(() => {

@@ -17,10 +17,10 @@ import { usePullToRefresh } from '../hooks/usePullToRefresh';
 const fetchOverviewStats = async () => {
   try {
     const { data } = await apiClient.get('/dashboard/overview-stats');
-    return data.data || {};
+    return data.data || { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' };
   } catch (error) {
     console.error('Overview stats error:', error);
-    return { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' };
+    throw error;
   }
 };
 
@@ -136,35 +136,40 @@ const OverviewPage = () => {
     threshold: 80
   });
 
-  const { data: stats, isLoading: isLoadingStats } = useQuery({ 
+  const { data: stats = { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' }, isLoading: isLoadingStats, error: statsError } = useQuery({ 
     queryKey: ['overviewStats'], 
     queryFn: fetchOverviewStats,
     retry: 1,
-    staleTime: 30000
+    staleTime: 30000,
+    onError: (error) => console.error('Stats query error:', error)
   });
-  const { data: lateTenants } = useQuery({ 
+  const { data: lateTenants = [] } = useQuery({ 
     queryKey: ['lateTenants'], 
     queryFn: fetchLateTenants,
     retry: 1,
-    staleTime: 30000
+    staleTime: 30000,
+    onError: (error) => console.error('Late tenants error:', error)
   });
-  const { data: expiringLeases } = useQuery({ 
+  const { data: expiringLeases = [] } = useQuery({ 
     queryKey: ['expiringLeases'], 
     queryFn: fetchExpiringLeases,
     retry: 1,
-    staleTime: 30000
+    staleTime: 30000,
+    onError: (error) => console.error('Expiring leases error:', error)
   });
-  const { data: financialData } = useQuery({ 
+  const { data: financialData = [] } = useQuery({ 
     queryKey: ['financialSummary'], 
     queryFn: fetchFinancialSummary,
     retry: 1,
-    staleTime: 30000
+    staleTime: 30000,
+    onError: (error) => console.error('Financial data error:', error)
   });
-  const { data: rentStatusData } = useQuery({ 
+  const { data: rentStatusData = [] } = useQuery({ 
     queryKey: ['rentStatus'], 
     queryFn: fetchRentStatus,
     retry: 1,
-    staleTime: 30000
+    staleTime: 30000,
+    onError: (error) => console.error('Rent status error:', error)
   });
 
   const reminderMutation = useMutation({

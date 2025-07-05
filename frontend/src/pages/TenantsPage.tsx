@@ -16,7 +16,7 @@ const fetchTenants = async () => {
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch tenants:', error);
-    return [];
+    throw error;
   }
 };
 
@@ -27,13 +27,16 @@ const TenantsPage = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
-  const { exportTenants, isExporting } = useDataExport();
+  const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
-  const { data: tenants, isLoading, error } = useQuery({
+  const { data: tenants = [], isLoading, error } = useQuery({
     queryKey: ['tenants'],
     queryFn: fetchTenants,
-    retry: 3,
-    retryDelay: 1000
+    retry: 1,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Tenants query error:', error);
+    }
   });
 
   const filteredTenants = useMemo(() => {

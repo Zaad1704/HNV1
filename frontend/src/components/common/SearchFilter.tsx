@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface FilterOption {
   key: string;
@@ -23,6 +24,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
   placeholder = "Search...",
   filterOptions
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-6">
       <div className="relative flex-1">
