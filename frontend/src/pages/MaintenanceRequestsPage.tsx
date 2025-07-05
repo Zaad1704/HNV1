@@ -8,6 +8,7 @@ import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import AddMaintenanceModal from '../components/common/AddMaintenanceModal';
 import MessageButtons from '../components/common/MessageButtons';
 import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -35,6 +36,7 @@ const MaintenanceRequestsPage = () => {
     const [filters, setFilters] = useState<any>({});
     const [showExportModal, setShowExportModal] = useState(false);
     const [showUniversalExport, setShowUniversalExport] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
     const [searchFilters, setSearchFilters] = useState<SearchFilters>({
         query: '',
         dateRange: 'all',
@@ -113,6 +115,10 @@ const MaintenanceRequestsPage = () => {
 
     const handleStatusChange = (id: string, newStatus: string) => {
         mutation.mutate({ id, status: newStatus });
+    };
+
+    const handleRequestAdded = (newRequest: any) => {
+        queryClient.setQueryData(['maintenanceRequests'], (old: any) => [...(old || []), newRequest]);
     };
 
     const getStatusBadge = (status: string) => {
@@ -259,7 +265,10 @@ const MaintenanceRequestsPage = () => {
                         <Download size={16} />
                         Export
                     </button>
-                    <button className="btn-primary flex items-center gap-2">
+                    <button 
+                        onClick={() => setShowAddModal(true)}
+                        className="btn-primary flex items-center gap-2"
+                    >
                         <Plus size={18} />
                         Add Request
                     </button>
@@ -308,6 +317,12 @@ const MaintenanceRequestsPage = () => {
                 filename="maintenance-requests"
                 filters={searchFilters}
                 title="Export Maintenance Requests"
+            />
+
+            <AddMaintenanceModal
+                isOpen={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onRequestAdded={handleRequestAdded}
             />
         </motion.div>
     );

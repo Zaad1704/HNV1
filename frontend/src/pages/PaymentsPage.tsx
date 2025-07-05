@@ -6,7 +6,9 @@ import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import RecordPaymentModal from '../components/common/RecordPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
+import { useQueryClient } from '@tanstack/react-query';
 
 const fetchPayments = async () => {
   try {
@@ -19,6 +21,7 @@ const fetchPayments = async () => {
 };
 
 const PaymentsPage = () => {
+  const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -35,6 +38,10 @@ const PaymentsPage = () => {
     queryFn: fetchPayments,
     retry: 1
   });
+
+  const handlePaymentAdded = (newPayment: any) => {
+    queryClient.setQueryData(['payments'], (old: any) => [...(old || []), newPayment]);
+  };
 
   if (isLoading) {
     return (
@@ -161,6 +168,12 @@ const PaymentsPage = () => {
         filename="payments"
         filters={searchFilters}
         title="Export Payments"
+      />
+
+      <RecordPaymentModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onPaymentAdded={handlePaymentAdded}
       />
     </motion.div>
   );

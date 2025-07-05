@@ -6,7 +6,9 @@ import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import AddExpenseModal from '../components/common/AddExpenseModal';
 import MessageButtons from '../components/common/MessageButtons';
+import { useQueryClient } from '@tanstack/react-query';
 
 const fetchExpenses = async () => {
   try {
@@ -19,6 +21,7 @@ const fetchExpenses = async () => {
 };
 
 const ExpensesPage = () => {
+  const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
@@ -35,6 +38,10 @@ const ExpensesPage = () => {
     queryFn: fetchExpenses,
     retry: 0
   });
+
+  const handleExpenseAdded = (newExpense: any) => {
+    queryClient.setQueryData(['expenses'], (old: any) => [...(old || []), newExpense]);
+  };
 
   const filteredExpenses = useMemo(() => {
     let filtered = [...expenses];
@@ -190,6 +197,12 @@ const ExpensesPage = () => {
         filename="expenses"
         filters={searchFilters}
         title="Export Expenses"
+      />
+
+      <AddExpenseModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onExpenseAdded={handleExpenseAdded}
       />
     </motion.div>
   );

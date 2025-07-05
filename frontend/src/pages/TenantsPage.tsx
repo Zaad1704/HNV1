@@ -11,7 +11,9 @@ import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import AddTenantModal from '../components/common/AddTenantModal';
 import { useDataExport } from '../hooks/useDataExport';
+import { useQueryClient } from '@tanstack/react-query';
 
 const fetchTenants = async () => {
   try {
@@ -24,6 +26,7 @@ const fetchTenants = async () => {
 };
 
 const TenantsPage = () => {
+  const queryClient = useQueryClient();
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -31,6 +34,7 @@ const TenantsPage = () => {
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
   const [showUniversalExport, setShowUniversalExport] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
     dateRange: 'all',
@@ -39,6 +43,10 @@ const TenantsPage = () => {
     sortOrder: 'desc'
   });
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
+
+  const handleTenantAdded = (newTenant: any) => {
+    queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
+  };
 
   const { data: tenants = [], isLoading, error } = useQuery({
     queryKey: ['tenants'],
@@ -162,7 +170,10 @@ const TenantsPage = () => {
             <Download size={16} />
             Export
           </button>
-          <button className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold">
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+          >
             <Plus size={20} />
             Add Tenant
           </button>
@@ -321,6 +332,12 @@ const TenantsPage = () => {
         filename="tenants"
         filters={searchFilters}
         title="Export Tenants"
+      />
+
+      <AddTenantModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onTenantAdded={handleTenantAdded}
       />
     </motion.div>
   );
