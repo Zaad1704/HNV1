@@ -589,6 +589,8 @@ export const updateSiteContent = async (req: AuthRequest, res: Response) => {
 
 export const uploadImage = async (req: AuthRequest, res: Response) => {
   try {
+    console.log('Upload image request:', { file: !!req.file, body: req.body });
+    
     if (!req.file) {
       return res.status(400).json({ 
         success: false, 
@@ -598,30 +600,38 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
 
     const imageUrl = `/uploads/${req.file.filename}`;
     
-    // Create audit log for image upload
-    await AuditLog.create({
-      userId: req.user._id,
-      organizationId: null,
-      action: 'site_image_uploaded',
-      resource: 'site_image',
-      resourceId: req.file.filename,
-      details: {
-        section: req.body.section || 'general',
-        field: req.body.field || 'image',
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size,
-        uploadedBy: 'Super Admin'
-      },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
-    });
+    // Create audit log for image upload (optional, don't fail if it errors)
+    try {
+      await AuditLog.create({
+        userId: req.user?._id,
+        organizationId: null,
+        action: 'site_image_uploaded',
+        resource: 'site_image',
+        resourceId: req.file.filename,
+        details: {
+          section: req.body.section || 'general',
+          field: req.body.field || 'image',
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          size: req.file.size,
+          uploadedBy: 'Super Admin'
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    } catch (auditError) {
+      console.error('Audit log creation failed:', auditError);
+    }
     
-    res.json({ success: true, data: { imageUrl } });
-  } catch (error) {
+    res.status(200).json({ success: true, data: { imageUrl } });
+  } catch (error: any) {
     console.error('Image upload error:', error);
-    res.status(500).json({ success: false, message: 'Error uploading image' });
+    res.status(200).json({ 
+      success: false, 
+      message: 'Error uploading image',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

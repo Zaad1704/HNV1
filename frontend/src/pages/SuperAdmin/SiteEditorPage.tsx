@@ -79,6 +79,18 @@ const SiteEditorPage = () => {
   const handleImageUpload = async (file: File, field: string) => {
     if (!file) return;
     
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('image', file);
     formData.append('section', activeTab);
@@ -86,29 +98,35 @@ const SiteEditorPage = () => {
     
     try {
       setIsSaving(true);
-      const { data } = await apiClient.post('/super-admin/upload-image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      console.log('Uploading image:', { fileName: file.name, size: file.size, type: file.type });
+      
+      const response = await apiClient.post('/super-admin/upload-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000 // 30 second timeout
       });
       
-      // Update the site data with the new image URL
-      const newSiteData = { 
-        ...siteData, 
-        [field]: data.imageUrl,
-        lastImageUpdate: new Date().toISOString()
-      };
-      setSiteData(newSiteData);
+      console.log('Upload response:', response.data);
       
-      // Automatically save the settings with action chain
-      await apiClient.put('/super-admin/site-settings', newSiteData);
-      
-      // Trigger immediate refresh of landing page
-      window.dispatchEvent(new Event('siteSettingsUpdated'));
-      window.dispatchEvent(new Event('imageUpdated'));
-      
-      alert('Image uploaded and saved successfully! Landing page updated.');
-    } catch (error) {
+      if (response.data.success) {
+        // Update the site data with the new image URL
+        const newSiteData = { 
+          ...siteData, 
+          [field]: response.data.data.imageUrl,
+          lastImageUpdate: new Date().toISOString()
+        };
+        setSiteData(newSiteData);
+        
+        // Automatically save the settings
+        await apiClient.put('/super-admin/site-settings', newSiteData);
+        
+        alert('Image uploaded and saved successfully!');
+      } else {
+        throw new Error(response.data.message || 'Upload failed');
+      }
+    } catch (error: any) {
       console.error('Image upload failed:', error);
-      alert('Failed to upload image. Please try again.');
+      const message = error.response?.data?.message || error.message || 'Failed to upload image';
+      alert(`Upload failed: ${message}`);
     } finally {
       setIsSaving(false);
     }

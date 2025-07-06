@@ -31,16 +31,24 @@ router.get('/google/callback',
 
 // Google OAuth status check
 router.get('/google/status', (req, res) => {
-  const isConfigured = process.env.GOOGLE_CLIENT_ID && 
-                      process.env.GOOGLE_CLIENT_SECRET && 
-                      process.env.GOOGLE_CLIENT_ID !== 'your_google_client_id_here' &&
-                      process.env.GOOGLE_CLIENT_SECRET !== 'your_google_client_secret_here';
-  
-  res.json({ 
-    success: true, 
-    googleOAuthEnabled: isConfigured,
-    message: isConfigured ? 'Google OAuth is configured' : 'Google OAuth is not configured'
-  });
+  try {
+    const isConfigured = process.env.GOOGLE_CLIENT_ID && 
+                        process.env.GOOGLE_CLIENT_SECRET && 
+                        process.env.GOOGLE_CLIENT_ID !== 'your_google_client_id_here' &&
+                        process.env.GOOGLE_CLIENT_SECRET !== 'your_google_client_secret_here';
+    
+    res.status(200).json({ 
+      success: true, 
+      googleOAuthEnabled: isConfigured,
+      message: isConfigured ? 'Google OAuth is configured' : 'Google OAuth is not configured'
+    });
+  } catch (error) {
+    res.status(200).json({ 
+      success: true, 
+      googleOAuthEnabled: false,
+      message: 'Google OAuth is not configured'
+    });
+  }
 });
 
 // Protected routes
