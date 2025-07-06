@@ -101,20 +101,9 @@ function App() {
 
 
   useEffect(() => {
-    const checkUserSession = async () => {
-      if (token && !user) {
-        try {
-          const response = await apiClient.get('/auth/me');
-          setUser(response.data.data);
-        } catch (error) {
-          console.error("Session check failed, logging out.", error);
-          logout();
-        }
-      }
-      setSessionLoading(false);
-    };
-    checkUserSession();
-  }, [token, user, setUser, logout]);
+    // Skip session check to isolate crash
+    setSessionLoading(false);
+  }, []);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
