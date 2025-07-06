@@ -113,15 +113,16 @@ const LiveChatWidget: React.FC = () => {
       {/* Chat Button */}
       {!isOpen && (
         <motion.button
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          whileHover={{ scale: 1.1 }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.7 }}
+          whileHover={{ scale: 1.1, opacity: 1 }}
+          whileFocus={{ scale: 1.1, opacity: 1 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-40"
+          className="fixed bottom-24 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-30 group"
         >
-          <MessageCircle size={24} />
+          <MessageCircle size={20} className="group-hover:scale-110 transition-transform" />
           {adminOnline && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
           )}
         </motion.button>
       )}
@@ -133,7 +134,7 @@ const LiveChatWidget: React.FC = () => {
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-6 left-6 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
+            className="fixed bottom-6 right-6 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-40 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-blue-600 text-white p-4 flex items-center justify-between">

@@ -127,57 +127,77 @@ const PWAInstallPrompt = () => {
 
   const instructions = getInstallInstructions();
 
-  return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50">
-      <div className="app-surface rounded-2xl p-4 border border-app-border shadow-app-xl backdrop-blur-sm">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2">
-            {instructions.icon}
-            <h3 className="font-semibold text-text-primary">{instructions.title}</h3>
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  if (showInstructions) {
+    return (
+      <div className="fixed top-4 right-4 w-80 max-w-[calc(100vw-2rem)] z-50">
+        <div className="app-surface rounded-xl p-4 border border-app-border shadow-lg backdrop-blur-sm">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              {instructions.icon}
+              <h3 className="font-semibold text-text-primary text-sm">{instructions.title}</h3>
+            </div>
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="text-text-muted hover:text-text-primary transition-colors"
+            >
+              <X size={16} />
+            </button>
           </div>
+
+          <div className="space-y-2 mb-3">
+            {instructions.steps.map((step, index) => (
+              <div key={index} className="flex items-start gap-2 text-xs text-text-secondary">
+                <span className="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  {index + 1}
+                </span>
+                <span className="leading-relaxed">{step}</span>
+              </div>
+            ))}
+          </div>
+          
           <button
-            onClick={() => setShowPrompt(false)}
-            className="text-text-muted hover:text-text-primary transition-colors"
+            onClick={() => setShowInstructions(false)}
+            className="w-full bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
-            <X size={20} />
+            Got it
           </button>
         </div>
+      </div>
+    );
+  }
 
-        <p className="text-sm text-text-secondary mb-4">
-          {t('install_app.description')}
-        </p>
-
-        {deferredPrompt ? (
-          <div className="space-y-3">
+  return (
+    <div className="fixed top-4 right-4 z-50">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 max-w-xs">
+        <Download size={16} />
+        <span className="text-sm font-medium truncate">
+          Install for offline access
+        </span>
+        <div className="flex items-center gap-1 ml-auto">
+          {deferredPrompt ? (
             <button
               onClick={handleInstall}
-              className="w-full btn-gradient py-3 px-4 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="bg-white/20 hover:bg-white/30 rounded px-2 py-1 text-xs font-medium transition-colors"
             >
-              📱 {t('install_app.install_button')}
+              Install
             </button>
-            <p className="text-xs text-center text-text-muted">
-              {t('install_app.features')}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="space-y-2">
-              {instructions.steps.map((step, index) => (
-                <div key={index} className="flex items-start gap-2 text-xs text-text-secondary">
-                  <span className="w-5 h-5 rounded-full bg-brand-blue text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                    {index + 1}
-                  </span>
-                  <span className="leading-relaxed">{step}</span>
-                </div>
-              ))}
-            </div>
-            <div className="text-center pt-2 border-t border-app-border">
-              <p className="text-xs text-text-muted">
-                {t('install_app.best_experience')}
-              </p>
-            </div>
-          </div>
-        )}
+          ) : (
+            <button
+              onClick={() => setShowInstructions(true)}
+              className="bg-white/20 hover:bg-white/30 rounded px-2 py-1 text-xs font-medium transition-colors"
+            >
+              How
+            </button>
+          )}
+          <button
+            onClick={() => setShowPrompt(false)}
+            className="text-white/70 hover:text-white transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
       </div>
     </div>
   );

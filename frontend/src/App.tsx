@@ -19,6 +19,8 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { ToastProvider } from './components/common/Toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import HelpCenter from './components/common/HelpCenter';
+import HelpWidget from './components/common/HelpWidget';
+import QuickAccessWidget from './components/common/QuickAccessWidget';
 import FeedbackWidget from './components/common/FeedbackWidget';
 import SkipLink from './components/common/SkipLink';
 
@@ -186,6 +188,8 @@ function App() {
         <OfflineIndicator />
         <PWAInstallPrompt />
         <HelpCenter />
+        <HelpWidget />
+        <QuickAccessWidget />
         <FeedbackWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
