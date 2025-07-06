@@ -1,25 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { LanguageProvider } from './contexts/LanguageContext';
-
-const queryClient = new QueryClient();
+import { useAuthStore } from './store/authStore';
+import LoadingSpinner from './components/common/LoadingSpinner';
 
 function MinimalApp() {
+  const { token, user } = useAuthStore();
+  const [isSessionLoading, setSessionLoading] = useState(true);
+
+  useEffect(() => {
+    setSessionLoading(false);
+  }, []);
+
+  if (isSessionLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LanguageProvider>
-          <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-            <h1>Testing LanguageProvider</h1>
-            <Routes>
-              <Route path="*" element={<div>All providers work</div>} />
-            </Routes>
-          </div>
-        </LanguageProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <div style={{ padding: '20px' }}>
+      <h1>Testing App Structure</h1>
+      <p>Token: {token ? 'exists' : 'none'}</p>
+      <p>User: {user?.name || 'none'}</p>
+      <Routes>
+        <Route path="*" element={<div>Basic App works</div>} />
+      </Routes>
+    </div>
   );
 }
 
