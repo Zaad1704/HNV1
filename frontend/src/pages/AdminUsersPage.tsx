@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import apiClient from "../api/client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Eye, X, CreditCard, DollarSign, AlertTriangle } from 'lucide-react';
+import { Trash2, Eye, X, CreditCard, DollarSign, AlertTriangle, Bug } from 'lucide-react';
+import { testUserDeletion } from '../utils/adminTestHelpers';
 
 type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; };
 
@@ -26,12 +27,20 @@ const AdminUsersPage: React.FC = () => {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => apiClient.delete(`/super-admin/users/${userId}`),
-    onSuccess: () => {
+    mutationFn: async (userId: string) => {
+      const response = await apiClient.delete(`/super-admin/users/${userId}`);
+      return response.data;
+    },
+    onSuccess: (data, userId) => {
       queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
       setSelectedUser(null);
+      alert('User deleted successfully!');
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Failed to delete user.'),
+    onError: (err: any) => {
+      console.error('Delete user error:', err);
+      const message = err.response?.data?.message || err.message || 'Failed to delete user';
+      alert(`Error: ${message}`);
+    },
   });
 
   const updateUserPlanMutation = useMutation({
@@ -139,8 +148,22 @@ const AdminUsersPage: React.FC = () => {
                       <CreditCard size={16}/>
                     </button>
                     <button 
+                      onClick={async () => {
+                        const result = await testUserDeletion(user._id);
+                        if (result.success) {
+                          queryClient.invalidateQueries({ queryKey: ['allAdminUsers'] });
+                        }
+                        alert(result.message);
+                      }}
+                      className="p-2 rounded-md text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors" 
+                      title="Test Delete"
+                    >
+                      <Bug size={16}/>
+                    </button>
+                    <button 
                       onClick={() => handleDeleteUser(user)}
-                      className="p-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" 
+                      disabled={deleteUserMutation.isPending}
+                      className="p-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50" 
                       title="Delete User"
                     >
                       <Trash2 size={16}/>
@@ -213,9 +236,10 @@ const AdminUsersPage: React.FC = () => {
               </button>
               <button 
                 onClick={() => handleDeleteUser(selectedUser)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                disabled={deleteUserMutation.isPending}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
-                Delete User
+                {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
               </button>
               <button 
                 onClick={() => setSelectedUser(null)}

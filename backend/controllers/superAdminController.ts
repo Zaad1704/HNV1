@@ -327,31 +327,64 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
 
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    
     if (!user) {
-      return res.json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Create audit log
-    await AuditLog.create({
-      userId: req.user._id,
-      organizationId: user.organizationId,
-      action: 'user_deleted',
-      resource: 'user',
-      resourceId: user._id,
-      details: { userName: user.name, userEmail: user.email, deletedBy: 'Super Admin' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
-    });
+    // Prevent deletion of Super Admin users
+    if (user.role === 'Super Admin') {
+      return res.status(403).json({ success: false, message: 'Cannot delete Super Admin users' });
+    }
 
-    // Trigger action chain before deletion
-    await superAdminActionService.onUserDeleted(req.params.userId, user, req.user._id);
+    // Create audit log before deletion
+    try {
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: user.organizationId,
+        action: 'user_deleted',
+        resource: 'user',
+        resourceId: user._id,
+        details: { 
+          userName: user.name, 
+          userEmail: user.email, 
+          userRole: user.role,
+          deletedBy: 'Super Admin' 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    } catch (auditError) {
+      console.error('Audit log creation failed:', auditError);
+    }
+
+    // Trigger action chain before deletion (optional, don't fail if it errors)
+    try {
+      await superAdminActionService.onUserDeleted(userId, user, req.user._id);
+    } catch (actionError) {
+      console.error('Action chain failed:', actionError);
+    }
     
-    await User.findByIdAndDelete(req.params.userId);
-    res.json({ success: true, data: {} });
-  } catch (error) {
-    res.json({ success: false, message: 'Error deleting user' });
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+    
+    console.log(`User ${user.email} deleted by Super Admin ${req.user.email}`);
+    
+    res.json({ 
+      success: true, 
+      message: `User ${user.name} deleted successfully`,
+      data: { deletedUserId: userId } 
+    });
+  } catch (error: any) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete user',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
