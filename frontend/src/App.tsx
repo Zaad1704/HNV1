@@ -117,6 +117,7 @@ function App() {
         <ErrorBoundary>
         <SkipLink />
         <OfflineIndicator />
+        <HelpCenter />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         <Route path="/" element={<LandingPage />} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HelpCircle, Search, Book, MessageCircle, Mail, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+
 
 interface FAQItem {
   id: string;
@@ -10,7 +10,7 @@ interface FAQItem {
 }
 
 const HelpCenter: React.FC = () => {
-  const { t } = useTranslation();
+
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
