@@ -146,11 +146,16 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="/admin" element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
+        <Route path="/admin/*" element={<AdminRoute />}>
+          <Route path="" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="organizations" element={<AdminOrganizationsPage />} />
+            <Route path="moderators" element={<AdminModeratorsPage />} />
+            <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="billing" element={<AdminBillingPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
         
