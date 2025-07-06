@@ -115,8 +115,8 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
         <ErrorBoundary>
+        <SkipLink />
         <OfflineIndicator />
-        <PWAInstallPrompt />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         <Route path="/" element={<LandingPage />} />
