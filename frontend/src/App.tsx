@@ -17,6 +17,7 @@ import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { ToastProvider } from './components/common/Toast';
+import { ThemeProvider } from './contexts/ThemeContext';
 import HelpCenter from './components/common/HelpCenter';
 import FeedbackWidget from './components/common/FeedbackWidget';
 import SkipLink from './components/common/SkipLink';
@@ -178,8 +179,9 @@ function App() {
   }
 
   return (
-    <ToastProvider>
-      <ErrorBoundary>
+    <ThemeProvider>
+      <ToastProvider>
+        <ErrorBoundary>
         <SkipLink />
         <OfflineIndicator />
         <PWAInstallPrompt />
@@ -259,8 +261,9 @@ function App() {
         <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
-      </ErrorBoundary>
-    </ToastProvider>
+        </ErrorBoundary>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 

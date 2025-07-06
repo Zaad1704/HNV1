@@ -23,8 +23,18 @@ export interface IUser extends Document {
   profilePicture?: string;
   twoFactorEnabled: boolean;
   twoFactorSecret?: string;
+  twoFactorTempSecret?: string;
   twoFactorToken?: string;
   twoFactorExpires?: Date;
+  passkeys: Array<{
+    id: string;
+    publicKey: string;
+    counter: number;
+    deviceName: string;
+    createdAt: Date;
+  }>;
+  language?: string;
+  autoDetectLanguage?: boolean;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
   getEmailVerificationToken(): string;
@@ -57,8 +67,18 @@ const UserSchema = new Schema<IUser>({
   profilePicture: { type: String },
   twoFactorEnabled: { type: Boolean, default: false },
   twoFactorSecret: { type: String, select: false },
+  twoFactorTempSecret: { type: String, select: false },
   twoFactorToken: { type: String, select: false },
-  twoFactorExpires: { type: Date, select: false }
+  twoFactorExpires: { type: Date, select: false },
+  passkeys: [{
+    id: { type: String, required: true },
+    publicKey: { type: String, required: true },
+    counter: { type: Number, default: 0 },
+    deviceName: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  language: { type: String, default: 'en' },
+  autoDetectLanguage: { type: Boolean, default: true }
 });
 
 UserSchema.pre('save', async function(next) {

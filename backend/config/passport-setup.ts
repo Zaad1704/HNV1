@@ -61,10 +61,9 @@ if (process.env.GOOGLE_CLIENT_ID &&
         return done(null, existingUser);
       }
       
-      // Prevent account creation during login - redirect to signup
+      // Prevent account creation during login - return error
       console.log('❌ Google login attempted for non-existing user:', profile.emails?.[0]?.value);
-      const newUser = { isNew: true, email: profile.emails?.[0]?.value };
-      return done(null, newUser);
+      return done(new Error('ACCOUNT_NOT_FOUND'), null);
     } catch (error) {
       console.error('Google OAuth error:', error);
       done(error, null);

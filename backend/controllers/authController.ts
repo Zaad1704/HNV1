@@ -298,17 +298,11 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     
     if (!req.user) {
       console.error('No user found in Google auth callback');
-      return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed&message=Authentication failed`);
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=account-not-found&message=No account found with this Google email. Please sign up first.`);
     }
 
     const user = req.user as any;
     console.log('Google auth for user:', user.email);
-    
-    // Check if this is a new account creation (should be prevented)
-    if (user.isNew) {
-      console.log('❌ Google login attempted account creation - redirecting to signup');
-      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=google-signup-required&message=Please use the signup page to create an account`);
-    }
     
     console.log('✅ Google login successful for existing user:', user.email);
     const token = user.getSignedJwtToken();
@@ -318,6 +312,9 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
 
   } catch (error) {
     console.error('Google auth callback error:', error);
+    if (error.message === 'ACCOUNT_NOT_FOUND') {
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=account-not-found&message=No account found with this Google email. Please sign up first.`);
+    }
     res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed&message=Server error during authentication`);
   }
 };

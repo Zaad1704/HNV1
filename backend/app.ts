@@ -58,6 +58,8 @@ import bulkPaymentRoutes from './routes/bulkPaymentRoutes';
 import reportRoutes from './routes/reportRoutes';
 import statementRoutes from './routes/statementRoutes';
 import settingsRoutes from './routes/settingsRoutes';
+import twoFactorRoutes from './routes/twoFactorRoutes';
+import supportRoutes from './routes/supportRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
@@ -194,6 +196,7 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 // Protected routes (auth required)
@@ -220,6 +223,7 @@ app.use('/api/subscriptions', protect, subscriptionsRoutes);
 app.use('/api/super-admin', protect, superAdminRoutes);
 app.use('/api/feedback', protect, feedbackRoutes);
 app.use('/api/notifications', protect, notificationRoutes);
+app.use('/api/support', protect, supportRoutes);
 app.use('/api/mark-as-read', protect, notificationRoutes);
 app.use('/api/chat-history', protect, notificationRoutes);
 app.use('/api/communication', protect, communicationRoutes);
