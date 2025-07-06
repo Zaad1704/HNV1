@@ -18,6 +18,8 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { ToastProvider } from './components/common/Toast';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AccessibilityProvider } from './components/common/AccessibilityProvider';
+import { registerServiceWorker } from './utils/pwaUtils';
 import HelpCenter from './components/common/HelpCenter';
 import HelpWidget from './components/common/HelpWidget';
 import QuickAccessWidget from './components/common/QuickAccessWidget';
@@ -90,6 +92,11 @@ function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
   const subdomain = getSubdomain();
+  
+  // Register service worker for PWA
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
   
 
 
@@ -181,8 +188,9 @@ function App() {
   }
 
   return (
-    <ThemeProvider>
-      <ToastProvider>
+    <AccessibilityProvider>
+      <ThemeProvider>
+        <ToastProvider>
         <ErrorBoundary>
         <SkipLink />
         <OfflineIndicator />
@@ -266,8 +274,9 @@ function App() {
         </Routes>
         </Suspense>
         </ErrorBoundary>
-      </ToastProvider>
-    </ThemeProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </AccessibilityProvider>
   );
 }
 

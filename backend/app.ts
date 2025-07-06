@@ -63,6 +63,7 @@ import passkeyRoutes from './routes/passkeyRoutes';
 import supportRoutes from './routes/supportRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import { cacheMiddleware } from './middleware/cacheMiddleware';
+import { swaggerUi, specs } from './config/swagger';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
@@ -158,6 +159,12 @@ app.get('/api/health', (req, res) => {
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
+
+// API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'HNV1 API Documentation'
+}));
 // Debug endpoint
 app.get('/api/debug', (req, res) => {
   res.json({

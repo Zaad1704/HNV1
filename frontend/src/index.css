@@ -8,6 +8,9 @@
 /* Import mobile responsiveness styles */
 @import './styles/mobile.css';
 
+/* Import accessibility styles */
+@import './styles/accessibility.css';
+
 /* Safe area support for mobile */
 .safe-area-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 20px);
