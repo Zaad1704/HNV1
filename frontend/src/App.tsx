@@ -115,6 +115,7 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
         <ErrorBoundary>
+        <OfflineIndicator />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         <Route path="/" element={<LandingPage />} />

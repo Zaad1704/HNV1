@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Monitor, Apple } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -8,7 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const PWAInstallPrompt = () => {
-  const { t } = useTranslation();
+
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -83,41 +83,41 @@ const PWAInstallPrompt = () => {
       case 'android':
         return {
           icon: <Smartphone className="w-6 h-6" />,
-          title: t('install_app.install_android'),
+          title: 'Install on Android',
           steps: [
-            t('install_app.android_step1'),
-            t('install_app.android_step2'),
-            t('install_app.android_step3')
+            'Tap the menu button',
+            'Select "Add to Home screen"',
+            'Tap "Add" to install'
           ]
         };
       case 'ios':
         return {
           icon: <Apple className="w-6 h-6" />,
-          title: t('install_app.add_to_home'),
+          title: 'Add to Home Screen',
           steps: [
-            t('install_app.ios_step1'),
-            t('install_app.ios_step2'),
-            t('install_app.ios_step3')
+            'Tap the Share button',
+            'Select "Add to Home Screen"',
+            'Tap "Add" to install'
           ]
         };
       case 'desktop':
         return {
           icon: <Monitor className="w-6 h-6" />,
-          title: t('install_app.install_desktop'),
+          title: 'Install on Desktop',
           steps: [
-            t('install_app.desktop_step1'),
-            t('install_app.desktop_step2'),
-            t('install_app.desktop_step3')
+            'Click the install icon in address bar',
+            'Click "Install" in the popup',
+            'App will be added to your desktop'
           ]
         };
       default:
         return {
           icon: <Download className="w-6 h-6" />,
-          title: t('install_app.title'),
+          title: 'Install App',
           steps: [
-            t('install_app.generic_step1'),
-            t('install_app.generic_step2'),
-            t('install_app.generic_step3')
+            'Look for install option in browser',
+            'Follow browser prompts',
+            'App will be installed'
           ]
         };
     }

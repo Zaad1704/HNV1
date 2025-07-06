@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { WifiOff, Wifi } from 'lucide-react';
 
 const OfflineIndicator = () => {
@@ -27,25 +26,22 @@ const OfflineIndicator = () => {
     };
   }, []);
 
-  return (
-    <AnimatePresence>
-      {(!isOnline || showReconnected) && (
-        <motion.div
-          initial={{ y: -100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          className={`fixed top-0 left-0 right-0 z-50 p-3 text-center text-white font-medium ${
-            isOnline ? 'bg-green-500' : 'bg-red-500'
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
-            {isOnline ? 'Connection restored' : 'You are offline'}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  if (!isOnline || showReconnected) {
+    return (
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 p-3 text-center text-white font-medium transition-all ${
+          isOnline ? 'bg-green-500' : 'bg-red-500'
+        }`}
+      >
+        <div className="flex items-center justify-center gap-2">
+          {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
+          {isOnline ? 'Connection restored' : 'You are offline'}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default OfflineIndicator;
