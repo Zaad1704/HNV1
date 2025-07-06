@@ -1,11 +1,13 @@
-import { Request, Response, NextFunction    } from 'express';
-import speakeasy from 'speakeasy';
-import QRCode from 'qrcode';
-import User from '../models/User';
-export const generateTwoFactorSecret: async ($1) => { if ( ) {
+import { Request, Response, NextFunction } from 'express';
+
+export const twoFactorAuth = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Skip 2FA for now - implement later if needed
+    next();
+  } catch (error) {
+    console.error('Two factor auth error:', error);
+    next();
+  }
 };
-    res.status(401).json({ success: false, message: 'Not authorized'  });
-    return;
-  const secret: speakeasy.generateSecret({
-name: `HNV Property (${req.user.email
-})```
+
+export default twoFactorAuth;

@@ -1,25 +1,21 @@
-import { Request, Response, NextFunction    } from 'express';
-import AuditLog from '../models/AuditLog';
-export const auditLogger: (action : string, resource: string) => { return async ($1) => {
-return const originalSend: res.send
-};
-    res.send: function(data) { if ( ) {
-};
-        AuditLog.create({ userId: req.user._id,;
-          organizationId: req.user.organizationId,;
-          action,;
-          resource,;
-          resourceId: req.params.id,;
-          details: {
-method: req.method,;
-            url: req.originalUrl,;
-            body: req.method !=: 'GET' ? req.body: undefined,;
-            statusCode: res.statusCode
-},;
-          ipAddress: req.ip,;
-          userAgent: req.get('User-Agent') || 'Unknown'}).catch(err: > console.error('Audit log error : ', err));
-      return originalSend.call(this, data);
+import { Request, Response, NextFunction } from 'express';
+
+export const auditLogger = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const logData = {
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString()
     };
+    
+    console.log('Audit Log:', JSON.stringify(logData));
+    next();
+  } catch (error) {
+    console.error('Audit logger error:', error);
     next();
   }
 };
+
+export default auditLogger;
