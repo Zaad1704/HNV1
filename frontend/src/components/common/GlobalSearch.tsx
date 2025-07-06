@@ -10,7 +10,6 @@ interface GlobalSearchProps {
 
 const GlobalSearch: React.FC<GlobalSearchProps> = ({ onResults }) => {
   const { t } = useTranslation();
-  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({

@@ -67,9 +67,9 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
                     <div>
                         <label>Status</label>
                         <select name="status" value={formData.status || 'Active'} onChange={handleChange}>
-                            <option value="Active">{t('common.active')}</option>
-                            <option value="Inactive">{t('common.inactive')}</option>
-                            <option value="Late">{t('tenant.late')}</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Late">Late</option>
                         </select>
                     </div>
                     <div><label>Phone</label><input type="tel" name="phone" value={formData.phone || ''} onChange={handleChange} /></div>

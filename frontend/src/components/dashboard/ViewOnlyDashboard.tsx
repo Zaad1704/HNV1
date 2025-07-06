@@ -19,9 +19,9 @@ const ViewOnlyDashboard = () => {
   });
   
   const getSubscriptionStatus = () => {
-    if (!user?.subscription) return 'No active subscription';
+    const sub = (user as any)?.subscription;
+    if (!sub) return 'No active subscription';
     
-    const sub = user.subscription;
     if (sub.status === 'canceled') return 'Subscription canceled';
     if (sub.status === 'past_due') return 'Payment overdue';
     if (sub.trialExpiresAt && new Date(sub.trialExpiresAt) < new Date()) return 'Trial expired';
@@ -53,7 +53,7 @@ const ViewOnlyDashboard = () => {
           </div>
           <h1 className="text-3xl font-bold text-text-primary mb-2">{getSubscriptionStatus()}</h1>
           <p className="text-text-secondary max-w-2xl mx-auto">
-            {user?.subscription?.status === 'past_due' 
+            {(user as any)?.subscription?.status === 'past_due' 
               ? 'Your payment is overdue. Please update your payment method to continue using all features.'
               : 'Your account has limited access. Reactivate your subscription to unlock all features.'}
           </p>
