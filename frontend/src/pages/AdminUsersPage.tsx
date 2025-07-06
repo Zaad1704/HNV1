@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Eye, X, CreditCard, DollarSign, AlertTriangle, Bug } from 'lucide-react';
 import { testUserDeletion } from '../utils/adminTestHelpers';
 
-type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; };
+type User = { _id: string; name: string; email: string; role: string; organizationId?: { name: string; _id: string; }; createdAt?: string; lastLogin?: string; isEmailVerified?: boolean; subscription?: { status: string; planId?: { name: string; }; isLifetime: boolean; }; };
 
 const AdminUsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,7 +117,8 @@ const AdminUsersPage: React.FC = () => {
               <th className="text-left p-4 font-semibold text-text-secondary text-sm">Name</th>
               <th className="text-left p-4 font-semibold text-text-secondary text-sm">Email</th>
               <th className="text-left p-4 font-semibold text-text-secondary text-sm">Role</th>
-              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Organization</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Plan</th>
+              <th className="text-left p-4 font-semibold text-text-secondary text-sm">Status</th>
               <th className="text-right p-4 font-semibold text-text-secondary text-sm">Actions</th>
             </tr>
           </thead>
@@ -127,7 +128,22 @@ const AdminUsersPage: React.FC = () => {
                 <td className="p-4 font-medium text-text-primary">{user.name}</td>
                 <td className="p-4 text-text-secondary">{user.email}</td>
                 <td className="p-4 text-text-secondary">{user.role}</td>
-                <td className="p-4 text-text-secondary">{user.organizationId?.name || 'N/A'}</td>
+                <td className="p-4 text-text-secondary">
+                  {user.subscription?.isLifetime ? (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Lifetime</span>
+                  ) : (
+                    <span className="text-sm">{user.subscription?.planId?.name || 'No Plan'}</span>
+                  )}
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    user.subscription?.status === 'active' || user.subscription?.status === 'trialing' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {user.subscription?.status || 'inactive'}
+                  </span>
+                </td>
                 <td className="p-4 text-right">
                   <div className="flex items-center justify-end gap-2">
                     <button 

@@ -318,7 +318,31 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
       .select('-password')
       .sort({ createdAt: -1 })
       .limit(200);
-    res.json({ success: true, data: users });
+    
+    // Get subscription data for each user
+    const usersWithSubscriptions = await Promise.all(
+      users.map(async (user) => {
+        let subscription = null;
+        if (user.organizationId) {
+          const Subscription = (await import('../models/Subscription')).default;
+          subscription = await Subscription.findOne({ 
+            organizationId: user.organizationId 
+          }).populate('planId', 'name price duration');
+        }
+        
+        return {
+          ...user.toObject(),
+          subscription: subscription ? {
+            status: subscription.status,
+            planId: subscription.planId,
+            isLifetime: subscription.isLifetime,
+            trialExpiresAt: subscription.trialExpiresAt
+          } : null
+        };
+      })
+    );
+    
+    res.json({ success: true, data: usersWithSubscriptions });
   } catch (error) {
     console.error('Get users error:', error);
     res.json({ success: true, data: [] });

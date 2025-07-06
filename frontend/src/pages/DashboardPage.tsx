@@ -8,8 +8,10 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
 import { SkeletonStats } from '../components/common/SkeletonLoader';
 import EmptyDashboard from '../components/dashboard/EmptyDashboard';
+import ViewOnlyDashboard from '../components/dashboard/ViewOnlyDashboard';
 import FloatingHelpCenter from '../components/common/FloatingHelpCenter';
 import FloatingQuickActions from '../components/common/FloatingQuickActions';
+import { useAuthStore } from '../store/authStore';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -58,8 +60,21 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 const DashboardPage = () => {
   const { currency } = useCurrency();
+  const { user } = useAuthStore();
   
   console.log('DashboardPage rendering...');
+  
+  // Check if user is inactive and should see view-only dashboard
+  const isInactive = user && (
+    user.status === 'pending' || 
+    user.status === 'suspended' || 
+    !user.isEmailVerified ||
+    (user.subscription && user.subscription.status === 'inactive')
+  );
+  
+  if (isInactive) {
+    return <ViewOnlyDashboard />;
+  }
   
   const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboardStats'],
