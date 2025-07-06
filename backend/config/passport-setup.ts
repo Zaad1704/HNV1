@@ -61,45 +61,10 @@ if (process.env.GOOGLE_CLIENT_ID &&
         return done(null, existingUser);
       }
       
-      // Create new user with organization
-      const trialPlan = await Plan.findOne({ name: 'Free Trial' });
-      if (!trialPlan) {
-        return done(new Error('Trial plan not configured'), null);
-      }
-
-      const organization = new Organization({
-        name: `${profile.displayName}'s Organization`,
-        status: 'active'
-      });
-      await organization.save();
-      
-      user = new User({
-        googleId: profile.id,
-        name: profile.displayName,
-        email: profile.emails?.[0]?.value,
-        profilePicture: profile.photos?.[0]?.value,
-        isEmailVerified: true,
-        status: 'active',
-        role: 'Landlord',
-        organizationId: organization._id
-      });
-      
-      organization.owner = user._id;
-      organization.members = [user._id];
-      await organization.save();
-      
-      // Create trial subscription
-      const subscription = new Subscription({
-        organizationId: organization._id,
-        planId: trialPlan._id,
-        status: 'trialing',
-        trialExpiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-      });
-      await subscription.save();
-      
-      await user.save();
-      console.log('New Google user created:', user.email);
-      done(null, user);
+      // Prevent account creation during login - redirect to signup
+      console.log('❌ Google login attempted for non-existing user:', profile.emails?.[0]?.value);
+      const newUser = { isNew: true, email: profile.emails?.[0]?.value };
+      return done(null, newUser);
     } catch (error) {
       console.error('Google OAuth error:', error);
       done(error, null);

@@ -220,6 +220,8 @@ app.use('/api/subscriptions', protect, subscriptionsRoutes);
 app.use('/api/super-admin', protect, superAdminRoutes);
 app.use('/api/feedback', protect, feedbackRoutes);
 app.use('/api/notifications', protect, notificationRoutes);
+app.use('/api/mark-as-read', protect, notificationRoutes);
+app.use('/api/chat-history', protect, notificationRoutes);
 app.use('/api/communication', protect, communicationRoutes);
 app.use('/api/sharing', protect, sharingRoutes);
 app.use('/api/site-settings', protect, siteSettingsRoutes);

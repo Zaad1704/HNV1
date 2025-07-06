@@ -302,12 +302,18 @@ export const googleAuthCallback = async (req: Request, res: Response, next: Next
     }
 
     const user = req.user as any;
-    console.log('Google auth successful for user:', user.email);
+    console.log('Google auth for user:', user.email);
     
+    // Check if this is a new account creation (should be prevented)
+    if (user.isNew) {
+      console.log('❌ Google login attempted account creation - redirecting to signup');
+      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=google-signup-required&message=Please use the signup page to create an account`);
+    }
+    
+    console.log('✅ Google login successful for existing user:', user.email);
     const token = user.getSignedJwtToken();
     const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`;
     
-    console.log('Redirecting to:', redirectUrl);
     res.redirect(redirectUrl);
 
   } catch (error) {

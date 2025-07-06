@@ -162,29 +162,57 @@ export const deleteOrganization = async (req: AuthRequest, res: Response) => {
   try {
     const org = await Organization.findById(req.params.orgId);
     if (!org) {
-      return res.json({ success: false, message: 'Organization not found' });
+      return res.status(404).json({ success: false, message: 'Organization not found' });
     }
 
-    // Create audit log
-    await AuditLog.create({
-      userId: req.user._id,
-      organizationId: org._id,
-      action: 'organization_deleted',
-      resource: 'organization',
-      resourceId: org._id,
-      details: { organizationName: org.name, deletedBy: 'Super Admin' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
-    });
+    const orgId = org._id;
+    const orgName = org.name;
 
-    // Delete organization and trigger action chain
-    await Organization.findByIdAndDelete(req.params.orgId);
-    await superAdminActionService.onOrganizationDeleted(req.params.orgId, req.user._id);
+    // Delete all related data first
+    const [Property, Tenant, Payment, Expense, MaintenanceRequest, Subscription] = await Promise.all([
+      import('../models/Property').then(m => m.default),
+      import('../models/Tenant').then(m => m.default),
+      import('../models/Payment').then(m => m.default),
+      import('../models/Expense').then(m => m.default),
+      import('../models/MaintenanceRequest').then(m => m.default),
+      import('../models/Subscription').then(m => m.default)
+    ]);
+
+    // Delete organization data
+    await Promise.all([
+      Property.deleteMany({ organizationId: orgId }),
+      Tenant.deleteMany({ organizationId: orgId }),
+      Payment.deleteMany({ organizationId: orgId }),
+      Expense.deleteMany({ organizationId: orgId }),
+      MaintenanceRequest.deleteMany({ organizationId: orgId }),
+      Subscription.deleteMany({ organizationId: orgId }),
+      User.deleteMany({ organizationId: orgId, role: { $ne: 'Super Admin' } })
+    ]);
+
+    // Create audit log before deletion
+    try {
+      await AuditLog.create({
+        userId: req.user._id,
+        organizationId: orgId,
+        action: 'organization_deleted',
+        resource: 'organization',
+        resourceId: orgId,
+        details: { organizationName: orgName, deletedBy: 'Super Admin' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    } catch (auditError) {
+      console.error('Audit log failed:', auditError);
+    }
+
+    // Finally delete the organization
+    await Organization.findByIdAndDelete(orgId);
     
-    res.json({ success: true, data: {} });
+    res.json({ success: true, message: 'Organization deleted successfully', data: { deletedOrgId: orgId } });
   } catch (error) {
-    res.json({ success: false, message: 'Error deleting organization' });
+    console.error('Delete organization error:', error);
+    res.status(500).json({ success: false, message: 'Error deleting organization' });
   }
 };
 
@@ -196,8 +224,19 @@ export const activateOrganization = async (req: AuthRequest, res: Response) => {
       { new: true }
     ).populate('owner');
     
-    if (org) {
-      // Create audit log
+    if (!org) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    // Update subscription status as well
+    const Subscription = (await import('../models/Subscription')).default;
+    await Subscription.findOneAndUpdate(
+      { organizationId: org._id },
+      { status: 'active' }
+    );
+    
+    // Create audit log
+    try {
       await AuditLog.create({
         userId: req.user._id,
         organizationId: org._id,
@@ -209,26 +248,14 @@ export const activateOrganization = async (req: AuthRequest, res: Response) => {
         userAgent: req.get('User-Agent'),
         timestamp: new Date()
       });
-
-      // Trigger action chain
-      await superAdminActionService.onOrganizationStatusChanged(org._id, 'active', req.user._id);
-      
-      // Notify organization owner
-      if (org.owner) {
-        await notificationService.createNotification({
-          userId: (org.owner as any)._id,
-          organizationId: org._id,
-          type: 'success',
-          title: 'Organization Activated',
-          message: 'Your organization has been activated by the administrator',
-          link: '/dashboard'
-        });
-      }
+    } catch (auditError) {
+      console.error('Audit log failed:', auditError);
     }
     
-    res.json({ success: true, data: org });
+    res.json({ success: true, data: org, message: 'Organization activated successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error activating organization' });
+    console.error('Activate organization error:', error);
+    res.status(500).json({ success: false, message: 'Error activating organization' });
   }
 };
 
@@ -240,8 +267,19 @@ export const deactivateOrganization = async (req: AuthRequest, res: Response) =>
       { new: true }
     ).populate('owner');
     
-    if (org) {
-      // Create audit log
+    if (!org) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    // Update subscription status as well
+    const Subscription = (await import('../models/Subscription')).default;
+    await Subscription.findOneAndUpdate(
+      { organizationId: org._id },
+      { status: 'inactive' }
+    );
+    
+    // Create audit log
+    try {
       await AuditLog.create({
         userId: req.user._id,
         organizationId: org._id,
@@ -253,83 +291,90 @@ export const deactivateOrganization = async (req: AuthRequest, res: Response) =>
         userAgent: req.get('User-Agent'),
         timestamp: new Date()
       });
-
-      // Trigger action chain
-      await superAdminActionService.onOrganizationStatusChanged(org._id, 'inactive', req.user._id);
-      
-      // Notify organization owner
-      if (org.owner) {
-        await notificationService.createNotification({
-          userId: (org.owner as any)._id,
-          organizationId: org._id,
-          type: 'warning',
-          title: 'Organization Deactivated',
-          message: 'Your organization has been deactivated. Please contact support.',
-          link: '/contact'
-        });
-      }
+    } catch (auditError) {
+      console.error('Audit log failed:', auditError);
     }
     
-    res.json({ success: true, data: org });
+    res.json({ success: true, data: org, message: 'Organization deactivated successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error deactivating organization' });
+    console.error('Deactivate organization error:', error);
+    res.status(500).json({ success: false, message: 'Error deactivating organization' });
   }
 };
 
 export const grantLifetime = async (req: AuthRequest, res: Response) => {
   try {
-    const org = await Organization.findByIdAndUpdate(
-      req.params.orgId,
-      { 'subscription.isLifetime': true, 'subscription.status': 'active' },
-      { new: true }
-    ).populate('owner');
+    const org = await Organization.findById(req.params.orgId).populate('owner');
     
-    if (org) {
-      // Create audit log
+    if (!org) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    // Update subscription with lifetime access
+    const Subscription = (await import('../models/Subscription')).default;
+    const subscription = await Subscription.findOneAndUpdate(
+      { organizationId: org._id },
+      { 
+        isLifetime: true, 
+        status: 'active',
+        currentPeriodEndsAt: null,
+        nextBillingDate: null
+      },
+      { new: true, upsert: true }
+    );
+
+    // Update organization status
+    org.status = 'active';
+    await org.save();
+    
+    // Create audit log
+    try {
       await AuditLog.create({
         userId: req.user._id,
         organizationId: org._id,
         action: 'lifetime_access_granted',
         resource: 'subscription',
-        resourceId: org._id,
+        resourceId: subscription._id,
         details: { organizationName: org.name, grantedBy: 'Super Admin' },
         ipAddress: req.ip,
         userAgent: req.get('User-Agent'),
         timestamp: new Date()
       });
-
-      // Trigger action chain
-      await superAdminActionService.onLifetimeAccessGranted(org._id, req.user._id);
-      
-      // Notify organization owner
-      if (org.owner) {
-        await notificationService.createNotification({
-          userId: (org.owner as any)._id,
-          organizationId: org._id,
-          type: 'success',
-          title: 'Lifetime Access Granted',
-          message: 'Congratulations! You now have lifetime access to all features.',
-          link: '/dashboard'
-        });
-      }
+    } catch (auditError) {
+      console.error('Audit log failed:', auditError);
     }
     
-    res.json({ success: true, data: org });
+    res.json({ success: true, data: org, message: 'Lifetime access granted successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error granting lifetime access' });
+    console.error('Grant lifetime error:', error);
+    res.status(500).json({ success: false, message: 'Error granting lifetime access' });
   }
 };
 
 export const revokeLifetime = async (req: AuthRequest, res: Response) => {
   try {
-    const org = await Organization.findByIdAndUpdate(
-      req.params.orgId,
-      { 'subscription.isLifetime': false },
+    const org = await Organization.findById(req.params.orgId);
+    
+    if (!org) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    // Update subscription to remove lifetime access
+    const Subscription = (await import('../models/Subscription')).default;
+    const subscription = await Subscription.findOneAndUpdate(
+      { organizationId: org._id },
+      { 
+        isLifetime: false,
+        currentPeriodEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      },
       { new: true }
     );
-    res.json({ success: true, data: org });
+    
+    res.json({ success: true, data: org, message: 'Lifetime access revoked successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error revoking lifetime access' });
+    console.error('Revoke lifetime error:', error);
+    res.status(500).json({ success: false, message: 'Error revoking lifetime access' });
   }
 };
 
