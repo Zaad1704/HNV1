@@ -1,18 +1,14 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import {
+  getInvitations,
+  createInvitation,
+  deleteInvitation
+} from '../controllers/invitationController';
 
 const router = Router();
 
-// Apply authentication middleware
-router.use(protect);
-
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'invitation routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.get('/', getInvitations);
+router.post('/', createInvitation);
+router.delete('/:id', deleteInvitation);
 
 export default router;

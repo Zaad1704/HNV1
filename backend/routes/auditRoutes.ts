@@ -4,7 +4,7 @@ import { getAuditLogs, createAuditLog } from '../controllers/auditController';
 
 const router = Router();
 
-router.use(protect);
+// Protection handled at app level
 
 router.get('/', getAuditLogs);
 router.post('/', createAuditLog);

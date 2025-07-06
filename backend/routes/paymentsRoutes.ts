@@ -10,9 +10,7 @@ import {
 
 const router = Router();
 
-router.use(protect);
-// Temporarily remove subscription check to fix access issues
-// router.use(checkSubscriptionStatus);
+// Protection handled at app level
 
 router.get('/', getPayments);
 router.post('/', createPayment);
