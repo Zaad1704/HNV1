@@ -12,7 +12,7 @@ import {
   revokeLifetime,
   getUsers,
   deleteUser,
-  updateUserPlan,
+  updateUserStatus,
   getPlans,
   createPlan,
   updatePlan,
@@ -22,6 +22,7 @@ import {
   createModerator,
   updateModerator,
   deleteModerator,
+  getModeratorPermissions,
   updateSiteSettings,
   updateSiteContent,
   uploadImage,
@@ -55,7 +56,7 @@ router.put('/organizations/:orgId/subscription', authorize('Super Admin'), updat
 // User management
 router.get('/users', getUsers);
 router.delete('/users/:userId', authorize('Super Admin'), deleteUser);
-router.put('/users/:userId/plan', updateUserPlan);
+router.put('/users/:userId/status', updateUserStatus);
 
 // Plan management
 router.get('/plans', getPlans);
@@ -69,6 +70,7 @@ router.get('/moderators', authorize('Super Admin'), getModerators);
 router.post('/moderators', authorize('Super Admin'), createModerator);
 router.put('/moderators/:id', authorize('Super Admin'), updateModerator);
 router.delete('/moderators/:id', authorize('Super Admin'), deleteModerator);
+router.get('/moderator-permissions', authorize('Super Admin'), getModeratorPermissions);
 
 // Site management
 router.put('/site-settings', authorize('Super Admin'), updateSiteSettings);

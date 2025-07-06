@@ -566,37 +566,186 @@ export const deletePlan = async (req: AuthRequest, res: Response) => {
 
 export const getModerators = async (req: AuthRequest, res: Response) => {
   try {
-    const moderators = await User.find({ role: 'Moderator' });
+    const moderators = await User.find({ 
+      role: { $in: ['Super Moderator', 'Moderator'] } 
+    }).select('-password -twoFactorSecret');
+    
     res.json({ success: true, data: moderators });
   } catch (error) {
+    console.error('Get moderators error:', error);
     res.json({ success: true, data: [] });
   }
 };
 
 export const createModerator = async (req: AuthRequest, res: Response) => {
   try {
-    const moderator = await User.create({ ...req.body, role: 'Moderator' });
-    res.json({ success: true, data: moderator });
+    const { name, email, password, permissions, accessLevel } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Name, email, and password are required' 
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User with this email already exists' 
+      });
+    }
+
+    const moderatorData = {
+      name,
+      email,
+      password,
+      role: accessLevel === 'super' ? 'Super Moderator' : 'Moderator',
+      permissions: permissions || [],
+      status: 'active',
+      isEmailVerified: true
+    };
+
+    const moderator = await User.create(moderatorData);
+    
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'moderator_created',
+      resource: 'user',
+      resourceId: moderator._id,
+      details: { 
+        moderatorName: moderator.name,
+        moderatorEmail: moderator.email,
+        role: moderator.role,
+        permissions: moderator.permissions,
+        createdBy: 'Super Admin' 
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
+    const { password: _, ...moderatorResponse } = moderator.toObject();
+    
+    res.json({ success: true, data: moderatorResponse, message: 'Moderator created successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error creating moderator' });
+    console.error('Create moderator error:', error);
+    res.status(500).json({ success: false, message: 'Error creating moderator' });
   }
 };
 
 export const updateModerator = async (req: AuthRequest, res: Response) => {
   try {
-    const moderator = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json({ success: true, data: moderator });
+    const { permissions, accessLevel, status } = req.body;
+    const moderatorId = req.params.id;
+    
+    const updateData: any = {};
+    
+    if (permissions !== undefined) updateData.permissions = permissions;
+    if (accessLevel) {
+      updateData.role = accessLevel === 'super' ? 'Super Moderator' : 'Moderator';
+    }
+    if (status) updateData.status = status;
+    
+    const moderator = await User.findByIdAndUpdate(
+      moderatorId, 
+      updateData, 
+      { new: true }
+    ).select('-password -twoFactorSecret');
+    
+    if (!moderator) {
+      return res.status(404).json({ success: false, message: 'Moderator not found' });
+    }
+    
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'moderator_updated',
+      resource: 'user',
+      resourceId: moderator._id,
+      details: { 
+        moderatorName: moderator.name,
+        updatedFields: Object.keys(updateData),
+        newRole: moderator.role,
+        newPermissions: moderator.permissions,
+        updatedBy: 'Super Admin' 
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
+    res.json({ success: true, data: moderator, message: 'Moderator updated successfully' });
   } catch (error) {
-    res.json({ success: false, message: 'Error updating moderator' });
+    console.error('Update moderator error:', error);
+    res.status(500).json({ success: false, message: 'Error updating moderator' });
   }
 };
 
 export const deleteModerator = async (req: AuthRequest, res: Response) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ success: true, data: {} });
+    const moderatorId = req.params.id;
+    const moderator = await User.findById(moderatorId);
+    
+    if (!moderator) {
+      return res.status(404).json({ success: false, message: 'Moderator not found' });
+    }
+
+    if (moderator.role === 'Super Admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Cannot delete Super Admin users' 
+      });
+    }
+    
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: null,
+      action: 'moderator_deleted',
+      resource: 'user',
+      resourceId: moderator._id,
+      details: { 
+        moderatorName: moderator.name,
+        moderatorEmail: moderator.email,
+        role: moderator.role,
+        deletedBy: 'Super Admin' 
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date()
+    });
+    
+    await User.findByIdAndDelete(moderatorId);
+    
+    res.json({ 
+      success: true, 
+      message: 'Moderator deleted successfully',
+      data: { deletedModeratorId: moderatorId }
+    });
   } catch (error) {
-    res.json({ success: false, message: 'Error deleting moderator' });
+    console.error('Delete moderator error:', error);
+    res.status(500).json({ success: false, message: 'Error deleting moderator' });
+  }
+};
+
+export const getModeratorPermissions = async (req: AuthRequest, res: Response) => {
+  try {
+    const availablePermissions = [
+      { id: 'live_chat', name: 'Live Chat Management', description: 'Manage live chat conversations and responses' },
+      { id: 'billing', name: 'Billing Management', description: 'View and manage billing information' },
+      { id: 'user_management', name: 'User Management', description: 'Manage user accounts and permissions' },
+      { id: 'organization_management', name: 'Organization Management', description: 'Manage organization settings and data' },
+      { id: 'content_moderation', name: 'Content Moderation', description: 'Moderate user-generated content' },
+      { id: 'analytics', name: 'Analytics Access', description: 'View platform analytics and reports' },
+      { id: 'system_settings', name: 'System Settings', description: 'Modify system-wide settings' },
+      { id: 'audit_logs', name: 'Audit Log Access', description: 'View system audit logs' }
+    ];
+    
+    res.json({ success: true, data: availablePermissions });
+  } catch (error) {
+    console.error('Get moderator permissions error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching permissions' });
   }
 };
 
