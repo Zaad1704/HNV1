@@ -1,10 +1,13 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 function MinimalApp() {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Minimal App Test</h1>
-      <p>If this loads without crashing, the issue is in components/providers.</p>
+      <h1>Testing BrowserRouter</h1>
+      <Routes>
+        <Route path="*" element={<div>Router works</div>} />
+      </Routes>
     </div>
   );
 }
