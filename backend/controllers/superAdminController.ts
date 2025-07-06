@@ -693,7 +693,8 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
       planId, status, isLifetime, trialExpiresAt, currentPeriodEndsAt, 
       currentPeriodStartsAt, nextBillingDate, cancelAtPeriodEnd, canceledAt,
       amount, currency, billingCycle, paymentMethod, lastPaymentDate,
-      failedPaymentAttempts, externalId, notes
+      failedPaymentAttempts, externalId, notes, maxProperties, maxTenants,
+      maxAgents, maxUsers
     } = req.body;
     
     const Subscription = (await import('../models/Subscription')).default;
@@ -725,7 +726,11 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
         lastPaymentDate: lastPaymentDate ? new Date(lastPaymentDate) : (status === 'active' ? new Date() : undefined),
         failedPaymentAttempts: failedPaymentAttempts || 0,
         externalId: externalId || null,
-        notes: notes || null
+        notes: notes || null,
+        maxProperties: maxProperties !== undefined ? maxProperties : -1,
+        maxTenants: maxTenants !== undefined ? maxTenants : -1,
+        maxAgents: maxAgents !== undefined ? maxAgents : -1,
+        maxUsers: maxUsers !== undefined ? maxUsers : -1
       },
       { new: true, upsert: true }
     ).populate('planId');
@@ -734,6 +739,39 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
     await Organization.findByIdAndUpdate(orgId, {
       status: status === 'active' || status === 'trialing' ? 'active' : 'inactive'
     });
+    
+    // Calculate current usage
+    try {
+      const Property = (await import('../models/Property')).default;
+      const Tenant = (await import('../models/Tenant')).default;
+      const User = (await import('../models/User')).default;
+      
+      const [currentProperties, currentTenants, currentUsers] = await Promise.all([
+        Property.countDocuments({ organizationId: orgId }),
+        Tenant.countDocuments({ organizationId: orgId }),
+        User.countDocuments({ organizationId: orgId, role: { $ne: 'Super Admin' } })
+      ]);
+      
+      const currentAgents = await User.countDocuments({ 
+        organizationId: orgId, 
+        role: { $in: ['Agent', 'Manager'] } 
+      });
+      
+      // Update current usage
+      await Subscription.findByIdAndUpdate(subscription._id, {
+        currentProperties,
+        currentTenants,
+        currentAgents,
+        currentUsers
+      });
+      
+      subscription.currentProperties = currentProperties;
+      subscription.currentTenants = currentTenants;
+      subscription.currentAgents = currentAgents;
+      subscription.currentUsers = currentUsers;
+    } catch (usageError) {
+      console.error('Failed to calculate usage:', usageError);
+    }
     
     res.json({ success: true, data: subscription });
   } catch (error) {

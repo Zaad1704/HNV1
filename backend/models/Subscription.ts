@@ -19,6 +19,15 @@ export interface ISubscription extends Document {
   failedPaymentAttempts: number;
   externalId?: string;
   notes?: string;
+  // Usage tracking
+  maxProperties: number;
+  maxTenants: number;
+  maxAgents: number;
+  maxUsers: number;
+  currentProperties: number;
+  currentTenants: number;
+  currentAgents: number;
+  currentUsers: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -91,6 +100,40 @@ const SubscriptionSchema = new Schema<ISubscription>({
   },
   notes: {
     type: String
+  },
+  // Usage limits
+  maxProperties: {
+    type: Number,
+    default: -1 // -1 means unlimited
+  },
+  maxTenants: {
+    type: Number,
+    default: -1
+  },
+  maxAgents: {
+    type: Number,
+    default: -1
+  },
+  maxUsers: {
+    type: Number,
+    default: -1
+  },
+  // Current usage
+  currentProperties: {
+    type: Number,
+    default: 0
+  },
+  currentTenants: {
+    type: Number,
+    default: 0
+  },
+  currentAgents: {
+    type: Number,
+    default: 0
+  },
+  currentUsers: {
+    type: Number,
+    default: 0
   },
 }, { timestamps: true });
 

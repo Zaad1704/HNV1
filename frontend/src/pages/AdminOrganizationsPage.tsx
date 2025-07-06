@@ -42,7 +42,11 @@ const AdminOrganizationsPage = () => {
         lastPaymentDate: '',
         failedPaymentAttempts: 0,
         externalId: '',
-        notes: ''
+        notes: '',
+        maxProperties: -1,
+        maxTenants: -1,
+        maxAgents: -1,
+        maxUsers: -1
     });
     const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
         queryKey:['allOrganizations'], 
@@ -123,6 +127,7 @@ const AdminOrganizationsPage = () => {
                         <tr>
                             <th className="p-4 text-sm font-semibold text-text-secondary">Organization</th>
                             <th className="p-4 text-sm font-semibold text-text-secondary">Plan</th>
+                            <th className="p-4 text-sm font-semibold text-text-secondary">Usage</th>
                             <th className="p-4 text-sm font-semibold text-text-secondary">Status</th>
                             <th className="p-4 text-sm font-semibold text-text-secondary text-right">Actions</th>
                         </tr>
@@ -139,6 +144,12 @@ const AdminOrganizationsPage = () => {
                                         ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"><ShieldCheck size={14}/> Lifetime</span>
                                         : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{org.subscription?.planId?.name || 'Free Trial'}</span>
                                     }
+                                </td>
+                                <td className="p-4">
+                                    <div className="text-xs text-text-secondary space-y-1">
+                                        <div>Props: {org.subscription?.currentProperties || 0}/{org.subscription?.maxProperties === -1 ? '∞' : org.subscription?.maxProperties || 0}</div>
+                                        <div>Users: {org.subscription?.currentUsers || 0}/{org.subscription?.maxUsers === -1 ? '∞' : org.subscription?.maxUsers || 0}</div>
+                                    </div>
                                 </td>
                                 <td className="p-4">
                                      <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${org.subscription?.status === 'active' || org.subscription?.status === 'trialing' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -380,6 +391,48 @@ const AdminOrganizationsPage = () => {
                                     placeholder="External subscription ID"
                                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
                                 />
+                            </div>
+                            
+                            <div className="border-t border-app-border pt-4">
+                                <h4 className="font-semibold text-text-primary mb-4">Usage Limits (-1 = Unlimited)</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-2">Max Properties</label>
+                                        <input 
+                                            type="number"
+                                            value={subscriptionData.maxProperties}
+                                            onChange={(e) => setSubscriptionData({...subscriptionData, maxProperties: parseInt(e.target.value) || -1})}
+                                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-2">Max Tenants</label>
+                                        <input 
+                                            type="number"
+                                            value={subscriptionData.maxTenants}
+                                            onChange={(e) => setSubscriptionData({...subscriptionData, maxTenants: parseInt(e.target.value) || -1})}
+                                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-2">Max Agents</label>
+                                        <input 
+                                            type="number"
+                                            value={subscriptionData.maxAgents}
+                                            onChange={(e) => setSubscriptionData({...subscriptionData, maxAgents: parseInt(e.target.value) || -1})}
+                                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-secondary mb-2">Max Users</label>
+                                        <input 
+                                            type="number"
+                                            value={subscriptionData.maxUsers}
+                                            onChange={(e) => setSubscriptionData({...subscriptionData, maxUsers: parseInt(e.target.value) || -1})}
+                                            className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             
                             <div>
