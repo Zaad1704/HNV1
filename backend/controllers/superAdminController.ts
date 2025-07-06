@@ -814,7 +814,7 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = (req.file as any).location;
     
     // Create audit log for image upload (optional, don't fail if it errors)
     try {

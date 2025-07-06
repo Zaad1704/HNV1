@@ -38,7 +38,7 @@ export const uploadSiteLogo = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    const logoUrl = `/uploads/${req.file.filename}`;
+    const logoUrl = (req.file as any).location;
     
     // Update site settings with new logo
     const settings = await SiteSettings.findOneAndUpdate(
@@ -69,7 +69,7 @@ export const uploadLandingImage = async (req: AuthRequest, res: Response) => {
     }
 
     const { section, field } = req.body;
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = (req.file as any).location;
     
     // Update site settings with new image
     const updatePath = section && field ? `content.${section}.${field}` : 'landingImage';

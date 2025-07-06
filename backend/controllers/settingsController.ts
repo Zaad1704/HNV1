@@ -199,7 +199,7 @@ export const uploadProfileImage = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = (req.file as any).location;
     
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -230,7 +230,7 @@ export const uploadOrganizationLogo = async (req: AuthRequest, res: Response) =>
       });
     }
 
-    const logoUrl = `/uploads/${req.file.filename}`;
+    const logoUrl = (req.file as any).location;
     const user = await User.findById(req.user._id);
     
     if (!user || !user.organizationId) {
