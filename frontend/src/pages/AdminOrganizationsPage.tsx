@@ -25,6 +25,8 @@ const AdminOrganizationsPage = () => {
     const queryClient = useQueryClient();
     const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
     const [selectedOrg, setSelectedOrg] = useState<IOrganization | null>(null);
+    const [selectedPlan, setSelectedPlan] = useState('');
+    const [subscriptionStatus, setSubscriptionStatus] = useState('trialing');
     const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
         queryKey:['allOrganizations'], 
         queryFn: fetchOrganizations,
@@ -51,6 +53,17 @@ const AdminOrganizationsPage = () => {
             apiClient.patch(`/super-admin/organizations/${orgId}/${action}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['allOrganizations'] }),
         onError: (err: any) => alert(err.response?.data?.message || 'Failed to update lifetime access.'),
+    });
+
+    const updateSubscriptionMutation = useMutation({
+        mutationFn: ({ orgId, planId, status }: { orgId: string; planId: string; status: string }) => 
+            apiClient.put(`/super-admin/organizations/${orgId}/subscription`, { planId, status }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+            setShowSubscriptionModal(false);
+            alert('Subscription updated successfully!');
+        },
+        onError: (err: any) => alert(err.response?.data?.message || 'Failed to update subscription.'),
     });
 
     const handleDeleteOrg = (orgId: string, orgName: string) => {
@@ -107,7 +120,7 @@ const AdminOrganizationsPage = () => {
                                 <td className="p-4">
                                     {org.subscription?.isLifetime 
                                         ? <span className="inline-flex items-center gap-2 px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800"><ShieldCheck size={14}/> Lifetime</span>
-                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{org.subscription?.planId?.name || 'No Plan'}</span>
+                                        : <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{org.subscription?.planId?.name || 'Free Trial'}</span>
                                     }
                                 </td>
                                 <td className="p-4">
@@ -197,13 +210,32 @@ const AdminOrganizationsPage = () => {
                             
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-2">Change Plan</label>
-                                <select className="w-full p-3 border border-app-border rounded-2xl bg-app-surface">
+                                <select 
+                                    value={selectedPlan}
+                                    onChange={(e) => setSelectedPlan(e.target.value)}
+                                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                >
                                     <option value="">Select a plan</option>
                                     {availablePlans.map(plan => (
                                         <option key={plan._id} value={plan._id}>
                                             {plan.name} - ${plan.price/100}/{plan.duration}
                                         </option>
                                     ))}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Subscription Status</label>
+                                <select 
+                                    value={subscriptionStatus}
+                                    onChange={(e) => setSubscriptionStatus(e.target.value)}
+                                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                >
+                                    <option value="trialing">Trialing</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="canceled">Canceled</option>
+                                    <option value="past_due">Past Due</option>
                                 </select>
                             </div>
                             
@@ -214,8 +246,22 @@ const AdminOrganizationsPage = () => {
                                 >
                                     Cancel
                                 </button>
-                                <button className="btn-gradient px-6 py-3 rounded-2xl">
-                                    Update Subscription
+                                <button 
+                                    onClick={() => {
+                                        if (selectedPlan) {
+                                            updateSubscriptionMutation.mutate({
+                                                orgId: selectedOrg._id,
+                                                planId: selectedPlan,
+                                                status: subscriptionStatus
+                                            });
+                                        } else {
+                                            alert('Please select a plan');
+                                        }
+                                    }}
+                                    disabled={updateSubscriptionMutation.isPending}
+                                    className="btn-gradient px-6 py-3 rounded-2xl disabled:opacity-50"
+                                >
+                                    {updateSubscriptionMutation.isPending ? 'Updating...' : 'Update Subscription'}
                                 </button>
                             </div>
                         </div>

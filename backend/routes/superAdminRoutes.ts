@@ -25,6 +25,7 @@ import {
   updateSiteSettings,
   updateSiteContent,
   uploadImage,
+  updateSubscription,
   getBilling
 } from '../controllers/superAdminController';
 import { protect, authorize } from '../middleware/authMiddleware';
@@ -49,6 +50,7 @@ router.patch('/organizations/:orgId/activate', activateOrganization);
 router.patch('/organizations/:orgId/deactivate', deactivateOrganization);
 router.patch('/organizations/:orgId/grant-lifetime', authorize('Super Admin'), grantLifetime);
 router.patch('/organizations/:orgId/revoke-lifetime', authorize('Super Admin'), revokeLifetime);
+router.put('/organizations/:orgId/subscription', authorize('Super Admin'), updateSubscription);
 
 // User management
 router.get('/users', getUsers);

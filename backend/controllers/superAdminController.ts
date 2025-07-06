@@ -129,7 +129,29 @@ export const getOrganizations = async (req: AuthRequest, res: Response) => {
       .populate('members', 'name email role')
       .sort({ createdAt: -1 })
       .limit(100);
-    res.json({ success: true, data: orgs });
+    
+    // Get subscription data for each organization
+    const orgsWithSubscriptions = await Promise.all(
+      orgs.map(async (org) => {
+        const Subscription = (await import('../models/Subscription')).default;
+        const subscription = await Subscription.findOne({ 
+          organizationId: org._id 
+        }).populate('planId', 'name price duration');
+        
+        return {
+          ...org.toObject(),
+          subscription: subscription ? {
+            status: subscription.status,
+            planId: subscription.planId,
+            isLifetime: subscription.isLifetime,
+            trialExpiresAt: subscription.trialExpiresAt,
+            currentPeriodEndsAt: subscription.currentPeriodEndsAt
+          } : null
+        };
+      })
+    );
+    
+    res.json({ success: true, data: orgsWithSubscriptions });
   } catch (error) {
     console.error('Get organizations error:', error);
     res.json({ success: true, data: [] });
@@ -661,6 +683,37 @@ export const activatePlan = async (req: AuthRequest, res: Response) => {
     res.json({ success: true, data: plan });
   } catch (error) {
     res.json({ success: false, message: 'Error updating plan status' });
+  }
+};
+
+export const updateSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    const { orgId } = req.params;
+    const { planId, status, isLifetime, trialExpiresAt, currentPeriodEndsAt } = req.body;
+    
+    const Subscription = (await import('../models/Subscription')).default;
+    
+    const subscription = await Subscription.findOneAndUpdate(
+      { organizationId: orgId },
+      {
+        planId,
+        status,
+        isLifetime: isLifetime || false,
+        trialExpiresAt: trialExpiresAt ? new Date(trialExpiresAt) : undefined,
+        currentPeriodEndsAt: currentPeriodEndsAt ? new Date(currentPeriodEndsAt) : undefined
+      },
+      { new: true, upsert: true }
+    ).populate('planId');
+    
+    // Update organization status based on subscription
+    await Organization.findByIdAndUpdate(orgId, {
+      status: status === 'active' || status === 'trialing' ? 'active' : 'inactive'
+    });
+    
+    res.json({ success: true, data: subscription });
+  } catch (error) {
+    console.error('Update subscription error:', error);
+    res.json({ success: false, message: 'Error updating subscription' });
   }
 };
 
