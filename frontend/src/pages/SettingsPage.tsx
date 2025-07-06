@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Save, Lock, Key, Building } from 'lucide-react';
+import { Settings, User, Bell, Shield, Save, Lock, Key, Building, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import OrganizationSettings from '../components/common/OrganizationSettings';
@@ -66,6 +66,98 @@ const ChangePasswordForm = () => {
         {isChanging ? 'Changing...' : 'Change Password'}
       </button>
     </form>
+  );
+};
+
+const AccountDeletion = () => {
+  const { logout } = useAuthStore();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationText, setConfirmationText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (confirmationText !== 'DELETE') {
+      alert('Please type "DELETE" to confirm account deletion');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await apiClient.delete('/auth/delete-account');
+      alert('Account deleted successfully. You will be logged out.');
+      logout();
+      window.location.href = '/';
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  if (showConfirmation) {
+    return (
+      <div className="space-y-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <div className="flex items-center gap-2 text-red-800">
+          <AlertTriangle size={20} />
+          <h3 className="font-semibold">Confirm Account Deletion</h3>
+        </div>
+        <p className="text-red-700 text-sm">
+          This action cannot be undone. All your data, properties, tenants, and payments will be permanently deleted.
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-red-800 mb-2">
+              Type "DELETE" to confirm:
+            </label>
+            <input
+              type="text"
+              value={confirmationText}
+              onChange={(e) => setConfirmationText(e.target.value)}
+              className="w-full p-3 border border-red-300 rounded-xl focus:ring-2 focus:ring-red-500"
+              placeholder="Type DELETE here"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setShowConfirmation(false);
+                setConfirmationText('');
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={isDeleting || confirmationText !== 'DELETE'}
+              className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+      <div className="flex items-center gap-2 text-red-800 mb-2">
+        <AlertTriangle size={20} />
+        <h3 className="font-semibold">Delete Account</h3>
+      </div>
+      <p className="text-red-700 text-sm mb-4">
+        Permanently delete your account and all associated data. This action cannot be undone.
+      </p>
+      <button
+        onClick={() => setShowConfirmation(true)}
+        className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
+      >
+        <Trash2 size={16} />
+        Delete Account
+      </button>
+    </div>
   );
 };
 
@@ -329,6 +421,11 @@ const SettingsPage = () => {
                     <h3 className="font-medium text-text-primary mb-2">Two-Factor Authentication</h3>
                     <p className="text-sm text-text-secondary mb-4">Add an extra layer of security</p>
                     <TwoFactorSetup />
+                  </div>
+                  <div className="p-4 bg-app-bg rounded-xl">
+                    <h3 className="font-medium text-text-primary mb-2">Account Deletion</h3>
+                    <p className="text-sm text-text-secondary mb-4">Permanently delete your account and all data</p>
+                    <AccountDeletion />
                   </div>
                 </div>
               </div>

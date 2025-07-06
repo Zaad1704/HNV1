@@ -9,7 +9,8 @@ import {
   changePassword,
   resendVerificationEmail,
   updateEmail,
-  getVerificationStatus
+  getVerificationStatus,
+  deleteAccount
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import passport from 'passport';
@@ -49,5 +50,6 @@ router.put('/change-password', protect, changePassword);
 router.post('/resend-verification', protect, resendVerificationEmail);
 router.put('/update-email', protect, updateEmail);
 router.get('/verification-status', protect, getVerificationStatus);
+router.delete('/delete-account', protect, deleteAccount);
 
 export default router;

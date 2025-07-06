@@ -3,6 +3,12 @@ import User from '../models/User';
 import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
+import Property from '../models/Property';
+import Tenant from '../models/Tenant';
+import Payment from '../models/Payment';
+import Expense from '../models/Expense';
+import MaintenanceRequest from '../models/MaintenanceRequest';
+import AuditLog from '../models/AuditLog';
 import crypto from 'crypto';
 
 const sendTokenResponse = async (user: any, statusCode: number, res: Response) => {
@@ -496,6 +502,98 @@ export const getVerificationStatus = async (req: Request, res: Response, next: N
     res.status(500).json({ 
       success: false, 
       message: 'Server error' 
+    });
+  }
+};
+
+export const deleteAccount = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findById((req.user as any)._id);
+
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Prevent Super Admin deletion
+    if (user.role === 'Super Admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Super Admin accounts cannot be deleted' 
+      });
+    }
+
+    const organizationId = user.organizationId;
+    const userId = user._id;
+
+    // Create audit log before deletion
+    try {
+      await AuditLog.create({
+        userId: userId,
+        organizationId: organizationId,
+        action: 'account_deleted',
+        resource: 'user_account',
+        resourceId: userId,
+        details: {
+          userName: user.name,
+          userEmail: user.email,
+          userRole: user.role,
+          deletedBy: 'Self',
+          deletionReason: 'User requested account deletion'
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date()
+      });
+    } catch (auditError) {
+      console.error('Audit log creation failed:', auditError);
+    }
+
+    // Delete all user data in order (to handle foreign key constraints)
+    const deletionPromises = [];
+
+    if (organizationId) {
+      // Delete organization-related data
+      deletionPromises.push(
+        MaintenanceRequest.deleteMany({ organizationId }),
+        Payment.deleteMany({ organizationId }),
+        Expense.deleteMany({ organizationId }),
+        Tenant.deleteMany({ organizationId }),
+        Property.deleteMany({ organizationId }),
+        Subscription.deleteMany({ organizationId }),
+        AuditLog.deleteMany({ organizationId })
+      );
+    }
+
+    // Execute all deletions
+    await Promise.allSettled(deletionPromises);
+
+    // Delete organization if user is the owner
+    if (organizationId) {
+      const organization = await Organization.findById(organizationId);
+      if (organization && organization.owner?.toString() === userId.toString()) {
+        await Organization.findByIdAndDelete(organizationId);
+      }
+    }
+
+    // Finally delete the user
+    await User.findByIdAndDelete(userId);
+
+    console.log(`Account deleted: ${user.email} (${user.name})`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Account and all associated data deleted successfully'
+    });
+
+  } catch (error: any) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete account',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

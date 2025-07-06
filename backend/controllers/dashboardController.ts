@@ -66,7 +66,7 @@ export const getOverviewStats = safeAsync(async (req: AuthRequest, res: Response
 
 export const getLateTenants = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ success: true, data: [] });
   }
 
   const lateTenants = await Tenant.find({
@@ -83,7 +83,7 @@ export const getLateTenants = safeAsync(async (req: AuthRequest, res: Response) 
 
 export const getExpiringLeases = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ success: true, data: [] });
   }
 
   const today = new Date();
@@ -101,7 +101,7 @@ export const getExpiringLeases = safeAsync(async (req: AuthRequest, res: Respons
 
 export const getFinancialSummary = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ success: true, data: [] });
   }
 
   const organizationId = req.user.organizationId;
@@ -149,7 +149,7 @@ export const getFinancialSummary = safeAsync(async (req: AuthRequest, res: Respo
 
 export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ success: true, data: [] });
   }
 
   const activeCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Active' }) || 0;
@@ -184,7 +184,7 @@ export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
 
 export const getDashboardStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(401).json({ success: false, message: 'Not authorized' });
+    return res.status(200).json({ success: true, data: { totalProperties: 0, totalTenants: 0, monthlyRevenue: 0, occupancyRate: 0, pendingMaintenance: 0, recentPayments: 0 } });
   }
 
   const stats = await dashboardService.getDashboardStats(req.user.organizationId);
