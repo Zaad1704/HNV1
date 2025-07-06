@@ -22,7 +22,7 @@ import { AccessibilityProvider } from './components/common/AccessibilityProvider
 import { registerServiceWorker } from './utils/pwaUtils';
 import HelpCenter from './components/common/HelpCenter';
 import HelpWidget from './components/common/HelpWidget';
-import QuickAccessWidget from './components/common/QuickAccessWidget';
+import QuickAccessWidget from './components/common/QuickAccessWidgetSimple';
 import EnhancedFeedbackWidget from './components/common/EnhancedFeedbackWidget';
 import SkipLink from './components/common/SkipLink';
 
@@ -120,11 +120,39 @@ function App() {
         <PWAInstallPrompt />
         <HelpCenter />
         <HelpWidget />
+        <QuickAccessWidget />
+        <EnhancedFeedbackWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+          <Route path="pricing" element={<PricingPage />} />
+        </Route>
+        
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="properties" element={<PropertiesPage />} />
+            <Route path="tenants" element={<TenantsPage />} />
+            <Route path="payments" element={<PaymentsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Route>
+
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="organizations" element={<AdminOrganizationsPage />} />
+          </Route>
+        </Route>
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
