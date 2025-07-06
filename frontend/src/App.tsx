@@ -165,7 +165,23 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<FullScreenLoader />}>
                 <Routes>
-                  <Route path="/*" element={<AdminRoute />} />
+                  <Route path="/*" element={<AdminRoute />}>
+                    <Route element={<AdminLayout />}>
+                      <Route index element={<AdminDashboardPage />} />
+                      <Route path="dashboard" element={<AdminDashboardPage />} />
+                      <Route path="organizations" element={<AdminOrganizationsPage />} />
+                      <Route path="users" element={<AdminUsersPage />} />
+                      <Route path="moderators" element={<AdminModeratorsPage />} />
+                      <Route path="plans" element={<AdminPlansPage />} />
+                      <Route path="site-editor" element={<SiteEditorPage />} />
+                      <Route path="billing" element={<AdminBillingPage />} />
+                      <Route path="maintenance" element={<AdminMaintenancePage />} />
+                      <Route path="data-management" element={<AdminDataManagementPage />} />
+                      <Route path="profile" element={<AdminProfilePage />} />
+                      <Route path="settings" element={<AdminSettingsPage />} />
+                      <Route path="*" element={<AdminDashboardPage />} />
+                    </Route>
+                  </Route>
                 </Routes>
               </Suspense>
             </ErrorBoundary>
@@ -183,7 +199,12 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<FullScreenLoader />}>
                 <Routes>
-                  <Route path="/*" element={<ProtectedRoute />} />
+                  <Route path="/*" element={<ProtectedRoute />}>
+                    <Route element={<DashboardLayout />}>
+                      <Route index element={<DashboardPage />} />
+                      <Route path="*" element={<DashboardPage />} />
+                    </Route>
+                  </Route>
                 </Routes>
               </Suspense>
             </ErrorBoundary>
