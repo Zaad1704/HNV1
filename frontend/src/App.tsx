@@ -165,12 +165,7 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<FullScreenLoader />}>
                 <Routes>
-                  <Route path="/*" element={<AdminRoute />}>
-                    <Route element={<AdminLayout />}>
-                      <Route index element={<AdminDashboardPage />} />
-                      <Route path="*" element={<AdminDashboardPage />} />
-                    </Route>
-                  </Route>
+                  <Route path="/*" element={<AdminRoute />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>
@@ -188,12 +183,7 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<FullScreenLoader />}>
                 <Routes>
-                  <Route path="/*" element={<ProtectedRoute />}>
-                    <Route element={<DashboardLayout />}>
-                      <Route index element={<DashboardPage />} />
-                      <Route path="*" element={<DashboardPage />} />
-                    </Route>
-                  </Route>
+                  <Route path="/*" element={<ProtectedRoute />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>
