@@ -7,6 +7,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import compression from 'compression';
 import path from 'path';
+import mongoose from 'mongoose';
 import { securityHeaders, createRateLimit, sanitizeInput, requestLogger } from './middleware/securityMiddleware';
 import { errorHandler } from './middleware/errorHandler';
 // Import route files
@@ -129,7 +130,28 @@ app.get('/', (req, res) => {
     status: 'OK',
     service: 'HNV Property Management API',
     version: '1.0.0',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    uptime: process.uptime()
+  });
+});
+
+// API health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    api: 'working',
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 // Debug endpoint

@@ -68,22 +68,31 @@ process.on('SIGINT', () => {
 // Start server
 const startServer = async () => {
   try {
-    // Connect to database
+    // Connect to database first
     await connectDB();
     
     // Start server
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+      console.log(`🔗 Server URL: http://0.0.0.0:${PORT}`);
+      
+      // Test database connection
+      console.log('Database connection state:', mongoose.connection.readyState);
       
       // Start subscription cron job
       if (process.env.NODE_ENV !== 'test') {
-        startSubscriptionCron();
+        try {
+          startSubscriptionCron();
+          console.log('✅ Subscription cron job started');
+        } catch (cronError) {
+          console.warn('⚠️ Subscription cron job failed to start:', cronError);
+        }
       }
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
