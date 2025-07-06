@@ -19,7 +19,7 @@ services:
       - key: FRONTEND_URL
         value: https://www.hnvpm.com
       - key: BACKEND_URL
-        value: https://hnv.onrender.com
+        value: https://hnv-property.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -38,7 +38,7 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        value: https://hnv.onrender.com/api
+        value: https://hnv-property.onrender.com/api
 
 databases:
   - name: hnv-mongodb

@@ -5,9 +5,9 @@
 **HNV Property Management** is a comprehensive SaaS platform for property managers, landlords, and real estate professionals. The application provides complete property management solutions with subscription-based access.
 
 ### Live Application URLs
-- **Production App**: https://hnvpm.com
-- **API Backend**: https://hnv-property.onrender.com
-- **Admin Panel**: https://hnvpm.com/admin
+- **Production App**: https://www.hnvpm.com
+- **API Backend**: https://www.hnvpm.com/api
+- **Admin Panel**: https://www.hnvpm.com/admin
 
 ### Test Credentials
 **Note**: Test credentials need to be created in production database.
