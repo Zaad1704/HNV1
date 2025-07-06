@@ -123,67 +123,83 @@ function App() {
   // Handle subdomain routing
   if (subdomain === 'login') {
     return (
-      <ToastProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<FullScreenLoader />}>
-            <PublicLayout>
-              <LoginPage />
-            </PublicLayout>
-          </Suspense>
-        </ErrorBoundary>
-      </ToastProvider>
+      <AccessibilityProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>
+              <Suspense fallback={<FullScreenLoader />}>
+                <PublicLayout>
+                  <LoginPage />
+                </PublicLayout>
+              </Suspense>
+            </ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
+      </AccessibilityProvider>
     );
   }
 
   if (subdomain === 'register' || subdomain === 'signup') {
     return (
-      <ToastProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<FullScreenLoader />}>
-            <PublicLayout>
-              <RegisterPage />
-            </PublicLayout>
-          </Suspense>
-        </ErrorBoundary>
-      </ToastProvider>
+      <AccessibilityProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>
+              <Suspense fallback={<FullScreenLoader />}>
+                <PublicLayout>
+                  <RegisterPage />
+                </PublicLayout>
+              </Suspense>
+            </ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
+      </AccessibilityProvider>
     );
   }
 
   if (subdomain === 'admin') {
     return (
-      <ToastProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<FullScreenLoader />}>
-            <Routes>
-              <Route path="/*" element={<AdminRoute />}>
-                <Route element={<AdminLayout />}>
-                  <Route index element={<AdminDashboardPage />} />
-                  <Route path="*" element={<AdminDashboardPage />} />
-                </Route>
-              </Route>
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-      </ToastProvider>
+      <AccessibilityProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>
+              <Suspense fallback={<FullScreenLoader />}>
+                <Routes>
+                  <Route path="/*" element={<AdminRoute />}>
+                    <Route element={<AdminLayout />}>
+                      <Route index element={<AdminDashboardPage />} />
+                      <Route path="*" element={<AdminDashboardPage />} />
+                    </Route>
+                  </Route>
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
+      </AccessibilityProvider>
     );
   }
 
   if (subdomain === 'app' || subdomain === 'dashboard') {
     return (
-      <ToastProvider>
-        <ErrorBoundary>
-          <Suspense fallback={<FullScreenLoader />}>
-            <Routes>
-              <Route path="/*" element={<ProtectedRoute />}>
-                <Route element={<DashboardLayout />}>
-                  <Route index element={<DashboardPage />} />
-                  <Route path="*" element={<DashboardPage />} />
-                </Route>
-              </Route>
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-      </ToastProvider>
+      <AccessibilityProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ErrorBoundary>
+              <Suspense fallback={<FullScreenLoader />}>
+                <Routes>
+                  <Route path="/*" element={<ProtectedRoute />}>
+                    <Route element={<DashboardLayout />}>
+                      <Route index element={<DashboardPage />} />
+                      <Route path="*" element={<DashboardPage />} />
+                    </Route>
+                  </Route>
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+          </ToastProvider>
+        </ThemeProvider>
+      </AccessibilityProvider>
     );
   }
 

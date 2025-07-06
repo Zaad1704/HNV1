@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { useSiteSettings } from '../hooks/useSiteSettings';
-import { ThemeProvider } from '../contexts/ThemeContext';
+
 import HeroSection from '../components/landing/HeroSection';
 import AboutSection from '../components/landing/AboutSection';
 import FeaturesSection from '../components/landing/FeaturesSection';
@@ -54,8 +54,7 @@ const LandingPage = () => {
   }, [location.hash]);
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen pb-20 md:pb-0 overflow-x-hidden">
+    <div className="min-h-screen pb-20 md:pb-0 overflow-x-hidden">
       <section id="hero">
         <HeroSection />
       </section>
@@ -123,8 +122,7 @@ const LandingPage = () => {
       <section id="contact" className="scroll-mt-16">
         <ContactSection />
       </section>
-      </div>
-    </ThemeProvider>
+    </div>
   );
 };
 
