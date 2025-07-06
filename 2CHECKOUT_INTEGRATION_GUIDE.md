@@ -10,6 +10,15 @@
 - **Admin Panel**: https://hnvpm.com/admin
 
 ### Test Credentials
+**Note**: Test credentials need to be created in production database.
+
+To create test users, run the setup script:
+```bash
+cd backend
+node scripts/createTestUsers.js
+```
+
+Proposed test credentials:
 ```
 Super Admin:
 Email: admin@hnvpm.com
