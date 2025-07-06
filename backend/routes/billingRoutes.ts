@@ -1,26 +1,9 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
-import {
-  getSubscriptionDetails,
-  createCheckoutSession,
-  getBillingHistory,
-  subscribeToPlan,
-  reactivateSubscription,
-  cancelSubscription,
-  getSubscriptionStatus
-} from '../controllers/billingController';
+import { updateUserSubscription } from '../controllers/superAdminController';
 
 const router = Router();
 
-router.use(protect);
-
-router.get('/', getSubscriptionDetails); // Add root billing route
-router.get('/subscription', getSubscriptionDetails);
-router.post('/checkout', createCheckoutSession);
-router.get('/history', getBillingHistory);
-router.post('/subscribe', subscribeToPlan);
-router.post('/reactivate', reactivateSubscription);
-router.post('/cancel', cancelSubscription);
-router.get('/status', getSubscriptionStatus);
+// User billing routes
+router.put('/subscription', updateUserSubscription);
 
 export default router;

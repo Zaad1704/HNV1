@@ -1,204 +1,193 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Calendar, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import { CreditCard, Check, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-import { useCurrency } from '../contexts/CurrencyContext';
-
-const fetchBilling = async () => {
-  try {
-    const { data } = await apiClient.get('/billing/subscription');
-    return data.data || {};
-  } catch (error) {
-    console.error('Failed to fetch billing:', error);
-    return {};
-  }
-};
-
-const fetchInvoices = async () => {
-  try {
-    const { data } = await apiClient.get('/billing/invoices');
-    return data.data || [];
-  } catch (error) {
-    console.error('Failed to fetch invoices:', error);
-    return [];
-  }
-};
 
 const BillingPage = () => {
-  const { currency } = useCurrency();
-  
-  const { data: subscription = {}, isLoading: subLoading } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: fetchBilling,
-    retry: 1
+  const { user } = useAuthStore();
+  const queryClient = useQueryClient();
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['availablePlans'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/public/plans');
+      return data.data || [];
+    }
   });
 
-  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: fetchInvoices,
-    retry: 1
+  const { data: currentSubscription } = useQuery({
+    queryKey: ['currentSubscription'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/auth/me');
+      return data.data?.subscription;
+    }
   });
 
-  if (subLoading || invoicesLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading billing...</span>
-      </div>
-    );
-  }
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: async (planId: string) => {
+      const { data } = await apiClient.put('/billing/subscription', {
+        planId,
+        status: 'active'
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentSubscription'] });
+      queryClient.invalidateQueries({ queryKey: ['authUser'] });
+      alert('Subscription updated successfully!');
+      window.location.href = '/dashboard';
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to update subscription');
+    }
+  });
+
+  const handleSubscribe = async (planId: string) => {
+    if (!planId) return;
+    
+    setIsProcessing(true);
+    try {
+      await updateSubscriptionMutation.mutateAsync(planId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getSubscriptionStatus = () => {
+    if (!currentSubscription) return 'No active subscription';
+    
+    if (currentSubscription.status === 'canceled') return 'Canceled';
+    if (currentSubscription.status === 'past_due') return 'Payment Overdue';
+    if (currentSubscription.trialExpiresAt && new Date(currentSubscription.trialExpiresAt) < new Date()) {
+      return 'Trial Expired';
+    }
+    return currentSubscription.status;
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-8"
+      className="max-w-6xl mx-auto p-6"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Billing</h1>
-        <p className="text-text-secondary mt-1">Manage subscription and billing</p>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-text-primary mb-2">Billing & Subscription</h1>
+        <p className="text-text-secondary">Manage your subscription and billing information</p>
       </div>
 
-      {/* Current Subscription */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h2 className="text-xl font-bold text-text-primary mb-4">Current Subscription</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-16 h-16 app-gradient rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <CreditCard size={32} className="text-white" />
+      {/* Current Subscription Status */}
+      {currentSubscription && (
+        <div className="mb-8 p-6 bg-app-surface rounded-3xl border border-app-border">
+          <h2 className="text-xl font-bold text-text-primary mb-4">Current Subscription</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm text-text-secondary">Plan</p>
+              <p className="font-semibold">{currentSubscription.planId?.name || 'Free Trial'}</p>
             </div>
-            <h3 className="text-lg font-bold text-text-primary">
-              {subscription.planName || 'Free Trial'}
-            </h3>
-            <p className="text-text-secondary">
-              {currency}{subscription.amount || '0'}/month
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 ${
-              subscription.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
-            }`}>
-              {subscription.status === 'active' ? 
-                <CheckCircle size={32} className="text-white" /> :
-                <AlertCircle size={32} className="text-white" />
-              }
+            <div>
+              <p className="text-sm text-text-secondary">Status</p>
+              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                currentSubscription.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {getSubscriptionStatus()}
+              </span>
             </div>
-            <h3 className="text-lg font-bold text-text-primary">
-              {subscription.status === 'active' ? 'Active' : 'Trial'}
-            </h3>
-            <p className="text-text-secondary">
-              {subscription.status || 'Status'}
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <Calendar size={32} className="text-white" />
+            <div>
+              <p className="text-sm text-text-secondary">Next Billing</p>
+              <p className="font-semibold">
+                {currentSubscription.nextBillingDate 
+                  ? new Date(currentSubscription.nextBillingDate).toLocaleDateString()
+                  : 'N/A'
+                }
+              </p>
             </div>
-            <h3 className="text-lg font-bold text-text-primary">
-              Next Billing
-            </h3>
-            <p className="text-text-secondary">
-              {subscription.nextBilling ? 
-                new Date(subscription.nextBilling).toLocaleDateString() : 
-                'No date set'
-              }
-            </p>
           </div>
         </div>
-        
-        <div className="mt-6 flex gap-3">
-          <button className="btn-gradient px-6 py-3 rounded-xl font-semibold">
-            Upgrade Plan
-          </button>
-          <button className="px-6 py-3 border border-app-border rounded-xl font-semibold text-text-secondary">
-            Update Payment Method
-          </button>
-        </div>
-      </div>
+      )}
 
-      {/* Billing History */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h2 className="text-xl font-bold text-text-primary mb-4">Billing History</h2>
-        {invoices.length > 0 ? (
-          <div className="space-y-3">
-            {invoices.map((invoice: any, index: number) => (
-              <motion.div
-                key={invoice._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 bg-app-bg rounded-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center">
-                    <DollarSign size={20} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-text-primary">
-                      {currency}{invoice.amount?.toLocaleString() || '0'}
-                    </p>
-                    <p className="text-sm text-text-secondary">
-                      {invoice.description || 'Monthly subscription'}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    invoice.status === 'paid' 
-                      ? 'bg-green-100 text-green-800'
-                      : invoice.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {invoice.status || 'paid'}
-                  </span>
-                  <p className="text-xs text-text-secondary mt-1">
-                    {invoice.date ? new Date(invoice.date).toLocaleDateString() : 'No date'}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-text-secondary">No billing history available.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Usage Stats */}
+      {/* Available Plans */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="app-surface rounded-3xl p-6 border border-app-border text-center">
-          <h3 className="text-lg font-bold text-text-primary mb-2">Properties</h3>
-          <p className="text-3xl font-bold text-brand-blue">
-            {subscription.usage?.properties || 0}
-          </p>
-          <p className="text-text-secondary text-sm">
-            of {subscription.limits?.properties || '∞'} allowed
-          </p>
-        </div>
-        
-        <div className="app-surface rounded-3xl p-6 border border-app-border text-center">
-          <h3 className="text-lg font-bold text-text-primary mb-2">Users</h3>
-          <p className="text-3xl font-bold text-brand-orange">
-            {subscription.usage?.users || 0}
-          </p>
-          <p className="text-text-secondary text-sm">
-            of {subscription.limits?.users || '∞'} allowed
-          </p>
-        </div>
-        
-        <div className="app-surface rounded-3xl p-6 border border-app-border text-center">
-          <h3 className="text-lg font-bold text-text-primary mb-2">Storage</h3>
-          <p className="text-3xl font-bold text-brand-blue">
-            {subscription.usage?.storage || '0'} GB
-          </p>
-          <p className="text-text-secondary text-sm">
-            of {subscription.limits?.storage || '∞'} GB allowed
-          </p>
+        {plans.map((plan: any) => (
+          <motion.div
+            key={plan._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`p-6 rounded-3xl border-2 transition-all ${
+              currentSubscription?.planId?._id === plan._id
+                ? 'border-green-500 bg-green-50'
+                : 'border-app-border bg-app-surface hover:border-brand-blue'
+            }`}
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-text-primary">{plan.name}</h3>
+              <div className="mt-2">
+                <span className="text-3xl font-bold text-brand-blue">${plan.price / 100}</span>
+                <span className="text-text-secondary">/{plan.duration}</span>
+              </div>
+            </div>
+
+            <ul className="space-y-2 mb-6">
+              {plan.features?.map((feature: string, idx: number) => (
+                <li key={idx} className="flex items-center gap-2 text-sm">
+                  <Check size={16} className="text-green-500" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleSubscribe(plan._id)}
+              disabled={isProcessing || currentSubscription?.planId?._id === plan._id}
+              className={`w-full py-3 px-4 rounded-2xl font-semibold transition-all ${
+                currentSubscription?.planId?._id === plan._id
+                  ? 'bg-green-100 text-green-800 cursor-not-allowed'
+                  : 'btn-gradient hover:shadow-lg disabled:opacity-50'
+              }`}
+            >
+              {isProcessing ? (
+                <div className="flex items-center justify-center gap-2">
+                  <RefreshCw size={16} className="animate-spin" />
+                  Processing...
+                </div>
+              ) : currentSubscription?.planId?._id === plan._id ? (
+                'Current Plan'
+              ) : (
+                'Select Plan'
+              )}
+            </button>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Billing Information */}
+      <div className="mt-8 p-6 bg-app-surface rounded-3xl border border-app-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">Billing Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Payment Method
+            </label>
+            <div className="p-3 border border-app-border rounded-xl bg-app-bg">
+              <div className="flex items-center gap-2">
+                <CreditCard size={16} className="text-text-secondary" />
+                <span className="text-sm text-text-secondary">
+                  {currentSubscription?.paymentMethod || 'No payment method on file'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Billing Email
+            </label>
+            <div className="p-3 border border-app-border rounded-xl bg-app-bg">
+              <span className="text-sm text-text-secondary">{user?.email}</span>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>

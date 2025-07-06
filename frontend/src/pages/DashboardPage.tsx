@@ -69,7 +69,12 @@ const DashboardPage = () => {
     user.status === 'pending' || 
     user.status === 'suspended' || 
     !user.isEmailVerified ||
-    (user.subscription && user.subscription.status === 'inactive')
+    (user.subscription && (
+      user.subscription.status === 'inactive' ||
+      user.subscription.status === 'canceled' ||
+      user.subscription.status === 'past_due' ||
+      (user.subscription.trialExpiresAt && new Date(user.subscription.trialExpiresAt) < new Date())
+    ))
   );
   
   if (isInactive) {

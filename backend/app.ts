@@ -187,7 +187,7 @@ app.use('/api/reminders', protect, reminderRoutes);
 app.use('/api/edit-requests', protect, checkSubscriptionStatus, editRequestRoutes);
 app.use('/api/users', protect, userRoutes);
 app.use('/api/users/invites', protect, userRoutes);
-app.use('/api/billing', billingRoutes);
+app.use('/api/billing', protect, billingRoutes);
 app.use('/api/audit', protect, auditRoutes);
 app.use('/api/approvals', protect, approvalRoutes);
 app.use('/api/org', protect, orgRoutes);

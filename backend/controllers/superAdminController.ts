@@ -686,6 +686,52 @@ export const activatePlan = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateUserSubscription = async (req: AuthRequest, res: Response) => {
+  try {
+    const { planId, status } = req.body;
+    const userId = (req.user as any)._id;
+    
+    const user = await User.findById(userId);
+    if (!user || !user.organizationId) {
+      return res.status(404).json({ success: false, message: 'User or organization not found' });
+    }
+    
+    const Subscription = (await import('../models/Subscription')).default;
+    const Plan = (await import('../models/Plan')).default;
+    
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({ success: false, message: 'Plan not found' });
+    }
+    
+    const subscription = await Subscription.findOneAndUpdate(
+      { organizationId: user.organizationId },
+      {
+        planId,
+        status: status || 'active',
+        amount: plan.price,
+        currency: 'USD',
+        billingCycle: plan.duration,
+        currentPeriodStartsAt: new Date(),
+        currentPeriodEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        lastPaymentDate: new Date()
+      },
+      { new: true, upsert: true }
+    ).populate('planId');
+    
+    // Update organization status
+    await Organization.findByIdAndUpdate(user.organizationId, {
+      status: 'active'
+    });
+    
+    res.json({ success: true, data: subscription });
+  } catch (error) {
+    console.error('Update user subscription error:', error);
+    res.status(500).json({ success: false, message: 'Error updating subscription' });
+  }
+};
+
 export const updateSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const { orgId } = req.params;

@@ -1,9 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Eye, CreditCard, AlertTriangle } from 'lucide-react';
+import { Lock, Eye, CreditCard, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
 
 const ViewOnlyDashboard = () => {
+  const { user } = useAuthStore();
+  const [isReactivating, setIsReactivating] = useState(false);
+  
+  const { data: plans } = useQuery({
+    queryKey: ['availablePlans'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/public/plans');
+      return data.data || [];
+    }
+  });
+  
+  const getSubscriptionStatus = () => {
+    if (!user?.subscription) return 'No active subscription';
+    
+    const sub = user.subscription;
+    if (sub.status === 'canceled') return 'Subscription canceled';
+    if (sub.status === 'past_due') return 'Payment overdue';
+    if (sub.trialExpiresAt && new Date(sub.trialExpiresAt) < new Date()) return 'Trial expired';
+    return 'Account inactive';
+  };
+  
+  const handleReactivate = async () => {
+    setIsReactivating(true);
+    try {
+      // Redirect to subscription page or show reactivation modal
+      window.location.href = '/dashboard/billing';
+    } catch (error) {
+      console.error('Reactivation error:', error);
+    } finally {
+      setIsReactivating(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
@@ -15,9 +51,11 @@ const ViewOnlyDashboard = () => {
           <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock size={32} className="text-orange-600" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-2">Account Inactive</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">{getSubscriptionStatus()}</h1>
           <p className="text-text-secondary max-w-2xl mx-auto">
-            Your account is currently inactive. You can view your dashboard but cannot make changes or access full features.
+            {user?.subscription?.status === 'past_due' 
+              ? 'Your payment is overdue. Please update your payment method to continue using all features.'
+              : 'Your account has limited access. Reactivate your subscription to unlock all features.'}
           </p>
         </motion.div>
 
@@ -104,17 +142,41 @@ const ViewOnlyDashboard = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              to="/dashboard/settings"
-              className="btn-gradient px-6 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2"
+            <button
+              onClick={handleReactivate}
+              disabled={isReactivating}
+              className="btn-gradient px-6 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <CreditCard size={20} />
-              Activate Account
-            </Link>
-            <button className="px-6 py-3 rounded-2xl font-semibold border border-orange-300 text-orange-700 hover:bg-orange-100 transition-colors">
-              Contact Support
+              {isReactivating ? <RefreshCw size={20} className="animate-spin" /> : <CreditCard size={20} />}
+              {isReactivating ? 'Processing...' : 'Reactivate Subscription'}
             </button>
+            <Link 
+              to="/contact" 
+              className="px-6 py-3 rounded-2xl font-semibold border border-orange-300 text-orange-700 hover:bg-orange-100 transition-colors"
+            >
+              Contact Support
+            </Link>
           </div>
+          
+          {plans && plans.length > 0 && (
+            <div className="mt-8 p-6 bg-white rounded-2xl border border-orange-200">
+              <h3 className="font-semibold text-orange-800 mb-4">Available Plans</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {plans.slice(0, 3).map((plan: any) => (
+                  <div key={plan._id} className="p-4 border border-orange-200 rounded-xl hover:border-orange-400 transition-colors">
+                    <h4 className="font-semibold text-orange-800">{plan.name}</h4>
+                    <p className="text-2xl font-bold text-orange-600">${plan.price/100}</p>
+                    <p className="text-sm text-orange-600">per {plan.duration}</p>
+                    <ul className="text-xs text-orange-700 mt-2 space-y-1">
+                      {plan.features?.slice(0, 3).map((feature: string, idx: number) => (
+                        <li key={idx}>• {feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
