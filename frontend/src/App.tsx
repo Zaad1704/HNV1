@@ -117,9 +117,9 @@ function App() {
         <ErrorBoundary>
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
-        <Route path="/" element={<div>Home</div>} />
-        <Route path="/login" element={<div>Login</div>} />
-        <Route path="/dashboard" element={<div>Dashboard</div>} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         
         {/* Catch-all for 404 */}
         <Route path="*" element={<NotFound />} />
