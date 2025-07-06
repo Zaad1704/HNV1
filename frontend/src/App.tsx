@@ -119,6 +119,7 @@ function App() {
         <OfflineIndicator />
         <PWAInstallPrompt />
         <HelpCenter />
+        <HelpWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         <Route path="/" element={<LandingPage />} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { HelpCircle, X, Book, Video, MessageSquare, ExternalLink } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 
 const HelpWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,28 +54,18 @@ const HelpWidget: React.FC = () => {
     <>
       {/* Help Button */}
       {!isOpen && (
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.6 }}
-          whileHover={{ scale: 1.1, opacity: 1 }}
-          whileFocus={{ scale: 1.1, opacity: 1 }}
+        <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-24 right-20 bg-green-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-30 group"
           title="Get Help"
         >
           <HelpCircle size={20} className="group-hover:scale-110 transition-transform" />
-        </motion.button>
+        </button>
       )}
 
       {/* Help Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: 100, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 100, scale: 0.9 }}
-            className="fixed top-20 right-6 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-40 overflow-hidden max-h-[calc(100vh-6rem)]"
-          >
+      {isOpen && (
+        <div className="fixed top-20 right-6 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-40 overflow-hidden max-h-[calc(100vh-6rem)]">
             {/* Header */}
             <div className="bg-green-600 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -150,9 +140,8 @@ const HelpWidget: React.FC = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   );
 };
