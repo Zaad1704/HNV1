@@ -61,6 +61,7 @@ import settingsRoutes from './routes/settingsRoutes';
 import twoFactorRoutes from './routes/twoFactorRoutes';
 import passkeyRoutes from './routes/passkeyRoutes';
 import supportRoutes from './routes/supportRoutes';
+import testEmailRoutes from './routes/testEmailRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import { cacheMiddleware } from './middleware/cacheMiddleware';
 import { swaggerUi, specs } from './config/swagger';
@@ -258,6 +259,7 @@ app.use('/api/bulk', bulkPaymentRoutes);
 app.use('/api/reports', protect, reportRoutes);
 app.use('/api/statements', protect, statementRoutes);
 app.use('/api/settings', protect, settingsRoutes);
+app.use('/api/test-email', testEmailRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
 // Serve uploaded files

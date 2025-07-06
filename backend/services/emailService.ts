@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 interface EmailOptions {
   to: string;
@@ -8,38 +8,29 @@ interface EmailOptions {
 }
 
 class EmailService {
-  private transporter: any;
+  private resend: Resend;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async sendEmail(options: EmailOptions) {
     try {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('Email service not configured - skipping email send');
+      if (!process.env.RESEND_API_KEY) {
+        console.warn('Resend API key not configured - skipping email send');
         return { success: false, message: 'Email service not configured' };
       }
 
-      const mailOptions = {
-        from: options.from || process.env.EMAIL_FROM || process.env.EMAIL_USER,
-        to: options.to,
+      const result = await this.resend.emails.send({
+        from: options.from || process.env.EMAIL_FROM || 'HNV1 <noreply@hnvpm.com>',
+        to: [options.to],
         subject: options.subject,
         html: options.html
-      };
+      });
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent successfully:', result.messageId);
-      return { success: true, messageId: result.messageId };
-    } catch (error) {
+      console.log('Email sent successfully:', result.data?.id);
+      return { success: true, messageId: result.data?.id };
+    } catch (error: any) {
       console.error('Failed to send email:', error);
       return { success: false, error: error.message };
     }
@@ -103,6 +94,28 @@ class EmailService {
         html
       });
     }
+  }
+
+  async sendPasswordResetEmail(to: string, token: string, userName?: string) {
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #333;">Reset Your Password</h1>
+        <p>Hello ${userName || 'User'},</p>
+        <p>You requested to reset your password. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+        </div>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      </div>
+    `;
+    
+    return this.sendEmail({
+      to,
+      subject: 'Reset Your Password - HNV Property Management',
+      html
+    });
   }
 }
 
