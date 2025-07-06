@@ -21,6 +21,23 @@ const AdminPlansPage = () => {
     isActive: true
   });
 
+  const predefinedFeatures = [
+    'Property Management',
+    'Tenant Management', 
+    'Payment Tracking',
+    'Maintenance Requests',
+    'Financial Reports',
+    'Document Storage',
+    'Email Notifications',
+    'Mobile App Access',
+    'Multi-user Access',
+    'API Access',
+    'Custom Branding',
+    'Priority Support'
+  ];
+
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['adminPlans'],
     queryFn: fetchPlans
@@ -85,7 +102,7 @@ const AdminPlansPage = () => {
     const planData = {
       ...formData,
       price: Number(formData.price) * 100, // Convert to cents
-      features: formData.features.filter(f => f.trim())
+      features: selectedFeatures
     };
 
     if (editingPlan) {
@@ -104,6 +121,7 @@ const AdminPlansPage = () => {
       features: plan.features || [''],
       isActive: plan.isActive
     });
+    setSelectedFeatures(plan.features || []);
     setShowAddModal(true);
   };
 
@@ -294,33 +312,26 @@ const AdminPlansPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-2">Features</label>
-                {formData.features.map((feature, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={feature}
-                      onChange={(e) => updateFeature(index, e.target.value)}
-                      className="flex-1 p-2 border border-app-border rounded-xl bg-app-surface text-sm"
-                      placeholder="Feature description"
-                    />
-                    {formData.features.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(index)}
-                        className="text-red-500 hover:text-red-700 px-2"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addFeature}
-                  className="text-blue-500 hover:text-blue-700 text-sm"
-                >
-                  + Add Feature
-                </button>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-app-border rounded-xl p-3">
+                  {predefinedFeatures.map((feature) => (
+                    <label key={feature} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.includes(feature)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedFeatures([...selectedFeatures, feature]);
+                          } else {
+                            setSelectedFeatures(selectedFeatures.filter(f => f !== feature));
+                          }
+                        }}
+                        className="w-4 h-4 rounded"
+                      />
+                      <span>{feature}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-text-muted mt-2">{selectedFeatures.length} features selected</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

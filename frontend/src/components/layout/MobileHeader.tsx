@@ -1,5 +1,5 @@
-import React from 'react';
-import { Menu, Bell, Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, Bell, Search, Sun, Moon, Globe } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
 import NotificationsPanel from '../dashboard/NotificationsPanel';
@@ -17,6 +17,20 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 }) => {
   const { user } = useAuthStore();
   const { t } = useTranslation();
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  const changeLanguage = (lang: string) => {
+    localStorage.setItem('language', lang);
+    setShowLangMenu(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-app-surface/95 backdrop-blur-md border-b border-app-border z-[100] flex items-center justify-between px-4">
@@ -32,9 +46,34 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors">
-          <Search size={20} />
+        <button 
+          onClick={toggleTheme}
+          className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+        >
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </button>
+        
+        <div className="relative">
+          <button 
+            onClick={() => setShowLangMenu(!showLangMenu)}
+            className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-app-bg transition-colors"
+          >
+            <Globe size={18} />
+          </button>
+          {showLangMenu && (
+            <div className="absolute right-0 top-12 bg-app-surface border border-app-border rounded-xl shadow-lg py-2 min-w-[120px] z-50">
+              {['en', 'es', 'fr', 'de'].map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => changeLanguage(lang)}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg transition-colors"
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         
         {showNotifications && <NotificationsPanel />}
         

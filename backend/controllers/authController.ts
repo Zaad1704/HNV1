@@ -216,10 +216,16 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
       });
     }
 
-    // Populate organization data if it exists
+    // Set cache headers to reduce requests
+    res.set('Cache-Control', 'private, max-age=300'); // 5 minutes
+
+    // Populate organization and subscription data
     let populatedUser = user;
+    let subscription = null;
+    
     if (user.organizationId) {
       populatedUser = await User.findById(user._id).populate('organizationId').select('-password');
+      subscription = await Subscription.findOne({ organizationId: user.organizationId }).populate('planId');
     }
 
     res.status(200).json({
@@ -231,7 +237,12 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
         role: populatedUser.role,
         organizationId: populatedUser.organizationId,
         status: populatedUser.status,
-        isEmailVerified: populatedUser.isEmailVerified
+        isEmailVerified: populatedUser.isEmailVerified,
+        subscription: subscription ? {
+          status: subscription.status,
+          planId: subscription.planId,
+          isLifetime: subscription.isLifetime
+        } : null
       }
     });
 
