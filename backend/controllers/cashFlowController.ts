@@ -39,13 +39,16 @@ export const createCashFlowRecord = async (req: AuthRequest, res: Response) => {
 
 export const getCashFlowRecords = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.user?.organizationId) {
+    if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const records = await CashFlow.find({ 
-      organizationId: req.user.organizationId 
-    }).sort({ transactionDate: -1 });
+    const query = req.user.role === 'Super Admin' && !req.user.organizationId 
+      ? {} 
+      : { organizationId: req.user.organizationId };
+
+    const records = await CashFlow.find(query)
+      .sort({ transactionDate: -1 });
 
     res.status(200).json({ success: true, data: records });
   } catch (error) {

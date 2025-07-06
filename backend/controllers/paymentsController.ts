@@ -10,11 +10,16 @@ interface AuthRequest extends Request {
 
 export const getPayments = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.user?.organizationId) {
+    // Super Admin can access all payments, others need organizationId
+    if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const payments = await Payment.find({ organizationId: req.user.organizationId })
+    const query = req.user.role === 'Super Admin' && !req.user.organizationId 
+      ? {} 
+      : { organizationId: req.user.organizationId };
+
+    const payments = await Payment.find(query)
       .populate('tenantId', 'name email')
       .populate('propertyId', 'name address')
       .populate('recordedBy', 'name')

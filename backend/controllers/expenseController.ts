@@ -9,13 +9,17 @@ interface AuthRequest extends Request {
 
 export const getExpenses = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.user?.organizationId) {
+    if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const expenses = await Expense.find({ 
-      organizationId: req.user.organizationId 
-    }).populate('propertyId', 'name').sort({ date: -1 });
+    const query = req.user.role === 'Super Admin' && !req.user.organizationId 
+      ? {} 
+      : { organizationId: req.user.organizationId };
+
+    const expenses = await Expense.find(query)
+      .populate('propertyId', 'name')
+      .sort({ date: -1 });
 
     res.status(200).json({ success: true, data: expenses });
   } catch (error) {

@@ -6,7 +6,7 @@ interface AuthRequest extends Request {
 
 export const getAuditLogs = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.user?.organizationId) {
+    if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
