@@ -135,28 +135,24 @@ function App() {
           <Route path="pricing" element={<PricingPage />} />
         </Route>
         
-        <Route path="/dashboard/*" element={<ProtectedRoute />}>
-          <Route path="" element={<DashboardLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="overview" element={<OverviewPage />} />
-            <Route path="properties" element={<PropertiesPage />} />
-            <Route path="tenants" element={<TenantsPage />} />
-            <Route path="payments" element={<PaymentsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="properties" element={<PropertiesPage />} />
+          <Route path="tenants" element={<TenantsPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
-        <Route path="/admin/*" element={<AdminRoute />}>
-          <Route path="" element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="organizations" element={<AdminOrganizationsPage />} />
-            <Route path="moderators" element={<AdminModeratorsPage />} />
-            <Route path="plans" element={<AdminPlansPage />} />
-            <Route path="billing" element={<AdminBillingPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
-          </Route>
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="organizations" element={<AdminOrganizationsPage />} />
+          <Route path="moderators" element={<AdminModeratorsPage />} />
+          <Route path="plans" element={<AdminPlansPage />} />
+          <Route path="billing" element={<AdminBillingPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
         
         {/* Catch-all for 404 */}
