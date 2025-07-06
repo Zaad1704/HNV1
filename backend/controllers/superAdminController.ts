@@ -416,6 +416,28 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateUserStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { status } = req.body;
+    const userId = req.params.userId;
+    
+    const user = await User.findByIdAndUpdate(
+      userId, 
+      { status }, 
+      { new: true }
+    ).select('-password -twoFactorSecret');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    res.json({ success: true, data: user, message: 'User status updated successfully' });
+  } catch (error) {
+    console.error('Update user status error:', error);
+    res.status(500).json({ success: false, message: 'Error updating user status' });
+  }
+};
+
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.params.userId;

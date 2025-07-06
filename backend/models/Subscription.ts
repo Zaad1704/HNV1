@@ -3,7 +3,7 @@ import { Schema, model, Document } from 'mongoose';
 export interface ISubscription extends Document {
   organizationId: Schema.Types.ObjectId;
   planId: Schema.Types.ObjectId;
-  status: 'trialing' | 'active' | 'inactive' | 'canceled' | 'past_due';
+  status: 'trialing' | 'active' | 'inactive' | 'canceled' | 'past_due' | 'expired';
   isLifetime: boolean;
   trialExpiresAt?: Date;
   currentPeriodEndsAt?: Date;
@@ -45,7 +45,7 @@ const SubscriptionSchema = new Schema<ISubscription>({
   },
   status: {
     type: String,
-    enum: ["trialing", "active", "inactive", "canceled", "past_due"],
+    enum: ["trialing", "active", "inactive", "canceled", "past_due", "expired"],
     default: "trialing"
   },
   isLifetime: {

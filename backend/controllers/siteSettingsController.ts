@@ -95,3 +95,24 @@ export const uploadLandingImage = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Error uploading image' });
   }
 };
+
+export const updateSiteSettings = async (req: AuthRequest, res: Response) => {
+  try {
+    const updateData = {
+      ...req.body,
+      updatedAt: new Date(),
+      updatedBy: req.user?._id
+    };
+
+    const settings = await SiteSettings.findOneAndUpdate(
+      {},
+      updateData,
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({ success: true, data: settings });
+  } catch (error) {
+    console.error('Update site settings error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

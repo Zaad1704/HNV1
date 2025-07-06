@@ -39,15 +39,24 @@ class S3Service {
   }
 
   async moveFile(oldKey: string, newKey: string) {
-    // Copy to new location
-    const copyCommand = new PutObjectCommand({
+    // Get the old file
+    const getCommand = new GetObjectCommand({
+      Bucket: S3_CONFIG.bucket,
+      Key: oldKey
+    });
+    
+    const oldFile = await s3Client.send(getCommand);
+    
+    // Upload to new location
+    const putCommand = new PutObjectCommand({
       Bucket: S3_CONFIG.bucket,
       Key: newKey,
-      CopySource: `${S3_CONFIG.bucket}/${oldKey}`,
+      Body: oldFile.Body,
+      ContentType: oldFile.ContentType,
       ACL: 'public-read'
     });
 
-    await s3Client.send(copyCommand);
+    await s3Client.send(putCommand);
 
     // Delete old file
     await this.deleteFile(oldKey);
