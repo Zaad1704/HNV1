@@ -691,8 +691,9 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
     const { orgId } = req.params;
     const { 
       planId, status, isLifetime, trialExpiresAt, currentPeriodEndsAt, 
-      currentPeriodStartsAt, nextBillingDate, cancelAtPeriodEnd, 
-      amount, currency, billingCycle, paymentMethod 
+      currentPeriodStartsAt, nextBillingDate, cancelAtPeriodEnd, canceledAt,
+      amount, currency, billingCycle, paymentMethod, lastPaymentDate,
+      failedPaymentAttempts, externalId, notes
     } = req.body;
     
     const Subscription = (await import('../models/Subscription')).default;
@@ -716,11 +717,15 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
         currentPeriodStartsAt: currentPeriodStartsAt ? new Date(currentPeriodStartsAt) : new Date(),
         nextBillingDate: nextBillingDate ? new Date(nextBillingDate) : undefined,
         cancelAtPeriodEnd: cancelAtPeriodEnd || false,
+        canceledAt: canceledAt ? new Date(canceledAt) : undefined,
         amount: subscriptionAmount || 0,
         currency: currency || 'USD',
         billingCycle: billingCycle || 'monthly',
         paymentMethod: paymentMethod || null,
-        lastPaymentDate: status === 'active' ? new Date() : undefined
+        lastPaymentDate: lastPaymentDate ? new Date(lastPaymentDate) : (status === 'active' ? new Date() : undefined),
+        failedPaymentAttempts: failedPaymentAttempts || 0,
+        externalId: externalId || null,
+        notes: notes || null
       },
       { new: true, upsert: true }
     ).populate('planId');

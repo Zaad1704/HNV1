@@ -18,6 +18,7 @@ export interface ISubscription extends Document {
   lastPaymentDate?: Date;
   failedPaymentAttempts: number;
   externalId?: string;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -86,6 +87,9 @@ const SubscriptionSchema = new Schema<ISubscription>({
     default: 0
   },
   externalId: {
+    type: String
+  },
+  notes: {
     type: String
   },
 }, { timestamps: true });

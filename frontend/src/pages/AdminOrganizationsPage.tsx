@@ -31,11 +31,18 @@ const AdminOrganizationsPage = () => {
         isLifetime: false,
         trialExpiresAt: '',
         currentPeriodEndsAt: '',
+        currentPeriodStartsAt: '',
         nextBillingDate: '',
         cancelAtPeriodEnd: false,
+        canceledAt: '',
         currency: 'USD',
         billingCycle: 'monthly',
-        paymentMethod: ''
+        paymentMethod: '',
+        amount: '',
+        lastPaymentDate: '',
+        failedPaymentAttempts: 0,
+        externalId: '',
+        notes: ''
     });
     const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
         queryKey:['allOrganizations'], 
@@ -202,7 +209,7 @@ const AdminOrganizationsPage = () => {
             {/* Subscription Management Modal */}
             {showSubscriptionModal && selectedOrg && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4">
-                    <div className="app-surface rounded-3xl shadow-app-xl w-full max-w-md border border-app-border">
+                    <div className="app-surface rounded-3xl shadow-app-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-app-border">
                         <div className="flex justify-between items-center p-6 border-b border-app-border">
                             <h2 className="text-xl font-bold text-text-primary">Manage Subscription</h2>
                             <button 
@@ -296,7 +303,97 @@ const AdminOrganizationsPage = () => {
                                 />
                             </div>
                             
-                            <div className="flex items-center gap-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Custom Amount ($)</label>
+                                    <input 
+                                        type="number"
+                                        value={subscriptionData.amount}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, amount: e.target.value})}
+                                        placeholder="Leave empty to use plan price"
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Currency</label>
+                                    <select 
+                                        value={subscriptionData.currency}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, currency: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    >
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                        <option value="CAD">CAD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Period Start</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.currentPeriodStartsAt}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, currentPeriodStartsAt: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Period End</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.currentPeriodEndsAt}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, currentPeriodEndsAt: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Last Payment</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.lastPaymentDate}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, lastPaymentDate: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Failed Attempts</label>
+                                    <input 
+                                        type="number"
+                                        value={subscriptionData.failedPaymentAttempts}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, failedPaymentAttempts: parseInt(e.target.value) || 0})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">External ID (Stripe, PayPal, etc.)</label>
+                                <input 
+                                    type="text"
+                                    value={subscriptionData.externalId}
+                                    onChange={(e) => setSubscriptionData({...subscriptionData, externalId: e.target.value})}
+                                    placeholder="External subscription ID"
+                                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Notes</label>
+                                <textarea 
+                                    value={subscriptionData.notes}
+                                    onChange={(e) => setSubscriptionData({...subscriptionData, notes: e.target.value})}
+                                    placeholder="Internal notes about this subscription"
+                                    rows={3}
+                                    className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                />
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4">
                                 <label className="flex items-center gap-2">
                                     <input 
                                         type="checkbox"
@@ -315,6 +412,15 @@ const AdminOrganizationsPage = () => {
                                     />
                                     <span className="text-sm">Cancel at Period End</span>
                                 </label>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Canceled Date</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.canceledAt}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, canceledAt: e.target.value})}
+                                        className="w-full p-2 border border-app-border rounded-xl bg-app-surface text-sm"
+                                    />
+                                </div>
                             </div>
                             
                             <div className="flex justify-end gap-4 pt-4">
