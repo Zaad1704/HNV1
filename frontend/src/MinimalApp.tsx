@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
-import LoadingSpinner from './components/common/LoadingSpinner';
+
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 
 function MinimalApp() {
   const { token, user } = useAuthStore();
@@ -17,12 +18,13 @@ function MinimalApp() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Testing App Structure</h1>
-      <p>Token: {token ? 'exists' : 'none'}</p>
-      <p>User: {user?.name || 'none'}</p>
-      <Routes>
-        <Route path="*" element={<div>Basic App works</div>} />
-      </Routes>
+      <h1>Testing Lazy Loading</h1>
+      <Suspense fallback={<div>Loading page...</div>}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="*" element={<div>404</div>} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
