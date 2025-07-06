@@ -21,7 +21,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import HelpCenter from './components/common/HelpCenter';
 import HelpWidget from './components/common/HelpWidget';
 import QuickAccessWidget from './components/common/QuickAccessWidget';
-import FeedbackWidget from './components/common/FeedbackWidget';
+import EnhancedFeedbackWidget from './components/common/EnhancedFeedbackWidget';
 import SkipLink from './components/common/SkipLink';
 
 import PublicLayout from './components/layout/PublicLayout';
@@ -190,7 +190,7 @@ function App() {
         <HelpCenter />
         <HelpWidget />
         <QuickAccessWidget />
-        <FeedbackWidget />
+        <EnhancedFeedbackWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         {/* Public Routes */}

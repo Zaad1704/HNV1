@@ -62,6 +62,7 @@ import twoFactorRoutes from './routes/twoFactorRoutes';
 import passkeyRoutes from './routes/passkeyRoutes';
 import supportRoutes from './routes/supportRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
+import { cacheMiddleware } from './middleware/cacheMiddleware';
 import masterDataService from './services/masterDataService';
 import { protect } from './middleware/authMiddleware';
 import passport from 'passport';
@@ -193,8 +194,8 @@ const routeErrorHandler = (err: any, req: any, res: any, next: any) => {
   console.error(`Route error in ${req.originalUrl}: ${err.message}`);
   res.status(404).json({ error: `Route ${req.originalUrl} not found` });
 };
-// Public routes (no auth required)
-app.use('/api/public', publicRoutes);
+// Public routes (no auth required) with caching
+app.use('/api/public', cacheMiddleware({ ttl: 300 }), publicRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/2fa', twoFactorRoutes);
@@ -232,7 +233,7 @@ app.use('/api/communication', protect, communicationRoutes);
 app.use('/api/sharing', protect, sharingRoutes);
 app.use('/api/site-settings', protect, siteSettingsRoutes);
 app.use('/api/localization', protect, localizationRoutes);
-app.use('/api/translation', protect, translationRoutes);
+app.use('/api/translation', cacheMiddleware({ ttl: 600 }), translationRoutes);
 app.use('/api/upload', protect, uploadRoutes);
 app.use('/api/file-upload', protect, fileUploadRoutes);
 app.use('/api/invoices', protect, invoiceRoutes);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Star, Send, X, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { MessageSquare, Star, Send, X, ThumbsUp, ThumbsDown, Bot, HelpCircle, Zap } from 'lucide-react';
 import { useToast } from './Toast';
 import apiClient from '../../api/client';
 
@@ -13,7 +13,7 @@ interface FeedbackData {
 
 const FeedbackWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState<'rating' | 'details' | 'success'>('rating');
+  const [step, setStep] = useState<'main' | 'rating' | 'details' | 'success' | 'ai-chat' | 'help'>('main');
   const [feedback, setFeedback] = useState<Partial<FeedbackData>>({
     page: window.location.pathname
   });
@@ -97,6 +97,148 @@ const FeedbackWidget: React.FC = () => {
 
       {/* Content */}
       <div className="p-4">
+        {step === 'main' && (
+          <div className="space-y-3">
+            <h3 className="font-semibold text-text-primary text-center mb-4">How can we help?</h3>
+            
+            <button
+              onClick={() => setStep('ai-chat')}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-app-border hover:bg-app-bg transition-colors text-left"
+            >
+              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <Bot size={16} className="text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <div className="font-medium text-text-primary">AI Assistant</div>
+                <div className="text-xs text-text-secondary">Get instant help with AI</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setStep('help')}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-app-border hover:bg-app-bg transition-colors text-left"
+            >
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <HelpCircle size={16} className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <div className="font-medium text-text-primary">How to Use App</div>
+                <div className="text-xs text-text-secondary">Learn app features</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setStep('rating')}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-app-border hover:bg-app-bg transition-colors text-left"
+            >
+              <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <MessageSquare size={16} className="text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <div className="font-medium text-text-primary">Send Feedback</div>
+                <div className="text-xs text-text-secondary">Share your thoughts</div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {step === 'ai-chat' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Bot size={16} className="text-purple-600" />
+              <h3 className="font-semibold text-text-primary">AI Assistant</h3>
+            </div>
+            
+            <div className="bg-app-bg rounded-xl p-3 mb-3">
+              <div className="flex items-start gap-2">
+                <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Bot size={12} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="text-sm text-text-secondary">
+                  Hi! I'm your AI assistant. I can help you with:
+                  <ul className="mt-2 space-y-1 text-xs">
+                    <li>• Property management questions</li>
+                    <li>• Feature explanations</li>
+                    <li>• Troubleshooting issues</li>
+                    <li>• Best practices</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <textarea
+              placeholder="Ask me anything about the app..."
+              rows={3}
+              className="w-full p-2 border border-app-border rounded-xl bg-app-bg text-text-primary resize-none text-sm"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStep('main')}
+                className="flex-1 p-2 border border-app-border rounded-xl text-text-secondary hover:bg-app-bg transition-colors text-sm"
+              >
+                Back
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-2 p-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors text-sm">
+                <Send size={14} />
+                Ask AI
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 'help' && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-3">
+              <HelpCircle size={16} className="text-blue-600" />
+              <h3 className="font-semibold text-text-primary">How to Use App</h3>
+            </div>
+            
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="bg-app-bg rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap size={14} className="text-yellow-500" />
+                  <span className="font-medium text-text-primary text-sm">Quick Start</span>
+                </div>
+                <ul className="text-xs text-text-secondary space-y-1">
+                  <li>1. Add your first property</li>
+                  <li>2. Invite tenants to their portal</li>
+                  <li>3. Set up payment tracking</li>
+                  <li>4. Monitor maintenance requests</li>
+                </ul>
+              </div>
+
+              <div className="bg-app-bg rounded-lg p-3">
+                <div className="font-medium text-text-primary text-sm mb-2">Key Features</div>
+                <ul className="text-xs text-text-secondary space-y-1">
+                  <li>• Property Management Dashboard</li>
+                  <li>• Tenant Portal Access</li>
+                  <li>• Payment & Expense Tracking</li>
+                  <li>• Maintenance Request System</li>
+                  <li>• Financial Reports & Analytics</li>
+                </ul>
+              </div>
+
+              <div className="bg-app-bg rounded-lg p-3">
+                <div className="font-medium text-text-primary text-sm mb-2">Tips & Tricks</div>
+                <ul className="text-xs text-text-secondary space-y-1">
+                  <li>• Use keyboard shortcuts for faster navigation</li>
+                  <li>• Set up automated reminders</li>
+                  <li>• Export data for tax purposes</li>
+                  <li>• Enable notifications for important updates</li>
+                </ul>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setStep('main')}
+              className="w-full p-2 border border-app-border rounded-xl text-text-secondary hover:bg-app-bg transition-colors text-sm"
+            >
+              Back to Menu
+            </button>
+          </div>
+        )}
+
         {step === 'rating' && (
           <div className="text-center">
             <h3 className="font-semibold text-text-primary mb-2">How was your experience?</h3>
@@ -196,7 +338,7 @@ const FeedbackWidget: React.FC = () => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setStep('rating')}
+                onClick={() => setStep('main')}
                 className="flex-1 p-2 border border-app-border rounded-xl text-text-secondary hover:bg-app-bg transition-colors"
               >
                 Back
