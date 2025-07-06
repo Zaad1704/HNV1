@@ -470,39 +470,18 @@ const SettingsPage = () => {
                 <h2 className="text-2xl font-bold text-text-primary">App Preferences</h2>
                 <div className="space-y-4">
                   <div className="p-4 bg-app-bg rounded-xl">
-                    <h3 className="font-medium text-text-primary mb-2">Theme</h3>
-                    <p className="text-sm text-text-secondary mb-4">Choose your preferred theme</p>
-                    <select 
-                      className="p-2 border border-app-border rounded-xl"
-                      onChange={(e) => {
-                        localStorage.setItem('theme', e.target.value);
-                        document.documentElement.setAttribute('data-theme', e.target.value);
-                        alert('Theme updated successfully!');
-                      }}
-                      defaultValue={localStorage.getItem('theme') || 'system'}
-                    >
-                      <option value="light">Light</option>
-                      <option value="dark">Dark</option>
-                      <option value="system">System</option>
-                    </select>
-                  </div>
-                  <div className="p-4 bg-app-bg rounded-xl">
-                    <h3 className="font-medium text-text-primary mb-2">Language</h3>
-                    <p className="text-sm text-text-secondary mb-4">Select your language</p>
-                    <select 
-                      className="p-2 border border-app-border rounded-xl"
-                      onChange={(e) => {
-                        localStorage.setItem('language', e.target.value);
-                        alert('Language preference saved!');
-                      }}
-                      defaultValue={localStorage.getItem('language') || 'en'}
-                    >
-                      <option value="en">English</option>
-                      <option value="es">Spanish</option>
-                      <option value="fr">French</option>
-                      <option value="de">German</option>
-                      <option value="zh">Chinese</option>
-                    </select>
+                    <h3 className="font-medium text-text-primary mb-2">Display Preferences</h3>
+                    <p className="text-sm text-text-secondary mb-4">Customize your dashboard appearance</p>
+                    <div className="space-y-3">
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm">Dark mode</span>
+                        <input type="checkbox" className="w-4 h-4 rounded" />
+                      </label>
+                      <label className="flex items-center justify-between">
+                        <span className="text-sm">Compact view</span>
+                        <input type="checkbox" className="w-4 h-4 rounded" />
+                      </label>
+                    </div>
                   </div>
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Notifications</h3>
