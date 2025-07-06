@@ -101,22 +101,8 @@ function App() {
 
 
   useEffect(() => {
-    const checkUserSession = async () => {
-      if (token && !user) {
-        try {
-          const response = await apiClient.get('/auth/me');
-          setUser(response.data.data);
-        } catch (error) {
-          console.error("Session check failed, logging out.", error);
-          logout();
-        }
-      }
-      setSessionLoading(false);
-    };
-    
-    // Add delay to prevent immediate crash
-    setTimeout(checkUserSession, 100);
-  }, [token, user, setUser, logout]);
+    setSessionLoading(false);
+  }, []);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
@@ -129,13 +115,6 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
         <ErrorBoundary>
-        <SkipLink />
-        <OfflineIndicator />
-        <PWAInstallPrompt />
-        <HelpCenter />
-        <HelpWidget />
-        <QuickAccessWidget />
-        <EnhancedFeedbackWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
         <Route path="/" element={<div>Home</div>} />
