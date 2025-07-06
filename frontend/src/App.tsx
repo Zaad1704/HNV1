@@ -15,7 +15,7 @@ import apiClient from './api/client';
 import ErrorBoundary from './components/ErrorBoundary';
 import OfflineIndicator from './components/common/OfflineIndicator';
 import LoadingSpinner from './components/common/LoadingSpinner';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAInstallPrompt from './components/PWAInstallPromptSimple';
 import { ToastProvider } from './components/common/Toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AccessibilityProvider } from './components/common/AccessibilityProvider';
@@ -117,6 +117,7 @@ function App() {
         <ErrorBoundary>
         <SkipLink />
         <OfflineIndicator />
+        <PWAInstallPrompt />
         <HelpCenter />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
