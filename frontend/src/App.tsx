@@ -135,8 +135,8 @@ function App() {
           <Route path="pricing" element={<PricingPage />} />
         </Route>
         
-        <Route path="/dashboard" element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout />}>
+        <Route path="/dashboard/*" element={<ProtectedRoute />}>
+          <Route path="" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="properties" element={<PropertiesPage />} />
@@ -160,6 +160,7 @@ function App() {
         </Route>
         
         {/* Catch-all for 404 */}
+        <Route path="*" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
