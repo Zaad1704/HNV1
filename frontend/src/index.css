@@ -5,6 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import mobile responsiveness styles */
+@import './styles/mobile.css';
+
 /* Safe area support for mobile */
 .safe-area-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 20px);

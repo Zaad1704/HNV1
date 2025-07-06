@@ -1,35 +1,34 @@
 import React from 'react';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 interface ResponsiveContainerProps {
   children: React.ReactNode;
   className?: string;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '7xl';
-  padding?: 'sm' | 'md' | 'lg';
+  mobileClassName?: string;
+  tabletClassName?: string;
+  desktopClassName?: string;
 }
 
 const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   children,
   className = '',
-  maxWidth = '7xl',
-  padding = 'md'
+  mobileClassName = '',
+  tabletClassName = '',
+  desktopClassName = ''
 }) => {
-  const maxWidthClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    '7xl': 'max-w-7xl'
-  };
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
+  const isDesktop = useMediaQuery('(min-width: 1025px)');
 
-  const paddingClasses = {
-    sm: 'px-2 sm:px-4',
-    md: 'px-4 sm:px-6 lg:px-8',
-    lg: 'px-6 sm:px-8 lg:px-12'
+  const getResponsiveClass = () => {
+    if (isMobile && mobileClassName) return mobileClassName;
+    if (isTablet && tabletClassName) return tabletClassName;
+    if (isDesktop && desktopClassName) return desktopClassName;
+    return className;
   };
 
   return (
-    <div className={`mx-auto ${maxWidthClasses[maxWidth]} ${paddingClasses[padding]} ${className}`}>
+    <div className={`${className} ${getResponsiveClass()}`}>
       {children}
     </div>
   );
