@@ -80,7 +80,17 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative"
           >
-(
+            {settings?.heroSection?.bannerImage ? (
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src={settings.heroSection.bannerImage}
+                  alt="HNV Property Management Banner"
+                  className="w-full h-96 object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              </div>
+            ) : (
               <div className="grid grid-cols-2 gap-4">
                 {[
                   { icon: Building2, title: t('dashboard.properties'), color: 'gradient-dark-orange-blue', section: 'features' },
@@ -103,7 +113,7 @@ const HeroSection = () => {
                   </motion.div>
                 ))}
               </div>
-
+            )}
           </motion.div>
         </div>
 

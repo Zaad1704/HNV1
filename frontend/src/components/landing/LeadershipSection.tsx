@@ -28,8 +28,8 @@ const LeadershipSection = () => {
     refetchOnWindowFocus: false
   });
 
-  // Default executives if none configured
-  const executives = [
+  // Get executives from site settings or use defaults
+  const executives = siteSettings?.leadership?.executives || [
     {
       name: 'John Smith',
       position: 'CEO & Founder',
@@ -60,10 +60,10 @@ const LeadershipSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl font-bold text-text-primary mb-4">
-            {siteSettings?.leadershipTitle || 'Meet Our Leadership'}
+            {siteSettings?.leadership?.title || 'Meet Our Leadership'}
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            {siteSettings?.leadershipSubtitle || 'Our experienced team is dedicated to revolutionizing property management.'}
+            {siteSettings?.leadership?.subtitle || 'Our experienced team is dedicated to revolutionizing property management.'}
           </p>
         </motion.div>
 

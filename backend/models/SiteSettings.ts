@@ -16,6 +16,23 @@ export interface ISiteSettings extends Document {
   pricingSubtitle?: string;
   leadershipTitle?: string;
   leadershipSubtitle?: string;
+  leadership?: {
+    title?: string;
+    subtitle?: string;
+    executives?: Array<{
+      name: string;
+      position: string;
+      bio: string;
+      imageUrl?: string;
+      linkedin?: string;
+      twitter?: string;
+    }>;
+  };
+  heroSection?: {
+    title?: string;
+    subtitle?: string;
+    bannerImage?: string;
+  };
   featuresTitle?: string;
   featuresSubtitle?: string;
   aboutTitle?: string;
