@@ -26,7 +26,17 @@ const AdminOrganizationsPage = () => {
     const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
     const [selectedOrg, setSelectedOrg] = useState<IOrganization | null>(null);
     const [selectedPlan, setSelectedPlan] = useState('');
-    const [subscriptionStatus, setSubscriptionStatus] = useState('trialing');
+    const [subscriptionData, setSubscriptionData] = useState({
+        status: 'trialing',
+        isLifetime: false,
+        trialExpiresAt: '',
+        currentPeriodEndsAt: '',
+        nextBillingDate: '',
+        cancelAtPeriodEnd: false,
+        currency: 'USD',
+        billingCycle: 'monthly',
+        paymentMethod: ''
+    });
     const { data: organizations = [], isLoading, isError, error } = useQuery<IOrganization[], Error>({ 
         queryKey:['allOrganizations'], 
         queryFn: fetchOrganizations,
@@ -56,8 +66,8 @@ const AdminOrganizationsPage = () => {
     });
 
     const updateSubscriptionMutation = useMutation({
-        mutationFn: ({ orgId, planId, status }: { orgId: string; planId: string; status: string }) => 
-            apiClient.put(`/super-admin/organizations/${orgId}/subscription`, { planId, status }),
+        mutationFn: ({ orgId, planId, ...data }: { orgId: string; planId: string; [key: string]: any }) => 
+            apiClient.put(`/super-admin/organizations/${orgId}/subscription`, { planId, ...data }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
             setShowSubscriptionModal(false);
@@ -224,19 +234,87 @@ const AdminOrganizationsPage = () => {
                                 </select>
                             </div>
                             
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Status</label>
+                                    <select 
+                                        value={subscriptionData.status}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, status: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    >
+                                        <option value="trialing">Trialing</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="canceled">Canceled</option>
+                                        <option value="past_due">Past Due</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Billing Cycle</label>
+                                    <select 
+                                        value={subscriptionData.billingCycle}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, billingCycle: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    >
+                                        <option value="monthly">Monthly</option>
+                                        <option value="yearly">Yearly</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="daily">Daily</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Trial Expires</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.trialExpiresAt}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, trialExpiresAt: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-2">Next Billing</label>
+                                    <input 
+                                        type="date"
+                                        value={subscriptionData.nextBillingDate}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, nextBillingDate: e.target.value})}
+                                        className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
+                                    />
+                                </div>
+                            </div>
+                            
                             <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-2">Subscription Status</label>
-                                <select 
-                                    value={subscriptionStatus}
-                                    onChange={(e) => setSubscriptionStatus(e.target.value)}
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Payment Method</label>
+                                <input 
+                                    type="text"
+                                    value={subscriptionData.paymentMethod}
+                                    onChange={(e) => setSubscriptionData({...subscriptionData, paymentMethod: e.target.value})}
+                                    placeholder="e.g., Stripe, PayPal, Credit Card"
                                     className="w-full p-3 border border-app-border rounded-2xl bg-app-surface"
-                                >
-                                    <option value="trialing">Trialing</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="canceled">Canceled</option>
-                                    <option value="past_due">Past Due</option>
-                                </select>
+                                />
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input 
+                                        type="checkbox"
+                                        checked={subscriptionData.isLifetime}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, isLifetime: e.target.checked})}
+                                        className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Lifetime Access</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input 
+                                        type="checkbox"
+                                        checked={subscriptionData.cancelAtPeriodEnd}
+                                        onChange={(e) => setSubscriptionData({...subscriptionData, cancelAtPeriodEnd: e.target.checked})}
+                                        className="w-4 h-4 rounded"
+                                    />
+                                    <span className="text-sm">Cancel at Period End</span>
+                                </label>
                             </div>
                             
                             <div className="flex justify-end gap-4 pt-4">
@@ -252,7 +330,7 @@ const AdminOrganizationsPage = () => {
                                             updateSubscriptionMutation.mutate({
                                                 orgId: selectedOrg._id,
                                                 planId: selectedPlan,
-                                                status: subscriptionStatus
+                                                ...subscriptionData
                                             });
                                         } else {
                                             alert('Please select a plan');

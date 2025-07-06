@@ -689,9 +689,21 @@ export const activatePlan = async (req: AuthRequest, res: Response) => {
 export const updateSubscription = async (req: AuthRequest, res: Response) => {
   try {
     const { orgId } = req.params;
-    const { planId, status, isLifetime, trialExpiresAt, currentPeriodEndsAt } = req.body;
+    const { 
+      planId, status, isLifetime, trialExpiresAt, currentPeriodEndsAt, 
+      currentPeriodStartsAt, nextBillingDate, cancelAtPeriodEnd, 
+      amount, currency, billingCycle, paymentMethod 
+    } = req.body;
     
     const Subscription = (await import('../models/Subscription')).default;
+    const Plan = (await import('../models/Plan')).default;
+    
+    // Get plan details for amount if not provided
+    let subscriptionAmount = amount;
+    if (!subscriptionAmount && planId) {
+      const plan = await Plan.findById(planId);
+      subscriptionAmount = plan?.price || 0;
+    }
     
     const subscription = await Subscription.findOneAndUpdate(
       { organizationId: orgId },
@@ -700,7 +712,15 @@ export const updateSubscription = async (req: AuthRequest, res: Response) => {
         status,
         isLifetime: isLifetime || false,
         trialExpiresAt: trialExpiresAt ? new Date(trialExpiresAt) : undefined,
-        currentPeriodEndsAt: currentPeriodEndsAt ? new Date(currentPeriodEndsAt) : undefined
+        currentPeriodEndsAt: currentPeriodEndsAt ? new Date(currentPeriodEndsAt) : undefined,
+        currentPeriodStartsAt: currentPeriodStartsAt ? new Date(currentPeriodStartsAt) : new Date(),
+        nextBillingDate: nextBillingDate ? new Date(nextBillingDate) : undefined,
+        cancelAtPeriodEnd: cancelAtPeriodEnd || false,
+        amount: subscriptionAmount || 0,
+        currency: currency || 'USD',
+        billingCycle: billingCycle || 'monthly',
+        paymentMethod: paymentMethod || null,
+        lastPaymentDate: status === 'active' ? new Date() : undefined
       },
       { new: true, upsert: true }
     ).populate('planId');
