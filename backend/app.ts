@@ -59,6 +59,7 @@ import reportRoutes from './routes/reportRoutes';
 import statementRoutes from './routes/statementRoutes';
 import settingsRoutes from './routes/settingsRoutes';
 import twoFactorRoutes from './routes/twoFactorRoutes';
+import passkeyRoutes from './routes/passkeyRoutes';
 import supportRoutes from './routes/supportRoutes';
 import { checkSubscriptionStatus } from './middleware/subscriptionMiddleware';
 import masterDataService from './services/masterDataService';
@@ -197,6 +198,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/2fa', twoFactorRoutes);
+app.use('/api/passkeys', passkeyRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 // Protected routes (auth required)

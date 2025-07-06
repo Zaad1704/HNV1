@@ -35,6 +35,8 @@ export interface IUser extends Document {
   }>;
   language?: string;
   autoDetectLanguage?: boolean;
+  passkeyChallenge?: string;
+  passkeyChallengeExpires?: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
   getEmailVerificationToken(): string;
@@ -78,7 +80,9 @@ const UserSchema = new Schema<IUser>({
     createdAt: { type: Date, default: Date.now }
   }],
   language: { type: String, default: 'en' },
-  autoDetectLanguage: { type: Boolean, default: true }
+  autoDetectLanguage: { type: Boolean, default: true },
+  passkeyChallenge: { type: String, select: false },
+  passkeyChallengeExpires: { type: Date, select: false }
 });
 
 UserSchema.pre('save', async function(next) {
