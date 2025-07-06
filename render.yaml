@@ -4,13 +4,13 @@ services:
     env: node
     plan: starter
     buildCommand: cd backend && npm install && npm run build
-    startCommand: cd backend && node dist/server.js
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5001
-      - key: MONGO_URI
+      - key: MONGODB_URI
         fromDatabase:
           name: hnv-mongodb
           property: connectionString
@@ -30,15 +30,6 @@ services:
         value: HNV Property Management <noreply@hnvpm.com>
       - key: CONTACT_EMAIL
         value: contact@hnvpm.com
-
-  - type: web
-    name: hnv-frontend
-    env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://hnv-property.onrender.com/api
 
 databases:
   - name: hnv-mongodb

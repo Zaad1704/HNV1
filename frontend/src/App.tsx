@@ -1,5 +1,15 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+
+// Subdomain detection utility
+const getSubdomain = () => {
+  const hostname = window.location.hostname;
+  const parts = hostname.split('.');
+  if (parts.length > 2) {
+    return parts[0]; // Returns 'login' from 'login.hnvpm.com'
+  }
+  return null;
+};
 import { useAuthStore } from './store/authStore';
 import apiClient from './api/client';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -76,6 +86,7 @@ const FullScreenLoader = () => (
 function App() {
   const { token, user, setUser, logout } = useAuthStore();
   const [isSessionLoading, setSessionLoading] = useState(true);
+  const subdomain = getSubdomain();
   
 
 
@@ -97,6 +108,73 @@ function App() {
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
+  }
+
+  // Handle subdomain routing
+  if (subdomain === 'login') {
+    return (
+      <ToastProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<FullScreenLoader />}>
+            <PublicLayout>
+              <LoginPage />
+            </PublicLayout>
+          </Suspense>
+        </ErrorBoundary>
+      </ToastProvider>
+    );
+  }
+
+  if (subdomain === 'register' || subdomain === 'signup') {
+    return (
+      <ToastProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<FullScreenLoader />}>
+            <PublicLayout>
+              <RegisterPage />
+            </PublicLayout>
+          </Suspense>
+        </ErrorBoundary>
+      </ToastProvider>
+    );
+  }
+
+  if (subdomain === 'admin') {
+    return (
+      <ToastProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              <Route path="/*" element={<AdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="*" element={<AdminDashboardPage />} />
+                </Route>
+              </Route>
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </ToastProvider>
+    );
+  }
+
+  if (subdomain === 'app' || subdomain === 'dashboard') {
+    return (
+      <ToastProvider>
+        <ErrorBoundary>
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              <Route path="/*" element={<ProtectedRoute />}>
+                <Route element={<DashboardLayout />}>
+                  <Route index element={<DashboardPage />} />
+                  <Route path="*" element={<DashboardPage />} />
+                </Route>
+              </Route>
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </ToastProvider>
+    );
   }
 
   return (

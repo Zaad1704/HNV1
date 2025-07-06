@@ -1,0 +1,13 @@
+# Subdomain redirects for Netlify
+https://login.hnvpm.com/* https://www.hnvpm.com/login 301!
+https://register.hnvpm.com/* https://www.hnvpm.com/register 301!
+https://signup.hnvpm.com/* https://www.hnvpm.com/register 301!
+https://admin.hnvpm.com/* https://www.hnvpm.com/admin 301!
+https://app.hnvpm.com/* https://www.hnvpm.com/dashboard 301!
+https://dashboard.hnvpm.com/* https://www.hnvpm.com/dashboard 301!
+
+# API proxy to backend
+/api/* https://hnv-backend.onrender.com/api/:splat 200
+
+# SPA fallback
+/* /index.html 200
