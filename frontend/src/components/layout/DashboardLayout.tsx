@@ -74,7 +74,7 @@ const DashboardLayout = () => {
             <Building size={20} className="text-white" />
           </div>
           <span className="truncate">
-            {user?.organizationId?.name || user?.organizationId?.branding?.companyName || t('app_name_short')}
+            {t('app_name_short')}
           </span>
         </Link>
         {isMobile && (
@@ -226,7 +226,7 @@ const DashboardLayout = () => {
           {/* Center: Company Name - Always visible */}
           <div className="flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 max-w-xs lg:max-w-sm z-[90]">
             <span className="text-base lg:text-lg font-bold text-text-primary text-center truncate">
-              {user?.organizationId?.name || user?.organizationId?.branding?.companyName || t('app_name')}
+              {t('app_name')}
             </span>
           </div>
 

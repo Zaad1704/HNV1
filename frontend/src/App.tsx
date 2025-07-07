@@ -41,7 +41,7 @@ const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const GoogleCallbackPage = React.lazy(() => import('./pages/GoogleCallbackPage'));
 const GoogleDebugPage = React.lazy(() => import('./pages/GoogleDebugPage'));
 const DashboardDebug = React.lazy(() => import('./components/debug/DashboardDebug'));
-const DashboardErrorBoundary = React.lazy(() => import('./components/dashboard/DashboardErrorBoundary'));
+import DashboardErrorBoundary from './components/dashboard/DashboardErrorBoundary';
 const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvitePage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -53,7 +53,8 @@ const PaymentSummaryPage = React.lazy(() => import('./pages/PaymentSummaryPage')
 const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 
 // Dashboard pages - ensure these are correctly imported and accessible
-const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
+const DashboardPage = React.lazy(() => import('./pages/DashboardPageSimple'));
+const DashboardPageComplex = React.lazy(() => import('./pages/DashboardPage'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
 const TenantsPage = React.lazy(() => import('./pages/TenantsPage'));
@@ -150,14 +151,13 @@ function App() {
         {/* Authenticated Routes */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
           <Route element={
-            <React.Suspense fallback={<FullScreenLoader />}>
-              <DashboardErrorBoundary>
-                <DashboardLayout />
-              </DashboardErrorBoundary>
-            </React.Suspense>
+            <DashboardErrorBoundary>
+              <DashboardLayout />
+            </DashboardErrorBoundary>
           }>
             {/* General User Dashboards */}
             <Route index element={<DashboardPage />} />
+            <Route path="complex" element={<DashboardPageComplex />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<TenantProfilePage />} /> {/* Assuming a generic profile page */}
