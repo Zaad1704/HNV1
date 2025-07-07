@@ -122,22 +122,42 @@ export const changePlan = async (req: AuthRequest, res: Response) => {
     subscription.planId = planId as any;
     subscription.amount = plan.price;
     subscription.billingCycle = plan.billingCycle === 'one-time' ? 'monthly' : plan.billingCycle;
+    subscription.status = 'active'; // Reactivate subscription
+    subscription.lastPaymentDate = new Date();
+    subscription.failedPaymentAttempts = 0;
     
-    // Calculate next billing date
+    // Calculate billing dates
+    const now = new Date();
+    subscription.currentPeriodStartsAt = now;
+    
     const nextBilling = new Date();
+    const nextPeriodEnd = new Date();
+    
     if (plan.billingCycle === 'monthly') {
       nextBilling.setMonth(nextBilling.getMonth() + 1);
+      nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
     } else if (plan.billingCycle === 'yearly') {
       nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+      nextPeriodEnd.setFullYear(nextPeriodEnd.getFullYear() + 1);
     }
+    
     subscription.nextBillingDate = nextBilling;
+    subscription.currentPeriodEndsAt = nextPeriodEnd;
+    subscription.cancelAtPeriodEnd = false;
+    subscription.canceledAt = undefined;
 
     await subscription.save();
+    
+    // Update user status to active
+    const User = (await import('../models/User')).default;
+    await User.findByIdAndUpdate(req.user._id, { status: 'active' });
 
+    const populatedSubscription = await Subscription.findById(subscription._id).populate('planId');
+    
     res.json({
       success: true,
-      message: 'Plan changed successfully',
-      data: subscription
+      message: 'Plan updated and subscription reactivated successfully',
+      data: populatedSubscription
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });

@@ -19,13 +19,16 @@ const BillingPage = () => {
     }
   });
 
-  const { data: currentSubscription } = useQuery({
-    queryKey: ['currentSubscription'],
+  const { data: userData } = useQuery({
+    queryKey: ['currentUser'],
     queryFn: async () => {
       const { data } = await apiClient.get('/auth/me');
-      return data.data?.subscription;
+      return data.data;
     }
   });
+  
+  const currentSubscription = userData?.subscription;
+  const organization = userData?.organization;
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: async (planId: string) => {
@@ -60,12 +63,30 @@ const BillingPage = () => {
   const getSubscriptionStatus = () => {
     if (!currentSubscription) return 'No active subscription';
     
+    // Check organization status first (super admin actions)
+    if (organization?.status === 'inactive') return 'Organization Deactivated';
+    if (organization?.status === 'pending_deletion') return 'Organization Pending Deletion';
+    
+    // Check subscription status
     if (currentSubscription.status === 'canceled') return 'Canceled';
     if (currentSubscription.status === 'past_due') return 'Payment Overdue';
+    if (currentSubscription.status === 'inactive') return 'Inactive';
+    if (currentSubscription.status === 'expired') return 'Expired';
     if (currentSubscription.trialExpiresAt && new Date(currentSubscription.trialExpiresAt) < new Date()) {
       return 'Trial Expired';
     }
+    if (currentSubscription.currentPeriodEndsAt && new Date(currentSubscription.currentPeriodEndsAt) < new Date() && !currentSubscription.isLifetime) {
+      return 'Period Expired';
+    }
+    
     return currentSubscription.status;
+  };
+  
+  const isRestricted = () => {
+    return organization?.status === 'inactive' || 
+           ['canceled', 'past_due', 'inactive', 'expired'].includes(currentSubscription?.status) ||
+           (currentSubscription?.trialExpiresAt && new Date(currentSubscription.trialExpiresAt) < new Date()) ||
+           (currentSubscription?.currentPeriodEndsAt && new Date(currentSubscription.currentPeriodEndsAt) < new Date() && !currentSubscription?.isLifetime);
   };
 
   return (
@@ -79,11 +100,32 @@ const BillingPage = () => {
         <p className="text-text-secondary">Manage your subscription and billing information</p>
       </div>
 
+      {/* Restriction Warning */}
+      {isRestricted() && (
+        <div className="mb-8 p-6 bg-red-50 border-l-4 border-red-400 rounded-3xl">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertTriangle size={24} className="text-red-600" />
+            <h2 className="text-xl font-bold text-red-800">Access Restricted</h2>
+          </div>
+          <p className="text-red-700 mb-4">
+            {organization?.status === 'inactive' 
+              ? 'Your organization has been deactivated by an administrator. Contact support for assistance.'
+              : 'Your subscription is inactive. Please reactivate or upgrade your plan to restore full access.'
+            }
+          </p>
+          {organization?.status !== 'inactive' && (
+            <p className="text-red-600 text-sm">
+              You can still view your dashboard but cannot access full features until reactivated.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Current Subscription Status */}
       {currentSubscription && (
         <div className="mb-8 p-6 bg-app-surface rounded-3xl border border-app-border">
           <h2 className="text-xl font-bold text-text-primary mb-4">Current Subscription</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-text-secondary">Plan</p>
               <p className="font-semibold">{currentSubscription.planId?.name || 'Free Trial'}</p>
@@ -91,7 +133,7 @@ const BillingPage = () => {
             <div>
               <p className="text-sm text-text-secondary">Status</p>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                currentSubscription.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                currentSubscription.status === 'active' && !isRestricted() ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
                 {getSubscriptionStatus()}
               </span>
@@ -99,8 +141,18 @@ const BillingPage = () => {
             <div>
               <p className="text-sm text-text-secondary">Next Billing</p>
               <p className="font-semibold">
-                {currentSubscription.nextBillingDate 
+                {currentSubscription.isLifetime ? 'Lifetime Access' :
+                 currentSubscription.nextBillingDate 
                   ? new Date(currentSubscription.nextBillingDate).toLocaleDateString()
+                  : 'N/A'
+                }
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-text-secondary">Period Ends</p>
+              <p className="font-semibold">
+                {currentSubscription.currentPeriodEndsAt 
+                  ? new Date(currentSubscription.currentPeriodEndsAt).toLocaleDateString()
                   : 'N/A'
                 }
               </p>
@@ -141,9 +193,11 @@ const BillingPage = () => {
 
             <button
               onClick={() => handleSubscribe(plan._id)}
-              disabled={isProcessing || currentSubscription?.planId?._id === plan._id}
+              disabled={isProcessing || (currentSubscription?.planId?._id === plan._id && !isRestricted()) || organization?.status === 'inactive'}
               className={`w-full py-3 px-4 rounded-2xl font-semibold transition-all ${
-                currentSubscription?.planId?._id === plan._id
+                organization?.status === 'inactive'
+                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  : currentSubscription?.planId?._id === plan._id && !isRestricted()
                   ? 'bg-green-100 text-green-800 cursor-not-allowed'
                   : 'btn-gradient hover:shadow-lg disabled:opacity-50'
               }`}
@@ -153,8 +207,12 @@ const BillingPage = () => {
                   <RefreshCw size={16} className="animate-spin" />
                   Processing...
                 </div>
-              ) : currentSubscription?.planId?._id === plan._id ? (
+              ) : organization?.status === 'inactive' ? (
+                'Contact Support'
+              ) : currentSubscription?.planId?._id === plan._id && !isRestricted() ? (
                 'Current Plan'
+              ) : isRestricted() && currentSubscription?.planId?._id === plan._id ? (
+                'Reactivate Plan'
               ) : (
                 'Select Plan'
               )}
