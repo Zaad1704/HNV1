@@ -7,11 +7,6 @@ export interface IPlan extends Document {
   duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
   interval: 'monthly' | 'yearly';
   features: string[];
-  limits: {
-    maxProperties: number;
-    maxTenants: number;
-    maxAgents: number;
-  };
   maxProperties: number;
   maxUsers: number;
   maxTenants: number;
@@ -56,11 +51,6 @@ const planSchema = new Schema<IPlan>({
     default: 'monthly'
   },
   features: { type: [String], default: [] },
-  limits: {
-    maxProperties: { type: Number, default: 1 },
-    maxTenants: { type: Number, default: 5 },
-    maxAgents: { type: Number, default: 0 },
-  },
   maxProperties: { type: Number, default: 1 },
   maxUsers: { type: Number, default: 1 },
   maxTenants: { type: Number, default: 5 },

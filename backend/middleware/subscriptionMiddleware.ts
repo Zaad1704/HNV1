@@ -31,12 +31,19 @@ export const checkSubscriptionStatus = async (req: AuthenticatedRequest, res: Re
 
     // Check if subscription is expired or inactive
     const now = new Date();
-    if (subscription.currentPeriodEndsAt && subscription.currentPeriodEndsAt < now) {
+    
+    // Check trial expiration
+    if (subscription.status === 'trialing' && subscription.trialExpiresAt && subscription.trialExpiresAt < now) {
+      subscription.status = 'expired';
+      await subscription.save();
+      req.dashboardOnly = true;
+      console.log('Trial expired, dashboard-only access');
+    } else if (subscription.currentPeriodEndsAt && subscription.currentPeriodEndsAt < now) {
       subscription.status = 'expired';
       await subscription.save();
       req.dashboardOnly = true;
       console.log('Subscription expired, dashboard-only access');
-    } else if (['inactive', 'cancelled', 'past_due'].includes(subscription.status)) {
+    } else if (['inactive', 'canceled', 'past_due', 'expired'].includes(subscription.status)) {
       req.dashboardOnly = true;
       console.log(`Subscription ${subscription.status}, dashboard-only access`);
     }
