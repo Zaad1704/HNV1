@@ -23,11 +23,9 @@ const apiClient = axios.create({
   baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    'X-Client-Version': '1.0.0',
   },
   timeout: 30000,
-  withCredentials: true,
+  withCredentials: false,
 });
 
 // Request interceptor with security enhancements
@@ -49,8 +47,7 @@ apiClient.interceptors.request.use((config) => {
     console.warn('No auth token available for request:', config.url);
   }
 
-  // Add security headers
-  config.headers['X-Request-Time'] = Date.now().toString();
+  // Security headers removed to avoid CORS issues
   
   return config;
 });
