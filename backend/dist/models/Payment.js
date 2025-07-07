@@ -29,6 +29,15 @@ const PaymentSchema = new mongoose_1.Schema({
     propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
     organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
     amount: { type: Number, required: true, min: 0 },
+    originalAmount: { type: Number, min: 0 },
+    discount: {
+        type: {
+            type: String,
+            enum: ['percentage', 'fixed']
+        },
+        value: { type: Number, min: 0 },
+        amount: { type: Number, min: 0 }
+    },
     status: {
         type: String,
         enum: ['pending', 'Paid', 'completed', 'Completed', 'failed'],
@@ -36,8 +45,10 @@ const PaymentSchema = new mongoose_1.Schema({
     },
     paymentDate: { type: Date, default: Date.now },
     createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
-    paymentMethod: { type: String },
-    description: { type: String },
+    recordedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
+    paymentMethod: { type: String, default: 'Bank Transfer' },
+    description: { type: String, default: 'Monthly Rent Payment' },
+    notes: { type: String },
 }, { timestamps: true });
 PaymentSchema.index({ organizationId: 1, paymentDate: -1 });
 PaymentSchema.index({ tenantId: 1, status: 1 });

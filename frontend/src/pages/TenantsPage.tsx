@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter } from 'lucide-react';
@@ -16,9 +17,10 @@ import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 
-const fetchTenants = async () => {
+const fetchTenants = async (propertyId?: string) => {
   try {
-    const { data } = await apiClient.get('/tenants');
+    const url = propertyId ? `/tenants?propertyId=${propertyId}` : '/tenants';
+    const { data } = await apiClient.get(url);
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch tenants:', error);
@@ -28,6 +30,8 @@ const fetchTenants = async () => {
 
 const TenantsPage = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const propertyId = searchParams.get('propertyId');
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -64,8 +68,8 @@ const TenantsPage = () => {
   };
 
   const { data: tenants = [], isLoading, error } = useQuery({
-    queryKey: ['tenants'],
-    queryFn: fetchTenants,
+    queryKey: ['tenants', propertyId],
+    queryFn: () => fetchTenants(propertyId || undefined),
     retry: 0,
     refetchOnWindowFocus: false,
     onError: (error) => {
@@ -160,8 +164,12 @@ const TenantsPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Tenants</h1>
-          <p className="text-text-secondary mt-1">Manage your tenant relationships</p>
+          <h1 className="text-3xl font-bold text-text-primary">
+            Tenants {propertyId && '(Filtered by Property)'}
+          </h1>
+          <p className="text-text-secondary mt-1">
+            {propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
+          </p>
         </div>
         <div className="flex gap-3">
           <button

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CreditCard, Plus, DollarSign, Calendar, User, Download } from 'lucide-react';
 import apiClient from '../api/client';
@@ -11,9 +12,10 @@ import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
 import { deletePayment, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 
-const fetchPayments = async () => {
+const fetchPayments = async (propertyId?: string) => {
   try {
-    const { data } = await apiClient.get('/payments');
+    const url = propertyId ? `/payments?propertyId=${propertyId}` : '/payments';
+    const { data } = await apiClient.get(url);
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch payments:', error);
@@ -24,6 +26,8 @@ const fetchPayments = async () => {
 const PaymentsPage = () => {
   const queryClient = useQueryClient();
   const { currency } = useCurrency();
+  const [searchParams] = useSearchParams();
+  const propertyId = searchParams.get('propertyId');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -35,8 +39,8 @@ const PaymentsPage = () => {
   });
   
   const { data: payments = [], isLoading } = useQuery({
-    queryKey: ['payments'],
-    queryFn: fetchPayments,
+    queryKey: ['payments', propertyId],
+    queryFn: () => fetchPayments(propertyId || undefined),
     retry: 1
   });
 
@@ -75,8 +79,12 @@ const PaymentsPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Payments</h1>
-          <p className="text-text-secondary mt-1">Track and manage rent payments ({payments.length} payments)</p>
+          <h1 className="text-3xl font-bold text-text-primary">
+            Payments {propertyId && '(Filtered by Property)'}
+          </h1>
+          <p className="text-text-secondary mt-1">
+            {propertyId ? `Payments for selected property (${payments.length} payments)` : `Track and manage rent payments (${payments.length} payments)`}
+          </p>
         </div>
         <div className="flex gap-3">
           <button

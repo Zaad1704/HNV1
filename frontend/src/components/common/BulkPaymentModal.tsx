@@ -47,23 +47,11 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
     queryKey: ['tenants', selectedProperty],
     queryFn: async () => {
       if (!selectedProperty) return [];
-      console.log('Fetching tenants for property:', selectedProperty);
       const { data } = await apiClient.get(`/tenants?propertyId=${selectedProperty}`);
-      console.log('Tenants response:', data);
       return data.data || [];
     },
     enabled: !!selectedProperty
   });
-  
-  // Debug logging
-  React.useEffect(() => {
-    if (selectedProperty) {
-      console.log('Selected property changed:', selectedProperty);
-      console.log('Tenants data:', tenants);
-      console.log('Tenants loading:', tenantsLoading);
-      console.log('Tenants error:', tenantsError);
-    }
-  }, [selectedProperty, tenants, tenantsLoading, tenantsError]);
 
   const calculateDiscountedAmount = (originalAmount: number) => {
     if (discountType === 'none') return originalAmount;

@@ -12,9 +12,11 @@ const getTenants = async (req, res) => {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const tenants = await Tenant_1.default.find({
-            organizationId: req.user.organizationId
-        })
+        const query = { organizationId: req.user.organizationId };
+        if (req.query.propertyId) {
+            query.propertyId = req.query.propertyId;
+        }
+        const tenants = await Tenant_1.default.find(query)
             .populate('propertyId', 'name')
             .lean()
             .exec() || [];
