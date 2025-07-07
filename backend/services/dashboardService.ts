@@ -4,7 +4,7 @@ import Payment from '../models/Payment';
 import Reminder from '../models/Reminder';
 
 class DashboardService {
-  async getDashboardStats(organizationId: string) {
+  async getDashboardStats(organizationId: string, userRole?: string, userId?: string) {
     try {
       if (!organizationId) {
         console.log('No organizationId provided to getDashboardStats');
@@ -17,13 +17,28 @@ class DashboardService {
           recentPayments: 0
         };
       }
+      
+      // Role-based filtering
+      let propertyFilter: any = { organizationId, status: { $ne: 'Archived' } };
+      let tenantFilter: any = { organizationId, status: { $ne: 'Archived' } };
+      let paymentFilter: any = { organizationId };
+      
+      if (userRole === 'Agent' && userId) {
+        // Agent can only see properties they manage
+        propertyFilter.managedByAgentId = userId;
+        // Get properties managed by agent first
+        const agentProperties = await Property.find(propertyFilter).select('_id');
+        const propertyIds = agentProperties.map(p => p._id);
+        tenantFilter.propertyId = { $in: propertyIds };
+        paymentFilter.propertyId = { $in: propertyIds };
+      }
 
       // Use Promise.allSettled for better error handling
       const [propertiesResult, tenantsResult, paymentsResult, remindersResult] = await Promise.allSettled([
-        Property.find({ organizationId, status: { $ne: 'Archived' } }).select('numberOfUnits').lean().exec(),
-        Tenant.find({ organizationId, status: { $ne: 'Archived' } }).select('status').lean().exec(),
+        Property.find(propertyFilter).select('numberOfUnits').lean().exec(),
+        Tenant.find(tenantFilter).select('status').lean().exec(),
         Payment.find({ 
-          organizationId,
+          ...paymentFilter,
           paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
         }).select('amount paymentDate status').sort({ paymentDate: -1 }).limit(50).lean().exec(),
         Reminder.countDocuments({ organizationId, status: 'active', type: 'maintenance_reminder' }).exec()

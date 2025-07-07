@@ -220,7 +220,7 @@ export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
   }
 
   console.log('Fetching stats for organization:', req.user.organizationId);
-  const stats = await dashboardService.getDashboardStats(req.user.organizationId);
+  const stats = await dashboardService.getDashboardStats(req.user.organizationId, req.user.role, req.user._id);
   console.log('Dashboard stats result:', stats);
   res.status(200).json({ success: true, data: stats });
 });
@@ -243,7 +243,7 @@ export const getDashboardStats = safeAsync(async (req: AuthRequest, res: Respons
   }
 
   console.log('Fetching dashboard stats for organization:', req.user.organizationId);
-  const stats = await dashboardService.getDashboardStats(req.user.organizationId);
+  const stats = await dashboardService.getDashboardStats(req.user.organizationId, req.user.role, req.user._id);
   console.log('Dashboard stats result:', stats);
   res.status(200).json({ success: true, data: stats });
 });

@@ -15,10 +15,15 @@ export const getTenantDashboard = async (req: AuthRequest, res: Response) => {
     }
 
     // Find tenant record for this user
-    const tenant = await Tenant.findOne({ 
-      email: req.user.email,
-      organizationId: req.user.organizationId 
-    }).populate('propertyId', 'name address');
+    let tenant;
+    if (req.user.tenantId) {
+      tenant = await Tenant.findById(req.user.tenantId).populate('propertyId', 'name address');
+    } else {
+      tenant = await Tenant.findOne({ 
+        email: req.user.email,
+        organizationId: req.user.organizationId 
+      }).populate('propertyId', 'name address');
+    }
 
     if (!tenant) {
       return res.status(404).json({ 
@@ -87,10 +92,15 @@ export const createMaintenanceRequest = async (req: AuthRequest, res: Response) 
     }
 
     // Find tenant record
-    const tenant = await Tenant.findOne({ 
-      email: req.user.email,
-      organizationId: req.user.organizationId 
-    });
+    let tenant;
+    if (req.user.tenantId) {
+      tenant = await Tenant.findById(req.user.tenantId);
+    } else {
+      tenant = await Tenant.findOne({ 
+        email: req.user.email,
+        organizationId: req.user.organizationId 
+      });
+    }
 
     if (!tenant) {
       return res.status(404).json({ 

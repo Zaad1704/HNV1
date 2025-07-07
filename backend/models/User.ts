@@ -9,6 +9,7 @@ export interface IUser extends Document {
   password?: string;
   role: 'Super Admin' | 'Super Moderator' | 'Landlord' | 'Agent' | 'Tenant';
   organizationId?: mongoose.Types.ObjectId;
+  tenantId?: mongoose.Types.ObjectId;
   createdAt: Date;
   googleId?: string;
   status: 'active' | 'suspended' | 'pending';
@@ -55,6 +56,7 @@ const UserSchema = new Schema<IUser>({
   },
   role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization' },
+  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant' },
   createdAt: { type: Date, default: Date.now },
   googleId: String,
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
