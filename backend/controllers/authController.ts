@@ -3,6 +3,7 @@ import User from '../models/User';
 import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
+import subscriptionService from '../services/subscriptionService';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 import Payment from '../models/Payment';
@@ -87,13 +88,13 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     const verificationToken = user.getEmailVerificationToken();
     await user.save();
 
-    const subscription = new Subscription({
-      organizationId: organization._id,
-      planId: trialPlan._id,
-      status: 'trialing',
-      trialExpiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-    });
-    await subscription.save();
+    // Create trial subscription using service
+    try {
+      await subscriptionService.createTrialSubscription(organization._id.toString());
+      console.log('✅ Trial subscription created for new user:', user.email);
+    } catch (error) {
+      console.error('❌ Failed to create trial subscription:', error);
+    }
 
     // Send verification email
     try {

@@ -17,6 +17,17 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
       const secret = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
       const decoded = jwt.verify(token, secret) as any;
       const foundUser = await User.findById(decoded.id).select("-password");
+      
+      // Populate subscription data if user has organization
+      if (foundUser && foundUser.organizationId) {
+        const subscription = await Subscription.findOne({ 
+          organizationId: foundUser.organizationId 
+        }).populate('planId');
+        
+        if (subscription) {
+          (foundUser as any).subscription = subscription;
+        }
+      }
       req.user = foundUser;
 
       if (!req.user) {

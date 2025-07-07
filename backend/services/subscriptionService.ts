@@ -3,20 +3,38 @@ import Organization from '../models/Organization';
 import Plan from '../models/Plan';
 
 class SubscriptionService {
-  async createTrialSubscription(organizationId: string, planId: string) {
+  async createTrialSubscription(organizationId: string, planId?: string) {
     try {
-      const plan = await Plan.findById(planId);
-      if (!plan) throw new Error('Plan not found');
+      // Use provided plan or find default trial plan
+      let plan;
+      if (planId) {
+        plan = await Plan.findById(planId);
+      } else {
+        // Find the default trial plan (lowest price active plan)
+        plan = await Plan.findOne({ 
+          isActive: true, 
+          isPublic: true 
+        }).sort({ price: 1 });
+      }
+      
+      if (!plan) throw new Error('No trial plan available');
 
       const trialDays = plan.trialDays || 14;
       const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
 
       const subscription = await Subscription.create({
         organizationId,
-        planId,
+        planId: plan._id,
         status: 'trialing',
         trialExpiresAt,
-        currentPeriodEndsAt: trialExpiresAt
+        currentPeriodEndsAt: trialExpiresAt,
+        amount: plan.price,
+        currency: plan.currency,
+        billingCycle: plan.billingCycle,
+        maxProperties: plan.maxProperties,
+        maxTenants: plan.maxTenants,
+        maxUsers: plan.maxUsers,
+        maxAgents: plan.maxAgents
       });
 
       return subscription;

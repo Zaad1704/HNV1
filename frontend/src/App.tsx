@@ -84,6 +84,7 @@ const AdminMaintenancePage = React.lazy(() => import('./pages/AdminMaintenancePa
 const AdminDataManagementPage = React.lazy(() => import('./pages/AdminDataManagementPage'));
 const AdminProfilePage = React.lazy(() => import('./pages/SuperAdmin/AdminProfilePage')); // SuperAdmin profile page
 const AdminSettingsPage = React.lazy(() => import('./pages/SuperAdmin/AdminSettingsPage'));
+const AdminSubscriptionsPage = React.lazy(() => import('./pages/AdminSubscriptionsPage'));
 
 const FullScreenLoader = () => (
     <div className="h-screen w-full flex items-center justify-center bg-app-bg">
@@ -198,6 +199,7 @@ function App() {
             <Route path="data-management" element={<AdminDataManagementPage />} />
             <Route path="profile" element={<AdminProfilePage />} /> {/* Admin's own profile page */}
             <Route path="settings" element={<AdminSettingsPage />} /> {/* Admin settings page */}
+            <Route path="subscriptions" element={<AdminSubscriptionsPage />} /> {/* Subscription management */}
           </Route>
         </Route>
         
