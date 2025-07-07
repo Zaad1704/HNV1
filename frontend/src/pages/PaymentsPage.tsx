@@ -155,7 +155,7 @@ const PaymentsPage = () => {
             <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
               <DollarSign size={14} className="text-white" />
             </div>
-            Manual Payment
+            Payment Collection
           </button>
         </div>
       </div>
@@ -234,6 +234,26 @@ const PaymentsPage = () => {
                     </div>
                     <span className="text-sm text-text-primary font-medium">
                       {payment.paymentMethod}
+                    </span>
+                  </div>
+                )}
+                {payment.collectionMethod && payment.collectionMethod.includes('agent') && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <Users size={14} className="text-orange-600" />
+                    </div>
+                    <span className="text-sm text-text-primary font-medium">
+                      {payment.agentName ? `Agent: ${payment.agentName}` : 'Agent Collection'}
+                    </span>
+                  </div>
+                )}
+                {payment.referenceNumber && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <FileText size={14} className="text-gray-600" />
+                    </div>
+                    <span className="text-sm text-text-primary font-medium">
+                      Ref: {payment.referenceNumber}
                     </span>
                   </div>
                 )}

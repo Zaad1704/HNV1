@@ -18,6 +18,11 @@ export interface IPayment extends Document {
   paymentMethod?: string;
   description?: string;
   notes?: string;
+  collectionMethod?: string;
+  receivedBy?: string;
+  agentName?: string;
+  handoverDate?: Date;
+  referenceNumber?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +52,11 @@ const PaymentSchema = new Schema<IPayment>({
   paymentMethod: { type: String, default: 'Bank Transfer' },
   description: { type: String, default: 'Monthly Rent Payment' },
   notes: { type: String },
+  collectionMethod: { type: String },
+  receivedBy: { type: String },
+  agentName: { type: String },
+  handoverDate: { type: Date },
+  referenceNumber: { type: String },
 }, { timestamps: true });
 
 // Add indexes for better performance

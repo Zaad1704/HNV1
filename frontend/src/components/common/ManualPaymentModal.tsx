@@ -25,9 +25,12 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
     description: 'Manual Payment Collection',
     paymentDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'Cash',
-    collectionMethod: 'hand_delivery',
+    collectionMethod: 'tenant_direct',
     notes: '',
-    receivedBy: 'landlord'
+    receivedBy: 'landlord',
+    agentName: '',
+    handoverDate: new Date().toISOString().split('T')[0],
+    referenceNumber: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +90,9 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
         collectionMethod: formData.collectionMethod,
         notes: formData.notes,
         receivedBy: formData.receivedBy,
+        agentName: formData.agentName,
+        handoverDate: formData.handoverDate,
+        referenceNumber: formData.referenceNumber,
         recordedBy: user?._id,
         status: 'Paid'
       };
@@ -108,9 +114,12 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
         description: 'Manual Payment Collection',
         paymentDate: new Date().toISOString().split('T')[0],
         paymentMethod: 'Cash',
-        collectionMethod: 'hand_delivery',
+        collectionMethod: 'tenant_direct',
         notes: '',
-        receivedBy: 'landlord'
+        receivedBy: 'landlord',
+        agentName: '',
+        handoverDate: new Date().toISOString().split('T')[0],
+        referenceNumber: ''
       });
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to record payment');
@@ -130,8 +139,8 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
               <DollarSign size={24} className="text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">Manual Payment Collection</h3>
-              <p className="text-gray-600">Record cash, bank transfer, or other manual payments</p>
+              <h3 className="text-2xl font-bold text-gray-900">Payment Collection & Handover</h3>
+              <p className="text-gray-600">Record payments collected by agents, cash handovers, deposits, and transfers</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
@@ -320,11 +329,14 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
                   onChange={(e) => setFormData({ ...formData, collectionMethod: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
                 >
-                  <option value="hand_delivery">Hand Delivery</option>
+                  <option value="tenant_direct">Tenant Direct Payment</option>
+                  <option value="agent_collection">Agent Collected from Tenant</option>
+                  <option value="agent_handover_cash">Agent Cash Handover to Landlord</option>
+                  <option value="agent_bank_deposit">Agent Bank Deposit</option>
+                  <option value="agent_bank_transfer">Agent Bank Transfer</option>
                   <option value="office_pickup">Office Pickup</option>
-                  <option value="bank_deposit">Bank Deposit</option>
-                  <option value="agent_collection">Agent Collection</option>
-                  <option value="other">Other</option>
+                  <option value="landlord_collection">Landlord Direct Collection</option>
+                  <option value="other">Other Method</option>
                 </select>
               </div>
 
@@ -340,12 +352,60 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
                   <option value="landlord">Landlord</option>
                   <option value="agent">Property Agent</option>
                   <option value="manager">Property Manager</option>
+                  <option value="landlord_bank">Landlord Bank Account</option>
+                  <option value="company_account">Company Account</option>
                   <option value="other">Other</option>
                 </select>
               </div>
             </div>
           </div>
 
+          {/* Agent & Handover Details */}
+          {(formData.collectionMethod.includes('agent') || formData.receivedBy === 'agent') && (
+            <div className="border-t pt-6">
+              <h4 className="text-lg font-semibold mb-4">Agent & Handover Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Agent Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.agentName}
+                    onChange={(e) => setFormData({ ...formData, agentName: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
+                    placeholder="Agent or collector name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Handover Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.handoverDate}
+                    onChange={(e) => setFormData({ ...formData, handoverDate: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reference Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.referenceNumber}
+                    onChange={(e) => setFormData({ ...formData, referenceNumber: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
+                    placeholder="Deposit slip, transfer ref, etc."
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Description & Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -363,14 +423,14 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Notes
+                Collection & Handover Details
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
                 rows={3}
-                placeholder="Any additional notes about this payment..."
+                placeholder="Details about collection process, agent handover, bank deposit reference, transfer details, etc..."
               />
             </div>
           </div>
