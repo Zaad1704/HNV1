@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Check, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CreditCard, Check, AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
@@ -32,20 +32,30 @@ const BillingPage = () => {
 
   const updateSubscriptionMutation = useMutation({
     mutationFn: async (planId: string) => {
-      const { data } = await apiClient.put('/billing/subscription', {
-        planId,
-        status: 'active'
-      });
+      const { data } = await apiClient.put('/billing/change-plan', { planId });
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentSubscription'] });
-      queryClient.invalidateQueries({ queryKey: ['authUser'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       alert('Subscription updated successfully!');
       window.location.href = '/dashboard';
     },
     onError: (error: any) => {
       alert(error.response?.data?.message || 'Failed to update subscription');
+    }
+  });
+  
+  const cancelSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post('/billing/cancel');
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      alert('Subscription will be cancelled at the end of current period');
+    },
+    onError: (error: any) => {
+      alert(error.response?.data?.message || 'Failed to cancel subscription');
     }
   });
 
@@ -55,6 +65,19 @@ const BillingPage = () => {
     setIsProcessing(true);
     try {
       await updateSubscriptionMutation.mutateAsync(planId);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  const handleCancelSubscription = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your current billing period.')) {
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      await cancelSubscriptionMutation.mutateAsync();
     } finally {
       setIsProcessing(false);
     }
@@ -158,6 +181,27 @@ const BillingPage = () => {
               </p>
             </div>
           </div>
+          
+          {/* Subscription Actions */}
+          {currentSubscription.status === 'active' && !currentSubscription.cancelAtPeriodEnd && (
+            <div className="mt-4 pt-4 border-t border-app-border">
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isProcessing}
+                className="px-4 py-2 text-red-600 border border-red-300 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                Cancel Subscription
+              </button>
+            </div>
+          )}
+          
+          {currentSubscription.cancelAtPeriodEnd && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-yellow-800 text-sm">
+                Your subscription is scheduled for cancellation at the end of the current period.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -230,11 +274,16 @@ const BillingPage = () => {
               Payment Method
             </label>
             <div className="p-3 border border-app-border rounded-xl bg-app-bg">
-              <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-text-secondary" />
-                <span className="text-sm text-text-secondary">
-                  {currentSubscription?.paymentMethod || 'No payment method on file'}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard size={16} className="text-text-secondary" />
+                  <span className="text-sm text-text-secondary">
+                    {currentSubscription?.paymentMethod || 'No payment method on file'}
+                  </span>
+                </div>
+                <button className="text-xs text-brand-blue hover:underline">
+                  Update
+                </button>
               </div>
             </div>
           </div>
@@ -246,6 +295,76 @@ const BillingPage = () => {
               <span className="text-sm text-text-secondary">{user?.email}</span>
             </div>
           </div>
+        </div>
+        
+        {/* Billing Summary */}
+        <div className="mt-6 pt-6 border-t border-app-border">
+          <h3 className="font-semibold text-text-primary mb-3">Billing Summary</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Current Plan</span>
+              <span className="font-medium">{currentSubscription?.planId?.name || 'Free Trial'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Amount</span>
+              <span className="font-medium">${(currentSubscription?.amount || 0) / 100}/{currentSubscription?.billingCycle}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-text-secondary">Last Payment</span>
+              <span className="font-medium">
+                {currentSubscription?.lastPaymentDate 
+                  ? new Date(currentSubscription.lastPaymentDate).toLocaleDateString()
+                  : 'N/A'
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Billing History */}
+      <div className="mt-8 p-6 bg-app-surface rounded-3xl border border-app-border">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-text-primary">Billing History</h2>
+          <button className="flex items-center gap-2 text-sm text-brand-blue hover:underline">
+            <Download size={16} />
+            Download All
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          {/* Mock billing history - replace with real data */}
+          {currentSubscription?.lastPaymentDate && (
+            <div className="flex items-center justify-between p-3 border border-app-border rounded-xl">
+              <div>
+                <p className="font-medium text-text-primary">
+                  {currentSubscription.planId?.name || 'Subscription'}
+                </p>
+                <p className="text-sm text-text-secondary">
+                  {new Date(currentSubscription.lastPaymentDate).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-medium text-text-primary">
+                  ${(currentSubscription.amount || 0) / 100}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                    Paid
+                  </span>
+                  <button className="text-xs text-brand-blue hover:underline">
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!currentSubscription?.lastPaymentDate && (
+            <div className="text-center py-8 text-text-secondary">
+              <p>No billing history available</p>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
