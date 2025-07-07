@@ -101,14 +101,27 @@ function App() {
 
 
   useEffect(() => {
-    setSessionLoading(false);
-  }, []);
+    const checkUserSession = async () => {
+      if (token && !user) {
+        try {
+          const response = await apiClient.get('/auth/me');
+          setUser(response.data.data);
+        } catch (error) {
+          console.error("Session check failed, logging out.", error);
+          logout();
+        }
+      }
+      setSessionLoading(false);
+    };
+    
+    setTimeout(checkUserSession, 100);
+  }, [token, user, setUser, logout]);
 
   if (isSessionLoading) {
     return <FullScreenLoader />;
   }
 
-  // Subdomain routing removed - causing crashes
+  // Subdomain routing removed to prevent crashes
 
   return (
     <AccessibilityProvider>
@@ -124,16 +137,24 @@ function App() {
         <EnhancedFeedbackWidget />
         <Suspense fallback={<FullScreenLoader />}>
         <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
+          <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
+          <Route path="auth/google/debug" element={<GoogleDebugPage />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="pricing" element={<PricingPage />} />
-          <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
+          <Route path="plans" element={<PlansPage />} />
+          <Route path="payment-summary/:planId" element={<PaymentSummaryPage />} />
+          <Route path="verify-email/:token" element={<VerifyEmailPage />} />
+          {/* Tenant Public Portal routes */}
+          {/* <Route path="tenant-portal/:token" element={<TenantPublicPortalPage />} /> */}
         </Route>
         
         {/* Authenticated Routes */}
@@ -143,7 +164,7 @@ function App() {
             <Route index element={<DashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="profile" element={<TenantProfilePage />} />
+            <Route path="profile" element={<TenantProfilePage />} /> {/* Assuming a generic profile page */}
 
             {/* Landlord/Agent Specific Routes */}
             <Route path="properties" element={<PropertiesPage />} />
@@ -179,13 +200,12 @@ function App() {
             <Route path="billing" element={<AdminBillingPage />} />
             <Route path="maintenance" element={<AdminMaintenancePage />} />
             <Route path="data-management" element={<AdminDataManagementPage />} />
-            <Route path="profile" element={<AdminProfilePage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="profile" element={<AdminProfilePage />} /> {/* Admin's own profile page */}
+            <Route path="settings" element={<AdminSettingsPage />} /> {/* Admin settings page */}
           </Route>
         </Route>
         
         {/* Catch-all for 404 */}
-        <Route path="*" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
