@@ -12,6 +12,7 @@ import ViewOnlyDashboard from '../components/dashboard/ViewOnlyDashboard';
 import FloatingHelpCenter from '../components/common/FloatingHelpCenter';
 import FloatingQuickActions from '../components/common/FloatingQuickActions';
 import { useAuthStore } from '../store/authStore';
+import { useQuery as useSubscriptionQuery } from '@tanstack/react-query';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -37,22 +38,17 @@ interface DashboardStats {
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
-    console.log('Fetching dashboard stats...');
-    const { data } = await apiClient.get('/dashboard/stats', {
+      const { data } = await apiClient.get('/dashboard/stats', {
       headers: { 'Cache-Control': 'max-age=300' } // 5 minutes cache
     });
-    console.log('Dashboard stats response:', data);
     if (!data.success) {
       throw new Error(data.message || 'Failed to fetch dashboard stats');
     }
     return data.data;
   } catch (error: any) {
-    console.error('Failed to fetch dashboard stats:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch dashboard stats:', error);
+    }
     // Don't throw error, return default values to prevent crashes
     return {
       totalProperties: 0,
@@ -69,7 +65,17 @@ const DashboardPage = () => {
   const { currency } = useCurrency();
   const { user } = useAuthStore();
   
-  console.log('DashboardPage rendering...');
+  // Get subscription status
+  const { data: subscriptionStatus } = useSubscriptionQuery({
+    queryKey: ['subscriptionStatus'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/subscription/status');
+      return data.data;
+    },
+    enabled: !!user?.organizationId
+  });
+  
+
   
   // Check if user is inactive and should see view-only dashboard
   const isInactive = user && (
@@ -86,17 +92,13 @@ const DashboardPage = () => {
   );
   
   if (isInactive) {
-    console.log('User is inactive, showing view-only dashboard:', { 
-      status: user?.status, 
-      emailVerified: user?.isEmailVerified,
-      hasOrganization: !!user?.organizationId 
-    });
+
     return <ViewOnlyDashboard />;
   }
   
   // Additional safety check
   if (!user) {
-    console.log('No user found, redirecting to login');
+
     return <Navigate to="/login" replace />;
   }
   
@@ -106,7 +108,7 @@ const DashboardPage = () => {
     enabled: !!user && !!user.organizationId, // Only fetch if user has organization
     refetchInterval: 300000, // 5 minutes
     retry: (failureCount, error: any) => {
-      console.log('Query retry attempt:', failureCount, error?.message);
+
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         return false;
       }
@@ -132,16 +134,10 @@ const DashboardPage = () => {
   const dashboardStats = stats || defaultStats;
   const showContent = !isLoading || stats; // Show content if not loading OR if we have cached data
 
-  console.log('Dashboard state:', { 
-    isLoading, 
-    error: error?.message, 
-    stats, 
-    showContent, 
-    user: user ? { id: user._id, role: user.role, organizationId: user.organizationId } : null 
-  });
+
 
   if (isLoading && !stats) {
-    console.log('Showing loading skeleton...');
+
     return (
       <div className="p-6 pt-0">
         <SkeletonStats />
@@ -150,17 +146,13 @@ const DashboardPage = () => {
   }
 
   if (error && !stats) {
-    console.log('Dashboard error:', error);
+
     
     // If it's a 401/403 error or organization-related, show empty dashboard
     if (error?.response?.status === 401 || error?.response?.status === 403 || 
         error?.message?.includes('organization') || error?.message?.includes('Not authorized') ||
         !user?.organizationId) {
-      console.log('Showing empty dashboard for new user or auth issue:', {
-        status: error?.response?.status,
-        message: error?.message,
-        hasOrganization: !!user?.organizationId
-      });
+
       return <EmptyDashboard />;
     }
     
@@ -195,12 +187,32 @@ const DashboardPage = () => {
   
   // Show empty dashboard if user has no data (all stats are 0)
   if (stats && Object.values(stats).every(val => val === 0)) {
-    console.log('Showing empty dashboard - no data');
+
     return <EmptyDashboard />;
   }
 
   return (
     <>
+      {/* Subscription Status Banner */}
+      {subscriptionStatus?.status === 'trialing' && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-800 font-medium">Trial Active</p>
+              <p className="text-blue-600 text-sm">
+                {subscriptionStatus.expiresAt 
+                  ? `Trial expires on ${new Date(subscriptionStatus.expiresAt).toLocaleDateString()}`
+                  : 'Enjoying your trial?'
+                }
+              </p>
+            </div>
+            <Link to="/dashboard/billing" className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
+              Upgrade Now
+            </Link>
+          </div>
+        </div>
+      )}
+      
       <DashboardMonitor />
       <FloatingHelpCenter />
       <FloatingQuickActions />

@@ -34,4 +34,20 @@ router.get('/cashflow', async (req, res) => {
   });
 });
 
+router.get('/recent-activity', async (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      {
+        id: '1',
+        type: 'payment',
+        title: 'Payment Received',
+        description: 'Monthly rent payment from John Doe',
+        timestamp: new Date().toISOString(),
+        amount: 1200
+      }
+    ]
+  });
+});
+
 export default router;
