@@ -28,19 +28,21 @@ export const createAgentHandover = async (req: AuthRequest, res: Response) => {
     }
 
     // Upload handover proof image
-    if (!req.files || !req.files.handoverProof) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    if (!files || !files.handoverProof || !files.handoverProof[0]) {
       return res.status(400).json({
         success: false,
         message: 'Handover proof image is required'
       });
     }
 
-    const handoverProofUrl = await uploadToCloudinary(req.files.handoverProof as any);
+    const handoverProofUrl = await uploadToCloudinary(files.handoverProof[0]);
     let collectionSheetUrl = null;
 
     // Upload collection sheet if provided
-    if (req.files.collectionSheet) {
-      collectionSheetUrl = await uploadToCloudinary(req.files.collectionSheet as any);
+    if (files.collectionSheet && files.collectionSheet[0]) {
+      collectionSheetUrl = await uploadToCloudinary(files.collectionSheet[0]);
     }
 
     const agentHandover = new AgentHandover({

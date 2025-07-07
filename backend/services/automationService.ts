@@ -106,7 +106,7 @@ class AutomationService {
     for (const reminder of dueReminders) {
       try {
         // Send notification based on reminder type
-        if (reminder.type === 'rent_reminder') {
+        if (reminder.type === 'rent_due') {
           const tenant = reminder.tenantId as any;
           await notificationService.notifyRentOverdue(
             tenant.name,
@@ -117,8 +117,8 @@ class AutomationService {
         }
 
         // Update reminder for next run
-        reminder.sentCount += 1;
-        reminder.lastSentAt = new Date();
+        reminder.executionCount += 1;
+        reminder.lastRunDate = new Date();
         
         // Calculate next run date based on frequency
         const nextRun = new Date();
