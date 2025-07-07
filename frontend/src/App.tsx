@@ -71,6 +71,7 @@ const AuditLogPage = React.lazy(() => import('./pages/AuditLogPage'));
 const PropertyDetailsPage = React.lazy(() => import('./pages/PropertyDetailsPage'));
 const EditPropertyPage = React.lazy(() => import('./pages/EditPropertyPage'));
 const TenantProfilePage = React.lazy(() => import('./pages/TenantProfilePage'));
+const TenantDetailsPage = React.lazy(() => import('./pages/TenantDetailsPage'));
 const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
 
 // Admin pages
@@ -169,6 +170,7 @@ function App() {
             <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
             <Route path="properties/:propertyId/edit" element={<EditPropertyPage />} />
             <Route path="tenants" element={<TenantsPage />} />
+            <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
             <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />

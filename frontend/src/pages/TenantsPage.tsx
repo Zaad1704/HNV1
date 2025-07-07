@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
 import ExportModal from '../components/common/ExportModal';
@@ -12,7 +13,7 @@ import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
-import AddTenantModal from '../components/common/AddTenantModal';
+import ComprehensiveTenantModal from '../components/common/ComprehensiveTenantModal';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
@@ -286,9 +287,12 @@ const TenantsPage = () => {
               </div>
 
               <div className="flex gap-2 mt-4">
-                <button className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors">
+                <Link 
+                  to={`/dashboard/tenants/${tenant._id}`}
+                  className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors text-center"
+                >
                   View Details
-                </button>
+                </Link>
                 <button 
                   onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
                   className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-colors"
@@ -363,7 +367,7 @@ const TenantsPage = () => {
         title="Export Tenants"
       />
 
-      <AddTenantModal
+      <ComprehensiveTenantModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onTenantAdded={handleTenantAdded}
