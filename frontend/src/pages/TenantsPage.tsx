@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter } from 'lucide-react';
+import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
@@ -48,6 +48,7 @@ const TenantsPage = () => {
     sortBy: 'date',
     sortOrder: 'desc'
   });
+  const [showArchived, setShowArchived] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = (newTenant: any) => {
@@ -64,6 +65,31 @@ const TenantsPage = () => {
         handleDeleteSuccess('tenant');
       } catch (error: any) {
         handleDeleteError(error, 'tenant');
+      }
+    }
+  };
+  
+  const handleArchiveTenant = async (tenantId: string, tenantName: string, currentStatus: string) => {
+    const isArchiving = currentStatus !== 'Archived';
+    const action = isArchiving ? 'archive' : 'restore';
+    
+    if (confirm(`Are you sure you want to ${action} ${tenantName}?`)) {
+      try {
+        await apiClient.put(`/tenants/${tenantId}`, {
+          status: isArchiving ? 'Archived' : 'Active'
+        });
+        
+        queryClient.setQueryData(['tenants'], (old: any) => 
+          (old || []).map((t: any) => 
+            t._id === tenantId 
+              ? { ...t, status: isArchiving ? 'Archived' : 'Active' }
+              : t
+          )
+        );
+        
+        alert(`Tenant ${action}d successfully!`);
+      } catch (error: any) {
+        alert(`Failed to ${action} tenant: ${error.response?.data?.message || 'Unknown error'}`);
       }
     }
   };
@@ -84,6 +110,11 @@ const TenantsPage = () => {
     return tenants.filter((tenant: any) => {
       if (!tenant) return false;
       
+      // Archive filter
+      const isArchived = tenant.status === 'Archived';
+      if (showArchived && !isArchived) return false;
+      if (!showArchived && isArchived) return false;
+      
       const matchesSearch = !searchQuery || 
         (tenant.name && tenant.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (tenant.email && tenant.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -94,7 +125,7 @@ const TenantsPage = () => {
       
       return matchesSearch && matchesStatus && matchesProperty;
     });
-  }, [tenants, searchQuery, filters]);
+  }, [tenants, searchQuery, filters, showArchived]);
 
   const filterOptions = [
     {
@@ -165,12 +196,46 @@ const TenantsPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">
-            Tenants {propertyId && '(Filtered by Property)'}
+          <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Tenants
+            </span>
+            {propertyId && (
+              <span className="text-lg text-text-secondary font-normal">
+                (Property Filtered)
+              </span>
+            )}
           </h1>
-          <p className="text-text-secondary mt-1">
-            {propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
-          </p>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              {propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-text-secondary">Show:</span>
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  !showArchived 
+                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Eye size={12} className="inline mr-1" />
+                Active ({filteredTenants.filter(t => t.status !== 'Archived').length})
+              </button>
+              <button
+                onClick={() => setShowArchived(true)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  showArchived 
+                    ? 'bg-orange-100 text-orange-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Archive size={12} className="inline mr-1" />
+                Archived ({tenants.filter(t => t.status === 'Archived').length})
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -196,9 +261,11 @@ const TenantsPage = () => {
           </button>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
-            <Plus size={20} />
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
             Add Tenant
           </button>
         </div>
@@ -212,7 +279,8 @@ const TenantsPage = () => {
         statusOptions={[
           { value: 'Active', label: 'Active' },
           { value: 'Inactive', label: 'Inactive' },
-          { value: 'Late', label: 'Late Payment' }
+          { value: 'Late', label: 'Late Payment' },
+          { value: 'Archived', label: 'Archived' }
         ]}
       />
 
@@ -224,10 +292,11 @@ const TenantsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:border-brand-blue/30 transition-all duration-300 relative overflow-hidden"
+              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
             >
               {/* Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
               
               {/* Selection Checkbox */}
               <div className="absolute top-4 right-4 z-10">
@@ -248,7 +317,7 @@ const TenantsPage = () => {
               {/* Header */}
               <div className="relative z-10 mb-6">
                 <div className="flex items-center gap-4 mb-3">
-                  <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                  <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
                   </div>
                   <div className="flex-1">
@@ -258,8 +327,13 @@ const TenantsPage = () => {
                     <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
                       tenant.status === 'Active' 
                         ? 'bg-green-100 text-green-800' 
+                        : tenant.status === 'Archived'
+                        ? 'bg-gray-100 text-gray-800'
+                        : tenant.status === 'Late'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
+                      {tenant.status === 'Archived' && <Archive size={10} className="mr-1" />}
                       {tenant.status || 'Unknown'}
                     </span>
                   </div>
@@ -295,13 +369,15 @@ const TenantsPage = () => {
                 
                 {/* Rent Amount Highlight */}
                 {tenant.rentAmount && (
-                  <div className="bg-gradient-to-r from-brand-blue to-brand-orange p-4 rounded-2xl text-white">
+                  <div className="bg-gradient-to-r from-brand-blue via-purple-600 to-brand-orange p-4 rounded-2xl text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <DollarSign size={16} />
+                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                          <DollarSign size={14} />
+                        </div>
                         <span className="text-sm font-medium">Monthly Rent</span>
                       </div>
-                      <span className="text-xl font-bold">${tenant.rentAmount}</span>
+                      <span className="text-xl font-bold group-hover:scale-110 transition-transform duration-300">${tenant.rentAmount}</span>
                     </div>
                   </div>
                 )}
@@ -320,29 +396,47 @@ const TenantsPage = () => {
               <div className="relative z-10 flex flex-col gap-3">
                 <Link 
                   to={`/dashboard/tenants/${tenant._id}`}
-                  className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-lg text-center group-hover:scale-105 transform"
+                  className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center group-hover:scale-105 transform hover:shadow-brand-blue/25 relative overflow-hidden"
                 >
-                  View Details
+                  <span className="relative z-10">View Details</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </Link>
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
-                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-red-200"
+                    onClick={() => handleArchiveTenant(tenant._id, tenant.name, tenant.status)}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
+                      tenant.status === 'Archived'
+                        ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
+                        : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
+                    }`}
                   >
-                    Delete
+                    {tenant.status === 'Archived' ? (
+                      <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
+                    ) : (
+                      <><Archive size={12} className="inline mr-1" />Archive</>
+                    )}
                   </button>
-                  <div className="flex-1">
-                    <MessageButtons
-                      phone={tenant.phone}
-                      email={tenant.email}
-                      name={tenant.name}
-                      messageType="rentReminder"
-                      additionalData={{
-                        amount: tenant.rentAmount,
-                        dueDate: new Date().toLocaleDateString()
-                      }}
-                    />
-                  </div>
+                  {tenant.status !== 'Archived' && (
+                    <div className="flex-1">
+                      <MessageButtons
+                        phone={tenant.phone}
+                        email={tenant.email}
+                        name={tenant.name}
+                        messageType="rentReminder"
+                        additionalData={{
+                          amount: tenant.rentAmount,
+                          dueDate: new Date().toLocaleDateString()
+                        }}
+                      />
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
+                    className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
+                    title="Delete Permanently"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -352,19 +446,36 @@ const TenantsPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-16"
+          className="text-center py-20"
         >
-          <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Users size={48} className="text-white" />
+          <div className="relative">
+            <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+              <Users size={64} className="text-white" />
+            </div>
+            <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-xs font-bold text-yellow-900">!</span>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-text-primary mb-2">No Tenants Yet</h3>
-          <p className="text-text-secondary mb-8 max-w-md mx-auto">
-            Start managing your tenants by adding your first tenant.
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+            {showArchived ? 'No Archived Tenants' : 'No Active Tenants'}
+          </h3>
+          <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+            {showArchived 
+              ? 'No tenants have been archived yet. Archived tenants are those who have left the property.'
+              : 'Start building your tenant community by adding your first tenant. Manage leases, payments, and communications all in one place.'
+            }
           </p>
-          <button className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto">
-            <Plus size={20} />
-            Add Your First Tenant
-          </button>
+          {!showArchived && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="group relative btn-gradient px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+            >
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+                <Plus size={16} className="text-white" />
+              </div>
+              Add Your First Tenant
+            </button>
+          )}
         </motion.div>
       )}
 
@@ -407,6 +518,22 @@ const TenantsPage = () => {
         onClose={() => setShowAddModal(false)}
         onTenantAdded={handleTenantAdded}
       />
+      
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+        >
+          <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      </div>
+      
+      {/* Modern Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
+      </div>
     </motion.div>
   );
 };

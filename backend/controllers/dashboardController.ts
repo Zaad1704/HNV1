@@ -39,7 +39,7 @@ export const getOverviewStats = safeAsync(async (req: AuthRequest, res: Response
   // Use Promise.allSettled for better error handling
   const [propertiesResult, tenantsResult, revenueResult] = await Promise.allSettled([
     Property.countDocuments({ organizationId }).exec(),
-    Tenant.countDocuments({ organizationId, status: 'Active' }).exec(),
+    Tenant.countDocuments({ organizationId, status: { $in: ['Active', 'Late'] } }).exec(),
     Payment.aggregate([
       { $match: { organizationId, status: { $in: ['Paid', 'completed', 'Completed'] } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -154,10 +154,12 @@ export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) =
 
   const activeCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Active' }) || 0;
   const lateCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Late' }) || 0;
+  const archivedCount = await Tenant.countDocuments({ organizationId: req.user.organizationId, status: 'Archived' }) || 0;
   
   const data = [
     { name: 'Paid / Current', value: activeCount },
-    { name: 'Overdue', value: lateCount }
+    { name: 'Overdue', value: lateCount },
+    { name: 'Archived', value: archivedCount }
   ];
 
   res.status(200).json({ success: true, data });

@@ -8,7 +8,7 @@ export interface ITenant extends Document {
   organizationId: Schema.Types.ObjectId;
   createdBy?: Schema.Types.ObjectId;
   unit: string;
-  status: 'Active' | 'Inactive' | 'Late';
+  status: 'Active' | 'Inactive' | 'Late' | 'Archived';
   leaseEndDate?: Date;
   rentAmount: number;
   imageUrl?: string;
@@ -50,7 +50,7 @@ const TenantSchema = new Schema<ITenant>({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   unit: { type: String, required: true },
-  status: { type: String, enum: ['Active', 'Inactive', 'Late'], default: 'Active' },
+  status: { type: String, enum: ['Active', 'Inactive', 'Late', 'Archived'], default: 'Active' },
   leaseEndDate: { type: Date },
   rentAmount: { type: Number, default: 0 },
   imageUrl: { type: String },
