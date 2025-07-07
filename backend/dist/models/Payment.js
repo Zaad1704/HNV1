@@ -27,9 +27,19 @@ const mongoose_1 = __importStar(require("mongoose"));
 const PaymentSchema = new mongoose_1.Schema({
     tenantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Tenant', required: true },
     propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
-    amount: { type: Number, required: true },
-    status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+    organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
+    amount: { type: Number, required: true, min: 0 },
+    status: {
+        type: String,
+        enum: ['pending', 'Paid', 'completed', 'Completed', 'failed'],
+        default: 'pending'
+    },
     paymentDate: { type: Date, default: Date.now },
-    createdAt: { type: Date, default: Date.now }
-});
+    createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
+    paymentMethod: { type: String },
+    description: { type: String },
+}, { timestamps: true });
+PaymentSchema.index({ organizationId: 1, paymentDate: -1 });
+PaymentSchema.index({ tenantId: 1, status: 1 });
+PaymentSchema.index({ propertyId: 1, paymentDate: -1 });
 exports.default = mongoose_1.default.model('Payment', PaymentSchema);

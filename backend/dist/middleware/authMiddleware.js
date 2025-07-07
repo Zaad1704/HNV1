@@ -15,6 +15,14 @@ const protect = async (req, res, next) => {
             const secret = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
             const decoded = jsonwebtoken_1.default.verify(token, secret);
             const foundUser = await User_1.default.findById(decoded.id).select("-password");
+            if (foundUser && foundUser.organizationId) {
+                const subscription = await Subscription_1.default.findOne({
+                    organizationId: foundUser.organizationId
+                }).populate('planId');
+                if (subscription) {
+                    foundUser.subscription = subscription;
+                }
+            }
             req.user = foundUser;
             if (!req.user) {
                 return res.status(401).json({

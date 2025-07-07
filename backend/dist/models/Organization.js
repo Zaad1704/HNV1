@@ -7,6 +7,7 @@ const OrganizationSchema = new mongoose_1.Schema({
     members: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }],
     status: { type: String, enum: ['active', 'inactive', 'pending_deletion'], default: 'active' },
     subscription: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Subscription' },
+    inviteCode: { type: String, unique: true, sparse: true },
     branding: {
         companyName: { type: String, default: '' },
         companyLogoUrl: { type: String, default: '' },

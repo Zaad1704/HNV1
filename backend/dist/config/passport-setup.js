@@ -21,32 +21,46 @@ passport_1.default.deserializeUser(async (id, done) => {
 const callbackURL = process.env.NODE_ENV === 'production'
     ? `${process.env.BACKEND_URL}/api/auth/google/callback`
     : 'http://localhost:5001/api/auth/google/callback';
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (process.env.GOOGLE_CLIENT_ID &&
+    process.env.GOOGLE_CLIENT_SECRET &&
+    process.env.GOOGLE_CLIENT_ID !== 'your_google_client_id_here' &&
+    process.env.GOOGLE_CLIENT_SECRET !== 'your_google_client_secret_here') {
+    console.log('✅ Google OAuth configured successfully');
     passport_1.default.use(new passport_google_oauth20_1.Strategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: callbackURL
     }, async (accessToken, refreshToken, profile, done) => {
         try {
+            console.log('Google OAuth callback received for:', profile.emails?.[0]?.value);
             let user = await User_1.default.findOne({ googleId: profile.id });
             if (user) {
+                console.log('Existing Google user found:', user.email);
                 return done(null, user);
             }
-            user = new User_1.default({
-                googleId: profile.id,
-                name: profile.displayName,
-                email: profile.emails?.[0]?.value,
-                avatar: profile.photos?.[0]?.value,
-                isVerified: true
-            });
-            await user.save();
-            done(null, user);
+            const existingUser = await User_1.default.findOne({ email: profile.emails?.[0]?.value });
+            if (existingUser) {
+                existingUser.googleId = profile.id;
+                existingUser.profilePicture = profile.photos?.[0]?.value;
+                existingUser.isEmailVerified = true;
+                existingUser.status = 'active';
+                await existingUser.save();
+                console.log('Linked Google account to existing user:', existingUser.email);
+                return done(null, existingUser);
+            }
+            console.log('❌ Google login attempted for non-existing user:', profile.emails?.[0]?.value);
+            return done(new Error('ACCOUNT_NOT_FOUND'), null);
         }
         catch (error) {
+            console.error('Google OAuth error:', error);
             done(error, null);
         }
     }));
 }
 else {
-    console.warn('Google OAuth not configured - missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');
+    console.warn('❌ Google OAuth not configured - missing or placeholder GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET');
+    console.warn('To enable Google OAuth:');
+    console.warn('1. Go to Google Cloud Console');
+    console.warn('2. Create OAuth 2.0 credentials');
+    console.warn('3. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env');
 }

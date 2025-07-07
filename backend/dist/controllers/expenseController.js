@@ -8,12 +8,15 @@ const Expense_1 = __importDefault(require("../models/Expense"));
 const Property_1 = __importDefault(require("../models/Property"));
 const getExpenses = async (req, res) => {
     try {
-        if (!req.user?.organizationId) {
+        if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const expenses = await Expense_1.default.find({
-            organizationId: req.user.organizationId
-        }).populate('propertyId', 'name').sort({ date: -1 });
+        const query = req.user.role === 'Super Admin' && !req.user.organizationId
+            ? {}
+            : { organizationId: req.user.organizationId };
+        const expenses = await Expense_1.default.find(query)
+            .populate('propertyId', 'name')
+            .sort({ date: -1 });
         res.status(200).json({ success: true, data: expenses });
     }
     catch (error) {
@@ -27,26 +30,29 @@ const createExpense = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
         const { description, amount, category, date, propertyId } = req.body;
-        if (!description || !amount || !category || !date || !propertyId) {
+        if (!description || !amount || !category) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'Description, amount, and category are required'
             });
         }
-        const property = await Property_1.default.findById(propertyId);
-        if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'Invalid property'
-            });
+        if (propertyId) {
+            const property = await Property_1.default.findById(propertyId);
+            if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Invalid property'
+                });
+            }
         }
         const newExpense = await Expense_1.default.create({
             description,
             amount: Number(amount),
             category,
-            date,
-            propertyId,
-            organizationId: req.user.organizationId
+            date: date ? new Date(date) : new Date(),
+            propertyId: propertyId || null,
+            organizationId: req.user.organizationId,
+            documentUrl: req.body.documentUrl || null
         });
         res.status(201).json({ success: true, data: newExpense });
     }

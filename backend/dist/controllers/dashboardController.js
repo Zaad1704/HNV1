@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -59,7 +82,7 @@ exports.getOverviewStats = safeAsync(async (req, res) => {
 });
 exports.getLateTenants = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        return res.status(200).json({ success: true, data: [] });
     }
     const lateTenants = await Tenant_1.default.find({
         organizationId: req.user.organizationId,
@@ -73,7 +96,7 @@ exports.getLateTenants = safeAsync(async (req, res) => {
 });
 exports.getExpiringLeases = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        return res.status(200).json({ success: true, data: [] });
     }
     const today = new Date();
     const threeMonthsFromNow = new Date();
@@ -87,7 +110,7 @@ exports.getExpiringLeases = safeAsync(async (req, res) => {
 });
 exports.getFinancialSummary = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        return res.status(200).json({ success: true, data: [] });
     }
     const organizationId = req.user.organizationId;
     const promises = [];
@@ -122,7 +145,7 @@ exports.getFinancialSummary = safeAsync(async (req, res) => {
 });
 exports.getRentStatus = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        return res.status(200).json({ success: true, data: [] });
     }
     const activeCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Active' }) || 0;
     const lateCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Late' }) || 0;
@@ -134,18 +157,72 @@ exports.getRentStatus = safeAsync(async (req, res) => {
 });
 exports.getStats = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(200).json({
-            success: true,
-            data: { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: 0 }
-        });
+        console.log('User has no organization, creating one:', req.user?.email);
+        try {
+            const Organization = (await Promise.resolve().then(() => __importStar(require('../models/Organization')))).default;
+            const Plan = (await Promise.resolve().then(() => __importStar(require('../models/Plan')))).default;
+            const subscriptionService = (await Promise.resolve().then(() => __importStar(require('../services/subscriptionService')))).default;
+            const organization = new Organization({
+                name: `${req.user.name}'s Organization`,
+                owner: req.user._id,
+                members: [req.user._id],
+                status: 'active'
+            });
+            await organization.save();
+            const User = (await Promise.resolve().then(() => __importStar(require('../models/User')))).default;
+            await User.findByIdAndUpdate(req.user._id, {
+                organizationId: organization._id,
+                status: 'active'
+            });
+            try {
+                await subscriptionService.createTrialSubscription(organization._id.toString());
+                console.log('✅ Trial subscription created for user:', req.user.email);
+            }
+            catch (error) {
+                console.error('❌ Failed to create trial subscription:', error);
+            }
+            req.user.organizationId = organization._id;
+            console.log('✅ Organization created for user:', req.user.email);
+        }
+        catch (error) {
+            console.error('❌ Failed to create organization:', error);
+            return res.status(200).json({
+                success: true,
+                data: {
+                    totalProperties: 0,
+                    totalTenants: 0,
+                    monthlyRevenue: 0,
+                    occupancyRate: 0,
+                    pendingMaintenance: 0,
+                    recentPayments: 0
+                },
+                message: 'Organization setup in progress - showing empty dashboard'
+            });
+        }
     }
+    console.log('Fetching stats for organization:', req.user.organizationId);
     const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId);
+    console.log('Dashboard stats result:', stats);
     res.status(200).json({ success: true, data: stats });
 });
 exports.getDashboardStats = safeAsync(async (req, res) => {
     if (!req.user?.organizationId) {
-        return res.status(401).json({ success: false, message: 'Not authorized' });
+        console.log('User has no organization for dashboard stats:', req.user?.email);
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalProperties: 0,
+                totalTenants: 0,
+                monthlyRevenue: 0,
+                occupancyRate: 0,
+                pendingMaintenance: 0,
+                recentPayments: 0
+            },
+            message: 'No organization found - showing empty dashboard'
+        });
     }
+    console.log('Fetching dashboard stats for organization:', req.user.organizationId);
     const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId);
+    console.log('Dashboard stats result:', stats);
     res.status(200).json({ success: true, data: stats });
 });

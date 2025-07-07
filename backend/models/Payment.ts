@@ -5,11 +5,19 @@ export interface IPayment extends Document {
   propertyId: mongoose.Types.ObjectId;
   organizationId: mongoose.Types.ObjectId;
   amount: number;
+  originalAmount?: number;
+  discount?: {
+    type: 'percentage' | 'fixed';
+    value: number;
+    amount: number;
+  };
   status: 'pending' | 'Paid' | 'completed' | 'Completed' | 'failed';
   paymentDate: Date;
   createdBy?: mongoose.Types.ObjectId;
+  recordedBy?: mongoose.Types.ObjectId;
   paymentMethod?: string;
   description?: string;
+  notes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +27,15 @@ const PaymentSchema = new Schema<IPayment>({
   propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   amount: { type: Number, required: true, min: 0 },
+  originalAmount: { type: Number, min: 0 },
+  discount: {
+    type: {
+      type: String,
+      enum: ['percentage', 'fixed']
+    },
+    value: { type: Number, min: 0 },
+    amount: { type: Number, min: 0 }
+  },
   status: { 
     type: String, 
     enum: ['pending', 'Paid', 'completed', 'Completed', 'failed'], 
@@ -26,8 +43,10 @@ const PaymentSchema = new Schema<IPayment>({
   },
   paymentDate: { type: Date, default: Date.now },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  paymentMethod: { type: String },
-  description: { type: String },
+  recordedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  paymentMethod: { type: String, default: 'Bank Transfer' },
+  description: { type: String, default: 'Monthly Rent Payment' },
+  notes: { type: String },
 }, { timestamps: true });
 
 // Add indexes for better performance

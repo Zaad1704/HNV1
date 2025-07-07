@@ -20,9 +20,10 @@ router.patch('/organizations/:orgId/activate', superAdminController_1.activateOr
 router.patch('/organizations/:orgId/deactivate', superAdminController_1.deactivateOrganization);
 router.patch('/organizations/:orgId/grant-lifetime', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.grantLifetime);
 router.patch('/organizations/:orgId/revoke-lifetime', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.revokeLifetime);
+router.put('/organizations/:orgId/subscription', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.updateSubscription);
 router.get('/users', superAdminController_1.getUsers);
 router.delete('/users/:userId', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.deleteUser);
-router.put('/users/:userId/plan', superAdminController_1.updateUserPlan);
+router.put('/users/:userId/status', superAdminController_1.updateUserStatus);
 router.get('/plans', superAdminController_1.getPlans);
 router.post('/plans', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.createPlan);
 router.put('/plans/:id', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.updatePlan);
@@ -32,6 +33,7 @@ router.get('/moderators', (0, authMiddleware_1.authorize)('Super Admin'), superA
 router.post('/moderators', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.createModerator);
 router.put('/moderators/:id', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.updateModerator);
 router.delete('/moderators/:id', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.deleteModerator);
+router.get('/moderator-permissions', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.getModeratorPermissions);
 router.put('/site-settings', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.updateSiteSettings);
 router.put('/site-content/:section', (0, authMiddleware_1.authorize)('Super Admin'), superAdminController_1.updateSiteContent);
 router.post('/upload-image', (0, authMiddleware_1.authorize)('Super Admin'), uploadMiddleware_1.default.single('image'), superAdminController_1.uploadImage);

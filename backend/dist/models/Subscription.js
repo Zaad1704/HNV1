@@ -14,7 +14,7 @@ const SubscriptionSchema = new mongoose_1.Schema({
     },
     status: {
         type: String,
-        enum: ["trialing", "active", "inactive", "canceled", "past_due"],
+        enum: ["trialing", "active", "inactive", "canceled", "past_due", "expired"],
         default: "trialing"
     },
     isLifetime: {
@@ -27,8 +27,80 @@ const SubscriptionSchema = new mongoose_1.Schema({
     currentPeriodEndsAt: {
         type: Date,
     },
+    currentPeriodStartsAt: {
+        type: Date,
+    },
+    nextBillingDate: {
+        type: Date,
+    },
+    cancelAtPeriodEnd: {
+        type: Boolean,
+        default: false
+    },
+    canceledAt: {
+        type: Date,
+    },
+    amount: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    currency: {
+        type: String,
+        default: 'USD'
+    },
+    billingCycle: {
+        type: String,
+        enum: ['monthly', 'yearly', 'weekly', 'daily'],
+        default: 'monthly'
+    },
+    paymentMethod: {
+        type: String
+    },
+    lastPaymentDate: {
+        type: Date
+    },
+    failedPaymentAttempts: {
+        type: Number,
+        default: 0
+    },
     externalId: {
         type: String
+    },
+    notes: {
+        type: String
+    },
+    maxProperties: {
+        type: Number,
+        default: -1
+    },
+    maxTenants: {
+        type: Number,
+        default: -1
+    },
+    maxAgents: {
+        type: Number,
+        default: -1
+    },
+    maxUsers: {
+        type: Number,
+        default: -1
+    },
+    currentProperties: {
+        type: Number,
+        default: 0
+    },
+    currentTenants: {
+        type: Number,
+        default: 0
+    },
+    currentAgents: {
+        type: Number,
+        default: 0
+    },
+    currentUsers: {
+        type: Number,
+        default: 0
     },
 }, { timestamps: true });
 exports.default = (0, mongoose_1.model)("Subscription", SubscriptionSchema);

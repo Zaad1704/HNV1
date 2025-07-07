@@ -26,11 +26,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVerificationStatus = exports.updateEmail = exports.resendVerificationEmail = exports.changePassword = exports.updateProfile = exports.googleAuthCallback = exports.verifyEmail = exports.getMe = exports.loginUser = exports.registerUser = void 0;
+exports.deleteAccount = exports.getVerificationStatus = exports.updateEmail = exports.resendVerificationEmail = exports.changePassword = exports.updateProfile = exports.googleAuthCallback = exports.verifyEmail = exports.getMe = exports.loginUser = exports.registerUser = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const Organization_1 = __importDefault(require("../models/Organization"));
 const Plan_1 = __importDefault(require("../models/Plan"));
 const Subscription_1 = __importDefault(require("../models/Subscription"));
+const subscriptionService_1 = __importDefault(require("../services/subscriptionService"));
+const Property_1 = __importDefault(require("../models/Property"));
+const Tenant_1 = __importDefault(require("../models/Tenant"));
+const Payment_1 = __importDefault(require("../models/Payment"));
+const Expense_1 = __importDefault(require("../models/Expense"));
+const MaintenanceRequest_1 = __importDefault(require("../models/MaintenanceRequest"));
+const AuditLog_1 = __importDefault(require("../models/AuditLog"));
 const crypto_1 = __importDefault(require("crypto"));
 const sendTokenResponse = async (user, statusCode, res) => {
     const token = user.getSignedJwtToken();
@@ -43,7 +50,9 @@ const sendTokenResponse = async (user, statusCode, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            organizationId: user.organizationId,
             isEmailVerified: user.isEmailVerified,
+            status: user.status,
             createdAt: user.createdAt
         },
         userStatus: subscription?.status || 'inactive'
@@ -97,19 +106,20 @@ const registerUser = async (req, res, next) => {
         await organization.save();
         const verificationToken = user.getEmailVerificationToken();
         await user.save();
-        const subscription = new Subscription_1.default({
-            organizationId: organization._id,
-            planId: trialPlan._id,
-            status: 'trialing',
-            trialExpiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-        });
-        await subscription.save();
+        try {
+            await subscriptionService_1.default.createTrialSubscription(organization._id.toString());
+            console.log('✅ Trial subscription created for new user:', user.email);
+        }
+        catch (error) {
+            console.error('❌ Failed to create trial subscription:', error);
+        }
         try {
             const emailService = (await Promise.resolve().then(() => __importStar(require('../services/emailService')))).default;
             await emailService.sendVerificationEmail(user.email, verificationToken, user.name);
+            console.log('✅ Verification email sent successfully to:', user.email);
         }
         catch (emailError) {
-            console.error('Failed to send verification email:', emailError);
+            console.error('❌ Failed to send verification email:', emailError);
         }
         res.status(201).json({
             success: true,
@@ -173,11 +183,17 @@ const loginUser = async (req, res, next) => {
             user.status = 'active';
             await user.save();
         }
-        if (user.role !== 'Super Admin') {
+        if (user.role !== 'Super Admin' && !user.googleId) {
             if (user.status === 'suspended') {
                 return res.status(401).json({
                     success: false,
                     message: 'Account is suspended. Please contact support.'
+                });
+            }
+            if (!user.isEmailVerified) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Please verify your email address to continue.'
                 });
             }
         }
@@ -201,15 +217,39 @@ const getMe = async (req, res, next) => {
                 message: 'User not found'
             });
         }
+        res.set('Cache-Control', 'private, max-age=300');
+        let populatedUser = user;
+        let subscription = null;
+        let organization = null;
+        if (user.organizationId) {
+            populatedUser = await User_1.default.findById(user._id).populate('organizationId').select('-password');
+            subscription = await Subscription_1.default.findOne({ organizationId: user.organizationId }).populate('planId');
+            organization = await Organization_1.default.findById(user.organizationId);
+        }
         res.status(200).json({
             success: true,
             data: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                organizationId: user.organizationId,
-                status: user.status
+                _id: populatedUser._id,
+                name: populatedUser.name,
+                email: populatedUser.email,
+                role: populatedUser.role,
+                organizationId: populatedUser.organizationId,
+                status: populatedUser.status,
+                isEmailVerified: populatedUser.isEmailVerified,
+                organization: organization ? {
+                    _id: organization._id,
+                    name: organization.name,
+                    status: organization.status
+                } : null,
+                subscription: subscription ? {
+                    status: subscription.status,
+                    planId: subscription.planId,
+                    isLifetime: subscription.isLifetime,
+                    trialExpiresAt: subscription.trialExpiresAt,
+                    currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+                    cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+                    canceledAt: subscription.canceledAt
+                } : null
             }
         });
     }
@@ -257,15 +297,24 @@ const verifyEmail = async (req, res, next) => {
 exports.verifyEmail = verifyEmail;
 const googleAuthCallback = async (req, res, next) => {
     try {
+        console.log('Google auth callback triggered');
         if (!req.user) {
-            return res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+            console.error('No user found in Google auth callback');
+            return res.redirect(`${process.env.FRONTEND_URL}/login?error=account-not-found&message=No account found with this Google email. Please sign up first.`);
         }
-        const token = req.user.getSignedJwtToken();
-        res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+        const user = req.user;
+        console.log('Google auth for user:', user.email);
+        console.log('✅ Google login successful for existing user:', user.email);
+        const token = user.getSignedJwtToken();
+        const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`;
+        res.redirect(redirectUrl);
     }
     catch (error) {
         console.error('Google auth callback error:', error);
-        res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed`);
+        if (error.message === 'ACCOUNT_NOT_FOUND') {
+            return res.redirect(`${process.env.FRONTEND_URL}/login?error=account-not-found&message=No account found with this Google email. Please sign up first.`);
+        }
+        res.redirect(`${process.env.FRONTEND_URL}/login?error=google-auth-failed&message=Server error during authentication`);
     }
 };
 exports.googleAuthCallback = googleAuthCallback;
@@ -443,3 +492,70 @@ const getVerificationStatus = async (req, res, next) => {
     }
 };
 exports.getVerificationStatus = getVerificationStatus;
+const deleteAccount = async (req, res, next) => {
+    try {
+        const user = await User_1.default.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        if (user.role === 'Super Admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Super Admin accounts cannot be deleted'
+            });
+        }
+        const organizationId = user.organizationId;
+        const userId = user._id;
+        try {
+            await AuditLog_1.default.create({
+                userId: userId,
+                organizationId: organizationId,
+                action: 'account_deleted',
+                resource: 'user_account',
+                resourceId: userId,
+                details: {
+                    userName: user.name,
+                    userEmail: user.email,
+                    userRole: user.role,
+                    deletedBy: 'Self',
+                    deletionReason: 'User requested account deletion'
+                },
+                ipAddress: req.ip,
+                userAgent: req.get('User-Agent'),
+                timestamp: new Date()
+            });
+        }
+        catch (auditError) {
+            console.error('Audit log creation failed:', auditError);
+        }
+        const deletionPromises = [];
+        if (organizationId) {
+            deletionPromises.push(MaintenanceRequest_1.default.deleteMany({ organizationId }), Payment_1.default.deleteMany({ organizationId }), Expense_1.default.deleteMany({ organizationId }), Tenant_1.default.deleteMany({ organizationId }), Property_1.default.deleteMany({ organizationId }), Subscription_1.default.deleteMany({ organizationId }), AuditLog_1.default.deleteMany({ organizationId }));
+        }
+        await Promise.allSettled(deletionPromises);
+        if (organizationId) {
+            const organization = await Organization_1.default.findById(organizationId);
+            if (organization && organization.owner?.toString() === userId.toString()) {
+                await Organization_1.default.findByIdAndDelete(organizationId);
+            }
+        }
+        await User_1.default.findByIdAndDelete(userId);
+        console.log(`Account deleted: ${user.email} (${user.name})`);
+        res.status(200).json({
+            success: true,
+            message: 'Account and all associated data deleted successfully'
+        });
+    }
+    catch (error) {
+        console.error('Delete account error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete account',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+exports.deleteAccount = deleteAccount;

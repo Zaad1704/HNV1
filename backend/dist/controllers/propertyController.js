@@ -18,7 +18,8 @@ const createProperty = async (req, res) => {
             ...req.body,
             imageUrl: imageUrl,
             organizationId: user.organizationId,
-            createdBy: user._id
+            createdBy: user._id,
+            managedByAgentId: req.body.managedByAgentId || null
         });
         await actionChainService_1.default.onPropertyAdded(property, user._id, user.organizationId);
         res.status(201).json({
@@ -41,7 +42,19 @@ const getProperties = async (req, res) => {
         return;
     }
     try {
-        const properties = await Property_1.default.find({ organizationId: user.organizationId })
+        let query = { organizationId: user.organizationId };
+        if (user.role === 'Agent') {
+            query = {
+                organizationId: user.organizationId,
+                $or: [
+                    { managedByAgentId: user._id },
+                    { createdBy: user._id }
+                ]
+            };
+        }
+        const properties = await Property_1.default.find(query)
+            .populate('createdBy', 'name')
+            .populate('managedByAgentId', 'name')
             .lean()
             .exec() || [];
         res.status(200).json({ success: true, data: properties });

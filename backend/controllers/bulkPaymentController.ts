@@ -24,22 +24,41 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
     const createdInvoices = [];
 
     for (const paymentData of payments) {
-      const { tenantId, amount, paymentDate, status = 'Paid' } = paymentData;
+      const { 
+        tenantId, 
+        propertyId,
+        amount, 
+        originalAmount,
+        discount,
+        paymentDate, 
+        paymentMethod,
+        description,
+        status = 'Paid' 
+      } = paymentData;
 
       const tenant = await Tenant.findById(tenantId);
       if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
         continue; // Skip invalid tenants
       }
 
-      // Create payment
+      // Create payment with discount information
       const payment = await Payment.create({
         tenantId,
+        propertyId: propertyId || tenant.propertyId,
         amount,
+        originalAmount: originalAmount || amount,
+        discount: discount ? {
+          type: discount.type,
+          value: discount.value,
+          amount: discount.amount
+        } : undefined,
         paymentDate,
+        paymentMethod: paymentMethod || 'Bank Transfer',
+        description: description || 'Monthly Rent Payment',
         status,
-        propertyId: tenant.propertyId,
         organizationId: req.user.organizationId,
-        recordedBy: req.user._id
+        recordedBy: req.user._id,
+        notes: discount ? `Applied ${discount.type} discount: ${discount.type === 'percentage' ? discount.value + '%' : '$' + discount.value}` : undefined
       });
 
       // Auto-generate invoice

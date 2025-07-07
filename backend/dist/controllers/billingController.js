@@ -1,155 +1,190 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSubscriptionStatus = exports.cancelSubscription = exports.reactivateSubscription = exports.subscribeToPlan = exports.getBillingHistory = exports.createCheckoutSession = exports.getSubscriptionDetails = void 0;
-const Plan_1 = __importDefault(require("../models/Plan"));
+exports.cancelSubscription = exports.changePlan = exports.updatePaymentMethod = exports.getBillingInfo = void 0;
 const Subscription_1 = __importDefault(require("../models/Subscription"));
-const Organization_1 = __importDefault(require("../models/Organization"));
-const subscriptionService_1 = __importDefault(require("../services/subscriptionService"));
-const getSubscriptionDetails = async (req, res) => {
+const Plan_1 = __importDefault(require("../models/Plan"));
+const getBillingInfo = async (req, res) => {
     try {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
         const subscription = await Subscription_1.default.findOne({
             organizationId: req.user.organizationId
-        }).populate('planId').lean().exec();
+        }).populate('planId');
         if (!subscription) {
-            const org = await Organization_1.default.findById(req.user.organizationId).lean().exec();
-            if (org?.subscription?.isLifetime) {
-                return res.status(200).json({
-                    success: true,
-                    data: {
-                        status: 'active',
-                        isLifetime: true,
-                        planId: org.subscription.planId
-                    }
-                });
-            }
-            return res.status(200).json({ success: true, data: null });
+            return res.status(404).json({
+                success: false,
+                message: 'No subscription found'
+            });
         }
-        res.status(200).json({ success: true, data: subscription });
+        const billingInfo = {
+            subscription: {
+                status: subscription.status,
+                currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+                nextBillingDate: subscription.nextBillingDate,
+                amount: subscription.amount,
+                currency: subscription.currency,
+                billingCycle: subscription.billingCycle,
+                isLifetime: subscription.isLifetime,
+                cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+            },
+            plan: subscription.planId,
+            paymentMethod: subscription.paymentMethod || 'Not set',
+            lastPaymentDate: subscription.lastPaymentDate,
+            failedPaymentAttempts: subscription.failedPaymentAttempts
+        };
+        res.json({ success: true, data: billingInfo });
     }
     catch (error) {
-        console.error('Billing subscription error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch subscription details',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
-exports.getSubscriptionDetails = getSubscriptionDetails;
-const createCheckoutSession = async (req, res) => {
+exports.getBillingInfo = getBillingInfo;
+const updatePaymentMethod = async (req, res) => {
     try {
-        const { planId } = req.body;
-        if (!req.user) {
-            return res.status(401).json({ success: false, message: 'Not authenticated' });
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const plan = await Plan_1.default.findById(planId);
-        if (!plan) {
-            return res.status(404).json({ success: false, message: 'Plan not found' });
+        const { paymentMethod } = req.body;
+        if (!paymentMethod) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment method is required'
+            });
         }
-        const sessionId = `mock_session_${Date.now()}`;
-        const redirectUrl = `${process.env.FRONTEND_URL}/payment-success?session_id=${sessionId}`;
+        const subscription = await Subscription_1.default.findOneAndUpdate({ organizationId: req.user.organizationId }, { paymentMethod }, { new: true });
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subscription not found'
+            });
+        }
         res.json({
             success: true,
-            checkoutUrl: redirectUrl,
-            sessionId
+            message: 'Payment method updated successfully',
+            data: { paymentMethod: subscription.paymentMethod }
         });
     }
     catch (error) {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
-exports.createCheckoutSession = createCheckoutSession;
-const getBillingHistory = async (req, res) => {
+exports.updatePaymentMethod = updatePaymentMethod;
+const changePlan = async (req, res) => {
+    try {
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const { planId } = req.body;
+        if (!planId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Plan ID is required'
+            });
+        }
+        const plan = await Plan_1.default.findById(planId);
+        if (!plan) {
+            return res.status(404).json({
+                success: false,
+                message: 'Plan not found'
+            });
+        }
+        const subscription = await Subscription_1.default.findOne({
+            organizationId: req.user.organizationId
+        });
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subscription not found'
+            });
+        }
+        subscription.planId = planId;
+        subscription.amount = plan.price;
+        subscription.billingCycle = plan.billingCycle === 'one-time' ? 'monthly' : plan.billingCycle;
+        subscription.status = 'active';
+        subscription.lastPaymentDate = new Date();
+        subscription.failedPaymentAttempts = 0;
+        const now = new Date();
+        subscription.currentPeriodStartsAt = now;
+        const nextBilling = new Date();
+        const nextPeriodEnd = new Date();
+        if (plan.billingCycle === 'monthly') {
+            nextBilling.setMonth(nextBilling.getMonth() + 1);
+            nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
+        }
+        else if (plan.billingCycle === 'yearly') {
+            nextBilling.setFullYear(nextBilling.getFullYear() + 1);
+            nextPeriodEnd.setFullYear(nextPeriodEnd.getFullYear() + 1);
+        }
+        subscription.nextBillingDate = nextBilling;
+        subscription.currentPeriodEndsAt = nextPeriodEnd;
+        subscription.cancelAtPeriodEnd = false;
+        subscription.canceledAt = undefined;
+        await subscription.save();
+        const User = (await Promise.resolve().then(() => __importStar(require('../models/User')))).default;
+        await User.findByIdAndUpdate(req.user._id, { status: 'active' });
+        const populatedSubscription = await Subscription_1.default.findById(subscription._id).populate('planId');
+        res.json({
+            success: true,
+            message: 'Plan updated and subscription reactivated successfully',
+            data: populatedSubscription
+        });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.changePlan = changePlan;
+const cancelSubscription = async (req, res) => {
     try {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
         const subscription = await Subscription_1.default.findOne({
             organizationId: req.user.organizationId
-        }).populate('planId').lean().exec();
-        const billingHistory = subscription ? [
-            {
-                _id: '1',
-                date: subscription.createdAt,
-                amount: subscription.planId?.price || 0,
-                status: 'paid',
-                description: `${subscription.planId?.name || 'Plan'} Subscription`
-            }
-        ] : [];
-        res.status(200).json({ success: true, data: billingHistory });
-    }
-    catch (error) {
-        console.error('Billing history error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch billing history',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                message: 'Subscription not found'
+            });
+        }
+        subscription.cancelAtPeriodEnd = true;
+        await subscription.save();
+        res.json({
+            success: true,
+            message: 'Subscription will be cancelled at the end of current period',
+            data: { cancelAtPeriodEnd: true }
         });
     }
-};
-exports.getBillingHistory = getBillingHistory;
-const subscribeToPlan = async (req, res) => {
-    try {
-        const { planId, isTrial = false } = req.body;
-        if (!req.user?.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
-        }
-        let subscription;
-        if (isTrial) {
-            subscription = await subscriptionService_1.default.createTrialSubscription(req.user.organizationId, planId);
-        }
-        else {
-            subscription = await subscriptionService_1.default.activateSubscription(req.user.organizationId, planId);
-        }
-        res.json({ success: true, data: subscription });
-    }
     catch (error) {
-        res.status(500).json({ success: false, message: error.message || 'Server error' });
-    }
-};
-exports.subscribeToPlan = subscribeToPlan;
-const reactivateSubscription = async (req, res) => {
-    try {
-        if (!req.user?.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
-        }
-        const subscription = await subscriptionService_1.default.reactivateSubscription(req.user.organizationId);
-        res.json({ success: true, data: subscription });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: error.message || 'Server error' });
-    }
-};
-exports.reactivateSubscription = reactivateSubscription;
-const cancelSubscription = async (req, res) => {
-    try {
-        if (!req.user?.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
-        }
-        const subscription = await subscriptionService_1.default.cancelSubscription(req.user.organizationId);
-        res.json({ success: true, data: subscription });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: error.message || 'Server error' });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 exports.cancelSubscription = cancelSubscription;
-const getSubscriptionStatus = async (req, res) => {
-    try {
-        if (!req.user?.organizationId) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
-        }
-        const status = await subscriptionService_1.default.getSubscriptionStatus(req.user.organizationId);
-        res.json({ success: true, data: status });
-    }
-    catch (error) {
-        res.status(500).json({ success: false, message: error.message || 'Server error' });
-    }
-};
-exports.getSubscriptionStatus = getSubscriptionStatus;

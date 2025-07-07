@@ -10,6 +10,7 @@ const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize
 const hpp_1 = __importDefault(require("hpp"));
 const compression_1 = __importDefault(require("compression"));
 const path_1 = __importDefault(require("path"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const securityMiddleware_1 = require("./middleware/securityMiddleware");
 const errorHandler_1 = require("./middleware/errorHandler");
 const healthRoutes_1 = __importDefault(require("./routes/healthRoutes"));
@@ -59,7 +60,13 @@ const bulkPaymentRoutes_1 = __importDefault(require("./routes/bulkPaymentRoutes"
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 const statementRoutes_1 = __importDefault(require("./routes/statementRoutes"));
 const settingsRoutes_1 = __importDefault(require("./routes/settingsRoutes"));
+const twoFactorRoutes_1 = __importDefault(require("./routes/twoFactorRoutes"));
+const passkeyRoutes_1 = __importDefault(require("./routes/passkeyRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
+const testEmailRoutes_1 = __importDefault(require("./routes/testEmailRoutes"));
 const subscriptionMiddleware_1 = require("./middleware/subscriptionMiddleware");
+const cacheMiddleware_1 = require("./middleware/cacheMiddleware");
+const swagger_1 = require("./config/swagger");
 const masterDataService_1 = __importDefault(require("./services/masterDataService"));
 const authMiddleware_1 = require("./middleware/authMiddleware");
 const passport_1 = __importDefault(require("passport"));
@@ -115,9 +122,30 @@ app.get('/', (req, res) => {
         status: 'OK',
         service: 'HNV Property Management API',
         version: '1.0.0',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        database: mongoose_1.default.connection.readyState === 1 ? 'connected' : 'disconnected'
     });
 });
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: mongoose_1.default.connection.readyState === 1 ? 'connected' : 'disconnected',
+        uptime: process.uptime()
+    });
+});
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        api: 'working',
+        timestamp: new Date().toISOString(),
+        database: mongoose_1.default.connection.readyState === 1 ? 'connected' : 'disconnected'
+    });
+});
+app.use('/api-docs', swagger_1.swaggerUi.serve, swagger_1.swaggerUi.setup(swagger_1.specs, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'HNV1 API Documentation'
+}));
 app.get('/api/debug', (req, res) => {
     res.json({
         status: 'OK',
@@ -148,15 +176,17 @@ const routeErrorHandler = (err, req, res, next) => {
     console.error(`Route error in ${req.originalUrl}: ${err.message}`);
     res.status(404).json({ error: `Route ${req.originalUrl} not found` });
 };
-app.use('/api/public', publicRoutes_1.default);
+app.use('/api/public', (0, cacheMiddleware_1.cacheMiddleware)({ ttl: 300 }), publicRoutes_1.default);
 app.use('/api/contact', contactRoutes_1.default);
 app.use('/api/auth', authRoutes_1.default);
+app.use('/api/2fa', twoFactorRoutes_1.default);
+app.use('/api/passkeys', passkeyRoutes_1.default);
 app.use('/api/setup', setupRoutes_1.default);
 app.use('/api/password-reset', passwordResetRoutes_1.default);
 app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default);
 app.use('/api/properties', authMiddleware_1.protect, propertiesRoutes_1.default);
 app.use('/api/tenants', authMiddleware_1.protect, tenantsRoutes_1.default);
-app.use('/api/payments', paymentsRoutes_1.default);
+app.use('/api/payments', authMiddleware_1.protect, paymentsRoutes_1.default);
 app.use('/api/expenses', authMiddleware_1.protect, expenseRoutes_1.default);
 app.use('/api/maintenance', authMiddleware_1.protect, maintenanceRoutes_1.default);
 app.use('/api/cash-flow', authMiddleware_1.protect, cashFlowRoutes_1.default);
@@ -165,8 +195,9 @@ app.use('/api/reminders', authMiddleware_1.protect, reminderRoutes_1.default);
 app.use('/api/edit-requests', authMiddleware_1.protect, subscriptionMiddleware_1.checkSubscriptionStatus, editRequestRoutes_1.default);
 app.use('/api/users', authMiddleware_1.protect, userRoutes_1.default);
 app.use('/api/users/invites', authMiddleware_1.protect, userRoutes_1.default);
-app.use('/api/billing', billingRoutes_1.default);
+app.use('/api/billing', authMiddleware_1.protect, billingRoutes_1.default);
 app.use('/api/audit', authMiddleware_1.protect, auditRoutes_1.default);
+app.use('/api/audit-logs', authMiddleware_1.protect, auditRoutes_1.default);
 app.use('/api/approvals', authMiddleware_1.protect, approvalRoutes_1.default);
 app.use('/api/org', authMiddleware_1.protect, orgRoutes_1.default);
 app.use('/api/organization', authMiddleware_1.protect, orgRoutes_1.default);
@@ -175,11 +206,14 @@ app.use('/api/subscriptions', authMiddleware_1.protect, subscriptionsRoutes_1.de
 app.use('/api/super-admin', authMiddleware_1.protect, superAdminRoutes_1.default);
 app.use('/api/feedback', authMiddleware_1.protect, feedbackRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.protect, notificationRoutes_1.default);
+app.use('/api/support', authMiddleware_1.protect, supportRoutes_1.default);
+app.use('/api/mark-as-read', authMiddleware_1.protect, notificationRoutes_1.default);
+app.use('/api/chat-history', authMiddleware_1.protect, notificationRoutes_1.default);
 app.use('/api/communication', authMiddleware_1.protect, communicationRoutes_1.default);
 app.use('/api/sharing', authMiddleware_1.protect, sharingRoutes_1.default);
 app.use('/api/site-settings', authMiddleware_1.protect, siteSettingsRoutes_1.default);
 app.use('/api/localization', authMiddleware_1.protect, localizationRoutes_1.default);
-app.use('/api/translation', authMiddleware_1.protect, translationRoutes_1.default);
+app.use('/api/translation', (0, cacheMiddleware_1.cacheMiddleware)({ ttl: 600 }), translationRoutes_1.default);
 app.use('/api/upload', authMiddleware_1.protect, uploadRoutes_1.default);
 app.use('/api/file-upload', authMiddleware_1.protect, fileUploadRoutes_1.default);
 app.use('/api/invoices', authMiddleware_1.protect, invoiceRoutes_1.default);
@@ -197,6 +231,7 @@ app.use('/api/bulk', bulkPaymentRoutes_1.default);
 app.use('/api/reports', authMiddleware_1.protect, reportRoutes_1.default);
 app.use('/api/statements', authMiddleware_1.protect, statementRoutes_1.default);
 app.use('/api/settings', authMiddleware_1.protect, settingsRoutes_1.default);
+app.use('/api/test-email', testEmailRoutes_1.default);
 app.use('/api/webhooks', webhookRoutes_1.default);
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, 'uploads')));
 app.use('/api/error', errorRoutes_1.default);

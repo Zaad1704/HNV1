@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const planSchema = new mongoose_1.Schema({
     name: { type: String, required: true, unique: true },
+    description: { type: String, default: '' },
     price: { type: Number, required: true },
     duration: {
         type: String,
@@ -39,11 +40,6 @@ const planSchema = new mongoose_1.Schema({
         default: 'monthly'
     },
     features: { type: [String], default: [] },
-    limits: {
-        maxProperties: { type: Number, default: 1 },
-        maxTenants: { type: Number, default: 5 },
-        maxAgents: { type: Number, default: 0 },
-    },
     maxProperties: { type: Number, default: 1 },
     maxUsers: { type: Number, default: 1 },
     maxTenants: { type: Number, default: 5 },
@@ -52,5 +48,29 @@ const planSchema = new mongoose_1.Schema({
     isActive: { type: Boolean, default: true },
     isPopular: { type: Boolean, default: false },
     trialDays: { type: Number, default: 14 },
+    setupFee: { type: Number, default: 0 },
+    discountPercentage: { type: Number, default: 0 },
+    currency: { type: String, default: 'USD' },
+    billingCycle: {
+        type: String,
+        enum: ['monthly', 'yearly', 'one-time'],
+        default: 'monthly'
+    },
+    planType: {
+        type: String,
+        enum: ['basic', 'standard', 'premium', 'enterprise'],
+        default: 'standard'
+    },
+    allowedFeatures: {
+        analytics: { type: Boolean, default: false },
+        multipleProperties: { type: Boolean, default: false },
+        tenantPortal: { type: Boolean, default: false },
+        maintenanceTracking: { type: Boolean, default: false },
+        financialReporting: { type: Boolean, default: false },
+        documentStorage: { type: Boolean, default: false },
+        apiAccess: { type: Boolean, default: false },
+        customBranding: { type: Boolean, default: false },
+        prioritySupport: { type: Boolean, default: false }
+    }
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('Plan', planSchema);

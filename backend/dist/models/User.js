@@ -56,8 +56,20 @@ const UserSchema = new mongoose_1.Schema({
     profilePicture: { type: String },
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: { type: String, select: false },
+    twoFactorTempSecret: { type: String, select: false },
     twoFactorToken: { type: String, select: false },
-    twoFactorExpires: { type: Date, select: false }
+    twoFactorExpires: { type: Date, select: false },
+    passkeys: [{
+            id: { type: String, required: true },
+            publicKey: { type: String, required: true },
+            counter: { type: Number, default: 0 },
+            deviceName: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now }
+        }],
+    language: { type: String, default: 'en' },
+    autoDetectLanguage: { type: Boolean, default: true },
+    passkeyChallenge: { type: String, select: false },
+    passkeyChallengeExpires: { type: Date, select: false }
 });
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password') || !this.password) {
