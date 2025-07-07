@@ -165,6 +165,7 @@ export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) =
 
 export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
+    console.log('User has no organization, returning empty stats:', req.user?.email);
     return res.status(200).json({ 
       success: true, 
       data: { 
@@ -174,19 +175,36 @@ export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
         occupancyRate: 0,
         pendingMaintenance: 0,
         recentPayments: 0
-      }
+      },
+      message: 'No organization found - showing empty dashboard'
     });
   }
 
+  console.log('Fetching stats for organization:', req.user.organizationId);
   const stats = await dashboardService.getDashboardStats(req.user.organizationId);
+  console.log('Dashboard stats result:', stats);
   res.status(200).json({ success: true, data: stats });
 });
 
 export const getDashboardStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    return res.status(200).json({ success: true, data: { totalProperties: 0, totalTenants: 0, monthlyRevenue: 0, occupancyRate: 0, pendingMaintenance: 0, recentPayments: 0 } });
+    console.log('User has no organization for dashboard stats:', req.user?.email);
+    return res.status(200).json({ 
+      success: true, 
+      data: { 
+        totalProperties: 0, 
+        totalTenants: 0, 
+        monthlyRevenue: 0, 
+        occupancyRate: 0, 
+        pendingMaintenance: 0, 
+        recentPayments: 0 
+      },
+      message: 'No organization found - showing empty dashboard'
+    });
   }
 
+  console.log('Fetching dashboard stats for organization:', req.user.organizationId);
   const stats = await dashboardService.getDashboardStats(req.user.organizationId);
+  console.log('Dashboard stats result:', stats);
   res.status(200).json({ success: true, data: stats });
 });

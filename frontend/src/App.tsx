@@ -40,6 +40,8 @@ const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage')
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const GoogleCallbackPage = React.lazy(() => import('./pages/GoogleCallbackPage'));
 const GoogleDebugPage = React.lazy(() => import('./pages/GoogleDebugPage'));
+const DashboardDebug = React.lazy(() => import('./components/debug/DashboardDebug'));
+const DashboardErrorBoundary = React.lazy(() => import('./components/dashboard/DashboardErrorBoundary'));
 const AcceptAgentInvitePage = React.lazy(() => import('./pages/AcceptAgentInvitePage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
@@ -134,6 +136,7 @@ function App() {
           <Route path="accept-agent-invite/:token" element={<AcceptAgentInvitePage />} />
           <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="auth/google/debug" element={<GoogleDebugPage />} />
+          <Route path="debug/dashboard" element={<DashboardDebug />} />
           <Route path="terms" element={<TermsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="pricing" element={<PricingPage />} />
@@ -146,7 +149,13 @@ function App() {
         
         {/* Authenticated Routes */}
         <Route path="/dashboard" element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout />}>
+          <Route element={
+            <React.Suspense fallback={<FullScreenLoader />}>
+              <DashboardErrorBoundary>
+                <DashboardLayout />
+              </DashboardErrorBoundary>
+            </React.Suspense>
+          }>
             {/* General User Dashboards */}
             <Route index element={<DashboardPage />} />
             <Route path="overview" element={<OverviewPage />} />

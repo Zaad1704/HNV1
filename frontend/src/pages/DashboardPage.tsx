@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
 import apiClient from '../api/client';
@@ -37,15 +37,22 @@ interface DashboardStats {
 
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
+    console.log('Fetching dashboard stats...');
     const { data } = await apiClient.get('/dashboard/stats', {
       headers: { 'Cache-Control': 'max-age=300' } // 5 minutes cache
     });
+    console.log('Dashboard stats response:', data);
     if (!data.success) {
       throw new Error(data.message || 'Failed to fetch dashboard stats');
     }
     return data.data;
   } catch (error: any) {
-    console.error('Failed to fetch dashboard stats:', error);
+    console.error('Failed to fetch dashboard stats:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
     // Don't throw error, return default values to prevent crashes
     return {
       totalProperties: 0,
@@ -69,6 +76,7 @@ const DashboardPage = () => {
     user.status === 'pending' || 
     user.status === 'suspended' || 
     !user.isEmailVerified ||
+    !user.organizationId || // Add check for missing organization
     (user.subscription && (
       user.subscription.status === 'inactive' ||
       user.subscription.status === 'canceled' ||
@@ -78,14 +86,27 @@ const DashboardPage = () => {
   );
   
   if (isInactive) {
+    console.log('User is inactive, showing view-only dashboard:', { 
+      status: user?.status, 
+      emailVerified: user?.isEmailVerified,
+      hasOrganization: !!user?.organizationId 
+    });
     return <ViewOnlyDashboard />;
+  }
+  
+  // Additional safety check
+  if (!user) {
+    console.log('No user found, redirecting to login');
+    return <Navigate to="/login" replace />;
   }
   
   const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats,
+    enabled: !!user && !!user.organizationId, // Only fetch if user has organization
     refetchInterval: 300000, // 5 minutes
     retry: (failureCount, error: any) => {
+      console.log('Query retry attempt:', failureCount, error?.message);
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         return false;
       }
@@ -111,7 +132,13 @@ const DashboardPage = () => {
   const dashboardStats = stats || defaultStats;
   const showContent = !isLoading || stats; // Show content if not loading OR if we have cached data
 
-  console.log('Dashboard state:', { isLoading, error, stats, showContent });
+  console.log('Dashboard state:', { 
+    isLoading, 
+    error: error?.message, 
+    stats, 
+    showContent, 
+    user: user ? { id: user._id, role: user.role, organizationId: user.organizationId } : null 
+  });
 
   if (isLoading && !stats) {
     console.log('Showing loading skeleton...');
@@ -127,8 +154,13 @@ const DashboardPage = () => {
     
     // If it's a 401/403 error or organization-related, show empty dashboard
     if (error?.response?.status === 401 || error?.response?.status === 403 || 
-        error?.message?.includes('organization') || error?.message?.includes('Not authorized')) {
-      console.log('Showing empty dashboard for new user');
+        error?.message?.includes('organization') || error?.message?.includes('Not authorized') ||
+        !user?.organizationId) {
+      console.log('Showing empty dashboard for new user or auth issue:', {
+        status: error?.response?.status,
+        message: error?.message,
+        hasOrganization: !!user?.organizationId
+      });
       return <EmptyDashboard />;
     }
     
