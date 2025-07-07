@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { X, Calendar, Download, FileText } from 'lucide-react';
+import { X, Calendar, Download, FileText, Building2 } from 'lucide-react';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/authStore';
+import apiClient from '../../api/client';
 
 interface MonthlyCollectionSheetProps {
   isOpen: boolean;
@@ -9,14 +12,138 @@ interface MonthlyCollectionSheetProps {
 
 const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen, onClose }) => {
   const { currency } = useCurrency();
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const { user } = useAuthStore();
+  const [selectedProperty, setSelectedProperty] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/properties');
+      return data.data || [];
+    },
+    enabled: isOpen
+  });
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      // Simulate generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Fetch collection data
+      const params = new URLSearchParams({
+        month: selectedMonth.toString(),
+        year: selectedYear.toString(),
+        ...(selectedProperty && { propertyId: selectedProperty })
+      });
+      
+      const { data } = await apiClient.get(`/reports/collection-sheet?${params}`);
+      const collectionData = data.data || [];
+      
+      // Generate PDF
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+
+      const organizationName = user?.organization?.name || user?.name + "'s Organization" || "Your Organization";
+      const monthName = months[selectedMonth - 1];
+      const propertyName = selectedProperty ? properties.find(p => p._id === selectedProperty)?.name : 'All Properties';
+      
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Collection Sheet - ${monthName} ${selectedYear}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+              .footer { text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-style: italic; }
+              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+              th { background-color: #f2f2f2; font-weight: bold; }
+              .summary { background-color: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px; }
+              .paid { color: green; font-weight: bold; }
+              .pending { color: orange; font-weight: bold; }
+              .overdue { color: red; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>${organizationName}</h1>
+              <h2>Monthly Collection Sheet</h2>
+              <p><strong>${monthName} ${selectedYear} - ${propertyName}</strong></p>
+              <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+              <p><strong>Powered by HNV Property Management Solutions</strong></p>
+            </div>
+            
+            <div class="summary">
+              <h3>Collection Summary</h3>
+              <p><strong>Total Expected:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.rentAmount || 0), 0).toLocaleString()}</p>
+              <p><strong>Total Collected:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.paidAmount || 0), 0).toLocaleString()}</p>
+              <p><strong>Outstanding:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + ((item.rentAmount || 0) - (item.paidAmount || 0)), 0).toLocaleString()}</p>
+            </div>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>Tenant Name</th>
+                  <th>Property</th>
+                  <th>Unit</th>
+                  <th>Rent Amount</th>
+                  <th>Paid Amount</th>
+                  <th>Outstanding</th>
+                  <th>Status</th>
+                  <th>Payment Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${collectionData.map((item: any) => {
+                  const outstanding = (item.rentAmount || 0) - (item.paidAmount || 0);
+                  const status = outstanding === 0 ? 'Paid' : outstanding > 0 ? 'Pending' : 'Overpaid';
+                  const statusClass = status === 'Paid' ? 'paid' : status === 'Pending' ? 'pending' : 'overdue';
+                  
+                  return `
+                    <tr>
+                      <td>${item.tenantName || 'N/A'}</td>
+                      <td>${item.propertyName || 'N/A'}</td>
+                      <td>${item.unit || 'N/A'}</td>
+                      <td>${currency}${(item.rentAmount || 0).toLocaleString()}</td>
+                      <td>${currency}${(item.paidAmount || 0).toLocaleString()}</td>
+                      <td>${currency}${outstanding.toLocaleString()}</td>
+                      <td class="${statusClass}">${status}</td>
+                      <td>${item.paymentDate ? new Date(item.paymentDate).toLocaleDateString() : 'N/A'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+            
+            <div class="footer">
+              <p><strong>Total Records: ${collectionData.length}</strong></p>
+              <p>Report generated by HNV Property Management Solutions</p>
+              <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
+            </div>
+            
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
       alert('Collection sheet generated successfully!');
       onClose();
     } catch (error) {
@@ -40,18 +167,61 @@ const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen,
         </div>
 
         <div className="space-y-4">
+          {/* Property Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Select Month
+              Select Property (Optional)
             </label>
             <div className="relative">
-              <Calendar size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
+              <Building2 size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <select
+                value={selectedProperty}
+                onChange={(e) => setSelectedProperty(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
+              >
+                <option value="">All Properties</option>
+                {properties.map((property: any) => (
+                  <option key={property._id} value={property._id}>
+                    {property.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Month and Year Selection */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Month
+              </label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                {months.map((month, index) => (
+                  <option key={index} value={index + 1}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Year
+              </label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
