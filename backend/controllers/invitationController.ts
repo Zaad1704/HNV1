@@ -56,7 +56,7 @@ export const inviteTeamMember = async (req: AuthRequest, res: Response) => {
     // Send invitation email
     try {
       const emailService = (await import('../services/emailService')).default;
-      await emailService.sendInvitationEmail(email, inviteToken, name, req.user.name);
+      await emailService.sendVerificationEmail(email, inviteToken, name);
     } catch (emailError) {
       console.error('Failed to send invitation email:', emailError);
     }

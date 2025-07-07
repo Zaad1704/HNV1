@@ -121,7 +121,7 @@ export const changePlan = async (req: AuthRequest, res: Response) => {
     // Update subscription
     subscription.planId = planId as any;
     subscription.amount = plan.price;
-    subscription.billingCycle = plan.billingCycle;
+    subscription.billingCycle = plan.billingCycle === 'one-time' ? 'monthly' : plan.billingCycle;
     
     // Calculate next billing date
     const nextBilling = new Date();
