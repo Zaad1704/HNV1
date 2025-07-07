@@ -1,15 +1,15 @@
-/* Dashboard Card Fixes */
+/* Dashboard Card Fixes - Light Mode */
 .dashboard-container {
-  background-color: #FAFBFC;
+  background-color: var(--app-bg);
   min-height: 100vh;
 }
 
 /* Ensure all dashboard cards have proper backgrounds */
 .dashboard-container .app-surface,
-.dashboard-container [class*="rounded-3xl"],
-.dashboard-container [class*="rounded-2xl"] {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
+.dashboard-container [class*="rounded-3xl"]:not(.gradient-dark-orange-blue):not(.gradient-orange-blue),
+.dashboard-container [class*="rounded-2xl"]:not(.gradient-dark-orange-blue):not(.gradient-orange-blue) {
+  background-color: var(--app-surface) !important;
+  border: 1px solid var(--app-border) !important;
 }
 
 /* Fix gradient cards specifically */
@@ -27,30 +27,21 @@
 
 /* Ensure text colors are visible */
 .dashboard-container .text-text-primary {
-  color: #111827 !important;
+  color: var(--text-primary) !important;
 }
 
 .dashboard-container .text-text-secondary {
-  color: #6B7280 !important;
+  color: var(--text-secondary) !important;
 }
 
 .dashboard-container .text-text-muted {
-  color: #9CA3AF !important;
-}
-
-/* Fix any black backgrounds */
-.dashboard-container * {
-  background-color: inherit;
-}
-
-.dashboard-container *:not(.gradient-dark-orange-blue):not(.gradient-orange-blue):not([class*="bg-"]) {
-  background-color: transparent;
+  color: var(--text-muted) !important;
 }
 
 /* Specific fixes for welcome screen cards */
 .welcome-card {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
+  background-color: var(--app-surface) !important;
+  border: 1px solid var(--app-border) !important;
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -60,4 +51,13 @@
 .welcome-card:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+/* Dark mode support */
+.dark .welcome-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .welcome-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
