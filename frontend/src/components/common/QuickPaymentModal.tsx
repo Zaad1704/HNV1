@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, DollarSign, User, Calendar, Building2, Search, Percent } from 'lucide-react';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/authStore';
 import apiClient from '../../api/client';
 
 interface QuickPaymentModalProps {
@@ -11,6 +12,7 @@ interface QuickPaymentModalProps {
 
 const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }) => {
   const { currency } = useCurrency();
+  const { user } = useAuthStore();
   const [selectedProperty, setSelectedProperty] = useState('');
   const [selectedTenant, setSelectedTenant] = useState('');
   const [tenantSearch, setTenantSearch] = useState('');
@@ -61,6 +63,111 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
   };
 
   const finalAmount = calculateDiscountedAmount(originalAmount);
+  
+  const generateReceipt = (paymentData: any, tenantData: any, paymentId: string) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const organizationName = user?.organization?.name || user?.name + "'s Organization" || "Your Organization";
+    const receiptNumber = `RCP-${Date.now()}`;
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Payment Receipt - ${receiptNumber}</title>
+          <style>
+            @media print {
+              body { margin: 0; font-size: 12px; }
+              .no-print { display: none; }
+            }
+            body { font-family: 'Courier New', monospace; width: 300px; margin: 0 auto; padding: 10px; }
+            .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+            .row { display: flex; justify-content: space-between; margin: 5px 0; }
+            .total { border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; font-weight: bold; }
+            .footer { text-align: center; margin-top: 15px; font-size: 10px; }
+            .thermal { width: 58mm; }
+          </style>
+        </head>
+        <body class="thermal">
+          <div class="header">
+            <h3 style="margin: 0;">${organizationName}</h3>
+            <p style="margin: 5px 0;">PAYMENT RECEIPT</p>
+            <p style="margin: 0; font-size: 10px;">Receipt #: ${receiptNumber}</p>
+          </div>
+          
+          <div class="row">
+            <span>Date:</span>
+            <span>${new Date(paymentData.paymentDate).toLocaleDateString()}</span>
+          </div>
+          <div class="row">
+            <span>Time:</span>
+            <span>${new Date().toLocaleTimeString()}</span>
+          </div>
+          <div class="row">
+            <span>Tenant:</span>
+            <span>${tenantData?.name || 'N/A'}</span>
+          </div>
+          <div class="row">
+            <span>Unit:</span>
+            <span>${tenantData?.unit || 'N/A'}</span>
+          </div>
+          <div class="row">
+            <span>Property:</span>
+            <span>${properties.find(p => p._id === selectedProperty)?.name || 'N/A'}</span>
+          </div>
+          
+          <div style="border-top: 1px dashed #000; margin: 10px 0; padding-top: 10px;">
+            <div class="row">
+              <span>Description:</span>
+              <span>${paymentData.description}</span>
+            </div>
+            ${paymentData.originalAmount !== paymentData.amount ? `
+              <div class="row">
+                <span>Original Amount:</span>
+                <span>${currency}${paymentData.originalAmount.toFixed(2)}</span>
+              </div>
+              <div class="row" style="color: green;">
+                <span>Discount (${paymentData.discount?.type === 'percentage' ? paymentData.discount.value + '%' : currency + paymentData.discount?.value}):</span>
+                <span>-${currency}${paymentData.discount?.amount.toFixed(2)}</span>
+              </div>
+            ` : ''}
+            <div class="row total">
+              <span>TOTAL PAID:</span>
+              <span>${currency}${paymentData.amount.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div class="row">
+            <span>Payment Method:</span>
+            <span>${paymentData.paymentMethod}</span>
+          </div>
+          <div class="row">
+            <span>Status:</span>
+            <span>PAID</span>
+          </div>
+          
+          <div class="footer">
+            <p>Thank you for your payment!</p>
+            <p style="margin: 10px 0;">Powered by</p>
+            <p style="font-weight: bold;">HNV Property Management</p>
+            <p>Solutions</p>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,9 +190,13 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
         status: 'Paid'
       };
       
-      await apiClient.post('/payments', paymentData);
+      const response = await apiClient.post('/payments', paymentData);
+      const paymentId = response.data.data._id;
       
-      alert('Payment recorded successfully!');
+      // Generate receipt
+      generateReceipt(paymentData, selectedTenantData, paymentId);
+      
+      alert('Payment recorded successfully! Receipt generated.');
       onClose();
       
       // Reset form

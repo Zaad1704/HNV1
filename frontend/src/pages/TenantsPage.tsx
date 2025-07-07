@@ -217,17 +217,20 @@ const TenantsPage = () => {
       />
 
       {filteredTenants && filteredTenants.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredTenants.map((tenant: any, index: number) => (
             <motion.div
               key={tenant._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all duration-300 relative"
+              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:border-brand-blue/30 transition-all duration-300 relative overflow-hidden"
             >
+              {/* Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
               {/* Selection Checkbox */}
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 z-10">
                 <input
                   type="checkbox"
                   checked={selectedTenants.includes(tenant._id)}
@@ -238,77 +241,109 @@ const TenantsPage = () => {
                       setSelectedTenants(prev => prev.filter(id => id !== tenant._id));
                     }
                   }}
-                  className="w-4 h-4 rounded border-2"
+                  className="w-5 h-5 rounded border-2 border-gray-300 text-brand-blue focus:ring-brand-blue transition-colors"
                 />
               </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
-                  {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-text-primary">{tenant.name || 'Unknown'}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    tenant.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {tenant.status || 'Unknown'}
-                  </span>
+              
+              {/* Header */}
+              <div className="relative z-10 mb-6">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-text-primary group-hover:text-brand-blue transition-colors">
+                      {tenant.name || 'Unknown'}
+                    </h3>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                      tenant.status === 'Active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {tenant.status || 'Unknown'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <Mail size={14} />
-                  <span>{tenant.email || 'No email'}</span>
-                </div>
-                {tenant.phone && (
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <Phone size={14} />
-                    <span>{tenant.phone}</span>
+              {/* Details */}
+              <div className="relative z-10 space-y-4 mb-6">
+                <div className="bg-app-bg/50 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Mail size={14} className="text-blue-600" />
+                    </div>
+                    <span className="text-sm text-text-primary font-medium truncate">{tenant.email || 'No email'}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-text-secondary text-sm">
-                  <MapPin size={14} />
-                  <span>Unit {tenant.unit || 'N/A'} • {tenant.propertyId?.name || 'No property'}</span>
+                  {tenant.phone && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Phone size={14} className="text-green-600" />
+                      </div>
+                      <span className="text-sm text-text-primary font-medium">{tenant.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MapPin size={14} className="text-purple-600" />
+                    </div>
+                    <span className="text-sm text-text-primary font-medium truncate">
+                      Unit {tenant.unit || 'N/A'} • {tenant.propertyId?.name || 'No property'}
+                    </span>
+                  </div>
                 </div>
+                
+                {/* Rent Amount Highlight */}
                 {tenant.rentAmount && (
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <DollarSign size={14} />
-                    <span>${tenant.rentAmount}/month</span>
+                  <div className="bg-gradient-to-r from-brand-blue to-brand-orange p-4 rounded-2xl text-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <DollarSign size={16} />
+                        <span className="text-sm font-medium">Monthly Rent</span>
+                      </div>
+                      <span className="text-xl font-bold">${tenant.rentAmount}</span>
+                    </div>
                   </div>
                 )}
+                
                 {tenant.leaseEndDate && (
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <Calendar size={14} />
-                    <span>Lease ends: {new Date(tenant.leaseEndDate).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-xl">
+                    <Calendar size={14} className="text-yellow-600" />
+                    <span className="text-sm text-yellow-800 font-medium">
+                      Lease ends: {new Date(tenant.leaseEndDate).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-2 mt-4">
+              {/* Actions */}
+              <div className="relative z-10 flex flex-col gap-3">
                 <Link 
                   to={`/dashboard/tenants/${tenant._id}`}
-                  className="flex-1 bg-app-bg hover:bg-app-border text-text-primary py-2 px-4 rounded-xl text-sm font-medium transition-colors text-center"
+                  className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-lg text-center group-hover:scale-105 transform"
                 >
                   View Details
                 </Link>
-                <button 
-                  onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
-                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-colors"
-                >
-                  Delete
-                </button>
-                <MessageButtons
-                  phone={tenant.phone}
-                  email={tenant.email}
-                  name={tenant.name}
-                  messageType="rentReminder"
-                  additionalData={{
-                    amount: tenant.rentAmount,
-                    dueDate: new Date().toLocaleDateString()
-                  }}
-                />
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
+                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-red-200"
+                  >
+                    Delete
+                  </button>
+                  <div className="flex-1">
+                    <MessageButtons
+                      phone={tenant.phone}
+                      email={tenant.email}
+                      name={tenant.name}
+                      messageType="rentReminder"
+                      additionalData={{
+                        amount: tenant.rentAmount,
+                        dueDate: new Date().toLocaleDateString()
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </motion.div>
           ))}

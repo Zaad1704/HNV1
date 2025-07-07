@@ -357,6 +357,18 @@ const TenantDetailsPage = () => {
                     <p className="font-medium text-text-primary">{tenant.referenceRelation}</p>
                   </div>
                 )}
+                {tenant.referenceAddress && (
+                  <div>
+                    <p className="text-sm text-text-secondary">Address</p>
+                    <p className="font-medium text-text-primary">{tenant.referenceAddress}</p>
+                  </div>
+                )}
+                {tenant.referenceGovtId && (
+                  <div>
+                    <p className="text-sm text-text-secondary">Government ID</p>
+                    <p className="font-medium text-text-primary">{tenant.referenceGovtId}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

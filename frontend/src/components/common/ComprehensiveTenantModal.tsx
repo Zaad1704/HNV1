@@ -39,6 +39,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     referenceEmail: '',
     referenceAddress: '',
     referenceRelation: '',
+    referenceGovtId: '',
     
     // Commercial Properties
     securityDeposit: '',
@@ -136,7 +137,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
         leaseEndDate: '', status: 'Active', fatherName: '', motherName: '',
         presentAddress: '', permanentAddress: '', govtIdNumber: '',
         referenceName: '', referencePhone: '', referenceEmail: '',
-        referenceAddress: '', referenceRelation: '', securityDeposit: '',
+        referenceAddress: '', referenceRelation: '', referenceGovtId: '', securityDeposit: '',
         numberOfOccupants: 1
       });
       setImages({ tenantImage: null, govtIdFront: null, govtIdBack: null });
@@ -515,6 +516,28 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                   type="text"
                   value={formData.referenceRelation}
                   onChange={(e) => setFormData({ ...formData, referenceRelation: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reference Address
+                </label>
+                <textarea
+                  value={formData.referenceAddress}
+                  onChange={(e) => setFormData({ ...formData, referenceAddress: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reference Government ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.referenceGovtId}
+                  onChange={(e) => setFormData({ ...formData, referenceGovtId: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>

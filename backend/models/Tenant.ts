@@ -22,7 +22,9 @@ export interface ITenant extends Document {
     name?: string;
     phone?: string;
     email?: string;
-    idNumber?: string;
+    address?: string;
+    relation?: string;
+    govtIdNumber?: string;
   };
   additionalAdults: Array<{
     name?: string;
@@ -62,7 +64,9 @@ const TenantSchema = new Schema<ITenant>({
     name: { type: String },
     phone: { type: String },
     email: { type: String },
-    idNumber: { type: String },
+    address: { type: String },
+    relation: { type: String },
+    govtIdNumber: { type: String },
   },
   additionalAdults: [{
     name: { type: String },
