@@ -49,14 +49,15 @@ export const getProperties = async (req: AuthRequest, res: Response) => {
   try {
     let query: any = { organizationId: user.organizationId };
     
-    // Agents see only properties they manage or created
+    // Agents see only properties they manage
     if (user.role === 'Agent') {
+      // Get user's managed properties from User model
+      const userData = await require('../models/User').default.findById(user._id).select('managedProperties');
+      const managedPropertyIds = userData?.managedProperties || [];
+      
       query = {
         organizationId: user.organizationId,
-        $or: [
-          { managedByAgentId: user._id },
-          { createdBy: user._id }
-        ]
+        _id: { $in: managedPropertyIds }
       };
     }
 

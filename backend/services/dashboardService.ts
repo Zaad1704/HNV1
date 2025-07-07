@@ -24,13 +24,15 @@ class DashboardService {
       let paymentFilter: any = { organizationId };
       
       if (userRole === 'Agent' && userId) {
-        // Agent can only see properties they manage
-        propertyFilter.managedByAgentId = userId;
-        // Get properties managed by agent first
-        const agentProperties = await Property.find(propertyFilter).select('_id');
-        const propertyIds = agentProperties.map(p => p._id);
-        tenantFilter.propertyId = { $in: propertyIds };
-        paymentFilter.propertyId = { $in: propertyIds };
+        // Get user's managed properties from User model
+        const User = (await import('../models/User')).default;
+        const userData = await User.findById(userId).select('managedProperties');
+        const managedPropertyIds = userData?.managedProperties || [];
+        
+        // Filter by managed properties
+        propertyFilter._id = { $in: managedPropertyIds };
+        tenantFilter.propertyId = { $in: managedPropertyIds };
+        paymentFilter.propertyId = { $in: managedPropertyIds };
       }
 
       // Use Promise.allSettled for better error handling

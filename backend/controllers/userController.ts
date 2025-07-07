@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
-import Organization from '../models/Organization';
+import Property from '../models/Property';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -9,201 +9,154 @@ interface AuthRequest extends Request {
 export const getUsers = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID is required'
+      });
     }
 
     const users = await User.find({ 
-      organizationId: req.user.organizationId,
-      role: { $ne: 'SuperAdmin' }
-    }).select('-password');
-    
-    res.json({ success: true, data: users });
+      organizationId: req.user.organizationId 
+    })
+    .select('-password -twoFactorSecret -emailVerificationToken -passwordResetToken')
+    .populate('managedProperties', 'name address')
+    .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: users
+    });
   } catch (error) {
     console.error('Get users error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch users',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users'
     });
-  }
-};
-
-export const getUser = async (req: AuthRequest, res: Response) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-    res.json({ success: true, data: user });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
 export const updateUser = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    const { id } = req.params;
+    const { name, role, status, managedProperties } = req.body;
+
+    // Only landlords can update users
+    if (req.user.role !== 'Landlord' && req.user.role !== 'Super Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only landlords can update users'
+      });
     }
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    user.role = req.body.role || user.role;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
-    const updatedUser = await user.save();
-    res.json({ success: true, data: updatedUser });
+    // Verify user belongs to same organization
+    if (user.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this user'
+      });
+    }
+
+    // Update user fields
+    if (name) user.name = name;
+    if (role) user.role = role;
+    if (status) user.status = status;
+    
+    // Update managed properties for agents
+    if (role === 'Agent' && managedProperties) {
+      // Verify all properties belong to the organization
+      const properties = await Property.find({
+        _id: { $in: managedProperties },
+        organizationId: req.user.organizationId
+      });
+      
+      if (properties.length !== managedProperties.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'Some properties do not belong to your organization'
+        });
+      }
+      
+      user.managedProperties = managedProperties;
+    } else if (role !== 'Agent') {
+      user.managedProperties = [];
+    }
+
+    await user.save();
+
+    // Return updated user without sensitive fields
+    const updatedUser = await User.findById(id)
+      .select('-password -twoFactorSecret -emailVerificationToken -passwordResetToken')
+      .populate('managedProperties', 'name address');
+
+    res.status(200).json({
+      success: true,
+      message: 'User updated successfully',
+      data: updatedUser
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Update user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user'
+    });
   }
 };
 
 export const deleteUser = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.id);
+    const { id } = req.params;
+
+    // Only landlords can delete users
+    if (req.user.role !== 'Landlord' && req.user.role !== 'Super Admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only landlords can delete users'
+      });
+    }
+
+    const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify user belongs to same organization
+    if (user.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to delete this user'
+      });
+    }
+
+    // Cannot delete yourself
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete your own account'
+      });
     }
 
     await user.deleteOne();
-    res.json({ success: true, message: 'User removed' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const getOrgUsers = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const users = await User.find({ 
-      organizationId: req.user.organizationId,
-      role: { $ne: 'SuperAdmin' }
-    }).select('-password');
-    
-    res.status(200).json({ success: true, data: users });
-  } catch (error) {
-    console.error('Get org users error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch organization users',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-};
-
-export const getMyAgents = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const agents = await User.find({
-      organizationId: req.user.organizationId,
-      role: 'Agent'
-    }).select('-password');
-
-    res.status(200).json({ success: true, data: agents });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const getInvites = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const invites = [
-      {
-        _id: '1',
-        email: 'agent@example.com',
-        role: 'Agent',
-        status: 'pending',
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      }
-    ];
-
-    res.status(200).json({ success: true, data: invites });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const inviteUser = async (req: AuthRequest, res: Response) => {
-  try {
-    const { email, role } = req.body;
-    
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    // Mock invite creation
-    const invite = {
-      _id: Date.now().toString(),
-      email,
-      role,
-      status: 'pending',
-      organizationId: req.user.organizationId,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    };
-
-    res.status(201).json({ success: true, data: invite });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const updatePassword = async (req: AuthRequest, res: Response) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    
-    if (!req.user?._id) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
-    }
-
-    const user = await User.findById(req.user._id).select('+password');
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
-
-    // Mock password validation
-    user.password = newPassword;
-    await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Password updated successfully'
+      message: 'User deleted successfully'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const requestAccountDeletion = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const organization = await Organization.findById(req.user.organizationId);
-    if (!organization) {
-      return res.status(404).json({ success: false, message: 'Organization not found' });
-    }
-
-    organization.status = 'pending_deletion';
-    await organization.save();
-
-    res.status(200).json({ 
-      success: true, 
-      message: 'Account deletion request received' 
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete user'
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

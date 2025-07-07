@@ -15,6 +15,7 @@ export interface IUser extends Document {
   status: 'active' | 'suspended' | 'pending';
   permissions: string[];
   managedAgentIds: mongoose.Types.ObjectId[];
+  managedProperties: mongoose.Types.ObjectId[];
   isEmailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
@@ -62,6 +63,7 @@ const UserSchema = new Schema<IUser>({
   status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
   permissions: { type: [String], default: [] },
   managedAgentIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  managedProperties: [{ type: Schema.Types.ObjectId, ref: 'Property' }],
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String, select: false },
   emailVerificationExpires: { type: Date, select: false },

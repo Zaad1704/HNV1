@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Shield, Calendar, MoreVertical, Download } from 'lucide-react';
+import { Users, Plus, Mail, Shield, Calendar, MoreVertical, Download, Sparkles, Eye, Archive, Building2, UserCheck, UserX, Settings } from 'lucide-react';
 import apiClient from '../api/client';
 import MessageButtons from '../components/common/MessageButtons';
 import OrganizationCode from '../components/common/OrganizationCode';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import UserManagementModal from '../components/common/UserManagementModal';
 import { useAuthStore } from '../store/authStore';
 
 const fetchUsers = async () => {
@@ -37,9 +38,12 @@ const sendInvite = async (email: string, role: string) => {
 const UsersPage = () => {
   const { user } = useAuthStore();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('Agent');
   const [showExport, setShowExport] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
     dateRange: 'all',
@@ -94,8 +98,31 @@ const UsersPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Users & Invites</h1>
-          <p className="text-text-secondary mt-1">Manage team members and invitations</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Users & Invites
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              Manage team members and invitations ({users.length} users, {invites.length} pending)
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-text-secondary">Show:</span>
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  !showArchived 
+                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Eye size={12} className="inline mr-1" />
+                Active ({users.filter(u => u.status === 'active').length})
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -107,9 +134,11 @@ const UsersPage = () => {
           </button>
           <button 
             onClick={() => setShowInviteModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
-            <Plus size={20} />
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
             Invite User
           </button>
         </div>
@@ -135,40 +164,74 @@ const UsersPage = () => {
       />
 
       {/* Active Users */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h2 className="text-xl font-bold text-text-primary mb-4">Team Members</h2>
+      <div className="app-surface rounded-3xl p-8 border border-app-border">
+        <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+          <Users size={24} className="text-brand-blue" />
+          Team Members
+        </h2>
         {users.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {users.map((user: any, index: number) => (
               <motion.div
                 key={user._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-4 bg-app-bg rounded-xl border border-app-border"
+                className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 app-gradient rounded-full flex items-center justify-center text-white font-semibold">
+                {/* Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="relative z-10 flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary">{user.name}</h3>
-                    <p className="text-sm text-text-secondary">{user.email}</p>
+                    <h3 className="font-bold text-lg text-text-primary group-hover:text-brand-blue transition-colors">
+                      {user.name}
+                    </h3>
+                    <p className="text-sm text-text-secondary truncate">{user.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    user.role === 'Landlord' ? 'bg-blue-100 text-blue-800' :
-                    user.role === 'Agent' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {user.role}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {user.status || 'active'}
-                  </span>
+                <div className="relative z-10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
+                      user.role === 'Landlord' ? 'bg-blue-100/90 text-blue-800' :
+                      user.role === 'Agent' ? 'bg-green-100/90 text-green-800' :
+                      user.role === 'Tenant' ? 'bg-purple-100/90 text-purple-800' :
+                      'bg-gray-100/90 text-gray-800'
+                    }`}>
+                      {user.role === 'Landlord' && <Shield size={10} className="inline mr-1" />}
+                      {user.role === 'Agent' && <UserCheck size={10} className="inline mr-1" />}
+                      {user.role}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
+                      user.status === 'active' ? 'bg-green-100/90 text-green-800' : 'bg-yellow-100/90 text-yellow-800'
+                    }`}>
+                      {user.status || 'active'}
+                    </span>
+                  </div>
+                  
+                  {user.role === 'Agent' && (
+                    <div className="bg-blue-50 p-3 rounded-xl">
+                      <div className="flex items-center gap-2 text-blue-800">
+                        <Building2 size={14} />
+                        <span className="text-xs font-medium">
+                          {user.managedProperties || 0} Properties Assigned
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowUserModal(true);
+                    }}
+                    className="w-full bg-gradient-to-r from-brand-blue to-brand-orange text-white py-2 px-4 rounded-xl text-sm font-semibold transition-all hover:shadow-lg group-hover:scale-105 transform"
+                  >
+                    <Settings size={14} className="inline mr-2" />
+                    Manage User
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -225,44 +288,58 @@ const UsersPage = () => {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-app-surface rounded-3xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-bold text-text-primary mb-4">Invite Team Member</h3>
-            <form onSubmit={handleInvite} className="space-y-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 gradient-dark-orange-blue rounded-2xl flex items-center justify-center">
+                <Mail size={24} className="text-white" />
+              </div>
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">Email</label>
+                <h3 className="text-xl font-bold text-gray-900">Invite Team Member</h3>
+                <p className="text-gray-600">Send an invitation to join your organization</p>
+              </div>
+            </div>
+            <form onSubmit={handleInvite} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                 <input
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full p-3 border border-app-border rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
                   placeholder="Enter email address"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
-                  className="w-full p-3 border border-app-border rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue"
                 >
-                  <option value="Agent">Agent</option>
-                  <option value="Landlord">Landlord</option>
+                  <option value="Agent">Agent - Limited property access</option>
+                  <option value="Landlord">Landlord - Full system access</option>
+                  <option value="Tenant">Tenant - Personal portal access</option>
                 </select>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-xl">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> The invited user will receive an email with instructions to join your organization.
+                </p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={inviteMutation.isPending}
-                  className="flex-1 btn-gradient py-3 rounded-xl font-semibold disabled:opacity-50"
+                  className="flex-1 btn-gradient py-3 rounded-xl font-bold disabled:opacity-50 shadow-lg hover:shadow-xl transition-all"
                 >
-                  {inviteMutation.isPending ? 'Sending...' : 'Send Invite'}
+                  {inviteMutation.isPending ? 'Sending Invite...' : 'Send Invitation'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="flex-1 py-3 border border-app-border rounded-xl font-semibold text-text-secondary"
+                  className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -280,6 +357,31 @@ const UsersPage = () => {
         filters={searchFilters}
         title="Export Users & Invites"
       />
+      
+      <UserManagementModal
+        isOpen={showUserModal}
+        onClose={() => {
+          setShowUserModal(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+      />
+      
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+        >
+          <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      </div>
+      
+      {/* Modern Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
+      </div>
     </motion.div>
   );
 };
