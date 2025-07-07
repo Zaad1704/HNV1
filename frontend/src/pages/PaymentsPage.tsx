@@ -11,6 +11,7 @@ import ManualPaymentModal from '../components/common/ManualPaymentModal';
 import BulkPaymentModal from '../components/common/BulkPaymentModal';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
+import AgentHandoverModal from '../components/common/AgentHandoverModal';
 import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
@@ -37,6 +38,7 @@ const PaymentsPage = () => {
   const [showBulkPayment, setShowBulkPayment] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
+  const [showAgentHandover, setShowAgentHandover] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -140,6 +142,13 @@ const PaymentsPage = () => {
           >
             <FileText size={16} />
             Collection Sheet
+          </button>
+          <button
+            onClick={() => setShowAgentHandover(true)}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+          >
+            <Users size={16} />
+            Agent Handover
           </button>
           <button
             onClick={() => setShowExport(true)}
@@ -349,6 +358,15 @@ const PaymentsPage = () => {
       <MonthlyCollectionSheet
         isOpen={showCollectionSheet}
         onClose={() => setShowCollectionSheet(false)}
+      />
+      
+      <AgentHandoverModal
+        isOpen={showAgentHandover}
+        onClose={() => setShowAgentHandover(false)}
+        onHandoverRecorded={(handover) => {
+          // Refresh payments or handle handover record
+          console.log('Agent handover recorded:', handover);
+        }}
       />
       
       {/* Floating Action Button for Mobile */}
