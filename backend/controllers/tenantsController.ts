@@ -13,9 +13,13 @@ export const getTenants = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const tenants = await Tenant.find({ 
-      organizationId: req.user.organizationId 
-    })
+    // Build query with optional propertyId filter
+    const query: any = { organizationId: req.user.organizationId };
+    if (req.query.propertyId) {
+      query.propertyId = req.query.propertyId;
+    }
+
+    const tenants = await Tenant.find(query)
     .populate('propertyId', 'name')
     .lean()
     .exec() || [];
