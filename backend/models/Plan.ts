@@ -1,88 +1,52 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
 export interface IPlan extends Document {
   name: string;
-  description?: string;
-  price: number;
-  duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  interval: 'monthly' | 'yearly';
+  description: string;
+  price: number; // in cents
+  currency: string;
+  billingCycle: 'monthly' | 'yearly';
   features: string[];
-  maxProperties: number;
-  maxUsers: number;
-  maxTenants: number;
-  maxAgents: number;
-  isPublic: boolean;
+  limits: {
+    properties: number;
+    tenants: number;
+    users: number;
+    storage: number; // in MB
+    exports: number; // per month
+  };
+  twocheckoutProductId?: string;
+  stripeProductId?: string;
+  stripePriceId?: string;
   isActive: boolean;
   isPopular: boolean;
-  trialDays: number;
-  setupFee: number;
-  discountPercentage: number;
-  currency: string;
-  billingCycle: 'monthly' | 'yearly' | 'one-time';
-  planType: 'basic' | 'standard' | 'premium' | 'enterprise';
-  allowedFeatures: {
-    analytics: boolean;
-    multipleProperties: boolean;
-    tenantPortal: boolean;
-    maintenanceTracking: boolean;
-    financialReporting: boolean;
-    documentStorage: boolean;
-    apiAccess: boolean;
-    customBranding: boolean;
-    prioritySupport: boolean;
-  };
+  sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const planSchema = new Schema<IPlan>({
-  name: { type: String, required: true, unique: true },
-  description: { type: String, default: '' },
+const PlanSchema = new Schema<IPlan>({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
   price: { type: Number, required: true },
-  duration: {
-    type: String,
-    required: true,
-    enum: ['daily', 'weekly', 'monthly', 'yearly'],
-    default: 'monthly',
+  currency: { type: String, default: 'USD' },
+  billingCycle: { type: String, enum: ['monthly', 'yearly'], required: true },
+  features: [{ type: String }],
+  limits: {
+    properties: { type: Number, required: true },
+    tenants: { type: Number, required: true },
+    users: { type: Number, required: true },
+    storage: { type: Number, required: true },
+    exports: { type: Number, required: true }
   },
-  interval: {
-    type: String,
-    enum: ['month', 'monthly', 'yearly'],
-    default: 'monthly'
-  },
-  features: { type: [String], default: [] },
-  maxProperties: { type: Number, default: 1 },
-  maxUsers: { type: Number, default: 1 },
-  maxTenants: { type: Number, default: 5 },
-  maxAgents: { type: Number, default: 0 },
-  isPublic: { type: Boolean, default: true },
+  twocheckoutProductId: { type: String },
+  stripeProductId: { type: String },
+  stripePriceId: { type: String },
   isActive: { type: Boolean, default: true },
   isPopular: { type: Boolean, default: false },
-  trialDays: { type: Number, default: 14 },
-  setupFee: { type: Number, default: 0 },
-  discountPercentage: { type: Number, default: 0 },
-  currency: { type: String, default: 'USD' },
-  billingCycle: { 
-    type: String, 
-    enum: ['monthly', 'yearly', 'one-time'], 
-    default: 'monthly' 
-  },
-  planType: { 
-    type: String, 
-    enum: ['basic', 'standard', 'premium', 'enterprise'], 
-    default: 'standard' 
-  },
-  allowedFeatures: {
-    analytics: { type: Boolean, default: false },
-    multipleProperties: { type: Boolean, default: false },
-    tenantPortal: { type: Boolean, default: false },
-    maintenanceTracking: { type: Boolean, default: false },
-    financialReporting: { type: Boolean, default: false },
-    documentStorage: { type: Boolean, default: false },
-    apiAccess: { type: Boolean, default: false },
-    customBranding: { type: Boolean, default: false },
-    prioritySupport: { type: Boolean, default: false }
-  }
+  sortOrder: { type: Number, default: 0 }
 }, { timestamps: true });
 
-export default mongoose.model<IPlan>('Plan', planSchema);
+// Add indexes
+PlanSchema.index({ isActive: 1, sortOrder: 1 });
+
+export default model<IPlan>('Plan', PlanSchema);

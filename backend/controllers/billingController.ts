@@ -1,195 +1,429 @@
 import { Request, Response } from 'express';
 import Subscription from '../models/Subscription';
 import Plan from '../models/Plan';
+import Organization from '../models/Organization';
+import User from '../models/User';
+import twocheckoutService from '../services/twocheckoutService';
 
 interface AuthRequest extends Request {
   user?: any;
 }
 
-export const getBillingInfo = async (req: AuthRequest, res: Response) => {
+export const getSubscriptionPlans = async (req: Request, res: Response) => {
   try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
+    const plans = await Plan.find({ isActive: true })
+      .sort({ sortOrder: 1, price: 1 });
 
-    const subscription = await Subscription.findOne({ 
-      organizationId: req.user.organizationId 
-    }).populate('planId');
-
-    if (!subscription) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'No subscription found' 
-      });
-    }
-
-    const billingInfo = {
-      subscription: {
-        status: subscription.status,
-        currentPeriodEndsAt: subscription.currentPeriodEndsAt,
-        nextBillingDate: subscription.nextBillingDate,
-        amount: subscription.amount,
-        currency: subscription.currency,
-        billingCycle: subscription.billingCycle,
-        isLifetime: subscription.isLifetime,
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
-      },
-      plan: subscription.planId,
-      paymentMethod: subscription.paymentMethod || 'Not set',
-      lastPaymentDate: subscription.lastPaymentDate,
-      failedPaymentAttempts: subscription.failedPaymentAttempts
-    };
-
-    res.json({ success: true, data: billingInfo });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-export const updatePaymentMethod = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const { paymentMethod } = req.body;
-
-    if (!paymentMethod) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Payment method is required' 
-      });
-    }
-
-    const subscription = await Subscription.findOneAndUpdate(
-      { organizationId: req.user.organizationId },
-      { paymentMethod },
-      { new: true }
-    );
-
-    if (!subscription) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Subscription not found' 
-      });
-    }
-
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Payment method updated successfully',
-      data: { paymentMethod: subscription.paymentMethod }
+      data: plans
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Get plans error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch subscription plans'
+    });
   }
 };
 
-export const changePlan = async (req: AuthRequest, res: Response) => {
+export const getCurrentSubscription = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID is required'
+      });
     }
 
+    const subscription = await Subscription.findOne({
+      organizationId: req.user.organizationId
+    }).populate('planId');
+
+    const organization = await Organization.findById(req.user.organizationId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        subscription,
+        organization,
+        user: req.user
+      }
+    });
+  } catch (error) {
+    console.error('Get current subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch subscription details'
+    });
+  }
+};
+
+export const createCheckoutSession = async (req: AuthRequest, res: Response) => {
+  try {
     const { planId } = req.body;
 
-    if (!planId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Plan ID is required' 
+    if (!req.user?.organizationId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID is required'
       });
     }
 
     const plan = await Plan.findById(planId);
     if (!plan) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Plan not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'Plan not found'
       });
     }
 
-    const subscription = await Subscription.findOne({ 
-      organizationId: req.user.organizationId 
+    const organization = await Organization.findById(req.user.organizationId);
+    if (!organization) {
+      return res.status(404).json({
+        success: false,
+        message: 'Organization not found'
+      });
+    }
+
+    // Generate external reference
+    const externalReference = `org_${req.user.organizationId}_plan_${planId}_${Date.now()}`;
+
+    // Create 2Checkout buy link
+    const buyLink = twocheckoutService.generateBuyLink({
+      productId: plan.twocheckoutProductId || plan._id.toString(),
+      customerEmail: req.user.email,
+      customerName: req.user.name || organization.name,
+      currency: plan.currency,
+      returnUrl: `${process.env.FRONTEND_URL}/billing/success?ref=${externalReference}`,
+      cancelUrl: `${process.env.FRONTEND_URL}/billing/cancel`,
+      externalReference
     });
 
-    if (!subscription) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Subscription not found' 
-      });
-    }
+    // Store pending subscription
+    const pendingSubscription = new Subscription({
+      organizationId: req.user.organizationId,
+      planId: plan._id,
+      status: 'inactive',
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + (plan.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
+      amount: plan.price,
+      currency: plan.currency,
+      billingCycle: plan.billingCycle,
+      paymentMethod: 'card',
+      features: plan.features,
+      limits: plan.limits,
+      usage: {
+        properties: 0,
+        tenants: 0,
+        users: 0,
+        storage: 0,
+        exports: 0,
+        lastReset: new Date()
+      }
+    });
 
-    // Update subscription
-    subscription.planId = planId as any;
-    subscription.amount = plan.price;
-    subscription.billingCycle = plan.billingCycle === 'one-time' ? 'monthly' : plan.billingCycle;
-    subscription.status = 'active'; // Reactivate subscription
-    subscription.lastPaymentDate = new Date();
-    subscription.failedPaymentAttempts = 0;
-    
-    // Calculate billing dates
-    const now = new Date();
-    subscription.currentPeriodStartsAt = now;
-    
-    const nextBilling = new Date();
-    const nextPeriodEnd = new Date();
-    
-    if (plan.billingCycle === 'monthly') {
-      nextBilling.setMonth(nextBilling.getMonth() + 1);
-      nextPeriodEnd.setMonth(nextPeriodEnd.getMonth() + 1);
-    } else if (plan.billingCycle === 'yearly') {
-      nextBilling.setFullYear(nextBilling.getFullYear() + 1);
-      nextPeriodEnd.setFullYear(nextPeriodEnd.getFullYear() + 1);
-    }
-    
-    subscription.nextBillingDate = nextBilling;
-    subscription.currentPeriodEndsAt = nextPeriodEnd;
-    subscription.cancelAtPeriodEnd = false;
-    subscription.canceledAt = undefined;
+    await pendingSubscription.save();
 
-    await subscription.save();
-    
-    // Update user status to active
-    const User = (await import('../models/User')).default;
-    await User.findByIdAndUpdate(req.user._id, { status: 'active' });
-
-    const populatedSubscription = await Subscription.findById(subscription._id).populate('planId');
-    
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Plan updated and subscription reactivated successfully',
-      data: populatedSubscription
+      data: {
+        checkoutUrl: buyLink,
+        externalReference,
+        subscriptionId: pendingSubscription._id
+      }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Create checkout session error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create checkout session'
+    });
   }
 };
+
+export const handlePaymentSuccess = async (req: AuthRequest, res: Response) => {
+  try {
+    const { externalReference, twocheckoutOrderId } = req.body;
+
+    if (!externalReference) {
+      return res.status(400).json({
+        success: false,
+        message: 'External reference is required'
+      });
+    }
+
+    // Extract organization ID from external reference
+    const orgIdMatch = externalReference.match(/org_([^_]+)_/);
+    if (!orgIdMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid external reference format'
+      });
+    }
+
+    const organizationId = orgIdMatch[1];
+
+    // Find and update subscription
+    const subscription = await Subscription.findOne({
+      organizationId,
+      status: 'inactive'
+    }).sort({ createdAt: -1 });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+
+    // Update subscription status
+    subscription.status = 'active';
+    subscription.twocheckoutSubscriptionId = twocheckoutOrderId;
+    subscription.lastPaymentDate = new Date();
+    subscription.nextBillingDate = new Date(Date.now() + (subscription.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000);
+    
+    await subscription.save();
+
+    // Update organization status
+    await Organization.findByIdAndUpdate(organizationId, {
+      status: 'active',
+      subscriptionId: subscription._id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment processed successfully',
+      data: subscription
+    });
+  } catch (error) {
+    console.error('Handle payment success error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process payment success'
+    });
+  }
+};
+
+export const handleWebhook = async (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['x-2checkout-signature'] as string;
+    const ipnData = req.body;
+
+    // Verify IPN signature
+    if (!twocheckoutService.verifyIPN(ipnData, signature)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid IPN signature'
+      });
+    }
+
+    const { MESSAGE_TYPE, REFNO, IPN_PID, IPN_PNAME, ORDERSTATUS } = ipnData;
+
+    switch (MESSAGE_TYPE) {
+      case 'ORDER_CREATED':
+        await handleOrderCreated(ipnData);
+        break;
+      case 'PAYMENT_AUTHORIZED':
+        await handlePaymentAuthorized(ipnData);
+        break;
+      case 'PAYMENT_RECEIVED':
+        await handlePaymentReceived(ipnData);
+        break;
+      case 'SUBSCRIPTION_CANCELED':
+        await handleSubscriptionCanceled(ipnData);
+        break;
+      case 'SUBSCRIPTION_EXPIRED':
+        await handleSubscriptionExpired(ipnData);
+        break;
+      default:
+        console.log('Unhandled webhook event:', MESSAGE_TYPE);
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Webhook processing failed'
+    });
+  }
+};
+
+async function handleOrderCreated(ipnData: any) {
+  console.log('Order created:', ipnData.REFNO);
+}
+
+async function handlePaymentAuthorized(ipnData: any) {
+  console.log('Payment authorized:', ipnData.REFNO);
+}
+
+async function handlePaymentReceived(ipnData: any) {
+  try {
+    const subscription = await Subscription.findOne({
+      twocheckoutSubscriptionId: ipnData.REFNO
+    });
+
+    if (subscription) {
+      subscription.status = 'active';
+      subscription.lastPaymentDate = new Date();
+      subscription.nextBillingDate = new Date(Date.now() + (subscription.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000);
+      subscription.failedPaymentAttempts = 0;
+      
+      await subscription.save();
+      
+      console.log('Payment received for subscription:', subscription._id);
+    }
+  } catch (error) {
+    console.error('Handle payment received error:', error);
+  }
+}
+
+async function handleSubscriptionCanceled(ipnData: any) {
+  try {
+    const subscription = await Subscription.findOne({
+      twocheckoutSubscriptionId: ipnData.REFNO
+    });
+
+    if (subscription) {
+      subscription.status = 'canceled';
+      subscription.canceledAt = new Date();
+      
+      await subscription.save();
+      
+      console.log('Subscription canceled:', subscription._id);
+    }
+  } catch (error) {
+    console.error('Handle subscription canceled error:', error);
+  }
+}
+
+async function handleSubscriptionExpired(ipnData: any) {
+  try {
+    const subscription = await Subscription.findOne({
+      twocheckoutSubscriptionId: ipnData.REFNO
+    });
+
+    if (subscription) {
+      subscription.status = 'expired';
+      subscription.endedAt = new Date();
+      
+      await subscription.save();
+      
+      console.log('Subscription expired:', subscription._id);
+    }
+  } catch (error) {
+    console.error('Handle subscription expired error:', error);
+  }
+}
 
 export const cancelSubscription = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const subscription = await Subscription.findOne({ 
-      organizationId: req.user.organizationId 
-    });
-
-    if (!subscription) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Subscription not found' 
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID is required'
       });
     }
 
+    const subscription = await Subscription.findOne({
+      organizationId: req.user.organizationId,
+      status: 'active'
+    });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active subscription not found'
+      });
+    }
+
+    // Cancel with 2Checkout if subscription ID exists
+    if (subscription.twocheckoutSubscriptionId) {
+      const result = await twocheckoutService.cancelSubscription(subscription.twocheckoutSubscriptionId);
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          message: result.error
+        });
+      }
+    }
+
+    // Update local subscription
     subscription.cancelAtPeriodEnd = true;
+    subscription.canceledAt = new Date();
+    
     await subscription.save();
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Subscription will be cancelled at the end of current period',
-      data: { cancelAtPeriodEnd: true }
+      message: 'Subscription will be canceled at the end of the current period',
+      data: subscription
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel subscription'
+    });
+  }
+};
+
+export const getUsageStats = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Organization ID is required'
+      });
+    }
+
+    const subscription = await Subscription.findOne({
+      organizationId: req.user.organizationId
+    });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+
+    // Get actual usage counts
+    const Property = (await import('../models/Property')).default;
+    const Tenant = (await import('../models/Tenant')).default;
+    const User = (await import('../models/User')).default;
+
+    const [propertyCount, tenantCount, userCount] = await Promise.all([
+      Property.countDocuments({ organizationId: req.user.organizationId }),
+      Tenant.countDocuments({ organizationId: req.user.organizationId }),
+      User.countDocuments({ organizationId: req.user.organizationId })
+    ]);
+
+    // Update usage in subscription
+    subscription.usage.properties = propertyCount;
+    subscription.usage.tenants = tenantCount;
+    subscription.usage.users = userCount;
+    
+    await subscription.save();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        usage: subscription.usage,
+        limits: subscription.limits,
+        utilizationPercentage: {
+          properties: Math.round((propertyCount / subscription.limits.properties) * 100),
+          tenants: Math.round((tenantCount / subscription.limits.tenants) * 100),
+          users: Math.round((userCount / subscription.limits.users) * 100)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get usage stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch usage statistics'
+    });
   }
 };

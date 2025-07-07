@@ -1,24 +1,80 @@
 import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom'; // Import useSearchParams
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { XCircle, ArrowLeft, CreditCard } from 'lucide-react';
 
 const PaymentCancelPage = () => {
-  const [searchParams] = useSearchParams();
-  const invoiceId = searchParams.get('invoiceId');
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-dark-text dark:text-dark-text-dark flex justify-center items-center p-4 transition-colors duration-300">
-      <div className="text-center bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-xl border border-border-color dark:border-border-color-dark transition-all duration-200">
-        <h1 className="text-5xl font-bold text-brand-orange mb-4">Payment Canceled</h1>
-        <p className="text-light-text dark:text-light-text-dark text-lg mb-4">Your payment process was canceled. You have not been charged.</p>
-        {invoiceId && <p className="text-light-text dark:text-light-text-dark text-md">Invoice ID: <span className="font-mono">{invoiceId}</span></p>}
-        <p className="text-light-text dark:text-light-text-dark text-lg mt-4 mb-8">If you believe this is an error, please try again or contact support.</p>
-        <Link 
-          to="/dashboard" 
-          className="px-8 py-3 bg-light-bg dark:bg-dark-bg/50 border border-border-color dark:border-border-color-dark font-semibold rounded-lg hover:bg-border-color dark:hover:bg-dark-bg/70 transition-all duration-200"
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-3xl p-12 text-center shadow-2xl max-w-md w-full"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8"
         >
-          Return to Dashboard
-        </Link>
-      </div>
+          <XCircle size={48} className="text-red-600" />
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-3xl font-bold text-gray-900 mb-4"
+        >
+          Payment Canceled
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-gray-600 mb-8 text-lg"
+        >
+          Your payment was canceled. No charges have been made to your account.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-4"
+        >
+          <button
+            onClick={() => navigate('/billing')}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+          >
+            <CreditCard size={20} />
+            Try Again
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-2xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeft size={20} />
+            Back to Dashboard
+          </button>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8 p-4 bg-blue-50 rounded-2xl"
+        >
+          <p className="text-sm text-blue-800">
+            <strong>Need help?</strong><br />
+            Contact our support team if you're experiencing issues with payment processing.
+          </p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
