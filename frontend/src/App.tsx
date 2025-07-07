@@ -136,24 +136,52 @@ function App() {
           <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
         </Route>
         
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-          <Route index element={<DashboardPage />} />
-          <Route path="overview" element={<OverviewPage />} />
-          <Route path="properties" element={<PropertiesPage />} />
-          <Route path="tenants" element={<TenantsPage />} />
-          <Route path="payments" element={<PaymentsPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+        {/* Authenticated Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            {/* General User Dashboards */}
+            <Route index element={<DashboardPage />} />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="profile" element={<TenantProfilePage />} />
+
+            {/* Landlord/Agent Specific Routes */}
+            <Route path="properties" element={<PropertiesPage />} />
+            <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
+            <Route path="tenants" element={<TenantsPage />} />
+            <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
+            <Route path="payments" element={<PaymentsPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="maintenance" element={<MaintenanceRequestsPage />} />
+            <Route path="cashflow" element={<CashFlowPage />} />
+            <Route path="reminders" element={<RemindersPage />} />
+            <Route path="approvals" element={<ApprovalRequestsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="billing" element={<BillingPage />} />
+            <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="resubscribe" element={<PlansPage />} />
+            
+            {/* Tenant Specific Dashboard */}
+            <Route path="tenant" element={<TenantDashboardPage />} />
+          </Route>
         </Route>
 
+        {/* Admin Routes */}
         <Route path="/admin" element={<AdminRoute />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="organizations" element={<AdminOrganizationsPage />} />
-          <Route path="moderators" element={<AdminModeratorsPage />} />
-          <Route path="plans" element={<AdminPlansPage />} />
-          <Route path="billing" element={<AdminBillingPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
+          <Route element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="organizations" element={<AdminOrganizationsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="moderators" element={<AdminModeratorsPage />} />
+            <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="site-editor" element={<SiteEditorPage />} />
+            <Route path="billing" element={<AdminBillingPage />} />
+            <Route path="maintenance" element={<AdminMaintenancePage />} />
+            <Route path="data-management" element={<AdminDataManagementPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+          </Route>
         </Route>
         
         {/* Catch-all for 404 */}
