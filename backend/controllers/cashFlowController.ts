@@ -12,28 +12,36 @@ export const createCashFlowRecord = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const { amount, type, transactionDate, description } = req.body;
+    const { amount, type, transactionDate, description, toUser, documentUrl } = req.body;
 
-    if (!amount || !type || !transactionDate) {
+    if (!amount || !type) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Amount, type, and transaction date are required' 
+        message: 'Amount and type are required' 
       });
     }
 
     const newRecord = await CashFlow.create({
       organizationId: req.user.organizationId,
       fromUser: req.user._id,
+      toUser: toUser || null,
       amount: Number(amount),
       type,
-      transactionDate,
-      description,
-      recordedBy: req.user._id
+      transactionDate: transactionDate ? new Date(transactionDate) : new Date(),
+      description: description || '',
+      documentUrl: documentUrl || null,
+      recordedBy: req.user._id,
+      status: 'completed'
     });
 
     res.status(201).json({ success: true, data: newRecord });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Create cashflow error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

@@ -1,77 +1,83 @@
 import React, { useState } from 'react';
-import { X, DollarSign, User, Calendar } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, Upload, DollarSign } from 'lucide-react';
 import apiClient from '../../api/client';
 
 interface RecordCashFlowModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRecorded: () => void;
 }
 
-const RecordCashFlowModal: React.FC<RecordCashFlowModalProps> = ({ isOpen, onClose, onRecorded }) => {
+const RecordCashFlowModal: React.FC<RecordCashFlowModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    type: 'cash_handover',
     amount: '',
-    toUser: '',
+    type: 'cash_handover',
+    description: '',
     transactionDate: new Date().toISOString().split('T')[0],
-    notes: ''
+    documentUrl: ''
   });
+  
+  const queryClient = useQueryClient();
 
-  const recordMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiClient.post('/cashflow', data);
+      const response = await apiClient.post('/cash-flow', data);
       return response.data;
     },
     onSuccess: () => {
-      alert('Cash flow recorded successfully!');
-      onRecorded();
+      queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
+      onClose();
       setFormData({
-        type: 'cash_handover',
         amount: '',
-        toUser: '',
+        type: 'cash_handover',
+        description: '',
         transactionDate: new Date().toISOString().split('T')[0],
-        notes: ''
+        documentUrl: ''
       });
-    },
-    onError: (error: any) => {
-      alert(`Failed to record cash flow: ${error.response?.data?.message || error.message}`);
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
-    recordMutation.mutate(formData);
+    if (!formData.amount || !formData.type) return;
+    
+    createMutation.mutate(formData);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="app-surface rounded-3xl p-6 w-full max-w-md border border-app-border">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-text-primary flex items-center gap-2">
-            <DollarSign size={24} className="text-blue-500" />
-            Record Cash Flow
-          </h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-app-bg">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Record Cash Flow</h3>
+          <button onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Transaction Type
-            </label>
+            <label className="block text-sm font-medium mb-1">Amount</label>
+            <div className="relative">
+              <DollarSign size={16} className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg"
+                placeholder="0.00"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Type</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              className="w-full px-3 py-2 border rounded-lg"
               required
             >
               <option value="cash_handover">Cash Handover</option>
@@ -80,74 +86,58 @@ const RecordCashFlowModal: React.FC<RecordCashFlowModalProps> = ({ isOpen, onClo
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Amount
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
-              placeholder="Enter amount"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              To User (Optional)
-            </label>
-            <input
-              type="text"
-              value={formData.toUser}
-              onChange={(e) => setFormData({ ...formData, toUser: e.target.value })}
-              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
-              placeholder="Recipient name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Transaction Date
-            </label>
+            <label className="block text-sm font-medium mb-1">Date</label>
             <input
               type="date"
               value={formData.transactionDate}
               onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
-              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              className="w-full px-3 py-2 border rounded-lg"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Notes (Optional)
-            </label>
+            <label className="block text-sm font-medium mb-1">Description</label>
             <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full p-3 border border-app-border rounded-xl bg-app-surface text-text-primary"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
               rows={3}
-              placeholder="Additional notes..."
+              placeholder="Optional description..."
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Document (Optional)</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+              <Upload size={24} className="mx-auto mb-2 text-gray-400" />
+              <p className="text-sm text-gray-600">Upload receipt or document</p>
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={(e) => {
+                  // Handle file upload here
+                  console.log('File selected:', e.target.files?.[0]);
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-app-bg text-text-primary rounded-xl hover:bg-app-border transition-colors"
+              className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={recordMutation.isPending}
-              className="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
+              disabled={createMutation.isPending}
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
-              {recordMutation.isPending ? 'Recording...' : 'Record Cash Flow'}
+              {createMutation.isPending ? 'Recording...' : 'Record'}
             </button>
           </div>
         </form>

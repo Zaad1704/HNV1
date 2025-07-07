@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
-import { getApprovals, updateApprovalStatus, createApproval } from '../controllers/approvalController';
+import { getApprovals, createApprovalRequest, updateApproval } from '../controllers/approvalController';
 
 const router = Router();
 
 router.use(protect);
 
 router.get('/', getApprovals);
-router.post('/', createApproval);
-router.put('/:id', updateApprovalStatus);
+router.post('/', createApprovalRequest);
+router.put('/:id', updateApproval);
 
 export default router;

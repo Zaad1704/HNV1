@@ -1,117 +1,73 @@
 import React from 'react';
-import { Download, Trash2, Printer, Share2, FileText } from 'lucide-react';
+import { Trash2, Edit, Check, X, Eye } from 'lucide-react';
 
 interface ActionButtonsProps {
-  onExport?: () => void;
+  onEdit?: () => void;
   onDelete?: () => void;
-  onPrint?: () => void;
-  onShare?: () => void;
-  onPDF?: () => void;
+  onComplete?: () => void;
+  onView?: () => void;
+  showEdit?: boolean;
   showDelete?: boolean;
-  showPrint?: boolean;
-  showShare?: boolean;
-  showPDF?: boolean;
-  className?: string;
+  showComplete?: boolean;
+  showView?: boolean;
+  size?: 'sm' | 'md';
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
-  onExport,
+  onEdit,
   onDelete,
-  onPrint,
-  onShare,
-  onPDF,
+  onComplete,
+  onView,
+  showEdit = true,
   showDelete = true,
-  showPrint = true,
-  showShare = true,
-  showPDF = true,
-  className = ''
+  showComplete = false,
+  showView = false,
+  size = 'sm'
 }) => {
-  const handlePrint = () => {
-    if (onPrint) {
-      onPrint();
-    } else {
-      window.print();
-    }
-  };
-
-  const handleShare = async () => {
-    if (onShare) {
-      onShare();
-    } else if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Property Management Data',
-          text: 'Check out this property management data',
-          url: window.location.href
-        });
-      } catch (error) {
-        console.log('Share cancelled');
-      }
-    } else {
-      // Fallback: copy URL to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
-  };
-
-  const handlePDF = () => {
-    if (onPDF) {
-      onPDF();
-    } else {
-      // Generate PDF from current page
-      window.print();
-    }
-  };
+  const iconSize = size === 'sm' ? 16 : 20;
+  const buttonClass = size === 'sm' 
+    ? 'p-2 rounded-lg hover:bg-gray-100 transition-colors'
+    : 'p-3 rounded-xl hover:bg-gray-100 transition-colors';
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      {onExport && (
+    <div className="flex items-center gap-1">
+      {showView && onView && (
         <button
-          onClick={onExport}
-          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-          title="Export Data"
+          onClick={onView}
+          className={`${buttonClass} text-blue-600 hover:text-blue-800`}
+          title="View"
         >
-          <Download size={16} />
+          <Eye size={iconSize} />
         </button>
       )}
       
-      {showPDF && (
+      {showEdit && onEdit && (
         <button
-          onClick={handlePDF}
-          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-          title="Generate PDF"
+          onClick={onEdit}
+          className={`${buttonClass} text-gray-600 hover:text-gray-800`}
+          title="Edit"
         >
-          <FileText size={16} />
+          <Edit size={iconSize} />
         </button>
       )}
       
-      {showPrint && (
+      {showComplete && onComplete && (
         <button
-          onClick={handlePrint}
-          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-          title="Print"
+          onClick={onComplete}
+          className={`${buttonClass} text-green-600 hover:text-green-800`}
+          title="Mark Complete"
         >
-          <Printer size={16} />
-        </button>
-      )}
-      
-      {showShare && (
-        <button
-          onClick={handleShare}
-          className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-          title="Share"
-        >
-          <Share2 size={16} />
+          <Check size={iconSize} />
         </button>
       )}
       
       {showDelete && onDelete && (
         <button
           onClick={onDelete}
-          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          className={`${buttonClass} text-red-600 hover:text-red-800`}
           title="Delete"
         >
-          <Trash2 size={16} />
+          <Trash2 size={iconSize} />
         </button>
       )}
     </div>

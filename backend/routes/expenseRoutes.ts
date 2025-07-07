@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import { requireApproval } from '../middleware/approvalMiddleware';
 import {
   getExpenses,
   createExpense,
@@ -13,10 +14,10 @@ router.use(protect);
 
 router.route('/')
   .get(getExpenses)
-  .post(createExpense);
+  .post(requireApproval('expense'), createExpense);
 
 router.route('/:id')
-  .put(updateExpense)
-  .delete(deleteExpense);
+  .put(requireApproval('expense'), updateExpense)
+  .delete(requireApproval('expense'), deleteExpense);
 
 export default router;

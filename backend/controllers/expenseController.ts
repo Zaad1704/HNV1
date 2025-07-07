@@ -35,28 +35,32 @@ export const createExpense = async (req: AuthRequest, res: Response) => {
 
     const { description, amount, category, date, propertyId } = req.body;
 
-    if (!description || !amount || !category || !date || !propertyId) {
+    if (!description || !amount || !category) {
       return res.status(400).json({ 
         success: false, 
-        message: 'All fields are required' 
+        message: 'Description, amount, and category are required' 
       });
     }
 
-    const property = await Property.findById(propertyId);
-    if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Invalid property' 
-      });
+    // Property is optional for general expenses
+    if (propertyId) {
+      const property = await Property.findById(propertyId);
+      if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Invalid property' 
+        });
+      }
     }
 
     const newExpense = await Expense.create({
       description,
       amount: Number(amount),
       category,
-      date,
-      propertyId,
-      organizationId: req.user.organizationId
+      date: date ? new Date(date) : new Date(),
+      propertyId: propertyId || null,
+      organizationId: req.user.organizationId,
+      documentUrl: req.body.documentUrl || null
     });
 
     res.status(201).json({ success: true, data: newExpense });
