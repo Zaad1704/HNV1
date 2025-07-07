@@ -20,8 +20,8 @@ class DashboardService {
 
       // Use Promise.allSettled for better error handling
       const [propertiesResult, tenantsResult, paymentsResult, remindersResult] = await Promise.allSettled([
-        Property.find({ organizationId }).select('numberOfUnits').lean().exec(),
-        Tenant.find({ organizationId }).select('status').lean().exec(),
+        Property.find({ organizationId, status: { $ne: 'Archived' } }).select('numberOfUnits').lean().exec(),
+        Tenant.find({ organizationId, status: { $ne: 'Archived' } }).select('status').lean().exec(),
         Payment.find({ 
           organizationId,
           paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }

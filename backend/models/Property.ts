@@ -17,7 +17,7 @@ export interface IProperty extends Document {
   organizationId: Schema.Types.ObjectId;
   createdBy: Schema.Types.ObjectId;
   managedByAgentId?: Schema.Types.ObjectId;
-  status: 'Active' | 'Inactive' | 'Under Renovation';
+  status: 'Active' | 'Inactive' | 'Under Renovation' | 'Archived';
   occupancyRate?: number;
   cashFlow?: {
     income: number;
@@ -72,7 +72,7 @@ const PropertySchema = new Schema<IProperty>({
   },
   status: {
     type: String,
-    enum: ['Active', 'Inactive', 'Under Renovation'],
+    enum: ['Active', 'Inactive', 'Under Renovation', 'Archived'],
     default: 'Active',
   },
   occupancyRate: {

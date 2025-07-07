@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
@@ -47,6 +47,7 @@ const PropertiesPage = () => {
     sortBy: 'date',
     sortOrder: 'desc'
   });
+  const [showArchived, setShowArchived] = useState(false);
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport() || { exportProperties: () => {}, isExporting: false };
 
@@ -65,6 +66,11 @@ const PropertiesPage = () => {
     
     let filtered = properties.filter((property: any) => {
       if (!property) return false;
+      
+      // Archive filter
+      const isArchived = property.status === 'Archived';
+      if (showArchived && !isArchived) return false;
+      if (!showArchived && isArchived) return false;
       
       // Universal search
       const matchesUniversalSearch = !searchFilters.query || 
@@ -144,7 +150,7 @@ const PropertiesPage = () => {
     });
 
     return filtered;
-  }, [properties, searchQuery, filters, searchFilters]);
+  }, [properties, searchQuery, filters, searchFilters, showArchived]);
 
   const handleUniversalSearch = (filters: SearchFilters) => {
     setSearchFilters(filters);
@@ -310,6 +316,31 @@ const PropertiesPage = () => {
       }
     }
   };
+  
+  const handleArchiveProperty = async (propertyId: string, propertyName: string, currentStatus: string) => {
+    const isArchiving = currentStatus !== 'Archived';
+    const action = isArchiving ? 'archive' : 'restore';
+    
+    if (confirm(`Are you sure you want to ${action} ${propertyName}?`)) {
+      try {
+        await apiClient.put(`/properties/${propertyId}`, {
+          status: isArchiving ? 'Archived' : 'Active'
+        });
+        
+        queryClient.setQueryData(['properties'], (old: any) => 
+          (old || []).map((p: any) => 
+            p._id === propertyId 
+              ? { ...p, status: isArchiving ? 'Archived' : 'Active' }
+              : p
+          )
+        );
+        
+        alert(`Property ${action}d successfully!`);
+      } catch (error: any) {
+        alert(`Failed to ${action} property: ${error.response?.data?.message || 'Unknown error'}`);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -347,8 +378,42 @@ const PropertiesPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">{t('dashboard.properties')}</h1>
-          <p className="text-text-secondary mt-1">{t('property.manage_portfolio')} ({filteredProperties.length} properties)</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              {t('dashboard.properties')}
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              {t('property.manage_portfolio')} ({filteredProperties.length} properties)
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-text-secondary">Show:</span>
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  !showArchived 
+                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Eye size={12} className="inline mr-1" />
+                Active ({properties.filter(p => p.status !== 'Archived').length})
+              </button>
+              <button
+                onClick={() => setShowArchived(true)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  showArchived 
+                    ? 'bg-orange-100 text-orange-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Archive size={12} className="inline mr-1" />
+                Archived ({properties.filter(p => p.status === 'Archived').length})
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -367,9 +432,11 @@ const PropertiesPage = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold touch-feedback"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 touch-feedback"
           >
-            <Plus size={20} />
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
             {t('property.add_property')}
           </button>
         </div>
@@ -383,7 +450,8 @@ const PropertiesPage = () => {
         statusOptions={[
           { value: 'Active', label: 'Active' },
           { value: 'Inactive', label: 'Inactive' },
-          { value: 'Maintenance', label: 'Under Maintenance' }
+          { value: 'Under Renovation', label: 'Under Renovation' },
+          { value: 'Archived', label: 'Archived' }
         ]}
       />
       
@@ -405,10 +473,14 @@ const PropertiesPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-app-lg transition-all duration-300 group relative"
+              className="group app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative backdrop-blur-sm"
             >
+              {/* Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+              
               {/* Selection Checkbox */}
-              <div className="absolute top-4 left-4 z-10">
+              <div className="absolute top-4 left-4 z-20">
                 <input
                   type="checkbox"
                   checked={selectedProperties.includes(property._id)}
@@ -419,36 +491,45 @@ const PropertiesPage = () => {
                       setSelectedProperties(prev => prev.filter(id => id !== property._id));
                     }
                   }}
-                  className="w-5 h-5 rounded border-2 border-white bg-white/90 backdrop-blur-sm"
+                  className="w-5 h-5 rounded border-2 border-white bg-white/90 backdrop-blur-sm text-brand-blue focus:ring-brand-blue transition-colors"
                 />
               </div>
               {/* Property Image */}
-              <div className="h-48 bg-gradient-to-br from-brand-blue to-brand-orange relative overflow-hidden">
+              <div className="h-48 bg-gradient-to-br from-brand-blue via-purple-600 to-brand-orange relative overflow-hidden">
                 {property.imageUrl ? (
                   <img
                     src={property.imageUrl}
                     alt={property.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Building2 size={48} className="text-white/80" />
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                      <Building2 size={32} className="text-white" />
+                    </div>
                   </div>
                 )}
-                <div className="absolute top-4 right-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                <div className="absolute top-4 right-4 z-10">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
                     property.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-green-100/90 text-green-800' 
+                      : property.status === 'Archived'
+                      ? 'bg-gray-100/90 text-gray-800'
+                      : property.status === 'Under Renovation'
+                      ? 'bg-blue-100/90 text-blue-800'
+                      : 'bg-yellow-100/90 text-yellow-800'
                   }`}>
+                    {property.status === 'Archived' && <Archive size={10} className="inline mr-1" />}
                     {property.status}
                   </span>
                 </div>
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </div>
 
               {/* Property Info */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-text-primary mb-2">
+              <div className="p-6 relative z-10">
+                <h3 className="text-xl font-bold text-text-primary mb-2 group-hover:text-brand-blue transition-colors duration-300">
                   {property.name}
                 </h3>
                 
@@ -464,29 +545,48 @@ const PropertiesPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Link
+                    to={`/dashboard/properties/${property._id}`}
+                    className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center group-hover:scale-105 transform hover:shadow-brand-blue/25 relative overflow-hidden flex items-center justify-center gap-2"
+                  >
+                    <Eye size={16} />
+                    <span className="relative z-10">{t('property.view')}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  </Link>
+                  
                   <div className="flex gap-2">
-                    <Link
-                      to={`/dashboard/properties/${property._id}`}
-                      className="bg-app-bg hover:bg-app-border text-text-primary py-2 px-3 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+                    <button 
+                      onClick={() => handleArchiveProperty(property._id, property.name, property.status)}
+                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
+                        property.status === 'Archived'
+                          ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
+                          : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
+                      }`}
                     >
-                      <Eye size={14} />
-                      {t('property.view')}
-                    </Link>
+                      {property.status === 'Archived' ? (
+                        <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
+                      ) : (
+                        <><Archive size={12} className="inline mr-1" />Archive</>
+                      )}
+                    </button>
+                    
                     <button 
                       onClick={() => handleEditProperty(property)}
-                      className="app-gradient text-white py-2 px-3 rounded-xl text-sm font-medium hover:shadow-app transition-all flex items-center gap-2"
+                      className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-blue-200 flex items-center justify-center gap-1"
                     >
-                      <Edit size={14} />
-                      {t('property.edit')}
+                      <Edit size={12} />
+                      Edit
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleDeleteProperty(property._id)}
+                      className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
+                      title="Delete Permanently"
+                    >
+                      🗑️
                     </button>
                   </div>
-                  <ActionButtons
-                    onExport={() => exportProperties({ format: 'xlsx', filters: { ids: [property._id] } })}
-                    onDelete={() => handleDeleteProperty(property._id)}
-                    showPrint={false}
-                    showShare={false}
-                  />
                 </div>
               </div>
             </motion.div>
@@ -496,22 +596,36 @@ const PropertiesPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-16"
+          className="text-center py-20"
         >
-          <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Building2 size={48} className="text-white" />
+          <div className="relative">
+            <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+              <Building2 size={64} className="text-white" />
+            </div>
+            <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+              <Sparkles size={16} className="text-yellow-900" />
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-text-primary mb-2">{t('property.no_properties_yet')}</h3>
-          <p className="text-text-secondary mb-8 max-w-md mx-auto">
-            {t('property.manage_portfolio')}
+          <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+            {showArchived ? 'No Archived Properties' : t('property.no_properties_yet')}
+          </h3>
+          <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+            {showArchived 
+              ? 'No properties have been archived yet. Archived properties are those no longer in active use.'
+              : 'Start building your property portfolio by adding your first property. Manage tenants, payments, and maintenance all in one place.'
+            }
           </p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto"
-          >
-            <Plus size={20} />
-            {t('property.add_first_property')}
-          </button>
+          {!showArchived && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="group relative btn-gradient px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+            >
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+                <Plus size={16} className="text-white" />
+              </div>
+              {t('property.add_first_property')}
+            </button>
+          )}
         </motion.div>
       )}
 
@@ -561,6 +675,23 @@ const PropertiesPage = () => {
         title="Properties Report"
         organizationName={user?.organization?.name || user?.name + "'s Organization" || "Your Organization"}
       />
+      
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+        >
+          <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
+        </button>
+      </div>
+      
+      {/* Modern Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/3 to-pink-500/3 rounded-full blur-3xl"></div>
+      </div>
     </motion.div>
   );
 };
