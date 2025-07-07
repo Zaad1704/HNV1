@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { DollarSign, Plus, Calendar, Tag, Building, Download } from 'lucide-react';
+import { DollarSign, Plus, Calendar, Tag, Building, Download, Sparkles, Archive, Eye, EyeOff } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
@@ -26,6 +26,7 @@ const ExpensesPage = () => {
   const { currency } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
     dateRange: 'all',
@@ -113,8 +114,42 @@ const ExpensesPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Expenses</h1>
-          <p className="text-text-secondary mt-1">Track property expenses and costs ({filteredExpenses.length} expenses)</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Expenses
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              Track property expenses and costs ({filteredExpenses.length} expenses)
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-text-secondary">Show:</span>
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  !showArchived 
+                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Eye size={12} className="inline mr-1" />
+                Active ({expenses.filter(e => e.status !== 'Archived').length})
+              </button>
+              <button
+                onClick={() => setShowArchived(true)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  showArchived 
+                    ? 'bg-orange-100 text-orange-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Archive size={12} className="inline mr-1" />
+                Archived ({expenses.filter(e => e.status === 'Archived').length})
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -126,9 +161,11 @@ const ExpensesPage = () => {
           </button>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
-            <Plus size={20} />
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
             Add Expense
           </button>
         </div>
@@ -141,27 +178,32 @@ const ExpensesPage = () => {
       />
 
       {filteredExpenses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredExpenses.map((expense: any, index: number) => (
             <motion.div
               key={expense._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all"
+              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+              {/* Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-orange-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+              <div className="relative z-10 flex items-center justify-between mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                   <DollarSign size={24} className="text-white" />
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm bg-red-100/90 text-red-800">
                   {expense.category || 'Expense'}
                 </span>
               </div>
               
-              <h3 className="text-xl font-bold text-text-primary mb-2">
-                {currency}{expense.amount?.toLocaleString() || '0'}
-              </h3>
+              <div className="relative z-10 mb-4">
+                <h3 className="text-2xl font-bold text-text-primary group-hover:text-red-600 transition-colors duration-300">
+                  {currency}{expense.amount?.toLocaleString() || '0'}
+                </h3>
+              </div>
               
               <p className="text-text-primary font-medium mb-3">
                 {expense.description || 'No description'}

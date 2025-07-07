@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Bell, Plus, Calendar, User, Clock, Download } from 'lucide-react';
+import { Bell, Plus, Calendar, User, Clock, Download, Sparkles, Archive, Eye } from 'lucide-react';
 import apiClient from '../api/client';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import CreateReminderModal from '../components/common/CreateReminderModal';
 import MessageButtons from '../components/common/MessageButtons';
+import { useQueryClient } from '@tanstack/react-query';
 
 const fetchReminders = async () => {
   try {
@@ -18,8 +20,10 @@ const fetchReminders = async () => {
 };
 
 const RemindersPage = () => {
+  const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
     dateRange: 'all',
@@ -51,8 +55,31 @@ const RemindersPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Reminders</h1>
-          <p className="text-text-secondary mt-1">Manage automated reminders</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Reminders
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              Manage automated reminders ({reminders.length} active)
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-text-secondary">Show:</span>
+              <button
+                onClick={() => setShowArchived(false)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  !showArchived 
+                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <Eye size={12} className="inline mr-1" />
+                Active ({reminders.filter(r => r.status === 'active').length})
+              </button>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -64,10 +91,12 @@ const RemindersPage = () => {
           </button>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
-            <Plus size={20} />
-            Add Reminder
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
+            Create Reminder
           </button>
         </div>
       </div>
@@ -84,15 +113,17 @@ const RemindersPage = () => {
       />
 
       {reminders.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reminders.map((reminder: any, index: number) => (
             <motion.div
               key={reminder._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-app-lg transition-all"
+              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
             >
+              {/* Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
                   <Bell size={24} className="text-white" />
@@ -165,6 +196,12 @@ const RemindersPage = () => {
         filename="reminders"
         filters={searchFilters}
         title="Export Reminders"
+      />
+      
+      <CreateReminderModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onReminderCreated={handleReminderAdded}
       />
     </motion.div>
   );
