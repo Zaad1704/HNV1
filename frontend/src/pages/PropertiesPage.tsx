@@ -172,11 +172,90 @@ const PropertiesPage = () => {
   const bulkActions = [
     {
       key: 'export',
-      label: 'Export',
+      label: 'Export Selected',
       icon: Download,
       color: 'bg-blue-500 hover:bg-blue-600 text-white',
       action: async (ids: string[]) => {
-        await exportProperties({ format: 'xlsx', filters: { ids } });
+        const selectedData = filteredProperties.filter((p: any) => ids.includes(p._id));
+        setShowUniversalExport(true);
+      }
+    },
+    {
+      key: 'exportWithTenants',
+      label: 'Export with Tenants',
+      icon: Download,
+      color: 'bg-green-500 hover:bg-green-600 text-white',
+      action: async (ids: string[]) => {
+        // Export properties with their tenant data
+        const propertiesWithTenants = await Promise.all(
+          ids.map(async (propertyId) => {
+            const property = filteredProperties.find((p: any) => p._id === propertyId);
+            try {
+              const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+              return {
+                ...property,
+                tenants: data.data || [],
+                tenantCount: (data.data || []).length,
+                totalRent: (data.data || []).reduce((sum: number, t: any) => sum + (t.rentAmount || 0), 0)
+              };
+            } catch (error) {
+              return { ...property, tenants: [], tenantCount: 0, totalRent: 0 };
+            }
+          })
+        );
+        
+        // Flatten data for export
+        const exportData = propertiesWithTenants.flatMap(property => 
+          property.tenants.length > 0 
+            ? property.tenants.map((tenant: any) => ({
+                propertyName: property.name,
+                propertyAddress: property.address?.formattedAddress,
+                propertyStatus: property.status,
+                tenantName: tenant.name,
+                tenantEmail: tenant.email,
+                tenantUnit: tenant.unit,
+                tenantStatus: tenant.status,
+                rentAmount: tenant.rentAmount || 0
+              }))
+            : [{
+                propertyName: property.name,
+                propertyAddress: property.address?.formattedAddress,
+                propertyStatus: property.status,
+                tenantName: 'No tenants',
+                tenantEmail: '',
+                tenantUnit: '',
+                tenantStatus: '',
+                rentAmount: 0
+              }]
+        );
+        
+        // Create temporary export modal with property-tenant data
+        const exportModal = document.createElement('div');
+        document.body.appendChild(exportModal);
+        
+        // Simple CSV export for now
+        const headers = Object.keys(exportData[0] || {});
+        const csvContent = [
+          headers.join(','),
+          ...exportData.map(row => 
+            headers.map(header => {
+              const value = row[header];
+              return typeof value === 'string' && value.includes(',') 
+                ? `"${value}"` 
+                : value;
+            }).join(',')
+          )
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `properties-with-tenants-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        alert('Properties with tenants exported successfully!');
       }
     },
     {

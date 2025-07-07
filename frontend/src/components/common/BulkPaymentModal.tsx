@@ -43,15 +43,27 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
     enabled: isOpen
   });
 
-  const { data: tenants = [] } = useQuery({
+  const { data: tenants = [], isLoading: tenantsLoading, error: tenantsError } = useQuery({
     queryKey: ['tenants', selectedProperty],
     queryFn: async () => {
       if (!selectedProperty) return [];
+      console.log('Fetching tenants for property:', selectedProperty);
       const { data } = await apiClient.get(`/tenants?propertyId=${selectedProperty}`);
+      console.log('Tenants response:', data);
       return data.data || [];
     },
     enabled: !!selectedProperty
   });
+  
+  // Debug logging
+  React.useEffect(() => {
+    if (selectedProperty) {
+      console.log('Selected property changed:', selectedProperty);
+      console.log('Tenants data:', tenants);
+      console.log('Tenants loading:', tenantsLoading);
+      console.log('Tenants error:', tenantsError);
+    }
+  }, [selectedProperty, tenants, tenantsLoading, tenantsError]);
 
   const calculateDiscountedAmount = (originalAmount: number) => {
     if (discountType === 'none') return originalAmount;
@@ -197,7 +209,14 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                 </div>
               </div>
               <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2">
-                {tenants.length > 0 ? (
+                {tenantsLoading ? (
+                  <div className="text-center py-4">
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <p className="text-gray-500 text-sm">Loading tenants...</p>
+                  </div>
+                ) : tenantsError ? (
+                  <p className="text-red-500 text-center py-4">Error loading tenants</p>
+                ) : tenants.length > 0 ? (
                   tenants.map((tenant: Tenant) => (
                     <div key={tenant._id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                       <div className="flex items-center gap-3">

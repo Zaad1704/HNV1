@@ -79,10 +79,13 @@ const PropertyDetailsPage = () => {
             <p className="text-text-secondary">Property Details</p>
           </div>
         </div>
-        <button className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold">
+        <Link 
+          to={`/dashboard/properties/${propertyId}/edit`}
+          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+        >
           <Edit size={20} />
           Edit Property
-        </button>
+        </Link>
       </div>
 
       {/* Property Info */}
@@ -121,6 +124,52 @@ const PropertyDetailsPage = () => {
             <p className="text-text-secondary">
               {property.description || 'No description available for this property.'}
             </p>
+          </div>
+
+          {/* Tenants List */}
+          <div className="app-surface rounded-3xl p-8 border border-app-border">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-text-primary">Tenants ({tenants.length})</h2>
+              <Link 
+                to={`/dashboard/tenants/add?propertyId=${propertyId}`}
+                className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
+              >
+                Add Tenant
+              </Link>
+            </div>
+            
+            {tenants.length > 0 ? (
+              <div className="space-y-4">
+                {tenants.map((tenant: any) => (
+                  <div key={tenant._id} className="flex items-center justify-between p-4 bg-app-bg rounded-2xl">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-brand-blue to-brand-orange rounded-full flex items-center justify-center">
+                        <Users size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-text-primary">{tenant.name}</h3>
+                        <p className="text-sm text-text-secondary">Unit: {tenant.unit} | Status: {tenant.status}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-text-primary">${tenant.rentAmount || 0}</p>
+                      <p className="text-sm text-text-secondary">Monthly Rent</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users size={48} className="text-text-muted mx-auto mb-4" />
+                <p className="text-text-secondary mb-4">No tenants added yet</p>
+                <Link 
+                  to={`/dashboard/tenants/add?propertyId=${propertyId}`}
+                  className="bg-green-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-600 transition-colors inline-block"
+                >
+                  Add First Tenant
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
@@ -176,15 +225,24 @@ const PropertyDetailsPage = () => {
           <div className="app-surface rounded-3xl p-6 border border-app-border">
             <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors">
-                View Tenants
-              </button>
-              <button className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors">
+              <Link 
+                to={`/dashboard/tenants?propertyId=${propertyId}`}
+                className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors block text-center"
+              >
+                View Tenants ({tenants.length})
+              </Link>
+              <Link 
+                to={`/dashboard/tenants/add?propertyId=${propertyId}`}
+                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors block text-center"
+              >
                 Add Tenant
-              </button>
-              <button className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors">
+              </Link>
+              <Link 
+                to={`/dashboard/payments?propertyId=${propertyId}`}
+                className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
+              >
                 View Payments
-              </button>
+              </Link>
             </div>
           </div>
         </div>
