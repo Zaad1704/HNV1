@@ -7,12 +7,14 @@ import {
   createPayment,
   getPortal,
   getStatement,
-  getStatementPdf
+  getStatementPdf,
+  getTenantDashboard
 } from '../controllers/tenantPortalController';
 
 const router = Router();
 
-router.get('/dashboard', getDashboard);
+router.get('/dashboard', getTenantDashboard);
+router.get('/dashboard-old', getDashboard);
 router.get('/maintenance', getMaintenanceRequests);
 router.post('/maintenance', createMaintenanceRequest);
 router.get('/payments', getPayments);

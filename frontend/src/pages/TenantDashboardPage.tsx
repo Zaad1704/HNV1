@@ -10,7 +10,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 
 const fetchTenantData = async () => {
-  const { data } = await apiClient.get('/api/tenant/dashboard');
+  const { data } = await apiClient.get('/tenant/dashboard');
   return data.data;
 };
 
@@ -67,21 +67,26 @@ const TenantDashboardPage = () => {
               <Home size={20} className="text-text-muted" />
               <div>
                 <p className="text-sm text-text-secondary">Property</p>
-                <p className="font-semibold text-text-primary">Sunset Apartments</p>
+                <p className="font-semibold text-text-primary">{tenantData?.property?.name || 'N/A'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <MapPin size={20} className="text-text-muted" />
               <div>
                 <p className="text-sm text-text-secondary">Unit</p>
-                <p className="font-semibold text-text-primary">Unit 2A</p>
+                <p className="font-semibold text-text-primary">{tenantData?.tenant?.unit || 'N/A'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Calendar size={20} className="text-text-muted" />
               <div>
                 <p className="text-sm text-text-secondary">Lease Expires</p>
-                <p className="font-semibold text-text-primary">December 31, 2024</p>
+                <p className="font-semibold text-text-primary">
+                  {tenantData?.tenant?.leaseEndDate 
+                    ? new Date(tenantData.tenant.leaseEndDate).toLocaleDateString()
+                    : 'N/A'
+                  }
+                </p>
               </div>
             </div>
           </div>
@@ -90,21 +95,27 @@ const TenantDashboardPage = () => {
               <DollarSign size={20} className="text-text-muted" />
               <div>
                 <p className="text-sm text-text-secondary">Monthly Rent</p>
-                <p className="font-semibold text-text-primary">$1,200</p>
+                <p className="font-semibold text-text-primary">${tenantData?.tenant?.rentAmount || 0}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Phone size={20} className="text-text-muted" />
               <div>
-                <p className="text-sm text-text-secondary">Property Manager</p>
-                <p className="font-semibold text-text-primary">John Smith</p>
+                <p className="text-sm text-text-secondary">Status</p>
+                <p className={`font-semibold ${
+                  tenantData?.tenant?.status === 'Active' ? 'text-green-600' :
+                  tenantData?.tenant?.status === 'Late' ? 'text-red-600' :
+                  'text-yellow-600'
+                }`}>
+                  {tenantData?.tenant?.status || 'Unknown'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail size={20} className="text-text-muted" />
               <div>
-                <p className="text-sm text-text-secondary">Contact</p>
-                <p className="font-semibold text-text-primary">john@property.com</p>
+                <p className="text-sm text-text-secondary">Contact Support</p>
+                <p className="font-semibold text-text-primary">support@property.com</p>
               </div>
             </div>
           </div>

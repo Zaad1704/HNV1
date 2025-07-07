@@ -150,20 +150,20 @@ class ActionChainService {
   // Helper methods
   private async updateTenantStatus(tenantId: string, organizationId: string, session?: any) {
     try {
-      const tenant = await Tenant.findById(tenantId).session(session);
-      if (!tenant) return;
+      const tenant = await Tenant.findById(tenantId);
+      if (!tenant || tenant.organizationId.toString() !== organizationId.toString()) return;
 
       const recentPayment = await Payment.findOne({
         tenantId,
+        organizationId,
         status: { $in: ['Paid', 'completed', 'Completed'] },
         paymentDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-      }).session(session);
+      });
 
       tenant.status = recentPayment ? 'Active' : 'Late';
-      await tenant.save({ session });
+      await tenant.save();
     } catch (error) {
       console.error('Update tenant status error:', error);
-      throw error;
     }
   }
 

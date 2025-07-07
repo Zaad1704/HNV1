@@ -20,7 +20,8 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       ...req.body,
       imageUrl: imageUrl,
       organizationId: user.organizationId,
-      createdBy: user._id
+      createdBy: user._id,
+      managedByAgentId: req.body.managedByAgentId || null
     });
 
     // Trigger action chain
@@ -46,7 +47,22 @@ export const getProperties = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    const properties = await Property.find({ organizationId: user.organizationId })
+    let query: any = { organizationId: user.organizationId };
+    
+    // Agents see only properties they manage or created
+    if (user.role === 'Agent') {
+      query = {
+        organizationId: user.organizationId,
+        $or: [
+          { managedByAgentId: user._id },
+          { createdBy: user._id }
+        ]
+      };
+    }
+
+    const properties = await Property.find(query)
+      .populate('createdBy', 'name')
+      .populate('managedByAgentId', 'name')
       .lean()
       .exec() || [];
     res.status(200).json({ success: true, data: properties });
