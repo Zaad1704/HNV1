@@ -136,12 +136,14 @@ function App() {
           <Route path="auth/google/callback" element={<GoogleCallbackPage />} />
         </Route>
         
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/dashboard/overview" element={<ProtectedRoute><OverviewPage /></ProtectedRoute>} />
-        <Route path="/dashboard/properties" element={<ProtectedRoute><PropertiesPage /></ProtectedRoute>} />
-        <Route path="/dashboard/tenants" element={<ProtectedRoute><TenantsPage /></ProtectedRoute>} />
-        <Route path="/dashboard/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
-        <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<DashboardPage />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="properties" element={<PropertiesPage />} />
+          <Route path="tenants" element={<TenantsPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
 
         <Route path="/admin" element={<AdminRoute />}>
           <Route index element={<AdminDashboardPage />} />

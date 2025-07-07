@@ -117,6 +117,13 @@ const GoogleCallbackPage: React.FC = () => {
           } catch (apiError: any) {
             console.error('Google callback API error:', apiError);
             const errorMsg = apiError.response?.data?.message || 'Failed to complete Google authentication';
+            
+            // Check if user needs to sign up
+            if (apiError.response?.status === 404 || errorMsg.includes('not found') || errorMsg.includes('user not found')) {
+              navigate('/register?error=account-not-found&message=Please sign up first to use Google login', { replace: true });
+              return;
+            }
+            
             navigate(`/login?error=auth-verification-failed&message=${encodeURIComponent(errorMsg)}`, { replace: true });
             return;
           }
