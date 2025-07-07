@@ -1,13 +1,21 @@
-import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware';
-import { getApprovals, createApprovalRequest, updateApproval } from '../controllers/approvalController';
+import express from 'express';
+import { 
+  createApprovalRequest, 
+  getApprovalRequests, 
+  updateApprovalStatus, 
+  deleteApprovalRequest 
+} from '../controllers/approvalController';
+import { protect } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
+// Apply authentication middleware to all routes
 router.use(protect);
 
-router.get('/', getApprovals);
+// Approval request routes
 router.post('/', createApprovalRequest);
-router.put('/:id', updateApproval);
+router.get('/', getApprovalRequests);
+router.put('/:id', updateApprovalStatus);
+router.delete('/:id', deleteApprovalRequest);
 
 export default router;

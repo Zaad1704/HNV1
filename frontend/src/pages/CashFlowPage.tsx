@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download } from 'lucide-react';
+import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download, Sparkles, BarChart3, PieChart } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import AddCashFlowModal from '../components/common/AddCashFlowModal';
@@ -54,8 +54,15 @@ const CashFlowPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Cash Flow</h1>
-          <p className="text-text-secondary mt-1">Track income and expenses</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Cash Flow
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <p className="text-text-secondary mt-2">
+            Track income, expenses, and financial performance
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -67,9 +74,11 @@ const CashFlowPage = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
+            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
-            <Plus size={20} />
+            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+              <Plus size={14} className="text-white" />
+            </div>
             Add Record
           </button>
         </div>
@@ -77,51 +86,74 @@ const CashFlowPage = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-              <ArrowUp size={24} className="text-white" />
+        <div className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-green-500/10 hover:border-green-500/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <ArrowUp size={24} className="text-white" />
+              </div>
+              <span className="text-green-500 text-sm font-semibold bg-green-100 px-3 py-1 rounded-full">Income</span>
             </div>
-            <span className="text-green-500 text-sm font-medium">Income</span>
+            <h3 className="text-3xl font-bold text-text-primary group-hover:text-green-600 transition-colors">
+              {currency}{cashFlow?.income?.toLocaleString() || '0'}
+            </h3>
+            <p className="text-text-secondary text-sm mt-2">Total income this month</p>
           </div>
-          <h3 className="text-2xl font-bold text-text-primary">
-            {currency}{cashFlow?.income?.toLocaleString() || '0'}
-          </h3>
-          <p className="text-text-secondary text-sm mt-1">Total income this month</p>
         </div>
 
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
-              <ArrowDown size={24} className="text-white" />
+        <div className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-red-500/10 hover:border-red-500/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <ArrowDown size={24} className="text-white" />
+              </div>
+              <span className="text-red-500 text-sm font-semibold bg-red-100 px-3 py-1 rounded-full">Expenses</span>
             </div>
-            <span className="text-red-500 text-sm font-medium">Expenses</span>
+            <h3 className="text-3xl font-bold text-text-primary group-hover:text-red-600 transition-colors">
+              {currency}{cashFlow?.expenses?.toLocaleString() || '0'}
+            </h3>
+            <p className="text-text-secondary text-sm mt-2">Total expenses this month</p>
           </div>
-          <h3 className="text-2xl font-bold text-text-primary">
-            {currency}{cashFlow?.expenses?.toLocaleString() || '0'}
-          </h3>
-          <p className="text-text-secondary text-sm mt-1">Total expenses this month</p>
         </div>
 
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              (cashFlow?.netFlow || 0) >= 0 ? 'bg-green-500' : 'bg-red-500'
-            }`}>
-              <TrendingUp size={24} className="text-white" />
+        <div className={`group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative overflow-hidden ${
+          (cashFlow?.netFlow || 0) >= 0 
+            ? 'hover:shadow-green-500/10 hover:border-green-500/30' 
+            : 'hover:shadow-red-500/10 hover:border-red-500/30'
+        }`}>
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ${
+            (cashFlow?.netFlow || 0) >= 0 
+              ? 'bg-gradient-to-br from-green-500/5 to-emerald-500/5' 
+              : 'bg-gradient-to-br from-red-500/5 to-rose-500/5'
+          }`}></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${
+                (cashFlow?.netFlow || 0) >= 0 
+                  ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                  : 'bg-gradient-to-br from-red-500 to-rose-600'
+              }`}>
+                <TrendingUp size={24} className="text-white" />
+              </div>
+              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                (cashFlow?.netFlow || 0) >= 0 
+                  ? 'text-green-500 bg-green-100' 
+                  : 'text-red-500 bg-red-100'
+              }`}>
+                Net Flow
+              </span>
             </div>
-            <span className={`text-sm font-medium ${
-              (cashFlow?.netFlow || 0) >= 0 ? 'text-green-500' : 'text-red-500'
+            <h3 className={`text-3xl font-bold transition-colors ${
+              (cashFlow?.netFlow || 0) >= 0 
+                ? 'text-green-500 group-hover:text-green-600' 
+                : 'text-red-500 group-hover:text-red-600'
             }`}>
-              Net Flow
-            </span>
+              {currency}{cashFlow?.netFlow?.toLocaleString() || '0'}
+            </h3>
+            <p className="text-text-secondary text-sm mt-2">Net cash flow this month</p>
           </div>
-          <h3 className={`text-2xl font-bold ${
-            (cashFlow?.netFlow || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-          }`}>
-            {currency}{cashFlow?.netFlow?.toLocaleString() || '0'}
-          </h3>
-          <p className="text-text-secondary text-sm mt-1">Net cash flow this month</p>
         </div>
       </div>
 

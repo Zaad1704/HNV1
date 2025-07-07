@@ -10,7 +10,7 @@ import UniversalSearch, { SearchFilters } from '../components/common/UniversalSe
 import UniversalExport from '../components/common/UniversalExport';
 import AddMaintenanceModal from '../components/common/AddMaintenanceModal';
 import MessageButtons from '../components/common/MessageButtons';
-import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2 } from 'lucide-react';
+import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2, Sparkles, Archive, Eye, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDataExport } from '../hooks/useDataExport';
 
@@ -37,6 +37,7 @@ const MaintenanceRequestsPage = () => {
     const [showExportModal, setShowExportModal] = useState(false);
     const [showUniversalExport, setShowUniversalExport] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
     const [searchFilters, setSearchFilters] = useState<SearchFilters>({
         query: '',
         dateRange: 'all',
@@ -204,20 +205,37 @@ const MaintenanceRequestsPage = () => {
     );
 
     const MobileView = () => (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRequests.map((req: any, index: number) => (
                 <motion.div 
                     key={req._id} 
-                    className="bg-light-card p-4 rounded-3xl border border-border-color shadow-sm"
+                    className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                 >
-                    <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-dark-text text-lg flex items-center gap-2 dark:text-dark-text-dark"><Wrench size={18}/> {req.description}</h3>
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(req.status)}`}>
-                            {req.status}
-                        </span>
+                    {/* Background Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                    <div className="relative z-10 flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <Wrench size={20} className="text-white" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-text-primary text-lg group-hover:text-brand-blue transition-colors">
+                                    {req.description}
+                                </h3>
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow-lg backdrop-blur-sm ${
+                                    req.status === 'Open' ? 'bg-yellow-100/90 text-yellow-800' :
+                                    req.status === 'In Progress' ? 'bg-blue-100/90 text-blue-800' :
+                                    req.status === 'Resolved' ? 'bg-green-100/90 text-green-800' :
+                                    'bg-gray-100/90 text-gray-800'
+                                }`}>
+                                    {req.status === 'Resolved' && <CheckCircle size={10} className="inline mr-1" />}
+                                    {req.status}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <p className="text-light-text text-sm flex items-center gap-2 mb-1 dark:text-light-text-dark"><Home size={14}/> Property: {req.propertyId?.name || 'N/A'}</p>
                     <p className="text-light-text text-sm flex items-center gap-2 mb-2 dark:text-light-text-dark"><Calendar size={14}/> Date: {new Date(req.createdAt).toLocaleDateString()}</p>
@@ -254,8 +272,42 @@ const MaintenanceRequestsPage = () => {
         >
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold">Maintenance Requests</h1>
-                    <p className="text-text-secondary mt-1">Manage property maintenance requests</p>
+                    <h1 className="text-3xl font-bold flex items-center gap-3">
+                        <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+                            Maintenance Requests
+                        </span>
+                        <Sparkles size={28} className="text-brand-orange animate-pulse" />
+                    </h1>
+                    <div className="flex items-center gap-4 mt-2">
+                        <p className="text-text-secondary">
+                            Manage property maintenance requests ({requests.length} total)
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-text-secondary">Show:</span>
+                            <button
+                                onClick={() => setShowArchived(false)}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                    !showArchived 
+                                        ? 'bg-blue-100 text-blue-800 shadow-sm' 
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                            >
+                                <Eye size={12} className="inline mr-1" />
+                                Active ({requests.filter(r => r.status !== 'Closed').length})
+                            </button>
+                            <button
+                                onClick={() => setShowArchived(true)}
+                                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                                    showArchived 
+                                        ? 'bg-orange-100 text-orange-800 shadow-sm' 
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                            >
+                                <Archive size={12} className="inline mr-1" />
+                                Closed ({requests.filter(r => r.status === 'Closed').length})
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -267,9 +319,11 @@ const MaintenanceRequestsPage = () => {
                     </button>
                     <button 
                         onClick={() => setShowAddModal(true)}
-                        className="btn-primary flex items-center gap-2"
+                        className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                     >
-                        <Plus size={18} />
+                        <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+                            <Plus size={14} className="text-white" />
+                        </div>
                         Add Request
                     </button>
                 </div>
