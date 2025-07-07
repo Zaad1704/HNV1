@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface INotification extends Document {
   userId: mongoose.Types.ObjectId;
+  organizationId?: mongoose.Types.ObjectId;
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error' | 'payment' | 'maintenance' | 'system';
@@ -18,6 +19,11 @@ const NotificationSchema = new Schema<INotification>({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
     required: true,
+    index: true
+  },
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
     index: true
   },
   title: { 
@@ -58,6 +64,7 @@ const NotificationSchema = new Schema<INotification>({
 // Compound indexes for efficient queries
 NotificationSchema.index({ userId: 1, isRead: 1 });
 NotificationSchema.index({ userId: 1, createdAt: -1 });
+NotificationSchema.index({ organizationId: 1, createdAt: -1 });
 NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // 30 days TTL
 
 export default mongoose.model<INotification>('Notification', NotificationSchema);

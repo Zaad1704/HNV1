@@ -6,6 +6,18 @@ import Reminder from '../models/Reminder';
 class DashboardService {
   async getDashboardStats(organizationId: string) {
     try {
+      if (!organizationId) {
+        console.log('No organizationId provided to getDashboardStats');
+        return {
+          totalProperties: 0,
+          totalTenants: 0,
+          monthlyRevenue: 0,
+          occupancyRate: 0,
+          pendingMaintenance: 0,
+          recentPayments: 0
+        };
+      }
+
       // Use Promise.allSettled for better error handling
       const [propertiesResult, tenantsResult, paymentsResult, remindersResult] = await Promise.allSettled([
         Property.find({ organizationId }).select('numberOfUnits').lean().exec(),
@@ -45,7 +57,7 @@ class DashboardService {
         ['Paid', 'completed', 'Completed'].includes(p.status)
       ).length;
 
-      return {
+      const result = {
         totalProperties: properties.length,
         totalTenants: tenants.length,
         monthlyRevenue,
@@ -53,6 +65,9 @@ class DashboardService {
         pendingMaintenance,
         recentPayments
       };
+      
+      console.log('Dashboard stats calculated:', result);
+      return result;
     } catch (error) {
       console.error('Dashboard stats error:', error);
       return {

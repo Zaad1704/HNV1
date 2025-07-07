@@ -24,7 +24,8 @@
     "docker:down": "docker-compose down",
     "deploy:production": "npm run build && npm run docker:build",
     "health-check": "curl -f http://localhost:5001/health || exit 1",
-    "setup": "npm install && cd backend && npm install && cd ../frontend && npm install"
+    "setup": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "fix-models": "cd backend && npx ts-node scripts/fixModelsAndIndexes.ts"
   },
   "keywords": [
     "property-management",
@@ -56,6 +57,7 @@
   "homepage": "https://hnv-property.onrender.com",
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "mongoose": "^8.16.1"
+    "mongoose": "^8.16.1",
+    "ts-node": "^10.9.1"
   }
 }

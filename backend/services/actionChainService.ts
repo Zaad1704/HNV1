@@ -4,6 +4,7 @@ import Reminder from '../models/Reminder';
 import AuditLog from '../models/AuditLog';
 import Notification from '../models/Notification';
 import Property from '../models/Property';
+import MaintenanceRequest from '../models/MaintenanceRequest';
 import notificationService from './notificationService';
 import mongoose from 'mongoose';
 
@@ -211,32 +212,40 @@ class ActionChainService {
   }
 
   private async createRentReminder(tenantData: any, organizationId: string) {
-    const nextMonth = new Date();
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    nextMonth.setDate(1);
+    try {
+      const nextMonth = new Date();
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      nextMonth.setDate(1);
 
-    await Reminder.create({
-      organizationId,
-      tenantId: tenantData._id,
-      propertyId: tenantData.propertyId,
-      type: 'rent_reminder',
-      message: `Rent payment due for Unit ${tenantData.unit}`,
-      nextRunDate: nextMonth,
-      frequency: 'monthly',
-      status: 'active'
-    });
+      await Reminder.create({
+        organizationId,
+        tenantId: tenantData._id,
+        propertyId: tenantData.propertyId,
+        type: 'rent_reminder',
+        message: `Rent payment due for Unit ${tenantData.unit}`,
+        nextRunDate: nextMonth,
+        frequency: 'monthly',
+        status: 'active'
+      });
+    } catch (error) {
+      console.error('Create rent reminder error:', error);
+    }
   }
 
   private async createApprovalRequest(maintenanceData: any, userId: string, organizationId: string) {
-    // Create approval request logic
-    await this.createNotification({
-      userId,
-      organizationId,
-      type: 'warning',
-      title: 'Approval Required',
-      message: `Maintenance request requires approval: $${maintenanceData.estimatedCost}`,
-      link: `/dashboard/approvals`
-    });
+    try {
+      // Create approval request logic
+      await this.createNotification({
+        userId,
+        organizationId,
+        type: 'warning',
+        title: 'Approval Required',
+        message: `Maintenance request requires approval: $${maintenanceData.estimatedCost || 0}`,
+        actionUrl: `/dashboard/approvals`
+      });
+    } catch (error) {
+      console.error('Create approval request error:', error);
+    }
   }
 
   private async updatePropertyMaintenanceStatus(propertyId: string, status: string) {
@@ -251,16 +260,33 @@ class ActionChainService {
   }
 
   private async createAuditLog(data: any, session?: any) {
-    await AuditLog.create([{
-      ...data,
-      ipAddress: '127.0.0.1',
-      userAgent: 'System',
-      timestamp: new Date()
-    }], { session });
+    try {
+      const auditData = {
+        ...data,
+        ipAddress: data.ipAddress || '127.0.0.1',
+        userAgent: data.userAgent || 'System',
+        timestamp: new Date()
+      };
+      
+      if (session) {
+        await AuditLog.create([auditData], { session });
+      } else {
+        await AuditLog.create(auditData);
+      }
+    } catch (error) {
+      console.error('Create audit log error:', error);
+    }
   }
 
   private async createNotification(data: any) {
-    await Notification.create(data);
+    try {
+      await Notification.create({
+        ...data,
+        organizationId: data.organizationId || null
+      });
+    } catch (error) {
+      console.error('Create notification error:', error);
+    }
   }
 }
 
