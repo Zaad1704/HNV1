@@ -9,6 +9,21 @@ interface User {
   organizationId?: any;
   googleId?: string;
   isEmailVerified?: boolean;
+  status?: string;
+  organization?: {
+    _id: string;
+    name: string;
+    status: string;
+  };
+  subscription?: {
+    status: string;
+    planId: any;
+    isLifetime: boolean;
+    trialExpiresAt?: string;
+    currentPeriodEndsAt?: string;
+    cancelAtPeriodEnd?: boolean;
+    canceledAt?: string;
+  };
 }
 
 interface AuthState {
@@ -20,6 +35,7 @@ interface AuthState {
   setUser: (user: User) => void;
   login: (token: string, user: User) => void;
   logout: () => void;
+  fetchUserData: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -36,6 +52,28 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, user: null, isAuthenticated: false });
         localStorage.removeItem('auth-storage');
         localStorage.removeItem('auth-method');
+      },
+      fetchUserData: async () => {
+        const { token } = get();
+        if (!token) return;
+        
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+              set({ user: data.data });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+        }
       },
     }),
     {

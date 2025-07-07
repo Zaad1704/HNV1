@@ -63,8 +63,12 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 const DashboardPage = () => {
   const { currency } = useCurrency();
-  const { user } = useAuthStore();
+  const { user, fetchUserData } = useAuthStore();
   const [showRestrictionOverlay, setShowRestrictionOverlay] = React.useState(true);
+  
+  React.useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
   
   React.useEffect(() => {
     if (hasRestrictedAccess) {
@@ -84,17 +88,27 @@ const DashboardPage = () => {
   
 
   
-  // Check if user has restricted access
+  // Check if user has restricted access (comprehensive check including super admin actions)
   const hasRestrictedAccess = user && (
+    // User-level restrictions
     user.status === 'pending' || 
     user.status === 'suspended' || 
     !user.isEmailVerified ||
     !user.organizationId ||
+    
+    // Organization-level restrictions (super admin actions)
+    (user.organization && user.organization.status === 'inactive') ||
+    (user.organization && user.organization.status === 'pending_deletion') ||
+    
+    // Subscription-level restrictions
     (user.subscription && (
       user.subscription.status === 'inactive' ||
       user.subscription.status === 'canceled' ||
       user.subscription.status === 'past_due' ||
-      (user.subscription.trialExpiresAt && new Date(user.subscription.trialExpiresAt) < new Date())
+      user.subscription.status === 'expired' ||
+      (user.subscription.canceledAt && new Date(user.subscription.canceledAt) < new Date()) ||
+      (user.subscription.trialExpiresAt && new Date(user.subscription.trialExpiresAt) < new Date()) ||
+      (user.subscription.currentPeriodEndsAt && new Date(user.subscription.currentPeriodEndsAt) < new Date() && !user.subscription.isLifetime)
     ))
   );
   

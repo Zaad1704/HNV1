@@ -225,10 +225,12 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
     // Populate organization and subscription data
     let populatedUser = user;
     let subscription = null;
+    let organization = null;
     
     if (user.organizationId) {
       populatedUser = await User.findById(user._id).populate('organizationId').select('-password');
       subscription = await Subscription.findOne({ organizationId: user.organizationId }).populate('planId');
+      organization = await Organization.findById(user.organizationId);
     }
 
     res.status(200).json({
@@ -241,10 +243,19 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
         organizationId: populatedUser.organizationId,
         status: populatedUser.status,
         isEmailVerified: populatedUser.isEmailVerified,
+        organization: organization ? {
+          _id: organization._id,
+          name: organization.name,
+          status: organization.status
+        } : null,
         subscription: subscription ? {
           status: subscription.status,
           planId: subscription.planId,
-          isLifetime: subscription.isLifetime
+          isLifetime: subscription.isLifetime,
+          trialExpiresAt: subscription.trialExpiresAt,
+          currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          canceledAt: subscription.canceledAt
         } : null
       }
     });
