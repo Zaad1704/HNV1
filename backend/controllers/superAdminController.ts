@@ -228,10 +228,16 @@ export const activateOrganization = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Organization not found' });
     }
 
-    // Update subscription status as well
+    // Update subscription status and user status
     const Subscription = (await import('../models/Subscription')).default;
     await Subscription.findOneAndUpdate(
       { organizationId: org._id },
+      { status: 'active' }
+    );
+    
+    // Reactivate all users in the organization
+    await User.updateMany(
+      { organizationId: org._id, role: { $ne: 'Super Admin' } },
       { status: 'active' }
     );
     
@@ -271,11 +277,17 @@ export const deactivateOrganization = async (req: AuthRequest, res: Response) =>
       return res.status(404).json({ success: false, message: 'Organization not found' });
     }
 
-    // Update subscription status as well
+    // Update subscription status and user status
     const Subscription = (await import('../models/Subscription')).default;
     await Subscription.findOneAndUpdate(
       { organizationId: org._id },
       { status: 'inactive' }
+    );
+    
+    // Update all users in the organization to suspended status
+    await User.updateMany(
+      { organizationId: org._id, role: { $ne: 'Super Admin' } },
+      { status: 'suspended' }
     );
     
     // Create audit log
