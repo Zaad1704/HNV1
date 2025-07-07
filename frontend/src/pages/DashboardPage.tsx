@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3 } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3, Lock } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
@@ -64,6 +64,13 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 const DashboardPage = () => {
   const { currency } = useCurrency();
   const { user } = useAuthStore();
+  const [showRestrictionOverlay, setShowRestrictionOverlay] = React.useState(true);
+  
+  React.useEffect(() => {
+    if (hasRestrictedAccess) {
+      setShowRestrictionOverlay(true);
+    }
+  }, [hasRestrictedAccess]);
   
   // Get subscription status
   const { data: subscriptionStatus } = useSubscriptionQuery({
@@ -77,12 +84,12 @@ const DashboardPage = () => {
   
 
   
-  // Check if user is inactive and should see view-only dashboard
-  const isInactive = user && (
+  // Check if user has restricted access
+  const hasRestrictedAccess = user && (
     user.status === 'pending' || 
     user.status === 'suspended' || 
     !user.isEmailVerified ||
-    !user.organizationId || // Add check for missing organization
+    !user.organizationId ||
     (user.subscription && (
       user.subscription.status === 'inactive' ||
       user.subscription.status === 'canceled' ||
@@ -90,11 +97,6 @@ const DashboardPage = () => {
       (user.subscription.trialExpiresAt && new Date(user.subscription.trialExpiresAt) < new Date())
     ))
   );
-  
-  if (isInactive) {
-
-    return <ViewOnlyDashboard />;
-  }
   
   // Additional safety check
   if (!user) {
@@ -146,15 +148,7 @@ const DashboardPage = () => {
   }
 
   if (error && !stats) {
-
-    
-    // If it's a 401/403 error or organization-related, show empty dashboard
-    if (error?.response?.status === 401 || error?.response?.status === 403 || 
-        error?.message?.includes('organization') || error?.message?.includes('Not authorized') ||
-        !user?.organizationId) {
-
-      return <EmptyDashboard />;
-    }
+    // Don't show empty dashboard, show error state but keep dashboard layout
     
     return (
       <div className="p-6 pt-0">
@@ -189,6 +183,32 @@ const DashboardPage = () => {
 
   return (
     <>
+      {/* Restriction Overlay */}
+      {hasRestrictedAccess && showRestrictionOverlay && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock size={32} className="text-orange-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h2>
+            <p className="text-gray-600 mb-6">
+              Your account has limited access. Please reactivate your subscription to unlock all features.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link to="/dashboard/billing" className="btn-gradient px-6 py-3 rounded-2xl font-semibold">
+                Reactivate Subscription
+              </Link>
+              <button 
+                onClick={() => setShowRestrictionOverlay(false)}
+                className="px-6 py-3 rounded-2xl font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                View Dashboard (Limited)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Subscription Status Banner */}
       {subscriptionStatus?.status === 'trialing' && (
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
@@ -213,7 +233,7 @@ const DashboardPage = () => {
       <FloatingHelpCenter />
       <FloatingQuickActions />
       <motion.main
-        className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
+        className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''} ${hasRestrictedAccess ? 'pointer-events-none opacity-75' : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
