@@ -4,7 +4,7 @@ import { Building2, Plus, Settings, Users, DollarSign } from 'lucide-react';
 
 const EmptyDashboard = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="dashboard-container min-h-screen flex items-center justify-center p-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
@@ -18,7 +18,7 @@ const EmptyDashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Link to="/dashboard/properties" className="group">
-            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-brand-blue">
+            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-brand-blue" style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}>
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-blue-500 transition-colors">
                 <Building2 size={24} className="text-blue-600 group-hover:text-white" />
               </div>
@@ -28,7 +28,7 @@ const EmptyDashboard = () => {
           </Link>
 
           <Link to="/dashboard/tenants" className="group">
-            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-brand-orange">
+            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-brand-orange" style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}>
               <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-orange-500 transition-colors">
                 <Users size={24} className="text-orange-600 group-hover:text-white" />
               </div>
@@ -38,7 +38,7 @@ const EmptyDashboard = () => {
           </Link>
 
           <Link to="/dashboard/payments" className="group">
-            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-green-500">
+            <div className="app-surface rounded-3xl p-8 border border-app-border hover:shadow-app-lg transition-all group-hover:border-green-500" style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}>
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-green-500 transition-colors">
                 <DollarSign size={24} className="text-green-600 group-hover:text-white" />
               </div>

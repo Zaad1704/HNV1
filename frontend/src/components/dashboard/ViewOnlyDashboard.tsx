@@ -41,7 +41,7 @@ const ViewOnlyDashboard = () => {
   };
   
   return (
-    <div className="min-h-screen p-6">
+    <div className="dashboard-container min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -65,6 +65,7 @@ const ViewOnlyDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="app-surface rounded-3xl p-6 border border-app-border relative overflow-hidden"
+            style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}
           >
             <div className="absolute top-4 right-4">
               <Eye size={16} className="text-text-muted" />
@@ -79,6 +80,7 @@ const ViewOnlyDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="app-surface rounded-3xl p-6 border border-app-border relative overflow-hidden"
+            style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}
           >
             <div className="absolute top-4 right-4">
               <Eye size={16} className="text-text-muted" />
@@ -93,6 +95,7 @@ const ViewOnlyDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="app-surface rounded-3xl p-6 border border-app-border relative overflow-hidden"
+            style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB' }}
           >
             <div className="absolute top-4 right-4">
               <Eye size={16} className="text-text-muted" />

@@ -165,19 +165,56 @@ export const getRentStatus = safeAsync(async (req: AuthRequest, res: Response) =
 
 export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
   if (!req.user?.organizationId) {
-    console.log('User has no organization, returning empty stats:', req.user?.email);
-    return res.status(200).json({ 
-      success: true, 
-      data: { 
-        totalProperties: 0, 
-        totalTenants: 0, 
-        monthlyRevenue: 0, 
-        occupancyRate: 0,
-        pendingMaintenance: 0,
-        recentPayments: 0
-      },
-      message: 'No organization found - showing empty dashboard'
-    });
+    console.log('User has no organization, creating one:', req.user?.email);
+    
+    // Create organization for user if they don't have one
+    try {
+      const Organization = (await import('../models/Organization')).default;
+      const Plan = (await import('../models/Plan')).default;
+      const subscriptionService = (await import('../services/subscriptionService')).default;
+      
+      const organization = new Organization({
+        name: `${req.user.name}'s Organization`,
+        owner: req.user._id,
+        members: [req.user._id],
+        status: 'active'
+      });
+      await organization.save();
+      
+      // Update user with organization
+      const User = (await import('../models/User')).default;
+      await User.findByIdAndUpdate(req.user._id, { 
+        organizationId: organization._id,
+        status: 'active'
+      });
+      
+      // Create trial subscription
+      try {
+        await subscriptionService.createTrialSubscription(organization._id.toString());
+        console.log('✅ Trial subscription created for user:', req.user.email);
+      } catch (error) {
+        console.error('❌ Failed to create trial subscription:', error);
+      }
+      
+      // Update req.user for this request
+      req.user.organizationId = organization._id;
+      
+      console.log('✅ Organization created for user:', req.user.email);
+    } catch (error) {
+      console.error('❌ Failed to create organization:', error);
+      return res.status(200).json({ 
+        success: true, 
+        data: { 
+          totalProperties: 0, 
+          totalTenants: 0, 
+          monthlyRevenue: 0, 
+          occupancyRate: 0,
+          pendingMaintenance: 0,
+          recentPayments: 0
+        },
+        message: 'Organization setup in progress - showing empty dashboard'
+      });
+    }
   }
 
   console.log('Fetching stats for organization:', req.user.organizationId);

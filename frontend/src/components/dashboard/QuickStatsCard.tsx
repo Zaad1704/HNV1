@@ -33,6 +33,11 @@ const QuickStatsCard: React.FC<QuickStatsCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
       className="app-surface border border-app-border rounded-3xl p-6 flex flex-col h-full hover:shadow-lg transition-all"
+      style={{ 
+        backgroundColor: 'var(--app-surface, #FFFFFF)',
+        borderColor: 'var(--app-border, #E5E7EB)',
+        color: 'var(--text-primary, #111827)'
+      }}
     >
       <div className="flex items-center justify-between mb-4">
         <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center`}>

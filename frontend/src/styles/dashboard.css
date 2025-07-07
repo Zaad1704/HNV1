@@ -1,0 +1,63 @@
+/* Dashboard Card Fixes */
+.dashboard-container {
+  background-color: #FAFBFC;
+  min-height: 100vh;
+}
+
+/* Ensure all dashboard cards have proper backgrounds */
+.dashboard-container .app-surface,
+.dashboard-container [class*="rounded-3xl"],
+.dashboard-container [class*="rounded-2xl"] {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+/* Fix gradient cards specifically */
+.dashboard-container .gradient-dark-orange-blue {
+  background: linear-gradient(135deg, #C2410C 0%, #1E3A8A 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.dashboard-container .gradient-orange-blue {
+  background: linear-gradient(135deg, #EA580C 0%, #3B82F6 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Ensure text colors are visible */
+.dashboard-container .text-text-primary {
+  color: #111827 !important;
+}
+
+.dashboard-container .text-text-secondary {
+  color: #6B7280 !important;
+}
+
+.dashboard-container .text-text-muted {
+  color: #9CA3AF !important;
+}
+
+/* Fix any black backgrounds */
+.dashboard-container * {
+  background-color: inherit;
+}
+
+.dashboard-container *:not(.gradient-dark-orange-blue):not(.gradient-orange-blue):not([class*="bg-"]) {
+  background-color: transparent;
+}
+
+/* Specific fixes for welcome screen cards */
+.welcome-card {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.welcome-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}

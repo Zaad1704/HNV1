@@ -24,7 +24,9 @@ const sendTokenResponse = async (user: any, statusCode: number, res: Response) =
       name: user.name,
       email: user.email,
       role: user.role,
+      organizationId: user.organizationId,
       isEmailVerified: user.isEmailVerified,
+      status: user.status,
       createdAt: user.createdAt
     },
     userStatus: subscription?.status || 'inactive'

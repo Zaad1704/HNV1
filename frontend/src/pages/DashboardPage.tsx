@@ -185,11 +185,7 @@ const DashboardPage = () => {
     );
   }
   
-  // Show empty dashboard if user has no data (all stats are 0)
-  if (stats && Object.values(stats).every(val => val === 0)) {
 
-    return <EmptyDashboard />;
-  }
 
   return (
     <>
@@ -217,7 +213,7 @@ const DashboardPage = () => {
       <FloatingHelpCenter />
       <FloatingQuickActions />
       <motion.main
-        className={`p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
+        className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}

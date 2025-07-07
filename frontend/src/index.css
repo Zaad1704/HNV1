@@ -1,5 +1,6 @@
 @import './styles/mobile-fixes.css';
 @import './styles/ui-consistency.css';
+@import './styles/dashboard.css';
 
 /* Import styles first */
 @import './styles/mobile.css';
@@ -201,6 +202,16 @@
   --text-muted: #9CA3AF;
 }
 
+/* Ensure variables are always available */
+* {
+  --app-bg: #FAFBFC;
+  --app-surface: #FFFFFF;
+  --app-border: #E5E7EB;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+}
+
 .dark {
   --app-bg: #0F172A;
   --app-surface: #1E293B;
@@ -230,29 +241,30 @@ body {
   overflow-x: hidden;
 }
 
-/* App Components */
+/* App Components with fallbacks */
 .app-bg {
-  background-color: var(--app-bg);
+  background-color: var(--app-bg, #FAFBFC);
 }
 
 .app-surface {
-  background-color: var(--app-surface);
+  background-color: var(--app-surface, #FFFFFF);
+  border: 1px solid var(--app-border, #E5E7EB);
 }
 
 .app-border {
-  border-color: var(--app-border);
+  border-color: var(--app-border, #E5E7EB);
 }
 
 .text-text-primary {
-  color: var(--text-primary);
+  color: var(--text-primary, #111827);
 }
 
 .text-text-secondary {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #6B7280);
 }
 
 .text-text-muted {
-  color: var(--text-muted);
+  color: var(--text-muted, #9CA3AF);
 }
 
 /* Gradients */
@@ -388,6 +400,37 @@ input::placeholder, textarea::placeholder {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* Card Components - Prevent black cards */
+.dashboard-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Ensure all cards have proper background */
+[class*="rounded-3xl"], [class*="rounded-2xl"] {
+  background-color: var(--app-surface, #FFFFFF);
+}
+
+/* Fix gradient cards */
+.gradient-dark-orange-blue {
+  background: linear-gradient(135deg, #C2410C 0%, #1E3A8A 100%) !important;
+  color: white !important;
+}
+
+.gradient-orange-blue {
+  background: linear-gradient(135deg, #EA580C 0%, #3B82F6 100%) !important;
+  color: white !important;
 }
 
 /* Accessibility */
