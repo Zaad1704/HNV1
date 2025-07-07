@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CreditCard, Plus, DollarSign, Calendar, User, Download, Building2, Users, FileText, HandCoins, Sparkles, Archive, Eye } from 'lucide-react';
+import { CreditCard, Plus, DollarSign, Calendar, User, Download, Building2, Users, FileText, Sparkles, Archive, Eye } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
@@ -153,7 +153,7 @@ const PaymentsPage = () => {
             className="group btn-gradient px-6 py-3 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
             <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-              <HandCoins size={14} className="text-white" />
+              <DollarSign size={14} className="text-white" />
             </div>
             Manual Payment
           </button>
@@ -295,7 +295,7 @@ const PaymentsPage = () => {
               onClick={() => setShowAddModal(true)}
               className="group relative btn-gradient px-8 py-4 rounded-3xl font-bold text-lg flex items-center gap-3 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
             >
-              <HandCoins size={20} />
+              <DollarSign size={20} />
               Manual Payment
             </button>
           </div>
@@ -337,7 +337,7 @@ const PaymentsPage = () => {
           onClick={() => setShowAddModal(true)}
           className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
         >
-          <HandCoins size={24} className="text-white group-hover:rotate-12 transition-transform duration-300" />
+          <DollarSign size={24} className="text-white group-hover:rotate-12 transition-transform duration-300" />
         </button>
       </div>
       

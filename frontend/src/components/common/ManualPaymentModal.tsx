@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, DollarSign, User, Calendar, Building2, CreditCard, HandCoins, Percent, FileText, Users } from 'lucide-react';
+import { X, DollarSign, User, Calendar, Building2, CreditCard, Percent, FileText, Users } from 'lucide-react';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
@@ -127,7 +127,7 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 gradient-dark-orange-blue rounded-2xl flex items-center justify-center">
-              <HandCoins size={24} className="text-white" />
+              <DollarSign size={24} className="text-white" />
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-900">Manual Payment Collection</h3>
