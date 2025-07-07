@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import Plan from '../models/Plan';
 import Subscription from '../models/Subscription';
-import Organization from '../models/Organization';
-import subscriptionService from '../services/subscriptionService';
+import Plan from '../models/Plan';
 
 interface AuthRequest extends Request {
   user?: any;
 }
 
-export const getSubscriptionDetails = async (req: AuthRequest, res: Response) => {
+export const getBillingInfo = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
       return res.status(401).json({ success: false, message: 'Not authorized' });
@@ -16,125 +14,133 @@ export const getSubscriptionDetails = async (req: AuthRequest, res: Response) =>
 
     const subscription = await Subscription.findOne({ 
       organizationId: req.user.organizationId 
-    }).populate('planId').lean().exec();
+    }).populate('planId');
 
     if (!subscription) {
-      // Check if organization has lifetime access or other subscription method
-      const org = await Organization.findById(req.user.organizationId).lean().exec() as any;
-      if (org?.subscription?.isLifetime) {
-        return res.status(200).json({ 
-          success: true, 
-          data: {
-            status: 'active',
-            isLifetime: true,
-            planId: org.subscription.planId
-          }
-        });
-      }
-      return res.status(200).json({ success: true, data: null });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'No subscription found' 
+      });
     }
 
-    res.status(200).json({ success: true, data: subscription });
+    const billingInfo = {
+      subscription: {
+        status: subscription.status,
+        currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+        nextBillingDate: subscription.nextBillingDate,
+        amount: subscription.amount,
+        currency: subscription.currency,
+        billingCycle: subscription.billingCycle,
+        isLifetime: subscription.isLifetime,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+      },
+      plan: subscription.planId,
+      paymentMethod: subscription.paymentMethod || 'Not set',
+      lastPaymentDate: subscription.lastPaymentDate,
+      failedPaymentAttempts: subscription.failedPaymentAttempts
+    };
+
+    res.json({ success: true, data: billingInfo });
   } catch (error) {
-    console.error('Billing subscription error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch subscription details',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-export const createCheckoutSession = async (req: AuthRequest, res: Response) => {
+export const updatePaymentMethod = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId } = req.body;
-
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const plan = await Plan.findById(planId);
-    if (!plan) {
-      return res.status(404).json({ success: false, message: 'Plan not found' });
+    const { paymentMethod } = req.body;
+
+    if (!paymentMethod) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Payment method is required' 
+      });
     }
 
-    // Mock checkout session for development
-    const sessionId = `mock_session_${Date.now()}`;
-    const redirectUrl = `${process.env.FRONTEND_URL}/payment-success?session_id=${sessionId}`;
+    const subscription = await Subscription.findOneAndUpdate(
+      { organizationId: req.user.organizationId },
+      { paymentMethod },
+      { new: true }
+    );
+
+    if (!subscription) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Subscription not found' 
+      });
+    }
 
     res.json({
       success: true,
-      checkoutUrl: redirectUrl,
-      sessionId
+      message: 'Payment method updated successfully',
+      data: { paymentMethod: subscription.paymentMethod }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-export const getBillingHistory = async (req: AuthRequest, res: Response) => {
+export const changePlan = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    // For now, return mock data. In production, integrate with payment processor
+    const { planId } = req.body;
+
+    if (!planId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Plan ID is required' 
+      });
+    }
+
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Plan not found' 
+      });
+    }
+
     const subscription = await Subscription.findOne({ 
       organizationId: req.user.organizationId 
-    }).populate('planId').lean().exec() as any;
-
-    const billingHistory = subscription ? [
-      { 
-        _id: '1', 
-        date: subscription.createdAt, 
-        amount: subscription.planId?.price || 0, 
-        status: 'paid', 
-        description: `${subscription.planId?.name || 'Plan'} Subscription`
-      }
-    ] : [];
-
-    res.status(200).json({ success: true, data: billingHistory });
-  } catch (error) {
-    console.error('Billing history error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch billing history',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-  }
-};
 
-export const subscribeToPlan = async (req: AuthRequest, res: Response) => {
-  try {
-    const { planId, isTrial = false } = req.body;
+    if (!subscription) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Subscription not found' 
+      });
+    }
+
+    // Update subscription
+    subscription.planId = planId as any;
+    subscription.amount = plan.price;
+    subscription.billingCycle = plan.billingCycle;
     
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+    // Calculate next billing date
+    const nextBilling = new Date();
+    if (plan.billingCycle === 'monthly') {
+      nextBilling.setMonth(nextBilling.getMonth() + 1);
+    } else if (plan.billingCycle === 'yearly') {
+      nextBilling.setFullYear(nextBilling.getFullYear() + 1);
     }
+    subscription.nextBillingDate = nextBilling;
 
-    let subscription;
-    if (isTrial) {
-      subscription = await subscriptionService.createTrialSubscription(req.user.organizationId, planId);
-    } else {
-      subscription = await subscriptionService.activateSubscription(req.user.organizationId, planId);
-    }
+    await subscription.save();
 
-    res.json({ success: true, data: subscription });
+    res.json({
+      success: true,
+      message: 'Plan changed successfully',
+      data: subscription
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server error' });
-  }
-};
-
-export const reactivateSubscription = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
-    const subscription = await subscriptionService.reactivateSubscription(req.user.organizationId);
-    res.json({ success: true, data: subscription });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -144,22 +150,26 @@ export const cancelSubscription = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const subscription = await subscriptionService.cancelSubscription(req.user.organizationId);
-    res.json({ success: true, data: subscription });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server error' });
-  }
-};
+    const subscription = await Subscription.findOne({ 
+      organizationId: req.user.organizationId 
+    });
 
-export const getSubscriptionStatus = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.user?.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+    if (!subscription) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Subscription not found' 
+      });
     }
 
-    const status = await subscriptionService.getSubscriptionStatus(req.user.organizationId);
-    res.json({ success: true, data: status });
+    subscription.cancelAtPeriodEnd = true;
+    await subscription.save();
+
+    res.json({
+      success: true,
+      message: 'Subscription will be cancelled at the end of current period',
+      data: { cancelAtPeriodEnd: true }
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message || 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

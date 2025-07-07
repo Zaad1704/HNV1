@@ -1,261 +1,170 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import Organization from '../models/Organization';
-import SiteSettings from '../models/SiteSettings';
 import AuditLog from '../models/AuditLog';
 
 interface AuthRequest extends Request {
   user?: any;
-  file?: Express.Multer.File;
 }
 
-export const getSettings = async (req: AuthRequest, res: Response) => {
+export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.user._id)
-      .populate('organizationId')
-      .select('-password -twoFactorSecret');
-    const siteSettings = await SiteSettings.findOne();
+    const { name, email, phone } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const oldData = { name: user.name, email: user.email, phone: user.phone };
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
     
+    // Email change requires re-verification
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Email already in use' 
+        });
+      }
+      user.email = email;
+      user.isEmailVerified = false;
+      user.status = 'pending';
+    }
+
+    await user.save();
+
+    // Create audit log
+    await AuditLog.create({
+      userId: req.user._id,
+      organizationId: req.user.organizationId,
+      action: 'profile_updated',
+      resource: 'user_profile',
+      resourceId: req.user._id,
+      details: { oldData, newData: { name, email, phone } },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
     res.json({
       success: true,
+      message: 'Profile updated successfully',
       data: {
-        user,
-        organization: user.organizationId,
-        siteSettings: siteSettings || {}
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        emailVerificationRequired: email && email !== oldData.email
       }
     });
   } catch (error) {
-    console.error('Get settings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching settings'
-    });
-  }
-};
-
-export const updateSettings = async (req: AuthRequest, res: Response) => {
-  try {
-    const { name, email, phone, notifications, language, autoDetectLanguage } = req.body;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { 
-        name, 
-        email, 
-        phone, 
-        notifications,
-        language,
-        autoDetectLanguage
-      },
-      { new: true }
-    ).select('-password -twoFactorSecret');
-    
-    // Create audit log
-    await AuditLog.create({
-      userId: req.user._id,
-      organizationId: user.organizationId,
-      action: 'user_settings_updated',
-      resource: 'user',
-      resourceId: user._id,
-      details: { updatedFields: Object.keys(req.body) },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
-    });
-    
-    res.json({
-      success: true,
-      data: user,
-      message: 'Settings updated successfully'
-    });
-  } catch (error) {
-    console.error('Update settings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating settings'
-    });
-  }
-};
-
-export const changePassword = async (req: AuthRequest, res: Response) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    
-    const user = await User.findById(req.user._id).select('+password');
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-    
-    const isMatch = await user.matchPassword(currentPassword);
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: 'Current password is incorrect'
-      });
-    }
-    
-    user.password = newPassword;
-    await user.save();
-    
-    // Create audit log
-    await AuditLog.create({
-      userId: req.user._id,
-      organizationId: user.organizationId,
-      action: 'password_changed',
-      resource: 'user',
-      resourceId: user._id,
-      details: { changedBy: 'user' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
-    });
-    
-    res.json({
-      success: true,
-      message: 'Password changed successfully'
-    });
-  } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error changing password'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
 export const updateOrganization = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, address, phone, email, website, description } = req.body;
-    const userId = req.user._id;
-    
-    const user = await User.findById(userId);
-    if (!user || !user.organizationId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Organization not found'
-      });
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const organization = await Organization.findByIdAndUpdate(
-      user.organizationId,
-      {
-        name,
-        address,
-        phone,
-        email,
-        website,
-        description,
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
+    const { name, companyName, companyAddress } = req.body;
+    const organization = await Organization.findById(req.user.organizationId);
 
     if (!organization) {
-      return res.status(404).json({
-        success: false,
-        message: 'Organization not found'
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    // Only owner can update organization
+    if (organization.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only organization owner can update settings' 
       });
     }
+
+    if (name) organization.name = name;
+    if (companyName) organization.branding.companyName = companyName;
+    if (companyAddress) organization.branding.companyAddress = companyAddress;
+
+    await organization.save();
+
+    res.json({
+      success: true,
+      message: 'Organization updated successfully',
+      data: organization
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+export const requestAccountDeletion = async (req: AuthRequest, res: Response) => {
+  try {
+    const { reason } = req.body;
+
+    // Only landlords can delete accounts
+    if (req.user.role !== 'Landlord') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only landlords can request account deletion' 
+      });
+    }
+
+    const organization = await Organization.findById(req.user.organizationId);
+    if (!organization) {
+      return res.status(404).json({ success: false, message: 'Organization not found' });
+    }
+
+    organization.dataManagement.accountDeletionRequestedAt = new Date();
+    await organization.save();
 
     // Create audit log
     await AuditLog.create({
       userId: req.user._id,
-      organizationId: organization._id,
-      action: 'organization_updated',
+      organizationId: req.user.organizationId,
+      action: 'account_deletion_requested',
       resource: 'organization',
-      resourceId: organization._id,
-      details: { 
-        updatedFields: Object.keys(req.body),
-        organizationName: organization.name
-      },
+      resourceId: req.user.organizationId,
+      details: { reason },
       ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      timestamp: new Date()
+      userAgent: req.get('User-Agent')
     });
 
     res.json({
       success: true,
-      data: organization,
-      message: 'Organization updated successfully'
+      message: 'Account deletion requested. You will receive an email with data export within 24 hours.'
     });
   } catch (error) {
-    console.error('Update organization error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating organization'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-export const uploadProfileImage = async (req: AuthRequest, res: Response) => {
+export const exportData = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No file uploaded'
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Only landlords can export data
+    if (req.user.role !== 'Landlord') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only landlords can export organization data' 
       });
     }
 
-    const imageUrl = (req.file as any).location;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { profilePicture: imageUrl },
-      { new: true }
-    ).select('-password -twoFactorSecret');
+    const organization = await Organization.findById(req.user.organizationId);
+    organization.dataManagement.dataExportRequestedAt = new Date();
+    await organization.save();
 
     res.json({
       success: true,
-      data: { user, imageUrl },
-      message: 'Profile image updated successfully'
+      message: 'Data export requested. You will receive a download link via email within 24 hours.'
     });
   } catch (error) {
-    console.error('Upload profile image error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error uploading profile image'
-    });
-  }
-};
-
-export const uploadOrganizationLogo = async (req: AuthRequest, res: Response) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'No file uploaded'
-      });
-    }
-
-    const logoUrl = (req.file as any).location;
-    const user = await User.findById(req.user._id);
-    
-    if (!user || !user.organizationId) {
-      return res.status(404).json({
-        success: false,
-        message: 'Organization not found'
-      });
-    }
-
-    const organization = await Organization.findByIdAndUpdate(
-      user.organizationId,
-      { logo: logoUrl },
-      { new: true }
-    );
-
-    res.json({
-      success: true,
-      data: { organization, logoUrl },
-      message: 'Organization logo updated successfully'
-    });
-  } catch (error) {
-    console.error('Upload organization logo error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error uploading organization logo'
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

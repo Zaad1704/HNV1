@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import Reminder from '../models/Reminder';
+import Tenant from '../models/Tenant';
+import Property from '../models/Property';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -13,19 +15,12 @@ export const getReminders = async (req: AuthRequest, res: Response) => {
 
     const reminders = await Reminder.find({ organizationId: req.user.organizationId })
       .populate('tenantId', 'name email unit')
-      .populate('propertyId', 'name')
-      .sort({ nextRunDate: 1 })
-      .lean()
-      .exec();
+      .populate('propertyId', 'name address')
+      .sort({ nextRunDate: 1 });
 
-    res.status(200).json({ success: true, data: reminders || [] });
+    res.json({ success: true, data: reminders });
   } catch (error) {
-    console.error('Error fetching reminders:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Failed to fetch reminders',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -35,21 +30,30 @@ export const createReminder = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const { tenantId, type, message, frequency, nextRunDate } = req.body;
+    const { tenantId, propertyId, type, message, nextRunDate, frequency } = req.body;
+
+    if (!tenantId || !propertyId || !type || !nextRunDate || !frequency) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'All fields are required' 
+      });
+    }
 
     const reminder = await Reminder.create({
       organizationId: req.user.organizationId,
       tenantId,
+      propertyId,
       type,
-      message,
+      message: message || `${type.replace('_', ' ')} reminder`,
       nextRunDate: new Date(nextRunDate),
       frequency,
       status: 'active',
-      sentCount: 0
+      createdBy: req.user._id
     });
 
     res.status(201).json({ success: true, data: reminder });
   } catch (error) {
+    console.error('Create reminder error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -75,7 +79,7 @@ export const updateReminder = async (req: AuthRequest, res: Response) => {
 export const deleteReminder = async (req: AuthRequest, res: Response) => {
   try {
     const reminder = await Reminder.findByIdAndDelete(req.params.id);
-
+    
     if (!reminder) {
       return res.status(404).json({ success: false, message: 'Reminder not found' });
     }

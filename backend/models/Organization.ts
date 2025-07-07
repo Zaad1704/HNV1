@@ -6,6 +6,7 @@ export interface IOrganization extends Document {
   members: Schema.Types.ObjectId[];
   status: 'active' | 'inactive' | 'pending_deletion';
   subscription: Schema.Types.ObjectId;
+  inviteCode?: string;
   branding: {
     companyName: string;
     companyLogoUrl: string;
@@ -26,6 +27,7 @@ const OrganizationSchema = new Schema<IOrganization>({
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   status: { type: String, enum: ['active', 'inactive', 'pending_deletion'], default: 'active' },
   subscription: { type: Schema.Types.ObjectId, ref: 'Subscription' },
+  inviteCode: { type: String, unique: true, sparse: true },
   branding: {
     companyName: { type: String, default: '' },
     companyLogoUrl: { type: String, default: '' },

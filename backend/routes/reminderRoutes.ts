@@ -1,18 +1,22 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
+import {
+  getReminders,
+  createReminder,
+  updateReminder,
+  deleteReminder
+} from '../controllers/reminderController';
 
 const router = Router();
 
-// Apply authentication middleware
 router.use(protect);
 
-// Basic route - replace with actual routes
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'reminder routes working',
-    timestamp: new Date().toISOString()
-  });
-});
+router.route('/')
+  .get(getReminders)
+  .post(createReminder);
+
+router.route('/:id')
+  .put(updateReminder)
+  .delete(deleteReminder);
 
 export default router;

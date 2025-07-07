@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Bell, Calendar, Users, Repeat } from 'lucide-react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { X, Calendar, Bell } from 'lucide-react';
 import apiClient from '../../api/client';
 
 interface AddReminderModalProps {
@@ -9,215 +10,178 @@ interface AddReminderModalProps {
 
 const AddReminderModal: React.FC<AddReminderModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    title: '',
-    message: '',
+    tenantId: '',
+    propertyId: '',
     type: 'rent_due',
-    frequency: 'monthly',
-    targetAudience: 'all_tenants',
-    sendDate: new Date().toISOString().split('T')[0],
-    sendTime: '09:00',
-    isActive: true
+    message: '',
+    nextRunDate: new Date().toISOString().split('T')[0],
+    frequency: 'monthly'
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const queryClient = useQueryClient();
 
-  const reminderTypes = [
-    { value: 'rent_due', label: 'Rent Due Reminder' },
-    { value: 'lease_expiry', label: 'Lease Expiry Notice' },
-    { value: 'maintenance', label: 'Maintenance Schedule' },
-    { value: 'payment_overdue', label: 'Payment Overdue' },
-    { value: 'custom', label: 'Custom Reminder' }
-  ];
+  const { data: tenants } = useQuery({
+    queryKey: ['tenants'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/tenants');
+      return data.data || [];
+    },
+    enabled: isOpen
+  });
 
-  const frequencies = [
-    { value: 'once', label: 'One Time' },
-    { value: 'daily', label: 'Daily' },
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Quarterly' }
-  ];
+  const { data: properties } = useQuery({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/properties');
+      return data.data || [];
+    },
+    enabled: isOpen
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      await apiClient.post('/reminders', formData);
-      alert('Reminder created successfully!');
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.post('/reminders', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reminders'] });
       onClose();
-      
       setFormData({
-        title: '',
-        message: '',
+        tenantId: '',
+        propertyId: '',
         type: 'rent_due',
-        frequency: 'monthly',
-        targetAudience: 'all_tenants',
-        sendDate: new Date().toISOString().split('T')[0],
-        sendTime: '09:00',
-        isActive: true
+        message: '',
+        nextRunDate: new Date().toISOString().split('T')[0],
+        frequency: 'monthly'
       });
-    } catch (error) {
-      console.error('Failed to create reminder:', error);
-      alert('Reminder saved locally. Will sync when backend is available.');
-      onClose();
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.tenantId || !formData.propertyId || !formData.nextRunDate) return;
+    
+    createMutation.mutate(formData);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Add Reminder</h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Bell size={20} />
+            Add Reminder
+          </h3>
+          <button onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Reminder Title
-            </label>
-            <div className="relative">
-              <Bell size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                placeholder="Enter reminder title"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Reminder Type
-            </label>
+            <label className="block text-sm font-medium mb-1">Tenant</label>
             <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              value={formData.tenantId}
+              onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+              required
             >
-              {reminderTypes.map(type => (
-                <option key={type.value} value={type.value}>{type.label}</option>
+              <option value="">Select tenant</option>
+              {tenants?.map((tenant: any) => (
+                <option key={tenant._id} value={tenant._id}>
+                  {tenant.name} - {tenant.unit}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Message
-            </label>
-            <textarea
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              rows={4}
-              placeholder="Enter reminder message"
+            <label className="block text-sm font-medium mb-1">Property</label>
+            <select
+              value={formData.propertyId}
+              onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+              required
+            >
+              <option value="">Select property</option>
+              {properties?.map((property: any) => (
+                <option key={property._id} value={property._id}>
+                  {property.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+              required
+            >
+              <option value="rent_due">Rent Due</option>
+              <option value="lease_expiry">Lease Expiry</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="inspection">Inspection</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Next Run Date</label>
+            <input
+              type="date"
+              value={formData.nextRunDate}
+              onChange={(e) => setFormData({ ...formData, nextRunDate: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Frequency
-            </label>
-            <div className="relative">
-              <Repeat size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <select
-                value={formData.frequency}
-                onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
-                {frequencies.map(freq => (
-                  <option key={freq.value} value={freq.value}>{freq.label}</option>
-                ))}
-              </select>
-            </div>
+            <label className="block text-sm font-medium mb-1">Frequency</label>
+            <select
+              value={formData.frequency}
+              onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+              required
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="once">One Time</option>
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Target Audience
-            </label>
-            <div className="relative">
-              <Users size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <select
-                value={formData.targetAudience}
-                onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
-                <option value="all_tenants">All Tenants</option>
-                <option value="late_tenants">Late Payment Tenants</option>
-                <option value="expiring_leases">Expiring Leases</option>
-                <option value="specific_property">Specific Property</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Send Date
-              </label>
-              <div className="relative">
-                <Calendar size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="date"
-                  value={formData.sendDate}
-                  onChange={(e) => setFormData({ ...formData, sendDate: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Send Time
-              </label>
-              <input
-                type="time"
-                value={formData.sendTime}
-                onChange={(e) => setFormData({ ...formData, sendTime: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            <label className="block text-sm font-medium mb-1">Message (Optional)</label>
+            <textarea
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              className="w-full px-3 py-2 border rounded-lg"
+              rows={3}
+              placeholder="Custom reminder message..."
             />
-            <label htmlFor="isActive" className="text-sm text-gray-700 dark:text-gray-300">
-              Activate reminder immediately
-            </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              disabled={createMutation.isPending}
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
-              {isSubmitting ? 'Creating...' : 'Create Reminder'}
+              {createMutation.isPending ? 'Creating...' : 'Create Reminder'}
             </button>
           </div>
         </form>
