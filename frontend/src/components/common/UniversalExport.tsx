@@ -9,6 +9,7 @@ interface UniversalExportProps {
   filename: string;
   filters?: SearchFilters;
   title?: string;
+  organizationName?: string;
 }
 
 const UniversalExport: React.FC<UniversalExportProps> = ({
@@ -17,7 +18,8 @@ const UniversalExport: React.FC<UniversalExportProps> = ({
   data,
   filename,
   filters,
-  title = "Export Data"
+  title = "Export Data",
+  organizationName = "Your Organization"
 }) => {
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel' | 'pdf'>('excel');
   const [includeFilters, setIncludeFilters] = useState(true);
@@ -26,17 +28,38 @@ const UniversalExport: React.FC<UniversalExportProps> = ({
   const exportToCSV = (data: any[], filename: string) => {
     if (!data.length) return;
     
-    const headers = Object.keys(data[0]);
+    const cleanData = data.map(item => {
+      const cleanItem: any = {};
+      Object.keys(item).forEach(key => {
+        if (item[key] && typeof item[key] === 'object' && item[key].formattedAddress) {
+          cleanItem[key] = item[key].formattedAddress;
+        } else if (item[key] && typeof item[key] === 'object') {
+          cleanItem[key] = JSON.stringify(item[key]);
+        } else {
+          cleanItem[key] = item[key] || '';
+        }
+      });
+      return cleanItem;
+    });
+    
+    const headers = Object.keys(cleanData[0]);
     const csvContent = [
+      `"${organizationName} - ${title}"`,
+      `"Generated on: ${new Date().toLocaleDateString()}"`,
+      `"Powered by HNV Property Management Solutions"`,
+      '',
       headers.join(','),
-      ...data.map(row => 
+      ...cleanData.map(row => 
         headers.map(header => {
           const value = row[header];
           return typeof value === 'string' && value.includes(',') 
             ? `"${value}"` 
             : value;
         }).join(',')
-      )
+      ),
+      '',
+      `"Total Records: ${cleanData.length}"`,
+      `"Powered by HNV Property Management Solutions"`
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -49,21 +72,59 @@ const UniversalExport: React.FC<UniversalExportProps> = ({
   };
 
   const exportToExcel = (data: any[], filename: string) => {
-    // Simple Excel export using HTML table method
     if (!data.length) return;
     
-    const headers = Object.keys(data[0]);
+    const cleanData = data.map(item => {
+      const cleanItem: any = {};
+      Object.keys(item).forEach(key => {
+        if (item[key] && typeof item[key] === 'object' && item[key].formattedAddress) {
+          cleanItem[key] = item[key].formattedAddress;
+        } else if (item[key] && typeof item[key] === 'object') {
+          cleanItem[key] = JSON.stringify(item[key]);
+        } else {
+          cleanItem[key] = item[key] || '';
+        }
+      });
+      return cleanItem;
+    });
+    
+    const headers = Object.keys(cleanData[0]);
     const htmlTable = `
-      <table>
-        <thead>
-          <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
-        </thead>
-        <tbody>
-          ${data.map(row => 
-            `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
-          ).join('')}
-        </tbody>
-      </table>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; }
+            .header { text-align: center; margin-bottom: 20px; font-weight: bold; }
+            .footer { text-align: center; margin-top: 20px; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>${organizationName}</h2>
+            <h3>${title}</h3>
+            <p>Generated on: ${new Date().toLocaleDateString()}</p>
+            <p>Powered by HNV Property Management Solutions</p>
+          </div>
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${cleanData.map(row => 
+                `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
+              ).join('')}
+            </tbody>
+          </table>
+          <div class="footer">
+            <p>Total Records: ${cleanData.length}</p>
+            <p>Powered by HNV Property Management Solutions</p>
+          </div>
+        </body>
+      </html>
     `;
 
     const blob = new Blob([htmlTable], { type: 'application/vnd.ms-excel' });
@@ -76,46 +137,86 @@ const UniversalExport: React.FC<UniversalExportProps> = ({
   };
 
   const exportToPDF = (data: any[], filename: string) => {
-    // Simple PDF export using print
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const headers = data.length ? Object.keys(data[0]) : [];
+    const cleanData = data.map(item => {
+      const cleanItem: any = {};
+      Object.keys(item).forEach(key => {
+        if (item[key] && typeof item[key] === 'object' && item[key].formattedAddress) {
+          cleanItem[key] = item[key].formattedAddress;
+        } else if (item[key] && typeof item[key] === 'object') {
+          cleanItem[key] = JSON.stringify(item[key]);
+        } else {
+          cleanItem[key] = item[key] || '';
+        }
+      });
+      return cleanItem;
+    });
+
+    const headers = cleanData.length ? Object.keys(cleanData[0]) : [];
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>${filename}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .footer { text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
             th { background-color: #f2f2f2; font-weight: bold; }
-            h1 { color: #333; }
-            .filters { background: #f9f9f9; padding: 10px; margin: 10px 0; border-radius: 5px; }
+            h1 { color: #333; margin: 0; }
+            .filters { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #007cba; }
+            .meta { color: #666; font-size: 14px; }
           </style>
         </head>
         <body>
-          <h1>${title}</h1>
+          <div class="header">
+            <h1>${organizationName}</h1>
+            <h2 style="color: #666; margin: 10px 0;">${title}</h2>
+            <p class="meta">Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+            <p class="meta"><strong>Powered by HNV Property Management Solutions</strong></p>
+          </div>
+          
           ${includeFilters && filters ? `
             <div class="filters">
               <strong>Applied Filters:</strong><br>
-              ${filters.query ? `Search: ${filters.query}<br>` : ''}
+              ${filters.query ? `Search: "${filters.query}"<br>` : ''}
               ${filters.dateRange !== 'all' ? `Date Range: ${filters.dateRange}<br>` : ''}
               ${filters.status ? `Status: ${filters.status}<br>` : ''}
             </div>
           ` : ''}
+          
           <table>
             <thead>
-              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+              <tr>${headers.map(h => `<th>${h.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</th>`).join('')}</tr>
             </thead>
             <tbody>
-              ${data.map(row => 
+              ${cleanData.map(row => 
                 `<tr>${headers.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`
               ).join('')}
             </tbody>
           </table>
-          <script>window.print(); window.close();</script>
+          
+          <div class="footer">
+            <p><strong>Total Records: ${cleanData.length}</strong></p>
+            <p>Report generated by HNV Property Management Solutions</p>
+            <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 500);
+            };
+          </script>
         </body>
       </html>
     `;
@@ -128,18 +229,8 @@ const UniversalExport: React.FC<UniversalExportProps> = ({
     setIsExporting(true);
     
     try {
-      const exportData = data.map(item => {
-        // Clean up data for export
-        const cleanItem: any = {};
-        Object.keys(item).forEach(key => {
-          if (typeof item[key] === 'object' && item[key] !== null) {
-            cleanItem[key] = JSON.stringify(item[key]);
-          } else {
-            cleanItem[key] = item[key];
-          }
-        });
-        return cleanItem;
-      });
+      // Data is already cleaned in individual export functions
+      const exportData = data;
 
       const timestamp = new Date().toISOString().split('T')[0];
       const exportFilename = `${filename}_${timestamp}`;

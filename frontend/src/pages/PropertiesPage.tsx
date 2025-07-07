@@ -14,6 +14,7 @@ import UniversalExport from '../components/common/UniversalExport';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
+import { useAuthStore } from '../store/authStore';
 import ExportModal from '../components/common/ExportModal';
 
 const fetchProperties = async () => {
@@ -29,6 +30,7 @@ const fetchProperties = async () => {
 
 const PropertiesPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any>(null);
@@ -556,7 +558,8 @@ const PropertiesPage = () => {
         data={filteredProperties}
         filename="properties"
         filters={searchFilters}
-        title="Export Properties"
+        title="Properties Report"
+        organizationName={user?.organization?.name || user?.name + "'s Organization" || "Your Organization"}
       />
     </motion.div>
   );
