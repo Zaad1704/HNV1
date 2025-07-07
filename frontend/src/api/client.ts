@@ -47,7 +47,9 @@ apiClient.interceptors.request.use((config) => {
     console.warn('No auth token available for request:', config.url);
   }
 
-  // Security headers removed to avoid CORS issues
+  // Remove problematic headers
+  delete config.headers['Cache-Control'];
+  delete config.headers['cache-control'];
   
   return config;
 });
