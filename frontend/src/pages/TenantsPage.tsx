@@ -11,6 +11,7 @@ import ExportModal from '../components/common/ExportModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
 import MessageButtons from '../components/common/MessageButtons';
+import ShareButton from '../components/common/ShareButton';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
 import ComprehensiveTenantModal from '../components/common/ComprehensiveTenantModal';
@@ -417,7 +418,7 @@ const TenantsPage = () => {
                     )}
                   </button>
                   {tenant.status !== 'Archived' && (
-                    <div className="flex-1">
+                    <div className="flex gap-1 flex-1">
                       <MessageButtons
                         phone={tenant.phone}
                         email={tenant.email}
@@ -427,6 +428,13 @@ const TenantsPage = () => {
                           amount: tenant.rentAmount,
                           dueDate: new Date().toLocaleDateString()
                         }}
+                      />
+                      <ShareButton
+                        title={`Tenant: ${tenant.name}`}
+                        text={`Tenant information for ${tenant.name} at ${tenant.propertyId?.name || 'Property'}`}
+                        type="tenant"
+                        data={tenant}
+                        className="ml-1"
                       />
                     </div>
                   )}

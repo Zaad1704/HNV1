@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
 import { useAuthStore } from '../store/authStore';
 import ExportModal from '../components/common/ExportModal';
+import MessageButtons from '../components/common/MessageButtons';
+import ShareButton from '../components/common/ShareButton';
 
 const fetchProperties = async () => {
   try {
@@ -555,37 +557,60 @@ const PropertiesPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                   </Link>
                   
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleArchiveProperty(property._id, property.name, property.status)}
-                      className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
-                        property.status === 'Archived'
-                          ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
-                          : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
-                      }`}
-                    >
-                      {property.status === 'Archived' ? (
-                        <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
-                      ) : (
-                        <><Archive size={12} className="inline mr-1" />Archive</>
-                      )}
-                    </button>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleArchiveProperty(property._id, property.name, property.status)}
+                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
+                          property.status === 'Archived'
+                            ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
+                            : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
+                        }`}
+                      >
+                        {property.status === 'Archived' ? (
+                          <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
+                        ) : (
+                          <><Archive size={12} className="inline mr-1" />Archive</>
+                        )}
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleEditProperty(property)}
+                        className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-blue-200 flex items-center justify-center gap-1"
+                      >
+                        <Edit size={12} />
+                        Edit
+                      </button>
+                      
+                      <button 
+                        onClick={() => handleDeleteProperty(property._id)}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
+                        title="Delete Permanently"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                     
-                    <button 
-                      onClick={() => handleEditProperty(property)}
-                      className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-blue-200 flex items-center justify-center gap-1"
-                    >
-                      <Edit size={12} />
-                      Edit
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleDeleteProperty(property._id)}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
-                      title="Delete Permanently"
-                    >
-                      🗑️
-                    </button>
+                    {/* Message and Share Buttons */}
+                    <div className="flex gap-2">
+                      <MessageButtons
+                        phone={property.contactPhone}
+                        email={property.contactEmail}
+                        name={property.name}
+                        messageType="welcomeMessage"
+                        additionalData={{
+                          propertyName: property.name,
+                          address: property.address?.formattedAddress
+                        }}
+                      />
+                      <ShareButton
+                        title={property.name}
+                        text={`Check out this property: ${property.name} - ${property.address?.formattedAddress}`}
+                        type="property"
+                        data={property}
+                        className="flex-1"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

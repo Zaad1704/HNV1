@@ -55,8 +55,17 @@ export const inviteTeamMember = async (req: AuthRequest, res: Response) => {
 
     // Send invitation email
     try {
-      const emailService = (await import('../services/emailService')).default;
-      await emailService.sendVerificationEmail(email, inviteToken, name);
+      const messagingService = (await import('../services/messagingService')).default;
+      const inviteLink = `${process.env.FRONTEND_URL}/accept-invitation?token=${inviteToken}`;
+      const organization = await Organization.findById(req.user.organizationId);
+      
+      await messagingService.sendInvitation(
+        email,
+        req.user.name,
+        organization?.name || 'Organization',
+        role,
+        inviteLink
+      );
     } catch (emailError) {
       console.error('Failed to send invitation email:', emailError);
     }
