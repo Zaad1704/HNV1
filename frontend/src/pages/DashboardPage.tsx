@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3, Lock } from 'lucide-react';
+import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3, Lock, Sparkles, Crown, Shield, Activity, Eye, MessageCircle, Share2 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import DashboardMonitor from '../components/dashboard/DashboardMonitor';
@@ -11,6 +11,7 @@ import EmptyDashboard from '../components/dashboard/EmptyDashboard';
 import ViewOnlyDashboard from '../components/dashboard/ViewOnlyDashboard';
 import FloatingHelpCenter from '../components/common/FloatingHelpCenter';
 import FloatingQuickActions from '../components/common/FloatingQuickActions';
+import RoleBasedDashboard from '../components/dashboard/RoleBasedDashboard';
 import { useAuthStore } from '../store/authStore';
 import { useQuery as useSubscriptionQuery } from '@tanstack/react-query';
 
@@ -260,126 +261,284 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+      {/* Role-based Dashboard */}
+      <RoleBasedDashboard stats={dashboardStats} />
+      
+      {/* Default Landlord Dashboard */}
+      {user?.role === 'Landlord' && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div 
-          className="gradient-dark-orange-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between text-white"
+          className="gradient-dark-orange-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between text-white relative overflow-hidden"
           variants={cardVariants}
           custom={0}
           initial="hidden"
           animate="visible"
         >
-          <div>
-            <div className="w-12 h-12 bg-white/25 rounded-full mb-4 flex items-center justify-center">
-              <BarChart3 size={24} className="text-white" />
+          {/* Background Effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-16 h-16 bg-white/25 rounded-2xl flex items-center justify-center shadow-xl">
+                <BarChart3 size={32} className="text-white" />
+              </div>
+              <Sparkles size={24} className="text-yellow-300 animate-pulse" />
             </div>
-            <h1 className="text-5xl font-bold leading-tight">Dashboard</h1>
-            <p className="text-white/80 mt-4 max-w-sm">Welcome to your property management hub. Access all your tools and insights from here.</p>
+            <h1 className="text-6xl font-bold leading-tight mb-2">Dashboard</h1>
+            <div className="flex items-center gap-2 mb-4">
+              <Crown size={20} className="text-yellow-300" />
+              <span className="text-yellow-300 font-semibold">{user?.role || 'User'} Portal</span>
+            </div>
+            <p className="text-white/90 mt-4 max-w-sm text-lg leading-relaxed">Welcome to your comprehensive property management hub. Access all your tools, insights, and communications from here.</p>
             
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div className="bg-white/10 rounded-2xl p-4">
-                <p className="text-white/70 text-sm">Properties</p>
-                <p className="text-2xl font-bold">{dashboardStats.totalProperties}</p>
-                <p className="text-white/60 text-xs mt-1">Active properties</p>
+            {/* Enhanced Quick Stats */}
+            <div className="grid grid-cols-2 gap-4 mt-8">
+              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 size={16} className="text-white/80" />
+                  <p className="text-white/80 text-sm font-medium">Properties</p>
+                </div>
+                <p className="text-3xl font-bold">{dashboardStats.totalProperties}</p>
+                <p className="text-white/70 text-xs mt-1">Active properties managed</p>
               </div>
-              <div className="bg-white/10 rounded-2xl p-4">
-                <p className="text-white/70 text-sm">Tenants</p>
-                <p className="text-2xl font-bold">{dashboardStats.totalTenants}</p>
-                <p className="text-white/60 text-xs mt-1">Total tenants</p>
+              <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users size={16} className="text-white/80" />
+                  <p className="text-white/80 text-sm font-medium">Tenants</p>
+                </div>
+                <p className="text-3xl font-bold">{dashboardStats.totalTenants}</p>
+                <p className="text-white/70 text-xs mt-1">Total tenant relationships</p>
+              </div>
+            </div>
+            
+            {/* Role-specific Quick Actions */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {user?.role === 'Landlord' && (
+                <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
+                  <Shield size={12} />
+                  Full Access
+                </div>
+              )}
+              {user?.role === 'Agent' && (
+                <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
+                  <Eye size={12} />
+                  {user?.managedProperties?.length || 0} Properties Assigned
+                </div>
+              )}
+              {user?.role === 'Tenant' && (
+                <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
+                  <Users size={12} />
+                  Tenant Portal
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="relative z-10 flex gap-3 mt-8">
+            <Link to="/dashboard/properties" className="bg-white text-brand-orange font-bold py-4 px-8 rounded-2xl text-sm hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-2">
+              <Building2 size={16} />
+              View Properties
+            </Link>
+            {user?.role !== 'Tenant' && (
+              <Link to="/dashboard/tenants" className="bg-white/20 backdrop-blur-sm text-white font-bold py-4 px-6 rounded-2xl text-sm hover:bg-white/30 transition-all duration-300 border border-white/30 flex items-center gap-2">
+                <Users size={16} />
+                Tenants
+              </Link>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col hover:shadow-2xl hover:shadow-green-500/10 hover:border-green-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={1} initial="hidden" animate="visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <DollarSign size={28} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-text-primary group-hover:text-green-600 transition-colors">Monthly Revenue</h2>
+            <p className="text-4xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mt-3">
+              {currency}{dashboardStats.monthlyRevenue.toLocaleString()}
+            </p>
+            <p className="text-text-secondary text-sm mt-3 flex-grow">
+              {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} earnings
+            </p>
+            <div className="mt-4 p-3 bg-green-50 rounded-xl">
+              <div className="flex items-center gap-2 text-green-800">
+                <TrendingUp size={14} />
+                <span className="text-xs font-medium">Revenue Tracking Active</span>
               </div>
             </div>
           </div>
-          <Link to="/dashboard/properties" className="bg-white text-brand-orange font-bold py-3 px-6 rounded-2xl mt-8 self-start text-sm hover:shadow-lg transition-all">
-            View Properties
-          </Link>
         </motion.div>
 
-        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={1} initial="hidden" animate="visible">
-          <div className="w-12 h-12 gradient-orange-blue rounded-xl mb-4 flex items-center justify-center">
-            <DollarSign size={24} className="text-white" />
+        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={2} initial="hidden" animate="visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <TrendingUp size={28} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-text-primary group-hover:text-blue-600 transition-colors">Occupancy Rate</h2>
+            <p className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent mt-3">{dashboardStats.occupancyRate}%</p>
+            <p className="text-text-secondary text-sm mt-3 flex-grow">
+              {dashboardStats.totalTenants} of {Math.max(dashboardStats.totalProperties, 1)} units occupied
+            </p>
+            
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-1000" 
+                  style={{ width: `${dashboardStats.occupancyRate}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <Link to="/dashboard/properties" className="gradient-dark-orange-blue text-white font-semibold py-3 px-6 rounded-2xl mt-4 self-start text-sm hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2">
+              <Building2 size={14} />
+              View Properties
+            </Link>
           </div>
-          <h2 className="text-2xl font-bold text-text-primary">Monthly Revenue</h2>
-          <p className="text-3xl font-bold text-brand-orange mt-2">
-            {currency}{dashboardStats.monthlyRevenue.toLocaleString()}
-          </p>
-          <p className="text-text-secondary text-sm mt-2 flex-grow">
-            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} earnings
-          </p>
-        </motion.div>
-
-        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col" variants={cardVariants} custom={2} initial="hidden" animate="visible">
-          <div className="w-12 h-12 gradient-orange-blue rounded-xl mb-4 flex items-center justify-center">
-            <TrendingUp size={24} className="text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-text-primary">Occupancy Rate</h2>
-          <p className="text-3xl font-bold text-brand-blue mt-2">{dashboardStats.occupancyRate}%</p>
-          <p className="text-text-secondary text-sm mt-2 flex-grow">
-            {dashboardStats.totalTenants} of {dashboardStats.totalProperties} units occupied
-          </p>
-          <Link to="/dashboard/properties" className="gradient-dark-orange-blue text-white font-semibold py-2 px-5 rounded-2xl mt-4 self-start text-sm hover:shadow-lg transition-all">View Properties</Link>
         </motion.div>
         
-        <motion.div className="gradient-orange-blue rounded-3xl p-6 text-white" style={{ transform: 'rotate(-2deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
-          <div className="w-10 h-10 bg-white/25 rounded-full mb-3 flex items-center justify-center">
-            <Bell size={20} className="text-white" />
+        <motion.div className="gradient-orange-blue rounded-3xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-all duration-300" style={{ transform: 'rotate(-1deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 bg-white/25 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+              <Bell size={24} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Maintenance</h2>
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-3 h-3 rounded-full ${
+                dashboardStats.pendingMaintenance > 0 ? 'bg-yellow-300 animate-pulse' : 'bg-green-300'
+              }`}></div>
+              <p className="text-white/90 text-sm font-medium">
+                {dashboardStats.pendingMaintenance} {dashboardStats.pendingMaintenance === 1 ? 'request' : 'requests'} pending
+              </p>
+            </div>
+            <p className="text-white/70 text-xs mb-4">
+              {dashboardStats.pendingMaintenance === 0 ? 'All caught up!' : 'Requires attention'}
+            </p>
+            <Link to="/dashboard/maintenance" className="bg-white text-brand-orange px-4 py-2 rounded-2xl text-sm font-bold inline-flex items-center gap-2 hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Activity size={14} />
+              View All
+            </Link>
           </div>
-          <h2 className="text-xl font-bold">Maintenance</h2>
-          <p className="text-white/80 text-sm mt-1">
-            {dashboardStats.pendingMaintenance} {dashboardStats.pendingMaintenance === 1 ? 'request' : 'requests'} pending
-          </p>
-          <Link to="/dashboard/maintenance" className="bg-white text-brand-orange px-3 py-1 rounded-full text-xs font-semibold mt-3 inline-block hover:shadow-lg transition-all">
-            View All
-          </Link>
         </motion.div>
 
-        <motion.div className="app-surface border border-app-border rounded-3xl p-6 flex flex-col justify-center items-center text-center" variants={cardVariants} custom={4} initial="hidden" animate="visible">
-          <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl mb-4 flex items-center justify-center">
-            <img src="/logo-min.png" alt="HNV Logo" className="w-10 h-10 object-contain" />
+        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={4} initial="hidden" animate="visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="w-20 h-20 gradient-dark-orange-blue rounded-3xl mb-6 flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
+                <span className="text-2xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">H</span>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-2">
+                HNV Platform
+            </h2>
+            <p className="text-text-secondary text-sm mb-4">Property Management Solutions</p>
+            <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-1 bg-green-100 px-2 py-1 rounded-full">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-green-800">System Online</span>
+              </div>
+            </div>
+            <div className="mt-4 flex gap-2 justify-center">
+              <button className="p-2 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                <MessageCircle size={16} className="text-blue-600" />
+              </button>
+              <button className="p-2 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors">
+                <Share2 size={16} className="text-purple-600" />
+              </button>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold gradient-dark-orange-blue bg-clip-text text-transparent">
-              HNV Platform
-          </h2>
-          <p className="text-text-secondary text-sm mt-2">Property Management Solutions</p>
         </motion.div>
         
-        <motion.div className="app-surface border border-app-border rounded-3xl p-6 sm:col-span-2" variants={cardVariants} custom={5} initial="hidden" animate="visible">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 gradient-dark-orange-blue rounded-lg flex items-center justify-center">
-              <Calendar size={16} className="text-white" />
+        <motion.div className="group app-surface border border-app-border rounded-3xl p-8 sm:col-span-2 hover:shadow-2xl hover:shadow-purple-500/10 hover:border-purple-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={5} initial="hidden" animate="visible">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <Activity size={24} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-purple-600 font-bold text-sm uppercase tracking-wide">Recent Activity</h3>
+                <h2 className="text-3xl font-bold text-text-primary group-hover:text-purple-600 transition-colors">Latest Updates</h2>
+              </div>
             </div>
-            <h3 className="text-text-secondary font-semibold text-sm">Recent Activity</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <DollarSign size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-green-800 text-lg">
+                    {dashboardStats.recentPayments} new {dashboardStats.recentPayments === 1 ? 'payment' : 'payments'}
+                  </p>
+                  <p className="text-green-600 text-sm font-medium">
+                    {dashboardStats.recentPayments > 0 ? 'Received in the last 24 hours' : 'No recent payments'}
+                  </p>
+                </div>
+                <div className={`w-3 h-3 rounded-full ${
+                  dashboardStats.recentPayments > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                }`}></div>
+              </div>
+              
+              <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-200 hover:shadow-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Users size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-blue-800 text-lg">Tenant portal active</p>
+                  <p className="text-blue-600 text-sm font-medium">All tenants can access their accounts</p>
+                </div>
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+              
+              {/* Role-specific Activity */}
+              {user?.role === 'Landlord' && (
+                <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-200 hover:shadow-lg transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Shield size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-purple-800 text-lg">Full system access</p>
+                    <p className="text-purple-600 text-sm font-medium">All features and sections available</p>
+                  </div>
+                  <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                </div>
+              )}
+              
+              {user?.role === 'Agent' && (
+                <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl border border-orange-200 hover:shadow-lg transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Eye size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-orange-800 text-lg">Agent dashboard active</p>
+                    <p className="text-orange-600 text-sm font-medium">{user?.managedProperties?.length || 0} properties assigned</p>
+                  </div>
+                  <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Link to="/dashboard/audit-log" className="gradient-dark-orange-blue text-white font-bold py-3 px-6 rounded-2xl text-sm hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2">
+                <Activity size={16} />
+                View Activity Log
+              </Link>
+              {user?.role !== 'Tenant' && (
+                <Link to="/dashboard/settings" className="bg-gray-100 text-gray-700 font-bold py-3 px-6 rounded-2xl text-sm hover:bg-gray-200 transition-all duration-300 flex items-center gap-2">
+                  <Settings size={16} />
+                  Settings
+                </Link>
+              )}
+            </div>
           </div>
-          <h2 className="text-2xl font-bold mt-1 text-text-primary">Latest Updates</h2>
-          <div className="mt-4 space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-app-bg rounded-2xl">
-              <div className="w-10 h-10 gradient-orange-blue rounded-full flex items-center justify-center">
-                <DollarSign size={16} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-text-primary">
-                  {dashboardStats.recentPayments} new {dashboardStats.recentPayments === 1 ? 'payment' : 'payments'}
-                </p>
-                <p className="text-text-secondary text-sm">
-                  {dashboardStats.recentPayments > 0 ? 'Received in the last 24 hours' : 'No recent payments'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-4 bg-app-bg rounded-2xl">
-              <div className="w-10 h-10 gradient-dark-orange-blue rounded-full flex items-center justify-center">
-                <Users size={16} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-text-primary">Tenant portal active</p>
-                <p className="text-text-secondary text-sm">All tenants can access their accounts</p>
-              </div>
-            </div>
-          </div>
-          <Link to="/dashboard/audit-log" className="gradient-dark-orange-blue text-white font-semibold py-2 px-4 rounded-2xl mt-4 inline-block text-sm hover:shadow-lg transition-all">
-            View Activity Log →
-          </Link>
         </motion.div>
 
       </div>
+      )}
     </motion.main>
     </>
   );
