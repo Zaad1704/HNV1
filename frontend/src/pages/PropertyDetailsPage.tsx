@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp } from 'lucide-react';
+import RentIncreaseModal from '../components/common/RentIncreaseModal';
 
 const fetchPropertyDetails = async (propertyId: string) => {
   const { data } = await apiClient.get(`/properties/${propertyId}`);
@@ -21,6 +22,7 @@ const fetchPropertyTenants = async (propertyId: string) => {
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
+  const [showRentIncrease, setShowRentIncrease] = useState(false);
   
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', propertyId],
@@ -243,10 +245,24 @@ const PropertyDetailsPage = () => {
               >
                 View Payments
               </Link>
+              <button
+                onClick={() => setShowRentIncrease(true)}
+                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <TrendingUp size={16} />
+                Increase Rent
+              </button>
             </div>
           </div>
         </div>
       </div>
+      
+      <RentIncreaseModal
+        isOpen={showRentIncrease}
+        onClose={() => setShowRentIncrease(false)}
+        property={property}
+        type="property"
+      />
     </motion.div>
   );
 };

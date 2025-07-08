@@ -29,22 +29,26 @@ const EditPropertyPage = () => {
       const { data } = await apiClient.get(`/properties/${propertyId}`);
       return data.data;
     },
-    onSuccess: (data) => {
-      setFormData({
-        name: data.name || '',
-        address: {
-          street: data.address?.street || '',
-          city: data.address?.city || '',
-          state: data.address?.state || '',
-          zipCode: data.address?.zipCode || ''
-        },
-        numberOfUnits: data.numberOfUnits || 1,
-        status: data.status || 'Active',
-        description: data.description || ''
-      });
-    },
     enabled: !!propertyId
   });
+
+  // Update form data when property is loaded
+  React.useEffect(() => {
+    if (property) {
+      setFormData({
+        name: property.name || '',
+        address: {
+          street: property.address?.street || '',
+          city: property.address?.city || '',
+          state: property.address?.state || '',
+          zipCode: property.address?.zipCode || ''
+        },
+        numberOfUnits: property.numberOfUnits || 1,
+        status: property.status || 'Active',
+        description: property.description || ''
+      });
+    }
+  }, [property]);
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {

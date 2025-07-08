@@ -250,6 +250,7 @@ app.use('/api/receipts', protect, receiptRoutes);
 app.use('/api/plans', protect, planRoutes);
 app.use('/api/export', protect, exportRoutes);
 app.use('/api/rent-collection', protect, rentCollectionRoutes);
+app.use('/api/rent-increase', protect, require('./routes/rentIncreaseRoutes').default);
 app.use('/api/analytics', protect, analyticsRoutes);
 app.use('/api/integrations', protect, integrationRoutes);
 app.use('/api/subscription', protect, subscriptionRoutes);

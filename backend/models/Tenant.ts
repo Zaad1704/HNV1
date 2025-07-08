@@ -38,6 +38,14 @@ export interface ITenant extends Document {
   }>;
   discountAmount: number;
   discountExpiresAt?: Date;
+  lastRentIncrease?: {
+    date: Date;
+    oldAmount: number;
+    newAmount: number;
+    type: 'percentage' | 'fixed';
+    value: number;
+    reason: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -80,6 +88,14 @@ const TenantSchema = new Schema<ITenant>({
   }],
   discountAmount: { type: Number, default: 0 },
   discountExpiresAt: { type: Date },
+  lastRentIncrease: {
+    date: { type: Date },
+    oldAmount: { type: Number },
+    newAmount: { type: Number },
+    type: { type: String, enum: ['percentage', 'fixed'] },
+    value: { type: Number },
+    reason: { type: String }
+  },
 }, { timestamps: true });
 
 export default model<ITenant>('Tenant', TenantSchema);
