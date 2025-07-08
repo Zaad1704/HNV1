@@ -37,6 +37,11 @@ export interface IUser extends Document {
   }>;
   language?: string;
   autoDetectLanguage?: boolean;
+  notificationPreferences?: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+  };
   passkeyChallenge?: string;
   passkeyChallengeExpires?: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -85,6 +90,11 @@ const UserSchema = new Schema<IUser>({
   }],
   language: { type: String, default: 'en' },
   autoDetectLanguage: { type: Boolean, default: true },
+  notificationPreferences: {
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: false },
+    push: { type: Boolean, default: true }
+  },
   passkeyChallenge: { type: String, select: false },
   passkeyChallengeExpires: { type: Date, select: false }
 });

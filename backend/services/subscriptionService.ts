@@ -169,6 +169,94 @@ class SubscriptionService {
     }
   }
 
+  // Create trial subscription
+  async createTrialSubscription(organizationId: string, planId: string) {
+    try {
+      const subscription = new Subscription({
+        organizationId,
+        planId,
+        status: 'trialing',
+        trialEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+        currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      });
+      return await subscription.save();
+    } catch (error) {
+      console.error('Create trial subscription error:', error);
+      throw error;
+    }
+  }
+
+  // Get subscription status
+  async getSubscriptionStatus(organizationId: string) {
+    return await this.checkSubscriptionStatus(organizationId);
+  }
+
+  // Activate subscription
+  async activateSubscription(subscriptionId: string) {
+    try {
+      const subscription = await Subscription.findById(subscriptionId);
+      if (subscription) {
+        subscription.status = 'active';
+        await subscription.save();
+      }
+      return subscription;
+    } catch (error) {
+      console.error('Activate subscription error:', error);
+      throw error;
+    }
+  }
+
+  // Cancel subscription
+  async cancelSubscription(subscriptionId: string) {
+    try {
+      const subscription = await Subscription.findById(subscriptionId);
+      if (subscription) {
+        subscription.cancelAtPeriodEnd = true;
+        await subscription.save();
+      }
+      return subscription;
+    } catch (error) {
+      console.error('Cancel subscription error:', error);
+      throw error;
+    }
+  }
+
+  // Reactivate subscription
+  async reactivateSubscription(subscriptionId: string) {
+    try {
+      const subscription = await Subscription.findById(subscriptionId);
+      if (subscription) {
+        subscription.status = 'active';
+        subscription.cancelAtPeriodEnd = false;
+        await subscription.save();
+      }
+      return subscription;
+    } catch (error) {
+      console.error('Reactivate subscription error:', error);
+      throw error;
+    }
+  }
+
+  // Check expired subscriptions
+  async checkExpiredSubscriptions() {
+    try {
+      const expiredSubscriptions = await Subscription.find({
+        status: { $in: ['active', 'trialing'] },
+        currentPeriodEnd: { $lt: new Date() },
+        isLifetime: false
+      });
+
+      for (const subscription of expiredSubscriptions) {
+        await this.checkSubscriptionStatus(subscription.organizationId.toString());
+      }
+
+      return expiredSubscriptions.length;
+    } catch (error) {
+      console.error('Check expired subscriptions error:', error);
+      return 0;
+    }
+  }
+
   // Initialize cron jobs for subscription management
   initializeCronJobs() {
     // Check expired subscriptions daily at midnight

@@ -21,6 +21,12 @@ export interface ISubscription extends Document {
   nextBillingDate?: Date;
   failedPaymentAttempts: number;
   isLifetime: boolean;
+  trialExpiresAt?: Date;
+  currentPeriodEndsAt?: Date;
+  currentProperties?: number;
+  currentTenants?: number;
+  currentAgents?: number;
+  currentUsers?: number;
   features: string[];
   limits: {
     properties: number;
@@ -66,6 +72,12 @@ const SubscriptionSchema = new Schema<ISubscription>({
   nextBillingDate: { type: Date },
   failedPaymentAttempts: { type: Number, default: 0 },
   isLifetime: { type: Boolean, default: false },
+  trialExpiresAt: { type: Date },
+  currentPeriodEndsAt: { type: Date },
+  currentProperties: { type: Number, default: 0 },
+  currentTenants: { type: Number, default: 0 },
+  currentAgents: { type: Number, default: 0 },
+  currentUsers: { type: Number, default: 0 },
   features: [{ type: String }],
   limits: {
     properties: { type: Number, default: 10 },

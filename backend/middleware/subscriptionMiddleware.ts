@@ -3,6 +3,7 @@ import subscriptionService from '../services/subscriptionService';
 
 interface AuthRequest extends Request {
   user?: any;
+  subscription?: any;
 }
 
 // Check if subscription is active

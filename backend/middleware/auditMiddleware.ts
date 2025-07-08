@@ -68,3 +68,6 @@ export const logAction = (action: string, resource: string, severity: 'low' | 'm
     next();
   };
 };
+
+// Alias for backward compatibility
+export const auditLog = auditLogger;

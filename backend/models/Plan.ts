@@ -6,6 +6,7 @@ export interface IPlan extends Document {
   price: number; // in cents
   currency: string;
   billingCycle: 'monthly' | 'yearly';
+  duration: string;
   features: string[];
   limits: {
     properties: number;
@@ -30,6 +31,7 @@ const PlanSchema = new Schema<IPlan>({
   price: { type: Number, required: true },
   currency: { type: String, default: 'USD' },
   billingCycle: { type: String, enum: ['monthly', 'yearly'], required: true },
+  duration: { type: String, required: true },
   features: [{ type: String }],
   limits: {
     properties: { type: Number, required: true },
