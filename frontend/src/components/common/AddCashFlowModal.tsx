@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, DollarSign, Calendar, FileText, TrendingUp, TrendingDown } from 'lucide-react';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 
 interface AddCashFlowModalProps {
@@ -10,6 +11,7 @@ interface AddCashFlowModalProps {
 
 const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ isOpen, onClose }) => {
   const { currency } = useCurrency();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     type: 'income',
     amount: '',
@@ -34,6 +36,9 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ isOpen, onClose }) 
         amount: parseFloat(formData.amount)
       });
       
+      // Invalidate and refetch cashflow data
+      queryClient.invalidateQueries({ queryKey: ['cashFlow'] });
+      
       alert('Cash flow record added successfully!');
       onClose();
       
@@ -48,8 +53,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ isOpen, onClose }) 
       });
     } catch (error) {
       console.error('Failed to add cash flow record:', error);
-      alert('Cash flow record saved locally.');
-      onClose();
+      alert('Failed to save cash flow record. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
