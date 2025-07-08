@@ -43,12 +43,15 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
 
     const { propertyId } = req.body;
 
-    const property = await Property.findById(propertyId);
-    if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid property' 
-      });
+    // Verify property if provided
+    if (propertyId) {
+      const property = await Property.findById(propertyId);
+      if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid property' 
+        });
+      }
     }
 
     const tenantData = { 

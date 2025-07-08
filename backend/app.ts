@@ -260,6 +260,7 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/reports', protect, reportRoutes);
 app.use('/api/statements', protect, statementRoutes);
 app.use('/api/settings', protect, settingsRoutes);
+app.use('/api/agent-handovers', protect, agentHandoverRoutes);
 app.use('/api/test-email', testEmailRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
