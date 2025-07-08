@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon server.ts",
-    "build": "npx tsc --skipLibCheck --noEmitOnError false",
-    "build:safe": "npx tsc --skipLibCheck --noEmitOnError false",
-    "build:prod": "npx tsc --skipLibCheck --noEmitOnError false",
+    "build": "node --max-old-space-size=4096 node_modules/.bin/tsc --skipLibCheck --noEmitOnError false",
+    "build:safe": "node --max-old-space-size=4096 node_modules/.bin/tsc --skipLibCheck --noEmitOnError false",
+    "build:prod": "node --max-old-space-size=4096 node_modules/.bin/tsc --skipLibCheck --noEmitOnError false",
     "postbuild": "node scripts/createBasicPlan.js && node scripts/createSuperAdmin.js",
     "test": "jest --detectOpenHandles"
   },
