@@ -384,6 +384,7 @@ const BillingPage = () => {
                 'Select Plan'
               )}
             </button>
+            </div>
           </motion.div>
         ))}
       </div>
