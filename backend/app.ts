@@ -274,6 +274,10 @@ app.use(errorHandler);
 // Initialize system data
 if (process.env.NODE_ENV !== 'test') {
   masterDataService.initializeSystemData().catch(console.error);
+  
+  // Initialize subscription management cron jobs
+  const subscriptionService = require('./services/subscriptionService').default;
+  subscriptionService.initializeCronJobs();
 }
 export { app };
 export default app;

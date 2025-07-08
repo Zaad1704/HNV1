@@ -40,6 +40,8 @@ const BillingPage = () => {
   
   const currentSubscription = userData?.subscription;
   const organization = userData?.organization;
+  const countdown = userData?.countdown;
+  const statusCheck = userData?.statusCheck;
 
   const createCheckoutMutation = useMutation({
     mutationFn: async (planId: string) => {
@@ -214,14 +216,71 @@ const BillingPage = () => {
             </div>
             <div>
               <p className="text-sm text-text-secondary">Period Ends</p>
-              <p className="font-semibold">
-                {currentSubscription.currentPeriodEndsAt 
-                  ? new Date(currentSubscription.currentPeriodEndsAt).toLocaleDateString()
-                  : 'N/A'
-                }
-              </p>
+              <div>
+                <p className="font-semibold">
+                  {currentSubscription.currentPeriodEnd 
+                    ? new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()
+                    : 'N/A'
+                  }
+                </p>
+                {countdown && (
+                  <div className={`text-xs mt-1 ${
+                    countdown.isExpiringSoon ? 'text-red-600 font-semibold' : 'text-gray-500'
+                  }`}>
+                    {countdown.isExpired 
+                      ? 'Expired' 
+                      : countdown.daysRemaining > 0 
+                      ? `${countdown.daysRemaining} days remaining`
+                      : `${countdown.hoursRemaining} hours remaining`
+                    }
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+          
+          {/* Billing Cycle Countdown */}
+          {countdown && !countdown.isExpired && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900">Billing Cycle</h4>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  countdown.isExpiringSoon 
+                    ? 'bg-red-100 text-red-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {countdown.billingCycle.toUpperCase()}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Days Remaining</p>
+                  <p className={`text-2xl font-bold ${
+                    countdown.isExpiringSoon ? 'text-red-600' : 'text-blue-600'
+                  }`}>
+                    {countdown.daysRemaining}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Auto Renewal</p>
+                  <p className={`font-semibold ${
+                    countdown.cancelAtPeriodEnd ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {countdown.cancelAtPeriodEnd ? 'Disabled' : 'Enabled'}
+                  </p>
+                </div>
+              </div>
+              
+              {countdown.isExpiringSoon && (
+                <div className="mt-3 p-2 bg-red-50 rounded-lg">
+                  <p className="text-red-800 text-xs font-medium">
+                    ⚠️ Your subscription expires soon. Renew to avoid service interruption.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Subscription Actions */}
           {currentSubscription.status === 'active' && !currentSubscription.cancelAtPeriodEnd && (

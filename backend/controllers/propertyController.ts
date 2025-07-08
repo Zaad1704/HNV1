@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Property from '../models/Property';
 import actionChainService from '../services/actionChainService';
+import { checkUsageLimit, updateUsageCount } from '../middleware/subscriptionMiddleware';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -11,6 +12,21 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
   const user = req.user;
   if (!user || !user.organizationId) {
     res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
+    return;
+  }
+
+  // Check usage limit before creating
+  const subscriptionService = (await import('../services/subscriptionService')).default;
+  const usageCheck = await subscriptionService.checkUsageLimit(user.organizationId, 'properties');
+  
+  if (!usageCheck.allowed) {
+    res.status(403).json({
+      success: false,
+      message: 'Property limit exceeded',
+      reason: usageCheck.reason,
+      currentUsage: usageCheck.currentUsage,
+      limit: usageCheck.limit
+    });
     return;
   }
 
@@ -26,6 +42,9 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
 
     // Trigger action chain
     await actionChainService.onPropertyAdded(property, user._id, user.organizationId);
+    
+    // Update usage count
+    await subscriptionService.updateUsage(user.organizationId, 'properties', 1);
 
     res.status(201).json({
       success: true,

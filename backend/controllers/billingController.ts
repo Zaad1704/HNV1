@@ -4,6 +4,7 @@ import Plan from '../models/Plan';
 import Organization from '../models/Organization';
 import User from '../models/User';
 import twocheckoutService from '../services/twocheckoutService';
+import subscriptionService from '../services/subscriptionService';
 
 interface AuthRequest extends Request {
   user?: any;
@@ -41,13 +42,21 @@ export const getCurrentSubscription = async (req: AuthRequest, res: Response) =>
     }).populate('planId');
 
     const organization = await Organization.findById(req.user.organizationId);
+    
+    // Get subscription countdown info
+    const countdown = await subscriptionService.getSubscriptionCountdown(req.user.organizationId);
+    
+    // Check subscription status
+    const statusCheck = await subscriptionService.checkSubscriptionStatus(req.user.organizationId);
 
     res.status(200).json({
       success: true,
       data: {
         subscription,
         organization,
-        user: req.user
+        user: req.user,
+        countdown,
+        statusCheck
       }
     });
   } catch (error) {

@@ -1,168 +1,223 @@
 import Subscription from '../models/Subscription';
 import Organization from '../models/Organization';
-import Plan from '../models/Plan';
+import cron from 'node-cron';
 
 class SubscriptionService {
-  async createTrialSubscription(organizationId: string, planId?: string) {
+  
+  // Check subscription status and update if needed
+  async checkSubscriptionStatus(organizationId: string) {
     try {
-      // Use provided plan or find default trial plan
-      let plan;
-      if (planId) {
-        plan = await Plan.findById(planId);
-      } else {
-        // Find the default trial plan (lowest price active plan)
-        plan = await Plan.findOne({ 
-          isActive: true, 
-          isPublic: true 
-        }).sort({ price: 1 });
-      }
+      const subscription = await Subscription.findOne({ organizationId }).populate('planId');
       
-      if (!plan) throw new Error('No trial plan available');
-
-      const trialDays = plan.trialDays || 14;
-      const trialExpiresAt = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
-
-      const subscription = await Subscription.create({
-        organizationId,
-        planId: plan._id,
-        status: 'trialing',
-        trialExpiresAt,
-        currentPeriodEndsAt: trialExpiresAt,
-        amount: plan.price,
-        currency: plan.currency,
-        billingCycle: plan.billingCycle,
-        maxProperties: plan.maxProperties,
-        maxTenants: plan.maxTenants,
-        maxUsers: plan.maxUsers,
-        maxAgents: plan.maxAgents
-      });
-
-      return subscription;
-    } catch (error) {
-      console.error('Error creating trial subscription:', error);
-      throw error;
-    }
-  }
-
-  async activateSubscription(organizationId: string, planId: string) {
-    try {
-      const plan = await Plan.findById(planId);
-      if (!plan) throw new Error('Plan not found');
-
-      const currentPeriodEndsAt = new Date();
-      if (plan.interval === 'monthly') {
-        currentPeriodEndsAt.setMonth(currentPeriodEndsAt.getMonth() + 1);
-      } else if (plan.interval === 'yearly') {
-        currentPeriodEndsAt.setFullYear(currentPeriodEndsAt.getFullYear() + 1);
+      if (!subscription) {
+        return { isActive: false, reason: 'No subscription found' };
       }
 
-      let subscription = await Subscription.findOne({ organizationId });
+      const now = new Date();
       
-      if (subscription) {
-        subscription.planId = planId as any;
-        subscription.status = 'active';
-        subscription.currentPeriodEndsAt = currentPeriodEndsAt;
+      // Check if subscription is expired
+      if (subscription.currentPeriodEnd < now && !subscription.isLifetime) {
+        if (subscription.status !== 'expired') {
+          subscription.status = 'expired';
+          subscription.endedAt = now;
+          await subscription.save();
+          
+          // Update organization status
+          await Organization.findByIdAndUpdate(organizationId, { status: 'inactive' });
+        }
+        return { isActive: false, reason: 'Subscription expired' };
+      }
+
+      // Check if subscription is canceled and period ended
+      if (subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd < now) {
+        subscription.status = 'canceled';
+        subscription.endedAt = now;
         await subscription.save();
-      } else {
-        subscription = await Subscription.create({
-          organizationId,
-          planId,
-          status: 'active',
-          currentPeriodEndsAt
-        });
+        
+        await Organization.findByIdAndUpdate(organizationId, { status: 'inactive' });
+        return { isActive: false, reason: 'Subscription canceled' };
       }
 
-      return subscription;
-    } catch (error) {
-      console.error('Error activating subscription:', error);
-      throw error;
-    }
-  }
-
-  async cancelSubscription(organizationId: string) {
-    try {
-      const subscription = await Subscription.findOne({ organizationId });
-      if (!subscription) throw new Error('Subscription not found');
-
-      subscription.status = 'canceled';
-      await subscription.save();
-
-      return subscription;
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      throw error;
-    }
-  }
-
-  async reactivateSubscription(organizationId: string) {
-    try {
-      const subscription = await Subscription.findOne({ organizationId });
-      if (!subscription) throw new Error('Subscription not found');
-
-      const plan = await Plan.findById(subscription.planId);
-      if (!plan) throw new Error('Plan not found');
-
-      const currentPeriodEndsAt = new Date();
-      if (plan.interval === 'monthly') {
-        currentPeriodEndsAt.setMonth(currentPeriodEndsAt.getMonth() + 1);
-      } else if (plan.interval === 'yearly') {
-        currentPeriodEndsAt.setFullYear(currentPeriodEndsAt.getFullYear() + 1);
+      // Check trial expiration
+      if (subscription.status === 'trialing' && subscription.trialEnd && subscription.trialEnd < now) {
+        subscription.status = 'expired';
+        await subscription.save();
+        
+        await Organization.findByIdAndUpdate(organizationId, { status: 'inactive' });
+        return { isActive: false, reason: 'Trial expired' };
       }
 
-      subscription.status = 'active';
-      subscription.currentPeriodEndsAt = currentPeriodEndsAt;
-      await subscription.save();
-
-      return subscription;
-    } catch (error) {
-      console.error('Error reactivating subscription:', error);
-      throw error;
-    }
-  }
-
-  async checkExpiredSubscriptions() {
-    try {
-      const expiredSubscriptions = await Subscription.find({
-        status: { $in: ['active', 'trialing'] },
-        currentPeriodEndsAt: { $lt: new Date() }
-      });
-
-      for (const subscription of expiredSubscriptions) {
+      // Check for past due payments
+      if (subscription.failedPaymentAttempts >= 3) {
         subscription.status = 'past_due';
         await subscription.save();
+        
+        await Organization.findByIdAndUpdate(organizationId, { status: 'inactive' });
+        return { isActive: false, reason: 'Payment past due' };
       }
 
-      return expiredSubscriptions.length;
+      return { 
+        isActive: subscription.status === 'active' || subscription.status === 'trialing',
+        subscription,
+        daysUntilExpiry: Math.ceil((subscription.currentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      };
     } catch (error) {
-      console.error('Error checking expired subscriptions:', error);
-      throw error;
+      console.error('Check subscription status error:', error);
+      return { isActive: false, reason: 'Error checking subscription' };
     }
   }
 
-  async getSubscriptionStatus(organizationId: string) {
+  // Check if user can perform action based on limits
+  async checkUsageLimit(organizationId: string, limitType: 'properties' | 'tenants' | 'users' | 'exports' | 'storage') {
     try {
-      const subscription = await Subscription.findOne({ organizationId })
-        .populate('planId');
-
+      const subscription = await Subscription.findOne({ organizationId });
+      
       if (!subscription) {
-        return { hasSubscription: false, status: null };
+        return { allowed: false, reason: 'No subscription found' };
       }
 
-      const isExpired = subscription.currentPeriodEndsAt && 
-        subscription.currentPeriodEndsAt < new Date();
+      const currentUsage = subscription.usage[limitType];
+      const limit = subscription.limits[limitType];
 
-      return {
-        hasSubscription: true,
-        status: subscription.status,
-        isExpired,
-        plan: subscription.planId,
-        expiresAt: subscription.currentPeriodEndsAt,
-        isLifetime: subscription.isLifetime
+      if (currentUsage >= limit) {
+        return { 
+          allowed: false, 
+          reason: `${limitType} limit reached (${currentUsage}/${limit})`,
+          currentUsage,
+          limit
+        };
+      }
+
+      return { 
+        allowed: true, 
+        currentUsage, 
+        limit,
+        remaining: limit - currentUsage
       };
     } catch (error) {
-      console.error('Error getting subscription status:', error);
-      throw error;
+      console.error('Check usage limit error:', error);
+      return { allowed: false, reason: 'Error checking usage limit' };
     }
+  }
+
+  // Update usage count
+  async updateUsage(organizationId: string, limitType: 'properties' | 'tenants' | 'users' | 'exports' | 'storage', increment: number = 1) {
+    try {
+      const subscription = await Subscription.findOne({ organizationId });
+      
+      if (!subscription) {
+        return false;
+      }
+
+      subscription.usage[limitType] += increment;
+      await subscription.save();
+      
+      return true;
+    } catch (error) {
+      console.error('Update usage error:', error);
+      return false;
+    }
+  }
+
+  // Reset monthly usage counters
+  async resetMonthlyUsage() {
+    try {
+      const now = new Date();
+      const subscriptions = await Subscription.find({
+        'usage.lastReset': { $lt: new Date(now.getFullYear(), now.getMonth(), 1) }
+      });
+
+      for (const subscription of subscriptions) {
+        subscription.usage.exports = 0;
+        subscription.usage.lastReset = now;
+        await subscription.save();
+      }
+
+      console.log(`Reset monthly usage for ${subscriptions.length} subscriptions`);
+    } catch (error) {
+      console.error('Reset monthly usage error:', error);
+    }
+  }
+
+  // Get subscription countdown info
+  async getSubscriptionCountdown(organizationId: string) {
+    try {
+      const subscription = await Subscription.findOne({ organizationId }).populate('planId');
+      
+      if (!subscription) {
+        return null;
+      }
+
+      const now = new Date();
+      const endDate = subscription.currentPeriodEnd;
+      const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const hoursRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+
+      return {
+        daysRemaining: Math.max(0, daysRemaining),
+        hoursRemaining: Math.max(0, hoursRemaining),
+        endDate,
+        isExpiringSoon: daysRemaining <= 7,
+        isExpired: daysRemaining <= 0,
+        billingCycle: subscription.billingCycle,
+        nextBillingDate: subscription.nextBillingDate,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+      };
+    } catch (error) {
+      console.error('Get subscription countdown error:', error);
+      return null;
+    }
+  }
+
+  // Initialize cron jobs for subscription management
+  initializeCronJobs() {
+    // Check expired subscriptions daily at midnight
+    cron.schedule('0 0 * * *', async () => {
+      console.log('Running daily subscription check...');
+      
+      try {
+        const expiredSubscriptions = await Subscription.find({
+          status: { $in: ['active', 'trialing'] },
+          currentPeriodEnd: { $lt: new Date() },
+          isLifetime: false
+        });
+
+        for (const subscription of expiredSubscriptions) {
+          await this.checkSubscriptionStatus(subscription.organizationId.toString());
+        }
+
+        console.log(`Processed ${expiredSubscriptions.length} expired subscriptions`);
+      } catch (error) {
+        console.error('Daily subscription check error:', error);
+      }
+    });
+
+    // Reset monthly usage counters on the 1st of each month
+    cron.schedule('0 0 1 * *', async () => {
+      console.log('Resetting monthly usage counters...');
+      await this.resetMonthlyUsage();
+    });
+
+    // Send expiration warnings 7 days before expiry
+    cron.schedule('0 9 * * *', async () => {
+      console.log('Checking for subscriptions expiring soon...');
+      
+      try {
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+        const expiringSoon = await Subscription.find({
+          status: 'active',
+          currentPeriodEnd: { $lte: sevenDaysFromNow, $gt: new Date() },
+          cancelAtPeriodEnd: false
+        }).populate('organizationId');
+
+        // TODO: Send expiration warning emails
+        console.log(`Found ${expiringSoon.length} subscriptions expiring within 7 days`);
+      } catch (error) {
+        console.error('Expiration warning check error:', error);
+      }
+    });
   }
 }
 
