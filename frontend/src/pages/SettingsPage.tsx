@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Save, Lock, Key, Building, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings, User, Bell, Shield, Save, Lock, Key, Building, Trash2, AlertTriangle, Sparkles, Crown, Palette, Globe } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import OrganizationSettings from '../components/common/OrganizationSettings';
@@ -286,11 +286,11 @@ const SettingsPage = () => {
   const [showOrgSettings, setShowOrgSettings] = useState(false);
   
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'organization', label: 'Organization', icon: Building },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'preferences', label: 'Preferences', icon: Settings }
+    { id: 'profile', label: 'Profile', icon: User, color: 'from-blue-500 to-purple-600' },
+    { id: 'organization', label: 'Organization', icon: Building, color: 'from-green-500 to-blue-600' },
+    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'from-yellow-500 to-orange-600' },
+    { id: 'security', label: 'Security', icon: Shield, color: 'from-red-500 to-pink-600' },
+    { id: 'preferences', label: 'Preferences', icon: Settings, color: 'from-purple-500 to-indigo-600' }
   ];
 
   return (
@@ -299,28 +299,72 @@ const SettingsPage = () => {
       animate={{ opacity: 1 }}
       className="space-y-8"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-text-primary">Settings</h1>
-        <p className="text-text-secondary mt-1">Manage your account and preferences</p>
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold flex items-center justify-center gap-3 mb-4">
+          <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+            Settings
+          </span>
+          <Sparkles size={32} className="text-brand-orange animate-pulse" />
+        </h1>
+        <p className="text-text-secondary text-lg">
+          Manage your account, security, and preferences
+        </p>
+        
+        {/* Quick Stats */}
+        <div className="flex items-center justify-center gap-6 mt-6">
+          <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
+            <Shield size={16} className="text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">
+              Account Secure
+            </span>
+          </div>
+          <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full">
+            <User size={16} className="text-green-600" />
+            <span className="text-sm font-medium text-green-800">
+              {user?.role || 'User'} Access
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
-        <div className="lg:w-64">
-          <div className="app-surface rounded-3xl p-4 border border-app-border">
-            <nav className="space-y-2">
+        <div className="lg:w-80">
+          <div className="app-surface rounded-3xl p-6 border border-app-border shadow-xl">
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-text-primary mb-2">Settings Menu</h3>
+              <p className="text-sm text-text-secondary">Configure your account and preferences</p>
+            </div>
+            <nav className="space-y-3">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                  className={`group w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 ${
                     activeTab === tab.id
-                      ? 'app-gradient text-white'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-app-bg'
+                      ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105`
+                      : 'text-text-secondary hover:text-text-primary hover:bg-app-bg hover:shadow-md hover:scale-102'
                   }`}
                 >
-                  <tab.icon size={20} />
-                  {tab.label}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    activeTab === tab.id 
+                      ? 'bg-white/20 shadow-lg' 
+                      : 'bg-gray-100 group-hover:bg-gray-200'
+                  }`}>
+                    <tab.icon size={20} className={activeTab === tab.id ? 'text-white' : 'text-gray-600'} />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">{tab.label}</p>
+                    <p className={`text-xs ${
+                      activeTab === tab.id ? 'text-white/80' : 'text-text-secondary'
+                    }`}>
+                      {tab.id === 'profile' && 'Personal information'}
+                      {tab.id === 'organization' && 'Company settings'}
+                      {tab.id === 'notifications' && 'Alert preferences'}
+                      {tab.id === 'security' && 'Account protection'}
+                      {tab.id === 'preferences' && 'App customization'}
+                    </p>
+                  </div>
                 </button>
               ))}
             </nav>
@@ -329,10 +373,18 @@ const SettingsPage = () => {
 
         {/* Content */}
         <div className="flex-1">
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
+          <div className="app-surface rounded-3xl p-8 border border-app-border shadow-xl">
             {activeTab === 'profile' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-text-primary">Profile Settings</h2>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <User size={32} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-text-primary">Profile Settings</h2>
+                    <p className="text-text-secondary">Update your personal information and preferences</p>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-2">Name</label>
@@ -373,8 +425,16 @@ const SettingsPage = () => {
             )}
 
             {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-text-primary">Notification Settings</h2>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <Bell size={32} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-text-primary">Notification Settings</h2>
+                    <p className="text-text-secondary">Configure how you receive alerts and updates</p>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   {[
                     { key: 'email', label: 'Email Notifications', desc: 'Receive notifications via email' },
@@ -409,8 +469,16 @@ const SettingsPage = () => {
             )}
 
             {activeTab === 'security' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-text-primary">Security Settings</h2>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <Shield size={32} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-text-primary">Security Settings</h2>
+                    <p className="text-text-secondary">Protect your account with advanced security features</p>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Change Password</h3>
@@ -432,8 +500,43 @@ const SettingsPage = () => {
             )}
 
             {activeTab === 'organization' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-text-primary">Organization Settings</h2>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <Building size={32} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-text-primary">Organization Settings</h2>
+                    <p className="text-text-secondary">Manage your organization details and branding</p>
+                  </div>
+                </div>
+                
+                {/* Role-based Access Notice */}
+                {user?.role === 'Agent' && (
+                  <div className="bg-yellow-50 border-2 border-yellow-200 rounded-3xl p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Shield size={24} className="text-yellow-600" />
+                      <h3 className="text-lg font-bold text-yellow-800">Agent Access Notice</h3>
+                    </div>
+                    <p className="text-yellow-700">
+                      As an agent, you have view-only access to organization settings. 
+                      Contact your organization's landlord to make changes to organization details.
+                    </p>
+                  </div>
+                )}
+                
+                {user?.role === 'Tenant' && (
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <User size={24} className="text-blue-600" />
+                      <h3 className="text-lg font-bold text-blue-800">Tenant Access Notice</h3>
+                    </div>
+                    <p className="text-blue-700">
+                      As a tenant, you can view organization information but cannot make changes. 
+                      Contact your landlord for any organization-related requests.
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-4">
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Organization Details</h3>
@@ -466,8 +569,16 @@ const SettingsPage = () => {
             )}
 
             {activeTab === 'preferences' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-text-primary">App Preferences</h2>
+              <div className="space-y-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-xl">
+                    <Settings size={32} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-text-primary">App Preferences</h2>
+                    <p className="text-text-secondary">Customize your app experience and interface</p>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div className="p-4 bg-app-bg rounded-xl">
                     <h3 className="font-medium text-text-primary mb-2">Theme</h3>

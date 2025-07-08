@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { FileText, User, Calendar, Activity, Filter, Search, Download } from 'lucide-react';
+import { FileText, User, Calendar, Activity, Filter, Search, Download, Sparkles, Shield, Eye, Archive, Clock, AlertTriangle } from 'lucide-react';
 import apiClient from '../api/client';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import { useAuthStore } from '../store/authStore';
 
 const fetchAuditLogs = async () => {
   try {
@@ -17,6 +18,7 @@ const fetchAuditLogs = async () => {
 };
 
 const AuditLogPage = () => {
+  const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
   const [showExport, setShowExport] = useState(false);
@@ -31,7 +33,8 @@ const AuditLogPage = () => {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['auditLogs'],
     queryFn: fetchAuditLogs,
-    retry: 1
+    retry: 1,
+    enabled: true // Will be handled by API role check
   });
 
   const filteredLogs = logs.filter((log: any) => {
@@ -75,15 +78,32 @@ const AuditLogPage = () => {
     >
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Audit Log</h1>
-          <p className="text-text-secondary mt-1">View system activity and changes ({filteredLogs.length} entries)</p>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+              Audit Log
+            </span>
+            <Sparkles size={28} className="text-brand-orange animate-pulse" />
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-text-secondary">
+              View system activity and changes ({filteredLogs.length} entries)
+            </p>
+            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
+              <Shield size={14} className="text-blue-600" />
+              <span className="text-xs font-medium text-blue-800">
+                Security Monitoring Active
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={() => setShowExport(true)}
-          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+          className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
         >
-          <Download size={16} />
-          Export
+          <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+            <Download size={14} className="text-white" />
+          </div>
+          Export Logs
         </button>
       </div>
 
@@ -125,50 +145,96 @@ const AuditLogPage = () => {
       </div>
 
       {/* Activity Timeline */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
+      <div className="app-surface rounded-3xl p-8 border border-app-border">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 gradient-dark-orange-blue rounded-2xl flex items-center justify-center shadow-lg">
+            <Activity size={24} className="text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-text-primary">Activity Timeline</h2>
+            <p className="text-text-secondary">Real-time system and user activity tracking</p>
+          </div>
+        </div>
+        
+        {/* Role-based Access Notice */}
+        {user?.role === 'Agent' && (
+          <div className="mb-6 bg-yellow-50 border-2 border-yellow-200 rounded-3xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Shield size={24} className="text-yellow-600" />
+              <h3 className="text-lg font-bold text-yellow-800">Limited Access</h3>
+            </div>
+            <p className="text-yellow-700">
+              As an agent, you can only view audit logs related to your assigned properties and your own actions.
+            </p>
+          </div>
+        )}
+        
+        {user?.role === 'Tenant' && (
+          <div className="mb-6 bg-blue-50 border-2 border-blue-200 rounded-3xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <User size={24} className="text-blue-600" />
+              <h3 className="text-lg font-bold text-blue-800">Tenant Access</h3>
+            </div>
+            <p className="text-blue-700">
+              You can view audit logs related to your tenant account and property interactions.
+            </p>
+          </div>
+        )}
+        
         {filteredLogs.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {filteredLogs.map((log: any, index: number) => (
               <motion.div
                 key={log._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-start gap-4 p-4 bg-app-bg rounded-xl hover:shadow-app transition-all"
+                className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
               >
-                <div className="w-10 h-10 app-gradient rounded-xl flex items-center justify-center text-white font-bold">
+                {/* Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="relative z-10 w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                   {getActionIcon(log.action)}
                 </div>
                 
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionColor(log.action)}`}>
-                      {log.action || 'Unknown Action'}
-                    </span>
-                    <span className="text-xs text-text-secondary">
-                      {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'No timestamp'}
-                    </span>
+                <div className="relative z-10 flex-1">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${getActionColor(log.action)}`}>
+                        {log.action || 'Unknown Action'}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs text-text-secondary">
+                        <Clock size={12} />
+                        <span>{log.timestamp ? new Date(log.timestamp).toLocaleString() : 'No timestamp'}</span>
+                      </div>
+                    </div>
+                    {log.severity === 'high' && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                        <AlertTriangle size={10} />
+                        High Risk
+                      </div>
+                    )}
                   </div>
                   
-                  <p className="text-text-primary font-medium mb-1">
+                  <p className="text-text-primary font-bold text-lg mb-2 group-hover:text-brand-blue transition-colors">
                     {log.description || `${log.action} performed`}
                   </p>
                   
-                  <div className="flex items-center gap-4 text-sm text-text-secondary">
-                    <div className="flex items-center gap-1">
-                      <User size={14} />
-                      <span>{log.user?.name || 'System'}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-text-secondary mb-4">
+                    <div className="flex items-center gap-2">
+                      <User size={14} className="text-blue-500" />
+                      <span className="font-medium">{log.user?.name || 'System'}</span>
                     </div>
                     {log.ipAddress && (
-                      <div className="flex items-center gap-1">
-                        <Activity size={14} />
-                        <span>{log.ipAddress}</span>
+                      <div className="flex items-center gap-2">
+                        <Activity size={14} className="text-green-500" />
+                        <span className="font-mono text-xs">{log.ipAddress}</span>
                       </div>
                     )}
                     {log.resource && (
-                      <div className="flex items-center gap-1">
-                        <FileText size={14} />
-                        <span>{log.resource}</span>
+                      <div className="flex items-center gap-2">
+                        <FileText size={14} className="text-purple-500" />
+                        <span className="font-medium">{log.resource}</span>
                       </div>
                     )}
                   </div>
@@ -189,13 +255,28 @@ const AuditLogPage = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-24 h-24 app-gradient rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <FileText size={48} className="text-white" />
+            <div className="w-32 h-32 gradient-dark-orange-blue rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
+              <FileText size={64} className="text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-text-primary mb-2">No Activity Logs</h3>
-            <p className="text-text-secondary mb-8 max-w-md mx-auto">
-              System activities and user actions will appear here as they occur.
+            <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+              No Activity Logs
+            </h3>
+            <p className="text-text-secondary mb-8 max-w-lg mx-auto text-lg leading-relaxed">
+              System activities and user actions will appear here as they occur. All security events are automatically tracked and logged.
             </p>
+            <div className="bg-blue-50 p-6 rounded-2xl max-w-md mx-auto">
+              <div className="flex items-center gap-2 text-blue-800 mb-2">
+                <Shield size={16} />
+                <span className="text-sm font-medium">Security Features:</span>
+              </div>
+              <ul className="text-xs text-blue-700 space-y-1 text-left">
+                <li>• User login/logout tracking</li>
+                <li>• Property and tenant changes</li>
+                <li>• Payment modifications</li>
+                <li>• System configuration updates</li>
+                <li>• Failed access attempts</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>
