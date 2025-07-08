@@ -48,10 +48,8 @@ export const activateSubscription = async (req: AuthRequest, res: Response) => {
     }
 
     const { planId } = req.body;
-    const subscription = await subscriptionService.activateSubscription(
-      req.user.organizationId, 
-      planId
-    );
+    const existingSubscription = await Subscription.findOne({ organizationId: req.user.organizationId });
+    const subscription = await subscriptionService.activateSubscription(existingSubscription?._id?.toString() || '');
 
     res.json({ success: true, data: subscription });
   } catch (error: any) {
@@ -65,7 +63,8 @@ export const cancelSubscription = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'Organization required' });
     }
 
-    const subscription = await subscriptionService.cancelSubscription(req.user.organizationId);
+    const existingSubscription = await Subscription.findOne({ organizationId: req.user.organizationId });
+    const subscription = await subscriptionService.cancelSubscription(existingSubscription?._id?.toString() || '');
     res.json({ success: true, data: subscription });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -78,7 +77,8 @@ export const reactivateSubscription = async (req: AuthRequest, res: Response) =>
       return res.status(400).json({ success: false, message: 'Organization required' });
     }
 
-    const subscription = await subscriptionService.reactivateSubscription(req.user.organizationId);
+    const existingSubscription = await Subscription.findOne({ organizationId: req.user.organizationId });
+    const subscription = await subscriptionService.reactivateSubscription(existingSubscription?._id?.toString() || '');
     res.json({ success: true, data: subscription });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

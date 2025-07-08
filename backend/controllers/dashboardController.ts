@@ -192,7 +192,8 @@ export const getStats = safeAsync(async (req: AuthRequest, res: Response) => {
       
       // Create trial subscription
       try {
-        await subscriptionService.createTrialSubscription(organization._id.toString());
+        const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+        await subscriptionService.createTrialSubscription(organization._id.toString(), trialPlan?._id?.toString() || 'default-plan');
         console.log('✅ Trial subscription created for user:', req.user.email);
       } catch (error) {
         console.error('❌ Failed to create trial subscription:', error);

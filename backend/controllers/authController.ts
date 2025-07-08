@@ -92,7 +92,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     // Create trial subscription using service
     try {
-      await subscriptionService.createTrialSubscription(organization._id.toString());
+      await subscriptionService.createTrialSubscription(organization._id.toString(), trialPlan._id.toString());
       console.log('✅ Trial subscription created for new user:', user.email);
     } catch (error) {
       console.error('❌ Failed to create trial subscription:', error);

@@ -133,7 +133,7 @@ class MessagingService {
       }
 
       // Send WhatsApp if user has phone and WhatsApp notifications enabled
-      if (user.phone && user.notificationPreferences?.whatsapp === true) {
+      if (user.phone && (user.notificationPreferences as any)?.whatsapp === true) {
         const whatsappResult = await this.sendWhatsApp({
           to: user.phone,
           message,

@@ -14,8 +14,8 @@ const router = Router();
 // Protection handled at app level
 
 router.get('/', getPayments);
-router.post('/', auditLog('payment_created', 'payment'), createPayment);
-router.put('/:id', auditLog('payment_updated', 'payment'), updatePayment);
-router.delete('/:id', auditLog('payment_deleted', 'payment'), deletePayment);
+router.post('/', auditLog('payment'), createPayment);
+router.put('/:id', auditLog('payment'), updatePayment);
+router.delete('/:id', auditLog('payment'), deletePayment);
 
 export default router;
