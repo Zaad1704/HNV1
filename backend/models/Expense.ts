@@ -5,7 +5,7 @@ export interface IExpense extends Document {
   amount: number;
   category: 'Repairs' | 'Utilities' | 'Management Fees' | 'Insurance' | 'Taxes' | 'Salary' | 'Other';
   date: Date;
-  propertyId: mongoose.Types.ObjectId;
+  propertyId?: mongoose.Types.ObjectId;
   organizationId: mongoose.Types.ObjectId;
   documentUrl?: string;
   paidToAgentId?: mongoose.Types.ObjectId;
@@ -20,7 +20,7 @@ const ExpenseSchema = new Schema<IExpense>({
     required: true
   },
   date: { type: Date, default: Date.now, required: true },
-  propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
+  propertyId: { type: Schema.Types.ObjectId, ref: 'Property' },
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   documentUrl: { type: String },
   paidToAgentId: { type: Schema.Types.ObjectId, ref: 'User' }
