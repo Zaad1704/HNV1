@@ -2,12 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
     const queryClient = useQueryClient();
+    const { user } = useAuthStore();
     const [formData, setFormData] = useState<any>({});
     const [error, setError] = useState('');
+    const [needsApproval, setNeedsApproval] = useState(false);
+    
+    const isAgent = user?.role === 'Agent';
+    const canEditDirectly = user?.role === 'Landlord' || user?.role === 'Super Admin';
 
     useEffect(() => {
         if (tenant) {
@@ -26,11 +32,28 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
     }, [tenant, isOpen]);
 
     const mutation = useMutation({
-        mutationFn: (updatedData: FormData) => apiClient.put(`/tenants/${tenant._id}`, updatedData),
+        mutationFn: async (updatedData: any) => {
+            if (isAgent) {
+                // Submit for approval
+                return apiClient.post('/edit-requests', {
+                    type: 'tenant',
+                    entityId: tenant._id,
+                    changes: updatedData,
+                    reason: 'Tenant information update'
+                });
+            } else {
+                // Direct update
+                return apiClient.put(`/tenants/${tenant._id}`, updatedData);
+            }
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['tenants'] });
             queryClient.invalidateQueries({ queryKey: ['tenantDetails', tenant._id] });
-            onTenantUpdated();
+            if (isAgent) {
+                alert('Edit request submitted for approval!');
+            } else {
+                onTenantUpdated();
+            }
             onClose();
         },
         onError: (err: any) => setError(err.response?.data?.message || 'Failed to update tenant.')
@@ -42,11 +65,7 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const updatedFormData = new FormData();
-        for (const key in formData) {
-            updatedFormData.append(key, formData[key]);
-        }
-        mutation.mutate(updatedFormData);
+        mutation.mutate(formData);
     };
 
     if (!isOpen) return null;
@@ -60,6 +79,18 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
                 </div>
                 <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto text-light-text dark:text-light-text-dark">
                     {error && <div className="bg-red-500/10 text-red-500 p-3 rounded-lg">{error}</div>}
+                    
+                    {isAgent && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+                            <AlertTriangle size={20} className="text-yellow-600 mt-0.5" />
+                            <div>
+                                <p className="text-yellow-800 font-medium">Approval Required</p>
+                                <p className="text-yellow-700 text-sm mt-1">
+                                    As an agent, your changes will be submitted for landlord approval.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     
                     <h3 className="text-lg font-semibold text-dark-text dark:text-dark-text-dark">Tenant Info</h3>
                     <div><label>Full Name*</label><input type="text" name="name" required value={formData.name || ''} onChange={handleChange} /></div>
@@ -77,7 +108,10 @@ const EditTenantModal = ({ isOpen, onClose, tenant, onTenantUpdated }:any) => {
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color dark:border-border-color-dark mt-4">
                         <button type="button" onClick={onClose} className="btn-light">Cancel</button>
                         <button type="submit" disabled={mutation.isLoading} className="btn-primary">
-                            {mutation.isLoading ? 'Saving...' : 'Save Changes'}
+                            {mutation.isLoading 
+                                ? (isAgent ? 'Submitting...' : 'Saving...') 
+                                : (isAgent ? 'Submit for Approval' : 'Save Changes')
+                            }
                         </button>
                     </div>
                 </form>

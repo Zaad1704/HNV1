@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Upload, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Upload, User, Search } from 'lucide-react';
 import apiClient from '../../api/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -23,6 +23,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     status: 'Active'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vacantUnits, setVacantUnits] = useState([]);
+  const [showUnits, setShowUnits] = useState(false);
 
   const { data: properties = [] } = useQuery({
     queryKey: ['properties'],
@@ -32,6 +34,36 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     },
     enabled: isOpen
   });
+
+  // Fetch vacant units when property is selected
+  useEffect(() => {
+    const fetchVacantUnits = async () => {
+      if (formData.propertyId) {
+        try {
+          const { data } = await apiClient.get(`/properties/${formData.propertyId}/vacant-units`);
+          setVacantUnits(data.data || []);
+          setShowUnits(true);
+        } catch (error) {
+          console.error('Failed to fetch vacant units:', error);
+          setVacantUnits([]);
+        }
+      } else {
+        setVacantUnits([]);
+        setShowUnits(false);
+      }
+    };
+    fetchVacantUnits();
+  }, [formData.propertyId]);
+
+  // Auto-fill rent amount when unit is selected
+  const handleUnitSelect = (unit: any) => {
+    setFormData({
+      ...formData,
+      unit: unit.unitNumber,
+      rentAmount: unit.lastRentAmount || unit.suggestedRent || ''
+    });
+    setShowUnits(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +144,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Property</label>
               <select
                 value={formData.propertyId}
-                onChange={(e) => setFormData({ ...formData, propertyId: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, propertyId: e.target.value, unit: '', rentAmount: '' })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               >
@@ -125,23 +157,66 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit</label>
-              <input
-                type="text"
-                value={formData.unit}
-                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.unit}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  onFocus={() => formData.propertyId && setShowUnits(true)}
+                  className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder={formData.propertyId ? "Select vacant unit" : "Select property first"}
+                  required
+                  readOnly={formData.propertyId && vacantUnits.length > 0}
+                />
+                {formData.propertyId && (
+                  <Search size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                )}
+              </div>
+              
+              {/* Vacant Units Dropdown */}
+              {showUnits && vacantUnits.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  {vacantUnits.map((unit: any, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleUnitSelect(unit)}
+                      className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">{unit.unitNumber}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {unit.lastRentAmount ? `Last rent: $${unit.lastRentAmount}` : 'No previous rent'}
+                          </p>
+                        </div>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Vacant</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {showUnits && vacantUnits.length === 0 && formData.propertyId && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No vacant units available</p>
+                </div>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rent Amount</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Rent Amount
+                {formData.rentAmount && (
+                  <span className="text-xs text-blue-600 ml-2">(Auto-filled from unit history)</span>
+                )}
+              </label>
               <input
                 type="number"
                 value={formData.rentAmount}
                 onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="Enter rent amount"
                 required
               />
             </div>

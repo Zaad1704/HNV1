@@ -214,6 +214,7 @@ app.use('/api/password-reset', passwordResetRoutes);
 // Protected routes (auth required)
 app.use('/api/dashboard', protect, dashboardRoutes);
 app.use('/api/properties', protect, propertiesRoutes);
+app.use('/api/properties', protect, require('./routes/propertyVacantUnitsRoutes').default);
 app.use('/api/tenants', protect, tenantsRoutes);
 app.use('/api/payments', protect, paymentsRoutes);
 app.use('/api/expenses', protect, expenseRoutes);
