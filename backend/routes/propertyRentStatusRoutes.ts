@@ -39,32 +39,44 @@ router.get('/:propertyId/rent-status/:year', async (req: any, res) => {
     }));
 
     let totalPaid = 0;
-    let paidCount = 0;
-
-    // Process payments
-    payments.forEach(payment => {
-      const month = new Date(payment.paymentDate).getMonth();
-      months[month].paid += payment.amount;
-      totalPaid += payment.amount;
-      paidCount++;
-    });
-
-    // Calculate dues (simplified - assumes monthly rent)
     let totalDue = 0;
-    let dueCount = 0;
+    const paidTenants = new Set();
+    const dueTenants = new Set();
 
+    // Process each tenant for each month they should have paid
     tenants.forEach(tenant => {
-      for (let month = 0; month < 12; month++) {
+      // Get tenant start month (when they were created or lease started)
+      const tenantStartDate = new Date(tenant.createdAt || tenant.leaseStartDate || `${year}-01-01`);
+      const startMonth = tenantStartDate.getFullYear() === parseInt(year) ? tenantStartDate.getMonth() : 0;
+      const endMonth = 11; // December
+      
+      for (let month = startMonth; month <= endMonth; month++) {
         const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-        const hasPaid = payments.some(p => 
+        const payment = payments.find(p => 
           p.tenantId._id.toString() === tenant._id.toString() &&
           p.rentMonth === monthKey
         );
         
-        if (!hasPaid) {
+        if (payment) {
+          months[month].paid += payment.amount;
+          months[month].paidTenants.push({
+            _id: tenant._id,
+            name: tenant.name,
+            unit: tenant.unit,
+            amount: payment.amount
+          });
+          totalPaid += payment.amount;
+          paidTenants.add(tenant._id.toString());
+        } else {
           months[month].due += tenant.rentAmount || 0;
+          months[month].dueTenants.push({
+            _id: tenant._id,
+            name: tenant.name,
+            unit: tenant.unit,
+            amount: tenant.rentAmount || 0
+          });
           totalDue += tenant.rentAmount || 0;
-          dueCount++;
+          dueTenants.add(tenant._id.toString());
         }
       }
     });
@@ -74,9 +86,11 @@ router.get('/:propertyId/rent-status/:year', async (req: any, res) => {
       data: {
         totalPaid,
         totalDue,
-        paidCount,
-        dueCount,
-        months
+        paidCount: paidTenants.size,
+        dueCount: dueTenants.size,
+        months,
+        paidTenantsList: Array.from(paidTenants).map(id => tenants.find(t => t._id.toString() === id)),
+        dueTenantsList: Array.from(dueTenants).map(id => tenants.find(t => t._id.toString() === id))
       }
     });
   } catch (error) {

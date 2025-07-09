@@ -60,16 +60,28 @@ const RentStatusSection = ({ propertyId }: { propertyId: string }) => {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+            <button
+              onClick={() => {
+                setSelectedMonth('paid-summary');
+                setShowDetails(true);
+              }}
+              className="bg-green-50 p-4 rounded-xl border border-green-200 hover:bg-green-100 transition-colors text-left"
+            >
               <h3 className="font-semibold text-green-800">Paid This Year</h3>
               <p className="text-2xl font-bold text-green-600">${rentStatus.totalPaid?.toFixed(2) || '0.00'}</p>
-              <p className="text-sm text-green-600">{rentStatus.paidCount || 0} payments</p>
-            </div>
-            <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+              <p className="text-sm text-green-600">{rentStatus.paidCount || 0} tenants paid</p>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedMonth('due-summary');
+                setShowDetails(true);
+              }}
+              className="bg-red-50 p-4 rounded-xl border border-red-200 hover:bg-red-100 transition-colors text-left"
+            >
               <h3 className="font-semibold text-red-800">Outstanding</h3>
               <p className="text-2xl font-bold text-red-600">${rentStatus.totalDue?.toFixed(2) || '0.00'}</p>
-              <p className="text-sm text-red-600">{rentStatus.dueCount || 0} unpaid</p>
-            </div>
+              <p className="text-sm text-red-600">{rentStatus.dueCount || 0} tenants owe</p>
+            </button>
           </div>
 
           {/* Monthly Breakdown */}
@@ -98,12 +110,14 @@ const RentStatusSection = ({ propertyId }: { propertyId: string }) => {
       )}
 
       {/* Month Details Modal */}
-      {showDetails && monthDetails && (
+      {showDetails && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">
-                {months[parseInt(selectedMonth?.split('-')[1] || '1') - 1]} {selectedYear} Details
+                {selectedMonth === 'paid-summary' ? 'All Paid Tenants' :
+                 selectedMonth === 'due-summary' ? 'All Outstanding Tenants' :
+                 `${months[parseInt(selectedMonth?.split('-')[1] || '1') - 1]} ${selectedYear} Details`}
               </h3>
               <button
                 onClick={() => setShowDetails(false)}
@@ -114,31 +128,30 @@ const RentStatusSection = ({ propertyId }: { propertyId: string }) => {
             </div>
             
             <div className="space-y-4">
-              {/* Paid Tenants */}
-              {monthDetails.paid?.length > 0 && (
+              {/* Summary Views */}
+              {selectedMonth === 'paid-summary' && rentStatus.paidTenantsList && (
                 <div>
-                  <h4 className="font-semibold text-green-800 mb-2">Paid ({monthDetails.paid.length})</h4>
-                  {monthDetails.paid.map((payment: any) => (
+                  <h4 className="font-semibold text-green-800 mb-2">Tenants Who Paid ({rentStatus.paidTenantsList.length})</h4>
+                  {rentStatus.paidTenantsList.map((tenant: any) => (
                     <Link
-                      key={payment._id}
-                      to={`/dashboard/tenants/${payment.tenantId._id}`}
+                      key={tenant._id}
+                      to={`/dashboard/tenants/${tenant._id}`}
                       className="flex justify-between items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                     >
                       <div>
-                        <p className="font-medium">{payment.tenantId.name}</p>
-                        <p className="text-sm text-gray-600">Unit: {payment.tenantId.unit}</p>
+                        <p className="font-medium">{tenant.name}</p>
+                        <p className="text-sm text-gray-600">Unit: {tenant.unit}</p>
                       </div>
-                      <p className="font-semibold text-green-600">${payment.amount}</p>
+                      <p className="font-semibold text-green-600">${tenant.rentAmount || 0}</p>
                     </Link>
                   ))}
                 </div>
               )}
               
-              {/* Due Tenants */}
-              {monthDetails.due?.length > 0 && (
+              {selectedMonth === 'due-summary' && rentStatus.dueTenantsList && (
                 <div>
-                  <h4 className="font-semibold text-red-800 mb-2">Outstanding ({monthDetails.due.length})</h4>
-                  {monthDetails.due.map((tenant: any) => (
+                  <h4 className="font-semibold text-red-800 mb-2">Tenants With Outstanding ({rentStatus.dueTenantsList.length})</h4>
+                  {rentStatus.dueTenantsList.map((tenant: any) => (
                     <Link
                       key={tenant._id}
                       to={`/dashboard/tenants/${tenant._id}`}
@@ -152,6 +165,51 @@ const RentStatusSection = ({ propertyId }: { propertyId: string }) => {
                     </Link>
                   ))}
                 </div>
+              )}
+              
+              {/* Monthly Details */}
+              {monthDetails && selectedMonth !== 'paid-summary' && selectedMonth !== 'due-summary' && (
+                <>
+                  {/* Paid Tenants */}
+                  {monthDetails.paid?.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-green-800 mb-2">Paid ({monthDetails.paid.length})</h4>
+                      {monthDetails.paid.map((payment: any) => (
+                        <Link
+                          key={payment._id}
+                          to={`/dashboard/tenants/${payment.tenantId._id}`}
+                          className="flex justify-between items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{payment.tenantId.name}</p>
+                            <p className="text-sm text-gray-600">Unit: {payment.tenantId.unit}</p>
+                          </div>
+                          <p className="font-semibold text-green-600">${payment.amount}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Due Tenants */}
+                  {monthDetails.due?.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-red-800 mb-2">Outstanding ({monthDetails.due.length})</h4>
+                      {monthDetails.due.map((tenant: any) => (
+                        <Link
+                          key={tenant._id}
+                          to={`/dashboard/tenants/${tenant._id}`}
+                          className="flex justify-between items-center p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                          <div>
+                            <p className="font-medium">{tenant.name}</p>
+                            <p className="text-sm text-gray-600">Unit: {tenant.unit}</p>
+                          </div>
+                          <p className="font-semibold text-red-600">${tenant.rentAmount || 0}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
