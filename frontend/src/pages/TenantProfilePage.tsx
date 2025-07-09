@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { User, Mail, Phone, MapPin, Calendar, DollarSign, Edit, Save, X } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import { useAuthStore } from '../store/authStore';
 
 const TenantProfilePage = () => {
   const { user } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
+  const { stats } = useCrossData();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -31,28 +35,29 @@ const TenantProfilePage = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary">Profile</h1>
-          <p className="text-text-secondary mt-1">Manage your personal information</p>
-        </div>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          {isEditing ? <X size={20} /> : <Edit size={20} />}
-          {isEditing ? 'Cancel' : 'Edit Profile'}
-        </button>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Profile"
+        subtitle="Manage your personal information"
+        icon={User}
+        stats={[
+          { label: 'Role', value: user?.role || 'Tenant', color: 'blue' },
+          { label: 'Status', value: 'Active', color: 'green' }
+        ]}
+        actions={
+          <UniversalActionButton
+            variant={isEditing ? 'secondary' : 'primary'}
+            icon={isEditing ? X : Edit}
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? 'Cancel' : 'Edit Profile'}
+          </UniversalActionButton>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Picture */}
-        <div className="app-surface rounded-3xl p-8 border border-app-border text-center">
+        <UniversalCard gradient="blue" className="text-center">
           <div className="w-32 h-32 app-gradient rounded-full flex items-center justify-center mx-auto mb-6 text-4xl font-bold text-white">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
@@ -63,10 +68,10 @@ const TenantProfilePage = () => {
               Change Photo
             </button>
           )}
-        </div>
+        </UniversalCard>
 
         {/* Profile Information */}
-        <div className="lg:col-span-2 app-surface rounded-3xl p-8 border border-app-border">
+        <UniversalCard gradient="green" className="lg:col-span-2">
           <h3 className="text-xl font-bold text-text-primary mb-6">Personal Information</h3>
           
           <div className="space-y-6">
@@ -158,19 +163,15 @@ const TenantProfilePage = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSave}
-                  className="btn-gradient px-6 py-3 rounded-xl flex items-center gap-2 font-semibold"
-                >
-                  <Save size={20} />
+                <UniversalActionButton variant="primary" icon={Save} onClick={handleSave}>
                   Save Changes
-                </button>
+                </UniversalActionButton>
               </div>
             )}
           </div>
-        </div>
+        </UniversalCard>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

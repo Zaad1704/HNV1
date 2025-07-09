@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3, Lock, Sparkles, Crown, Shield, Activity, Eye, MessageCircle, Share2 } from 'lucide-react';
@@ -247,12 +246,7 @@ const DashboardPage = () => {
       <DashboardMonitor />
       <FloatingHelpCenter />
       <FloatingQuickActions />
-      <motion.main
-        className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''} ${hasRestrictedAccess ? 'pointer-events-none opacity-75' : ''}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
+      <main className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''} ${hasRestrictedAccess ? 'pointer-events-none opacity-75' : ''}`}>
       {isLoading && stats && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-brand-blue text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
@@ -267,12 +261,9 @@ const DashboardPage = () => {
       {/* Default Landlord Dashboard */}
       {user?.role === 'Landlord' && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div 
+        <UniversalCard 
           className="gradient-dark-orange-blue rounded-3xl p-8 sm:col-span-2 lg:col-span-2 lg:row-span-2 flex flex-col justify-between text-white relative overflow-hidden"
-          variants={cardVariants}
-          custom={0}
-          initial="hidden"
-          animate="visible"
+          gradient="blue"
         >
           {/* Background Effects */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50"></div>
@@ -539,7 +530,7 @@ const DashboardPage = () => {
 
       </div>
       )}
-    </motion.main>
+    </main>
     </>
   );
 };
