@@ -259,7 +259,7 @@ app.use('/api/subscription', protect, subscriptionRoutes);
 app.use('/api/tenant', protect, tenantPortalRoutes);
 app.use('/api/tenant-portal', protect, tenantPortalRoutes);
 app.use('/api/invitations', protect, invitationRoutes);
-app.use('/api/bulk', bulkPaymentRoutes);
+app.use('/api/bulk', protect, bulkPaymentRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/reports', protect, reportRoutes);
 app.use('/api/statements', protect, statementRoutes);

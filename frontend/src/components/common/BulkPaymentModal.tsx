@@ -113,7 +113,11 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
         };
       });
 
-      await apiClient.post('/bulk/payments', { payments });
+      const response = await apiClient.post('/bulk/payments', { payments });
+      
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Failed to record payments');
+      }
       
       alert(`Bulk payment recorded successfully for ${selectedTenants.length} tenants!`);
       onClose();

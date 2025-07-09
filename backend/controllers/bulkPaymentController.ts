@@ -16,8 +16,8 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
 
     const { payments } = req.body; // Array of payment objects
 
-    if (!payments || !Array.isArray(payments)) {
-      return res.status(400).json({ success: false, message: 'Payments array required' });
+    if (!payments || !Array.isArray(payments) || payments.length === 0) {
+      return res.status(400).json({ success: false, message: 'Valid payments array required' });
     }
 
     const createdPayments = [];
@@ -35,6 +35,10 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
         description,
         status = 'Paid' 
       } = paymentData;
+
+      if (!tenantId || !amount) {
+        continue; // Skip invalid payment data
+      }
 
       const tenant = await Tenant.findById(tenantId);
       if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
@@ -91,9 +95,13 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
         count: createdPayments.length
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Bulk payment error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error : undefined
+    });
   }
 };
 
