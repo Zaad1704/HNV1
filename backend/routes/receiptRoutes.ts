@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
 import Receipt from '../models/Receipt';
 import PDFDocument from 'pdfkit';
-import { getTranslation, isRTL } from '../utils/pdfTranslations';
+import translationService from '../services/translationService';
 
 const router = Router();
 
@@ -74,9 +74,9 @@ router.post('/bulk-pdf', async (req: any, res) => {
       doc.fontSize(orgFontSize).fillColor('white')
          .text(orgName, 50, currentY + 10, { width: maxOrgWidth, align: 'center' });
       const userLang = req.user?.language || 'en';
-      const isRightToLeft = isRTL(userLang);
+      const t = (key: string) => translationService.translate(key, userLang);
       
-      doc.fontSize(12).text(getTranslation(userLang, 'paymentReceipt'), 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
+      doc.fontSize(12).text(t('receipt.paymentReceipt'), 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
       
       // Content area
       const contentY = currentY + headerHeight + 10;
@@ -84,40 +84,40 @@ router.post('/bulk-pdf', async (req: any, res) => {
       
       // Left column - Receipt info
       doc.fontSize(10).font('Helvetica-Bold')
-         .text(getTranslation(userLang, 'receiptInformation'), 50, contentY);
+         .text(t('receipt.information'), 50, contentY);
       doc.fontSize(9).font('Helvetica')
-         .text(`${getTranslation(userLang, 'receiptNumber')}: ${receipt.receiptNumber}`, 50, contentY + 15)
-         .text(`${getTranslation(userLang, 'date')}: ${receipt.paymentDate.toLocaleDateString()}`, 50, contentY + 28);
+         .text(`${t('receipt.number')}: ${receipt.receiptNumber}`, 50, contentY + 15)
+         .text(`${t('common.date')}: ${receipt.paymentDate.toLocaleDateString()}`, 50, contentY + 28);
       
       if (receipt.handwrittenReceiptNumber) {
-        doc.text(`${getTranslation(userLang, 'manualNumber')}: ${receipt.handwrittenReceiptNumber}`, 50, contentY + 41);
+        doc.text(`${t('receipt.manualNumber')}: ${receipt.handwrittenReceiptNumber}`, 50, contentY + 41);
       }
       
       // Middle column - Tenant details
       doc.fontSize(10).font('Helvetica-Bold')
-         .text(getTranslation(userLang, 'tenantDetails'), 200, contentY);
+         .text(t('tenant.details'), 200, contentY);
       doc.fontSize(9).font('Helvetica')
-         .text(`${getTranslation(userLang, 'name')}: ${receipt.tenantName}`, 200, contentY + 15)
-         .text(`${getTranslation(userLang, 'property')}: ${receipt.propertyName}`, 200, contentY + 28)
-         .text(`${getTranslation(userLang, 'unit')}: ${receipt.unitNumber}`, 200, contentY + 41)
-         .text(`${getTranslation(userLang, 'month')}: ${receipt.rentMonth || 'N/A'}`, 200, contentY + 54)
-         .text(`${getTranslation(userLang, 'method')}: ${receipt.paymentMethod}`, 200, contentY + 67);
+         .text(`${t('common.name')}: ${receipt.tenantName}`, 200, contentY + 15)
+         .text(`${t('property.property')}: ${receipt.propertyName}`, 200, contentY + 28)
+         .text(`${t('property.unit')}: ${receipt.unitNumber}`, 200, contentY + 41)
+         .text(`${t('payment.month')}: ${receipt.rentMonth || 'N/A'}`, 200, contentY + 54)
+         .text(`${t('payment.method')}: ${receipt.paymentMethod}`, 200, contentY + 67);
       
       // Right column - Amount (highlighted)
       doc.rect(400, contentY, 150, 80).fill('#dcfce7').stroke('#16a34a');
       doc.fontSize(10).font('Helvetica-Bold').fillColor('#15803d')
-         .text(getTranslation(userLang, 'amountPaid'), 420, contentY + 10);
+         .text(t('payment.amountPaid'), 420, contentY + 10);
       doc.fontSize(18).font('Helvetica-Bold')
          .text(`$${receipt.amount.toFixed(2)}`, 420, contentY + 30);
       doc.fontSize(8).font('Helvetica').fillColor('#166534')
-         .text(`${getTranslation(userLang, 'status')}: ${getTranslation(userLang, 'paid')}`, 420, contentY + 55)
-         .text(getTranslation(userLang, 'verified'), 420, contentY + 65);
+         .text(`${t('common.status')}: ${t('payment.paid')}`, 420, contentY + 55)
+         .text(t('common.verified'), 420, contentY + 65);
       
       // Footer for this receipt
       const currentYear = new Date().getFullYear();
       doc.fillColor('#2563eb').fontSize(8)
-         .text(getTranslation(userLang, 'poweredBy'), 50, currentY + receiptHeight - 25, { width: 500, align: 'center' })
-         .text(`© ${currentYear} HNV Property Management Solutions. ${getTranslation(userLang, 'allRightsReserved')}.`, 50, currentY + receiptHeight - 15, { width: 500, align: 'center' });
+         .text(t('common.poweredBy'), 50, currentY + receiptHeight - 25, { width: 500, align: 'center' })
+         .text(`© ${currentYear} HNV Property Management Solutions. ${t('common.allRightsReserved')}.`, 50, currentY + receiptHeight - 15, { width: 500, align: 'center' });
       
       currentY += receiptHeight + 20;
     });
@@ -125,8 +125,9 @@ router.post('/bulk-pdf', async (req: any, res) => {
     // Final watermark and branding
     addWatermark(pageHeight - 200);
     const userLang = req.user?.language || 'en';
+    const t = (key: string) => translationService.translate(key, userLang);
     doc.fontSize(8).fillColor('#64748b')
-       .text(getTranslation(userLang, 'confidentialNotice'), 50, pageHeight - 40, { width: 500, align: 'center' });
+       .text(t('receipt.confidentialNotice'), 50, pageHeight - 40, { width: 500, align: 'center' });
 
     doc.end();
   } catch (error) {
@@ -282,22 +283,23 @@ router.get('/:id/pdf', async (req: any, res) => {
     doc.fontSize(18).font('Helvetica-Bold').fillColor('white')
        .text(orgName, 50, 50, { width: 500, align: 'center' });
     const userLang = req.user?.language || 'en';
-    doc.fontSize(14).text(getTranslation(userLang, 'paymentReceipt'), 50, 70, { width: 500, align: 'center' });
+    const t = (key: string) => translationService.translate(key, userLang);
+    doc.fontSize(14).text(t('receipt.paymentReceipt'), 50, 70, { width: 500, align: 'center' });
     
     // Content
     doc.fillColor('black').fontSize(12).font('Helvetica')
-       .text(`${getTranslation(userLang, 'receiptNumber')}: ${receipt.receiptNumber}`, 50, 120)
-       .text(`${getTranslation(userLang, 'date')}: ${receipt.paymentDate.toLocaleDateString()}`, 50, 140)
-       .text(`${getTranslation(userLang, 'name')}: ${receipt.tenantName}`, 50, 180)
-       .text(`${getTranslation(userLang, 'property')}: ${receipt.propertyName}`, 50, 200)
-       .text(`${getTranslation(userLang, 'unit')}: ${receipt.unitNumber}`, 50, 220)
-       .text(`${getTranslation(userLang, 'amount')}: $${receipt.amount.toFixed(2)}`, 50, 260);
+       .text(`${t('receipt.number')}: ${receipt.receiptNumber}`, 50, 120)
+       .text(`${t('common.date')}: ${receipt.paymentDate.toLocaleDateString()}`, 50, 140)
+       .text(`${t('common.name')}: ${receipt.tenantName}`, 50, 180)
+       .text(`${t('property.property')}: ${receipt.propertyName}`, 50, 200)
+       .text(`${t('property.unit')}: ${receipt.unitNumber}`, 50, 220)
+       .text(`${t('payment.amount')}: $${receipt.amount.toFixed(2)}`, 50, 260);
     
     // Footer
     const currentYear = new Date().getFullYear();
     doc.fontSize(10).fillColor('#64748b')
-       .text(getTranslation(userLang, 'poweredBy'), 50, 700, { width: 500, align: 'center' })
-       .text(`© ${currentYear} HNV Property Management Solutions. ${getTranslation(userLang, 'allRightsReserved')}.`, 50, 720, { width: 500, align: 'center' });
+       .text(t('common.poweredBy'), 50, 700, { width: 500, align: 'center' })
+       .text(`© ${currentYear} HNV Property Management Solutions. ${t('common.allRightsReserved')}.`, 50, 720, { width: 500, align: 'center' });
     
     doc.end();
   } catch (error) {
