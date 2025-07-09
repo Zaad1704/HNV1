@@ -73,6 +73,7 @@ router.post('/bulk-pdf', async (req: any, res) => {
       const maxOrgWidth = 500;
       let orgFontSize = 20;
       doc.font('Helvetica-Bold');
+      doc.fontSize(orgFontSize);
       while (doc.widthOfString(orgName) > maxOrgWidth && orgFontSize > 12) {
         orgFontSize--;
         doc.fontSize(orgFontSize);

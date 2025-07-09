@@ -45,8 +45,8 @@ router.get('/:propertyId/rent-status/:year', async (req: any, res) => {
 
     // Process each tenant for each month they should have paid
     tenants.forEach(tenant => {
-      // Get tenant start month (when they were created or lease started)
-      const tenantStartDate = new Date(tenant.createdAt || tenant.leaseStartDate || `${year}-01-01`);
+      // Get tenant start month (when they were created)
+      const tenantStartDate = new Date(tenant.createdAt || `${year}-01-01`);
       const startMonth = tenantStartDate.getFullYear() === parseInt(year) ? tenantStartDate.getMonth() : 0;
       const endMonth = 11; // December
       
