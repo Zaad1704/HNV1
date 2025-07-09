@@ -25,7 +25,7 @@ const PredictiveAnalytics: React.FC = () => {
   const generatePredictions = () => {
     setIsLoading(true);
     
-    const timeoutId = setTimeout(() => {
+    setTimeout(() => {
       const newPredictions: Prediction[] = [
         {
           metric: 'Monthly Revenue',
@@ -64,8 +64,6 @@ const PredictiveAnalytics: React.FC = () => {
       setPredictions(newPredictions);
       setIsLoading(false);
     }, 1500);
-    
-    return () => clearTimeout(timeoutId);
   };
 
   const getMetricIcon = (metric: string) => {

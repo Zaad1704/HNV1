@@ -30,10 +30,10 @@ const SmartDashboard: React.FC = () => {
     }
   }, [analyticsData, stats]);
 
-  const generateSmartInsights = async () => {
+  const generateSmartInsights = () => {
     setIsAnalyzing(true);
     
-    const timeoutId = setTimeout(() => {
+    setTimeout(() => {
       const smartInsights: SmartInsight[] = [
         {
           id: '1',
@@ -42,7 +42,7 @@ const SmartDashboard: React.FC = () => {
           description: `Based on market analysis, you could increase rent by 8-12% for ${stats?.totalProperties || 0} properties`,
           impact: 'high',
           actionable: true,
-          data: { potentialIncrease: stats?.monthlyRevenue * 0.1 }
+          data: { potentialIncrease: (stats?.monthlyRevenue || 0) * 0.1 }
         },
         {
           id: '2',
@@ -65,8 +65,6 @@ const SmartDashboard: React.FC = () => {
       setInsights(smartInsights);
       setIsAnalyzing(false);
     }, 2000);
-    
-    return () => clearTimeout(timeoutId);
   };
 
   const getInsightIcon = (type: string) => {

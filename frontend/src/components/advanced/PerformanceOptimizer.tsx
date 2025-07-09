@@ -27,7 +27,7 @@ const PerformanceOptimizer: React.FC = () => {
   const generateOptimizations = () => {
     setIsAnalyzing(true);
     
-    const timeoutId = setTimeout(() => {
+    setTimeout(() => {
       const optimizations: OptimizationSuggestion[] = [
         {
           id: '1',
@@ -36,7 +36,7 @@ const PerformanceOptimizer: React.FC = () => {
           description: 'Set up automated SMS/email reminders 3 days before rent due date',
           impact: 'high',
           effort: 'low',
-          estimatedSavings: 480, // hours per year
+          estimatedSavings: 480,
           timeToImplement: '2 hours',
           status: 'pending'
         },
@@ -58,7 +58,7 @@ const PerformanceOptimizer: React.FC = () => {
           description: 'Schedule regular maintenance to reduce emergency repair costs',
           impact: 'high',
           effort: 'medium',
-          estimatedSavings: 3500, // dollars per year
+          estimatedSavings: 3500,
           timeToImplement: '1 week',
           status: 'in-progress'
         },
@@ -78,8 +78,6 @@ const PerformanceOptimizer: React.FC = () => {
       setSuggestions(optimizations);
       setIsAnalyzing(false);
     }, 1500);
-    
-    return () => clearTimeout(timeoutId);
   };
 
   const getCategoryIcon = (category: string) => {
