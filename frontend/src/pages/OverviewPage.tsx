@@ -7,6 +7,9 @@ import FinancialChart from '../components/charts/FinancialChart';
 import RentStatusChart from '../components/charts/RentStatusChart';
 import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import MessageButtons from '../components/common/MessageButtons';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import { useCrossData } from '../hooks/useCrossData';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import AddTenantModal from '../components/common/AddTenantModal';
 import QuickPaymentModal from '../components/common/QuickPaymentModal';
@@ -133,6 +136,7 @@ const OverviewPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [remindingTenantId, setRemindingTenantId] = useState<string | null>(null);
+  const { stats: crossStats } = useCrossData();
   
   // Modal states for action buttons
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);

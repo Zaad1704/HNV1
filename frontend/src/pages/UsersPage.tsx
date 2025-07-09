@@ -233,7 +233,7 @@ const UsersPage = () => {
                     Manage User
                   </button>
                 </div>
-              </motion.div>
+              </UniversalCard>
             ))}
           </div>
         ) : (

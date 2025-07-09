@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { FileText, User, Calendar, Activity, Filter, Search, Download, Sparkles, Shield, Eye, Archive, Clock, AlertTriangle } from 'lucide-react';
+import { FileText, User, Calendar, Activity, Filter, Search, Download, Shield, Eye, Archive, Clock, AlertTriangle } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import apiClient from '../api/client';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
@@ -19,6 +23,7 @@ const fetchAuditLogs = async () => {
 
 const AuditLogPage = () => {
   const { user } = useAuthStore();
+  const { stats } = useCrossData();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('');
   const [showExport, setShowExport] = useState(false);
@@ -71,41 +76,21 @@ const AuditLogPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Audit Log
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              View system activity and changes ({filteredLogs.length} entries)
-            </p>
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
-              <Shield size={14} className="text-blue-600" />
-              <span className="text-xs font-medium text-blue-800">
-                Security Monitoring Active
-              </span>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => setShowExport(true)}
-          className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-        >
-          <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-            <Download size={14} className="text-white" />
-          </div>
-          Export Logs
-        </button>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Audit Log"
+        subtitle={`View system activity and changes (${filteredLogs.length} entries)`}
+        icon={FileText}
+        stats={[
+          { label: 'Total Logs', value: logs.length, color: 'blue' },
+          { label: 'Today', value: logs.filter((l: any) => new Date(l.timestamp).toDateString() === new Date().toDateString()).length, color: 'green' },
+          { label: 'High Risk', value: logs.filter((l: any) => l.severity === 'high').length, color: 'red' },
+          { label: 'Security Active', value: '✓', color: 'purple' }
+        ]}
+        actions={
+          <UniversalActionButton variant="primary" icon={Download} onClick={() => setShowExport(true)}>Export Logs</UniversalActionButton>
+        }
+      />
 
       <UniversalSearch
         onSearch={setSearchFilters}
@@ -184,15 +169,7 @@ const AuditLogPage = () => {
         {filteredLogs.length > 0 ? (
           <div className="space-y-6">
             {filteredLogs.map((log: any, index: number) => (
-              <motion.div
-                key={log._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-              >
-                {/* Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+              <UniversalCard key={log._id} delay={index * 0.05} gradient="purple">
                 <div className="relative z-10 w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                   {getActionIcon(log.action)}
                 </div>
@@ -200,9 +177,14 @@ const AuditLogPage = () => {
                 <div className="relative z-10 flex-1">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${getActionColor(log.action)}`}>
-                        {log.action || 'Unknown Action'}
-                      </span>
+                      <UniversalStatusBadge 
+                        status={log.action || 'Unknown Action'}
+                        variant={
+                          log.action?.includes('create') ? 'success' :
+                          log.action?.includes('update') ? 'info' :
+                          log.action?.includes('delete') ? 'error' : 'default'
+                        }
+                      />
                       <div className="flex items-center gap-2 text-xs text-text-secondary">
                         <Clock size={12} />
                         <span>{log.timestamp ? new Date(log.timestamp).toLocaleString() : 'No timestamp'}</span>
@@ -250,7 +232,7 @@ const AuditLogPage = () => {
                     </details>
                   )}
                 </div>
-              </motion.div>
+              </UniversalCard>
             ))}
           </div>
         ) : (
@@ -289,7 +271,7 @@ const AuditLogPage = () => {
         filters={searchFilters}
         title="Export Audit Logs"
       />
-    </motion.div>
+    </div>
   );
 };
 

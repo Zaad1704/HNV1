@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard, Check, AlertTriangle, RefreshCw, Download, Sparkles, Crown, Shield, Building2, Users, Eye, Archive } from 'lucide-react';
+import { CreditCard, Check, AlertTriangle, RefreshCw, Download, Crown, Shield, Building2, Users, Eye, Archive } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
@@ -8,6 +12,7 @@ import apiClient from '../api/client';
 const BillingPage = () => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const { stats } = useCrossData();
   const [selectedPlan, setSelectedPlan] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showBillingHistory, setShowBillingHistory] = useState(false);
@@ -125,38 +130,17 @@ const BillingPage = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="max-w-6xl mx-auto p-6"
-    >
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold flex items-center justify-center gap-3 mb-4">
-          <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-            Billing & Subscription
-          </span>
-          <Sparkles size={32} className="text-brand-orange animate-pulse" />
-        </h1>
-        <p className="text-text-secondary text-lg">
-          Manage your subscription, billing information, and usage statistics
-        </p>
-        
-        {/* Quick Stats */}
-        <div className="flex items-center justify-center gap-6 mt-6">
-          <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
-            <Building2 size={16} className="text-blue-600" />
-            <span className="text-sm font-medium text-blue-800">
-              Organization: {organization?.name || 'Default'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full">
-            <Users size={16} className="text-green-600" />
-            <span className="text-sm font-medium text-green-800">
-              {user?.role || 'User'} Access
-            </span>
-          </div>
-        </div>
-      </div>
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <UniversalHeader
+        title="Billing & Subscription"
+        subtitle="Manage your subscription, billing information, and usage statistics"
+        icon={CreditCard}
+        stats={[
+          { label: 'Organization', value: organization?.name || 'Default', color: 'blue' },
+          { label: 'Role', value: user?.role || 'User', color: 'green' },
+          { label: 'Status', value: getSubscriptionStatus(), color: isRestricted() ? 'red' : 'green' }
+        ]}
+      />
 
       {/* Restriction Warning */}
       {isRestricted() && (
@@ -313,16 +297,11 @@ const BillingPage = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan: any, index: number) => (
-            <motion.div
+            <UniversalCard
               key={plan._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`group relative p-8 rounded-3xl border-2 transition-all duration-500 overflow-hidden ${
-                currentSubscription?.planId?._id === plan._id
-                  ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-2xl shadow-green-500/20'
-                  : 'border-app-border bg-app-surface hover:border-brand-blue hover:shadow-2xl hover:shadow-brand-blue/10 hover:-translate-y-2'
-              }`}
+              delay={index * 0.1}
+              gradient={currentSubscription?.planId?._id === plan._id ? 'green' : 'blue'}
+              className={currentSubscription?.planId?._id === plan._id ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50' : ''}
             >
               {/* Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
@@ -384,7 +363,7 @@ const BillingPage = () => {
                 'Select Plan'
               )}
             </button>
-            </motion.div>
+            </UniversalCard>
         ))}
       </div>
 
@@ -652,7 +631,7 @@ const BillingPage = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/3 to-pink-500/3 rounded-full blur-3xl"></div>
       </div>
     </div>
-    </motion.div>  );
+    </div>  );
 };
 
 export default BillingPage;
