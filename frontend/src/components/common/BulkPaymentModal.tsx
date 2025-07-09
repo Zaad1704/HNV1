@@ -90,9 +90,9 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
     
     // Check if already paid for selected month
     const alreadyPaid = payments.some((payment: any) => 
-      payment.tenantId === tenant._id && 
+      (payment.tenantId === tenant._id || payment.tenantId?._id === tenant._id) && 
       payment.rentMonth === selectedMonth &&
-      payment.status === 'Paid'
+      (payment.status === 'Paid' || payment.status === 'completed')
     );
     
     if (alreadyPaid) return 'paid';

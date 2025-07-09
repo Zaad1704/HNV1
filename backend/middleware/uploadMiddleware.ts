@@ -1,8 +1,8 @@
 import multer from 'multer';
-import multerS3 from 'multer-s3';
 import path from 'path';
 import { Request } from 'express';
-import { s3Client, S3_CONFIG } from '../config/aws';
+import { S3_CONFIG } from '../config/aws';
+import s3Service from '../services/s3Service';
 
 // File filter for security
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -35,33 +35,24 @@ function getUploadFolder(fieldname: string): string {
   }
 }
 
-// S3 Upload Configuration
+// Memory storage for processing before S3 upload
 const upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: S3_CONFIG.bucket,
-    acl: 'public-read',
-    key: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const extension = path.extname(file.originalname);
-      const folder = getUploadFolder(file.fieldname);
-      const filename = `${folder}/${file.fieldname}-${uniqueSuffix}${extension}`;
-      cb(null, filename);
-    },
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    metadata: (req, file, cb) => {
-      cb(null, {
-        fieldName: file.fieldname,
-        originalName: file.originalname,
-        uploadedBy: (req as any).user?.id || 'anonymous',
-        uploadedAt: new Date().toISOString()
-      });
-    }
-  }),
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: fileFilter
 });
+
+// Custom S3 upload handler
+export const uploadToS3 = async (file: Express.Multer.File, fieldname: string) => {
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const extension = path.extname(file.originalname);
+  const folder = getUploadFolder(fieldname);
+  const filename = `${folder}/${fieldname}-${uniqueSuffix}${extension}`;
+  
+  const url = await s3Service.uploadFile(filename, file.buffer, file.mimetype);
+  return { url, filename };
+};
 
 export default upload;

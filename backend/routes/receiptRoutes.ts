@@ -29,36 +29,61 @@ router.post('/bulk-pdf', async (req: any, res) => {
       
       const orgName = (receipt.organizationId as any)?.name || 'Property Management';
       
-      // Header with organization name
-      doc.fontSize(24).font('Helvetica-Bold').text(orgName, 50, 50, { align: 'center' });
-      doc.fontSize(18).font('Helvetica-Bold').text('PAYMENT RECEIPT', 50, 90, { align: 'center' });
+      // Header with gradient-like effect
+      doc.rect(0, 0, 612, 120).fill('#2563eb');
+      doc.fontSize(28).font('Helvetica-Bold').fillColor('white')
+         .text(orgName, 50, 30, { align: 'center', width: 512 });
+      doc.fontSize(16).font('Helvetica').fillColor('white')
+         .text('PAYMENT RECEIPT', 50, 70, { align: 'center', width: 512 });
+      doc.fontSize(12).fillColor('white')
+         .text(`Receipt Date: ${receipt.paymentDate.toLocaleDateString()}`, 50, 95, { align: 'center', width: 512 });
       
-      // Receipt details box
-      doc.rect(50, 130, 500, 200).stroke();
+      // Reset color for body
+      doc.fillColor('black');
       
-      // Receipt information
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Receipt Number: ${receipt.receiptNumber}`, 70, 150);
+      // Receipt number section
+      doc.rect(50, 140, 512, 40).fill('#f8fafc').stroke('#e2e8f0');
+      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b')
+         .text('Receipt Information', 70, 150);
+      doc.fontSize(11).font('Helvetica').fillColor('#475569')
+         .text(`Receipt #: ${receipt.receiptNumber}`, 70, 165);
       if (receipt.handwrittenReceiptNumber) {
-        doc.text(`Handwritten Receipt #: ${receipt.handwrittenReceiptNumber}`, 70, 170);
+        doc.text(`Manual Receipt #: ${receipt.handwrittenReceiptNumber}`, 300, 165);
       }
-      doc.text(`Date: ${receipt.paymentDate.toLocaleDateString()}`, 70, receipt.handwrittenReceiptNumber ? 190 : 170);
       
-      // Tenant and property details
-      const detailsY = receipt.handwrittenReceiptNumber ? 220 : 200;
-      doc.text(`Tenant Name: ${receipt.tenantName}`, 70, detailsY);
-      doc.text(`Property: ${receipt.propertyName}`, 70, detailsY + 20);
-      doc.text(`Unit Number: ${receipt.unitNumber}`, 70, detailsY + 40);
-      doc.text(`Rent Month: ${receipt.rentMonth || 'N/A'}`, 70, detailsY + 60);
-      doc.text(`Payment Method: ${receipt.paymentMethod}`, 70, detailsY + 80);
+      // Tenant details section
+      doc.fillColor('black');
+      doc.fontSize(14).font('Helvetica-Bold')
+         .text('Tenant Details', 70, 200);
       
-      // Amount (highlighted)
-      doc.fontSize(16).font('Helvetica-Bold');
-      doc.text(`Amount Paid: $${receipt.amount.toFixed(2)}`, 70, detailsY + 110);
+      const tenantBox = 220;
+      doc.rect(50, tenantBox, 250, 120).stroke('#e2e8f0');
+      doc.fontSize(11).font('Helvetica')
+         .text(`Name: ${receipt.tenantName}`, 70, tenantBox + 15)
+         .text(`Property: ${receipt.propertyName}`, 70, tenantBox + 35)
+         .text(`Unit: ${receipt.unitNumber}`, 70, tenantBox + 55)
+         .text(`Rent Month: ${receipt.rentMonth || 'N/A'}`, 70, tenantBox + 75)
+         .text(`Payment Method: ${receipt.paymentMethod}`, 70, tenantBox + 95);
       
-      // Footer
-      doc.fontSize(10).font('Helvetica').text('Thank you for your payment!', 50, 400, { align: 'center' });
-      doc.text('Powered by HNV Property Management Solutions', 50, 420, { align: 'center' });
+      // Amount section (highlighted)
+      const amountBox = tenantBox;
+      doc.rect(320, amountBox, 242, 120).fill('#dcfce7').stroke('#16a34a');
+      doc.fontSize(14).font('Helvetica-Bold').fillColor('#15803d')
+         .text('Payment Summary', 340, amountBox + 15);
+      doc.fontSize(24).font('Helvetica-Bold').fillColor('#15803d')
+         .text(`$${receipt.amount.toFixed(2)}`, 340, amountBox + 50);
+      doc.fontSize(11).font('Helvetica').fillColor('#166534')
+         .text('Amount Received', 340, amountBox + 80)
+         .text('Status: PAID', 340, amountBox + 95);
+      
+      // Footer section
+      doc.fillColor('#64748b');
+      doc.rect(50, 700, 512, 60).fill('#f1f5f9').stroke('#cbd5e1');
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#334155')
+         .text('Thank you for your payment!', 50, 720, { align: 'center', width: 512 });
+      doc.fontSize(9).font('Helvetica').fillColor('#64748b')
+         .text('This receipt serves as proof of payment. Please retain for your records.', 50, 735, { align: 'center', width: 512 })
+         .text('Powered by HNV Property Management Solutions', 50, 745, { align: 'center', width: 512 });
     });
 
     doc.end();

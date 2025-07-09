@@ -35,19 +35,20 @@ const upload = multer({
 });
 
 // Image upload endpoint
-router.post('/', upload.single('image'), (req: any, res) => {
+router.post('/', upload.single('image'), async (req: any, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No image file provided' });
     }
     
-    const imageUrl = `/uploads/images/${req.file.filename}`;
+    const { uploadToS3 } = require('../middleware/uploadMiddleware');
+    const { url, filename } = await uploadToS3(req.file, 'image');
     
     res.status(200).json({
       success: true,
       data: {
-        url: imageUrl,
-        filename: req.file.filename,
+        url,
+        filename,
         originalName: req.file.originalname,
         size: req.file.size
       }
