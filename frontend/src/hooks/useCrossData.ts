@@ -33,7 +33,8 @@ export const useCrossData = () => {
           totalIncome: paymentsData.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
           totalExpenses: expensesData.reduce((sum: number, e: any) => sum + (e.amount || 0), 0),
           openMaintenance: maintenanceData.filter((m: any) => m.status === 'Open').length,
-          occupancyRate: propertiesData.length > 0 ? Math.round((tenantsData.filter((t: any) => t.status === 'Active').length / propertiesData.reduce((sum: number, p: any) => sum + (p.numberOfUnits || 1), 0)) * 100) : 0
+          occupancyRate: propertiesData.length > 0 ? Math.round((tenantsData.filter((t: any) => t.status === 'Active').length / propertiesData.reduce((sum: number, p: any) => sum + (p.numberOfUnits || 1), 0)) * 100) : 0,
+          monthlyRevenue: tenantsData.reduce((sum: number, t: any) => sum + (t.rentAmount || 0), 0)
         }
       };
     },
