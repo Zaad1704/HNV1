@@ -4,7 +4,7 @@ export interface IInvoice extends Document {
   tenantId: Types.ObjectId;
   propertyId: Types.ObjectId;
   organizationId: Types.ObjectId;
-  leaseId: Types.ObjectId;
+  leaseId?: Types.ObjectId;
   invoiceNumber: string;
   amount: number;
   dueDate: Date;
@@ -21,7 +21,7 @@ const InvoiceSchema: Schema<IInvoice> = new Schema({
   tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
   propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
-  leaseId: { type: Schema.Types.ObjectId, ref: 'Lease', required: true },
+  leaseId: { type: Schema.Types.ObjectId, ref: 'Lease' },
   invoiceNumber: { type: String, required: true, unique: true },
   amount: { type: Number, required: true },
   dueDate: { type: Date, required: true },
