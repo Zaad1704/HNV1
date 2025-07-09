@@ -10,7 +10,7 @@ import LanguageDropdown from '../LanguageDropdown';
 import { 
   Home, Building, Users, CreditCard, Shield, Settings, LogOut, 
   Wrench, FileText, DollarSign, Repeat, CheckSquare, Bell, 
-  Globe, Sun, Moon, Menu, X 
+  Globe, Sun, Moon, Menu, X, Brain 
 } from 'lucide-react';
 import RoleGuard from '../RoleGuard';
 import BottomNavBar from './BottomNavBar';
@@ -62,6 +62,7 @@ const DashboardLayout = () => {
     { href: "/dashboard/users", icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/billing", icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/audit-log", icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/smart-dashboard", icon: Brain, label: 'Smart Dashboard', roles: ['Landlord', 'Agent'] },
   ];
   
   const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };

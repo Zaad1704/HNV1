@@ -105,7 +105,7 @@ const PredictiveAnalytics: React.FC = () => {
           </div>
         </UniversalCard>
       ) : (
-        <div className="universal-grid universal-grid-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {predictions.map((prediction, index) => (
             <UniversalCard key={prediction.metric} delay={index * 0.1} gradient="green">
               <div className="flex items-start gap-4">

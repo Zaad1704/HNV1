@@ -78,6 +78,7 @@ const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage
 const ExpenseDetailsPage = React.lazy(() => import('./pages/ExpenseDetailsPage'));
 const MaintenanceDetailsPage = React.lazy(() => import('./pages/MaintenanceDetailsPage'));
 const CashFlowDetailsPage = React.lazy(() => import('./pages/CashFlowDetailsPage'));
+const SmartDashboardPage = React.lazy(() => import('./pages/SmartDashboardPage'));
 
 // Admin pages
 const AdminDashboardPage = React.lazy(() => import('./pages/AdminDashboardPage'));
@@ -191,6 +192,7 @@ function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
+            <Route path="smart-dashboard" element={<SmartDashboardPage />} />
             <Route path="resubscribe" element={<PlansPage />} />
             
             {/* Tenant Specific Dashboard */}

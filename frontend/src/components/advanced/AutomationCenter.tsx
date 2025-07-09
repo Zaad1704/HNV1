@@ -85,7 +85,7 @@ const AutomationCenter: React.FC = () => {
         }
       />
 
-      <div className="universal-grid universal-grid-1">
+      <div className="grid grid-cols-1 gap-6">
         {automations.map((automation, index) => (
           <UniversalCard key={automation.id} delay={index * 0.1} gradient="orange">
             <div className="flex items-start justify-between mb-4">

@@ -103,7 +103,7 @@ const SmartDashboard: React.FC = () => {
           </div>
         </UniversalCard>
       ) : (
-        <div className="universal-grid universal-grid-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {insights.map((insight, index) => (
             <UniversalCard key={insight.id} delay={index * 0.1} gradient="purple">
               <div className="flex items-start gap-3 mb-4">
