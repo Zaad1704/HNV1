@@ -97,12 +97,7 @@ const StatCard = ({
   delay?: number;
   trend?: { value: number; isPositive: boolean };
 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.5 }}
-  >
-    <Link 
+  <Link 
       to={to} 
       className="app-card app-surface rounded-3xl p-6 flex items-center justify-between hover:shadow-app-lg transition-all duration-300 group touch-feedback"
     >
@@ -126,7 +121,6 @@ const StatCard = ({
         {icon}
       </div>
     </Link>
-  </motion.div>
 );
 
 const OverviewPage = () => {

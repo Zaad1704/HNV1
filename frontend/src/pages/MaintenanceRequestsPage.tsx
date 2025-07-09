@@ -267,14 +267,7 @@ const MaintenanceRequestsPage = () => {
     );
 
     return (
-        <motion.div 
-            initial="initial"
-            animate="in"
-            exit="out"
-            variants={pageVariants}
-            transition={{ duration: 0.4 }}
-            className="text-dark-text dark:text-dark-text-dark"
-        >
+        <div className="text-dark-text dark:text-dark-text-dark space-y-8">
             <UniversalHeader
                 title="Maintenance Requests"
                 subtitle={`Manage property maintenance requests (${requests.length} total)`}
@@ -355,7 +348,7 @@ const MaintenanceRequestsPage = () => {
                 onClose={() => setShowAddModal(false)}
                 onRequestAdded={handleRequestAdded}
             />
-        </motion.div>
+        </div>
     );
 };
 

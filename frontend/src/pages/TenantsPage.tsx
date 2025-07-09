@@ -260,8 +260,6 @@ const TenantsPage = () => {
               tenant={tenant}
               index={index}
             />
-              {/* Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
               
               {/* Selection Checkbox */}
@@ -412,15 +410,10 @@ const TenantsPage = () => {
                   </button>
                 </div>
               </div>
-            </motion.div>
           ))}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20"
-        >
+        <div className="text-center py-20">
           <div className="relative">
             <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
               <Users size={64} className="text-white" />
@@ -449,7 +442,7 @@ const TenantsPage = () => {
               Add Your First Tenant
             </button>
           )}
-        </motion.div>
+        </div>
       )}
 
       <BulkActions
