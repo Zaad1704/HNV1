@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Shield, Calendar, MoreVertical, Download, Sparkles, Eye, Archive, Building2, UserCheck, UserX, Settings } from 'lucide-react';
+import { Users, Plus, Mail, Shield, Calendar, MoreVertical, Download, Eye, Archive, Building2, UserCheck, UserX, Settings } from 'lucide-react';
 import apiClient from '../api/client';
 import MessageButtons from '../components/common/MessageButtons';
 import OrganizationCode from '../components/common/OrganizationCode';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
 import UserManagementModal from '../components/common/UserManagementModal';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import { useAuthStore } from '../store/authStore';
 
 const fetchUsers = async () => {
@@ -37,6 +40,7 @@ const sendInvite = async (email: string, role: string) => {
 
 const UsersPage = () => {
   const { user } = useAuthStore();
+  const { stats } = useCrossData();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -91,58 +95,24 @@ const UsersPage = () => {
   }
 
   return (
-    <div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Users & Invites
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              Manage team members and invitations ({users.length} users, {invites.length} pending)
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Show:</span>
-              <button
-                onClick={() => setShowArchived(false)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  !showArchived 
-                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Eye size={12} className="inline mr-1" />
-                Active ({users.filter(u => u.status === 'active').length})
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowExport(true)}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-          >
-            <Download size={16} />
-            Export
-          </button>
-          <button 
-            onClick={() => setShowInviteModal(true)}
-            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-              <Plus size={14} className="text-white" />
-            </div>
-            Invite User
-          </button>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Users & Invites"
+        subtitle={`Manage team members and invitations (${users.length} users, ${invites.length} pending)`}
+        icon={Users}
+        stats={[
+          { label: 'Total Users', value: users.length, color: 'blue' },
+          { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'green' },
+          { label: 'Pending Invites', value: invites.length, color: 'yellow' },
+          { label: 'Agents', value: users.filter(u => u.role === 'Agent').length, color: 'purple' }
+        ]}
+        actions={
+          <>
+            <UniversalActionButton variant="success" size="sm" icon={Download} onClick={() => setShowExport(true)}>Export</UniversalActionButton>
+            <UniversalActionButton variant="primary" icon={Plus} onClick={() => setShowInviteModal(true)}>Invite User</UniversalActionButton>
+          </>
+        }
+      />
 
       {/* Organization Code */}
       {user?.organizationId && (
@@ -172,13 +142,7 @@ const UsersPage = () => {
         {users.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {users.map((user: any, index: number) => (
-              <div
-                key={user._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-              >
+              <UniversalCard key={user._id} delay={index * 0.1} gradient="blue">
                 {/* Background Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 <div className="relative z-10 flex items-center gap-4 mb-4">
