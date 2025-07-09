@@ -20,10 +20,10 @@ router.route('/')
 router.route('/:id')
   .get(getPropertyById)
   .put(updateProperty)
-  .delete(async (req: any, res, next) => {
+  .delete(async (req: any, res) => {
     try {
       await cascadePropertyChanges(req.params.id, 'delete', req.user.organizationId);
-      deleteProperty(req, res, next);
+      deleteProperty(req, res);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to cascade property deletion' });
     }

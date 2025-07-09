@@ -20,10 +20,10 @@ router.route('/')
 router.route('/:id')
   .get(getTenantById)
   .put(updateTenant)
-  .delete(async (req: any, res, next) => {
+  .delete(async (req: any, res) => {
     try {
       await cascadeTenantChanges(req.params.id, 'delete', req.user.organizationId);
-      deleteTenant(req, res, next);
+      deleteTenant(req, res);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to cascade tenant deletion' });
     }
