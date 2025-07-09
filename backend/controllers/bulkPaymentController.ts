@@ -91,6 +91,10 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
       // Generate receipt if requested
       if (generateReceipts) {
         const Receipt = require('../models/Receipt').default;
+        
+        // Get property name
+        const property = await Property.findById(tenant.propertyId);
+        
         const receipt = await Receipt.create({
           tenantId,
           propertyId: tenant.propertyId,
@@ -102,7 +106,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
           paymentMethod,
           rentMonth: month,
           tenantName: tenant.name,
-          propertyName: tenant.propertyId?.name || 'Property',
+          propertyName: property?.name || 'Property',
           unitNumber: tenant.unit
         });
         createdReceipts.push(receipt);
