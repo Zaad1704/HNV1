@@ -379,6 +379,9 @@ const OverviewPage = () => {
         </Link>
       </div>
       
+      {/* Quick Insights Widget */}
+      <QuickInsightsWidget />
+      
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div 
