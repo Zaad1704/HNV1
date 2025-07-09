@@ -108,4 +108,24 @@ router.get('/:propertyId/units/:unitNumber/payments', async (req: any, res) => {
   }
 });
 
+// Get unit receipts history
+router.get('/:propertyId/units/:unitNumber/receipts', async (req: any, res) => {
+  try {
+    const { propertyId, unitNumber } = req.params;
+    
+    const Receipt = require('../models/Receipt').default;
+    const receipts = await Receipt.find({
+      propertyId,
+      organizationId: req.user.organizationId
+    }).sort({ paymentDate: -1 });
+
+    const unitReceipts = receipts.filter((receipt: any) => receipt.unitNumber === unitNumber);
+
+    res.status(200).json({ success: true, data: unitReceipts });
+  } catch (error) {
+    console.error('Unit receipts error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 export default router;

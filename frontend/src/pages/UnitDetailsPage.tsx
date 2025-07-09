@@ -31,6 +31,7 @@ const UnitDetailsPage = () => {
     { id: 'overview', label: 'Overview', icon: Users },
     { id: 'tenants', label: 'Tenants History', icon: Users },
     { id: 'payments', label: 'Payments', icon: DollarSign },
+    { id: 'receipts', label: 'Receipts', icon: FileText },
     { id: 'expenses', label: 'Expenses', icon: FileText },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'reminders', label: 'Reminders', icon: Bell },
@@ -92,6 +93,9 @@ const UnitDetailsPage = () => {
         )}
         {activeTab === 'payments' && (
           <UnitPayments propertyId={propertyId!} unitNumber={unitNumber!} />
+        )}
+        {activeTab === 'receipts' && (
+          <UnitReceipts propertyId={propertyId!} unitNumber={unitNumber!} />
         )}
         {activeTab === 'expenses' && (
           <UnitExpenses propertyId={propertyId!} unitNumber={unitNumber!} />
@@ -218,6 +222,61 @@ const UnitPayments = ({ propertyId, unitNumber }: { propertyId: string; unitNumb
             }`}>
               {payment.status}
             </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const UnitReceipts = ({ propertyId, unitNumber }: { propertyId: string; unitNumber: string }) => {
+  const { data: receipts = [] } = useQuery({
+    queryKey: ['unitReceipts', propertyId, unitNumber],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/properties/${propertyId}/units/${unitNumber}/receipts`);
+      return data.data || [];
+    }
+  });
+
+  const handleDownloadReceipt = async (receiptId: string) => {
+    try {
+      const response = await apiClient.get(`/receipts/${receiptId}/pdf`, {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `receipt-${receiptId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Failed to download receipt');
+    }
+  };
+
+  return (
+    <div className="app-surface rounded-3xl p-6 border border-app-border">
+      <h3 className="text-lg font-bold mb-4">Unit Receipts</h3>
+      <div className="space-y-4">
+        {receipts.map((receipt: any) => (
+          <div key={receipt._id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium">Receipt #{receipt.receiptNumber}</p>
+              <p className="text-sm text-gray-600">{new Date(receipt.paymentDate).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-600">{receipt.tenantName}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-green-600">${receipt.amount}</span>
+              <button
+                onClick={() => handleDownloadReceipt(receipt._id)}
+                className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                title="Download PDF"
+              >
+                📄
+              </button>
+            </div>
           </div>
         ))}
       </div>
