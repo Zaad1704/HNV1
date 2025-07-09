@@ -376,11 +376,7 @@ const PropertiesPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
+    <div className="space-y-8">
       {/* Header */}
       <UniversalHeader
         title={t('dashboard.properties')}
@@ -450,158 +446,12 @@ const PropertiesPage = () => {
               property={property}
               index={index}
             />
-              {/* Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-              
-              {/* Selection Checkbox */}
-              <div className="absolute top-4 left-4 z-20">
-                <input
-                  type="checkbox"
-                  checked={selectedProperties.includes(property._id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedProperties(prev => [...prev, property._id]);
-                    } else {
-                      setSelectedProperties(prev => prev.filter(id => id !== property._id));
-                    }
-                  }}
-                  className="w-5 h-5 rounded border-2 border-white bg-white/90 backdrop-blur-sm text-brand-blue focus:ring-brand-blue transition-colors"
-                />
-              </div>
-              {/* Property Image */}
-              <div className="h-48 bg-gradient-to-br from-brand-blue via-purple-600 to-brand-orange relative overflow-hidden">
-                {property.imageUrl ? (
-                  <img
-                    src={property.imageUrl}
-                    alt={property.name}
-                    className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500"
-                    onError={(e) => {
-                      console.log('Image failed to load:', property.imageUrl);
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                ) : null}
-                <div className={`w-full h-full flex items-center justify-center ${property.imageUrl ? 'hidden' : ''}`}>
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-                    <Building2 size={32} className="text-white" />
-                  </div>
-                </div>
-                <div className="absolute top-4 right-4 z-10">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
-                    property.status === 'Active' 
-                      ? 'bg-green-100/90 text-green-800' 
-                      : property.status === 'Archived'
-                      ? 'bg-gray-100/90 text-gray-800'
-                      : property.status === 'Under Renovation'
-                      ? 'bg-blue-100/90 text-blue-800'
-                      : 'bg-yellow-100/90 text-yellow-800'
-                  }`}>
-                    {property.status === 'Archived' && <Archive size={10} className="inline mr-1" />}
-                    {property.status}
-                  </span>
-                </div>
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              </div>
 
-              {/* Property Info */}
-              <div className="p-6 relative z-10">
-                <h3 className="text-xl font-bold text-text-primary mb-2 group-hover:text-brand-blue transition-colors duration-300">
-                  {property.name}
-                </h3>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <MapPin size={14} />
-                    <span>{property.address?.formattedAddress || 'Address not available'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-text-secondary text-sm">
-                    <Users size={14} />
-                    <span>{property.numberOfUnits} {property.numberOfUnits === 1 ? t('property.unit') : t('property.units')}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-3">
-                  <Link
-                    to={`/dashboard/properties/${property._id}`}
-                    className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center group-hover:scale-105 transform hover:shadow-brand-blue/25 relative overflow-hidden flex items-center justify-center gap-2"
-                  >
-                    <Eye size={16} />
-                    <span className="relative z-10">{t('property.view')}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                  </Link>
-                  
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => handleArchiveProperty(property._id, property.name, property.status)}
-                        className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
-                          property.status === 'Archived'
-                            ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
-                            : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
-                        }`}
-                      >
-                        {property.status === 'Archived' ? (
-                          <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
-                        ) : (
-                          <><Archive size={12} className="inline mr-1" />Archive</>
-                        )}
-                      </button>
-                      
-                      <button 
-                        onClick={() => handleEditProperty(property)}
-                        className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 px-3 rounded-xl text-xs font-medium transition-colors border border-blue-200 flex items-center justify-center gap-1"
-                      >
-                        <Edit size={12} />
-                        Edit
-                      </button>
-                      
-                      <button 
-                        onClick={() => handleDeleteProperty(property._id)}
-                        className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
-                        title="Delete Permanently"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                    
-                    {/* Message and Share Buttons */}
-                    <div className="flex gap-2 relative z-50">
-                      <MessageButtons
-                        phone={property.contactPhone}
-                        email={property.contactEmail}
-                        name={property.name}
-                        messageType="welcomeMessage"
-                        additionalData={{
-                          propertyName: property.name,
-                          address: property.address?.formattedAddress
-                        }}
-                      />
-                      <div className="flex-1 relative">
-                        <ShareButton
-                          title={property.name}
-                          text={`Check out this property: ${property.name} - ${property.address?.formattedAddress}`}
-                          type="property"
-                          data={property}
-                          className="w-full"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </motion.div>
           ))}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20"
-        >
+        <div className="text-center py-20">
           <div className="relative">
             <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
               <Building2 size={64} className="text-white" />
@@ -630,7 +480,7 @@ const PropertiesPage = () => {
               {t('property.add_first_property')}
             </button>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Add Property Modal */}
@@ -696,7 +546,7 @@ const PropertiesPage = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/3 to-pink-500/3 rounded-full blur-3xl"></div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
