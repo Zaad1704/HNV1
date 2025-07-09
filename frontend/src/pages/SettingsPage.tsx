@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Settings, User, Bell, Shield, Save, Lock, Key, Building, Trash2, AlertTriangle, Sparkles, Crown, Palette, Globe } from 'lucide-react';
+import { Settings, User, Bell, Shield, Save, Lock, Key, Building, Trash2, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
 import OrganizationSettings from '../components/common/OrganizationSettings';
 import QRCodeGenerator from '../components/common/QRCodeGenerator';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import { useCrossData } from '../hooks/useCrossData';
 
 const ChangePasswordForm = () => {
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
@@ -263,6 +265,7 @@ const TwoFactorSetup = () => {
 
 const SettingsPage = () => {
   const { user } = useAuthStore();
+  const { stats } = useCrossData();
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -294,43 +297,22 @@ const SettingsPage = () => {
   ];
 
   return (
-    <div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold flex items-center justify-center gap-3 mb-4">
-          <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-            Settings
-          </span>
-          <Sparkles size={32} className="text-brand-orange animate-pulse" />
-        </h1>
-        <p className="text-text-secondary text-lg">
-          Manage your account, security, and preferences
-        </p>
-        
-        {/* Quick Stats */}
-        <div className="flex items-center justify-center gap-6 mt-6">
-          <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full">
-            <Shield size={16} className="text-blue-600" />
-            <span className="text-sm font-medium text-blue-800">
-              Account Secure
-            </span>
-          </div>
-          <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full">
-            <User size={16} className="text-green-600" />
-            <span className="text-sm font-medium text-green-800">
-              {user?.role || 'User'} Access
-            </span>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Settings"
+        subtitle="Manage your account, security, and preferences"
+        icon={Settings}
+        stats={[
+          { label: 'Account', value: 'Secure', color: 'green' },
+          { label: 'Role', value: user?.role || 'User', color: 'blue' },
+          { label: '2FA', value: 'Available', color: 'purple' }
+        ]}
+      />
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
         <div className="lg:w-80">
-          <div className="app-surface rounded-3xl p-6 border border-app-border shadow-xl">
+          <UniversalCard gradient="blue">
             <div className="mb-6">
               <h3 className="text-lg font-bold text-text-primary mb-2">Settings Menu</h3>
               <p className="text-sm text-text-secondary">Configure your account and preferences</p>
@@ -373,7 +355,7 @@ const SettingsPage = () => {
 
         {/* Content */}
         <div className="flex-1">
-          <div className="app-surface rounded-3xl p-8 border border-app-border shadow-xl">
+          <UniversalCard gradient="purple">
             {activeTab === 'profile' && (
               <div className="space-y-8">
                 <div className="flex items-center gap-4 mb-8">
