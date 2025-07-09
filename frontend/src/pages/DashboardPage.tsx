@@ -347,9 +347,9 @@ const DashboardPage = () => {
               </Link>
             )}
           </div>
-        </motion.div>
+        </UniversalCard>
 
-        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col hover:shadow-2xl hover:shadow-green-500/10 hover:border-green-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={1} initial="hidden" animate="visible">
+        <UniversalCard gradient="green" className="flex flex-col">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           <div className="relative z-10">
             <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -369,9 +369,9 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </UniversalCard>
 
-        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={2} initial="hidden" animate="visible">
+        <UniversalCard gradient="blue" className="flex flex-col">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           <div className="relative z-10">
             <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -398,9 +398,9 @@ const DashboardPage = () => {
               View Properties
             </Link>
           </div>
-        </motion.div>
+        </UniversalCard>
         
-        <motion.div className="gradient-orange-blue rounded-3xl p-6 text-white relative overflow-hidden group hover:scale-105 transition-all duration-300" style={{ transform: 'rotate(-1deg)'}} variants={cardVariants} custom={3} initial="hidden" animate="visible">
+        <UniversalCard gradient="orange" className="text-white relative overflow-hidden group hover:scale-105 transition-all duration-300" style={{ transform: 'rotate(-1deg)'}}>
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           <div className="relative z-10">
             <div className="w-12 h-12 bg-white/25 rounded-2xl mb-4 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
@@ -423,9 +423,9 @@ const DashboardPage = () => {
               View All
             </Link>
           </div>
-        </motion.div>
+        </UniversalCard>
 
-        <motion.div className="group app-surface border border-app-border rounded-3xl p-6 flex flex-col justify-center items-center text-center hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={4} initial="hidden" animate="visible">
+        <UniversalCard gradient="purple" className="flex flex-col justify-center items-center text-center">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           <div className="relative z-10">
             <div className="w-20 h-20 gradient-dark-orange-blue rounded-3xl mb-6 flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
@@ -452,9 +452,9 @@ const DashboardPage = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+        </UniversalCard>
         
-        <motion.div className="group app-surface border border-app-border rounded-3xl p-8 sm:col-span-2 hover:shadow-2xl hover:shadow-purple-500/10 hover:border-purple-500/30 hover:-translate-y-1 transition-all duration-500 relative overflow-hidden" variants={cardVariants} custom={5} initial="hidden" animate="visible">
+        <UniversalCard gradient="purple" className="sm:col-span-2">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-6">
@@ -535,7 +535,7 @@ const DashboardPage = () => {
               )}
             </div>
           </div>
-        </motion.div>
+        </UniversalCard>
 
       </div>
       )}

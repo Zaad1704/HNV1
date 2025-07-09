@@ -368,7 +368,7 @@ const SettingsPage = () => {
                 </button>
               ))}
             </nav>
-          </div>
+          </UniversalCard>
         </div>
 
         {/* Content */}
@@ -642,7 +642,7 @@ const SettingsPage = () => {
                 </div>
               </div>
             )}
-          </div>
+          </UniversalCard>
         </div>
       </div>
       
