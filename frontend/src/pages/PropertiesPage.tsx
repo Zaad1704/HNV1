@@ -2,13 +2,16 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
+import UniversalGlobalSearch from '../components/common/UniversalGlobalSearch';
+import SmartSuggestions from '../components/common/SmartSuggestions';
+import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 import LazyLoader from '../components/common/LazyLoader';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import SwipeableCard from '../components/mobile/SwipeableCard';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles, Search } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
@@ -61,8 +64,10 @@ const PropertiesPage = () => {
     sortOrder: 'desc'
   });
   const [showArchived, setShowArchived] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport() || { exportProperties: () => {}, isExporting: false };
+  const { triggerPaymentWorkflow } = useWorkflowTriggers();
 
   const { data: properties = [], isLoading, error } = useQuery({
     queryKey: ['properties'],
@@ -426,6 +431,20 @@ const PropertiesPage = () => {
         }
       />
 
+      {/* Global Search Button */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setShowGlobalSearch(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+        >
+          <Search size={16} />
+          Global Search (Ctrl+K)
+        </button>
+      </div>
+
+      {/* Smart Suggestions */}
+      <SmartSuggestions />
+
       {/* Universal Search */}
       <UniversalSearch
         onSearch={handleUniversalSearch}
@@ -550,6 +569,12 @@ const PropertiesPage = () => {
         filters={searchFilters}
         title="Properties Report"
         organizationName={user?.organization?.name || user?.name + "'s Organization" || "Your Organization"}
+      />
+
+      {/* Global Search Modal */}
+      <UniversalGlobalSearch
+        isOpen={showGlobalSearch}
+        onClose={() => setShowGlobalSearch(false)}
       />
       
       {/* Floating Action Button for Mobile */}

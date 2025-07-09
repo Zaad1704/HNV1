@@ -27,6 +27,7 @@ import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
+import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
 const fetchTenants = async (propertyId?: string) => {
   try {
@@ -44,6 +45,7 @@ const TenantsPage = () => {
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
   const { stats } = useCrossData();
+  const { triggerTenantWorkflow } = useWorkflowTriggers();
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -62,8 +64,11 @@ const TenantsPage = () => {
   const [showArchived, setShowArchived] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
-  const handleTenantAdded = (newTenant: any) => {
+  const handleTenantAdded = async (newTenant: any) => {
     queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
+    
+    // Trigger smart workflow
+    await triggerTenantWorkflow(newTenant);
   };
 
   const handleDeleteTenant = async (tenantId: string, tenantName: string) => {

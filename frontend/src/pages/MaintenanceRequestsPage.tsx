@@ -22,6 +22,7 @@ import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
 import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
+import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
 const fetchRequests = async () => {
     try {
@@ -41,6 +42,7 @@ const updateRequestStatus = async ({ id, status }: { id: string, status: string 
 const MaintenanceRequestsPage = () => {
     const queryClient = useQueryClient();
     const { stats } = useCrossData();
+    const { triggerMaintenanceWorkflow } = useWorkflowTriggers();
     const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<any>({});
@@ -116,8 +118,16 @@ const MaintenanceRequestsPage = () => {
 
     const mutation = useMutation({
         mutationFn: updateRequestStatus,
-        onSuccess: () => {
+        onSuccess: async (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['maintenanceRequests'] });
+            
+            // Trigger workflow if completed
+            if (variables.status === 'Resolved' || variables.status === 'Closed') {
+                const maintenanceData = requests.find(r => r._id === variables.id);
+                if (maintenanceData) {
+                    await triggerMaintenanceWorkflow(maintenanceData);
+                }
+            }
         },
         onError: (err: any) => {
             alert(`Failed to update request status: ${err.response?.data?.message || err.message}`);

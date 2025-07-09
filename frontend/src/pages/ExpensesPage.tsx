@@ -19,6 +19,7 @@ import AddExpenseModal from '../components/common/AddExpenseModal';
 import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteExpense, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
+import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
 const fetchExpenses = async () => {
   try {
@@ -34,6 +35,7 @@ const ExpensesPage = () => {
   const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const { stats } = useCrossData();
+  const { triggerExpenseWorkflow } = useWorkflowTriggers();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -51,8 +53,11 @@ const ExpensesPage = () => {
     retry: 0
   });
 
-  const handleExpenseAdded = (newExpense: any) => {
+  const handleExpenseAdded = async (newExpense: any) => {
     queryClient.setQueryData(['expenses'], (old: any) => [...(old || []), newExpense]);
+    
+    // Trigger smart workflow
+    await triggerExpenseWorkflow(newExpense);
   };
 
   const handleDeleteExpense = async (expenseId: string, description: string) => {

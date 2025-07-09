@@ -24,6 +24,7 @@ import MessageButtons from '../components/common/MessageButtons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { deletePayment, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
+import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
 const fetchPayments = async (propertyId?: string) => {
   try {
@@ -41,6 +42,7 @@ const PaymentsPage = () => {
   const { currency } = useCurrency();
   const { user } = useAuthStore();
   const { stats } = useCrossData();
+  const { triggerPaymentWorkflow } = useWorkflowTriggers();
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -64,8 +66,11 @@ const PaymentsPage = () => {
     retry: 1
   });
 
-  const handlePaymentAdded = (newPayment: any) => {
+  const handlePaymentAdded = async (newPayment: any) => {
     queryClient.setQueryData(['payments'], (old: any) => [...(old || []), newPayment]);
+    
+    // Trigger smart workflow
+    await triggerPaymentWorkflow(newPayment);
   };
 
   const handleDeletePayment = async (paymentId: string, amount: number) => {
