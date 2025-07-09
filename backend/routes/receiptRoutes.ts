@@ -24,67 +24,102 @@ router.post('/bulk-pdf', async (req: any, res) => {
     
     doc.pipe(res);
 
+    // Light blue background
+    doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+    
+    // Watermark function
+    const addWatermark = (y: number) => {
+      doc.save();
+      doc.opacity(0.15);
+      doc.fontSize(40).font('Helvetica-Bold').fillColor('#2563eb')
+         .text('HNV', 250, y, { align: 'center' });
+      doc.fontSize(12).text('Property Management', 250, y + 45, { align: 'center' });
+      doc.restore();
+    };
+    
+    let currentY = 20;
+    const pageHeight = 792;
+    const receiptHeight = 180;
+    
     receipts.forEach((receipt, index) => {
-      if (index > 0) doc.addPage();
+      // Check if we need a new page
+      if (currentY + receiptHeight > pageHeight - 100) {
+        doc.addPage();
+        doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+        currentY = 20;
+      }
       
       const orgName = (receipt.organizationId as any)?.name || 'Property Management';
       
-      // Header with gradient-like effect
-      doc.rect(0, 0, 612, 120).fill('#2563eb');
-      doc.fontSize(28).font('Helvetica-Bold').fillColor('white')
-         .text(orgName, 50, 30, { align: 'center', width: 512 });
-      doc.fontSize(16).font('Helvetica').fillColor('white')
-         .text('PAYMENT RECEIPT', 50, 70, { align: 'center', width: 512 });
-      doc.fontSize(12).fillColor('white')
-         .text(`Receipt Date: ${receipt.paymentDate.toLocaleDateString()}`, 50, 95, { align: 'center', width: 512 });
+      // Add watermark
+      addWatermark(currentY + 60);
       
-      // Reset color for body
-      doc.fillColor('black');
+      // Receipt container
+      doc.rect(30, currentY, 552, receiptHeight).fill('white').stroke('#2563eb', 2);
       
-      // Receipt number section
-      doc.rect(50, 140, 512, 40).fill('#f8fafc').stroke('#e2e8f0');
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1e293b')
-         .text('Receipt Information', 70, 150);
-      doc.fontSize(11).font('Helvetica').fillColor('#475569')
-         .text(`Receipt #: ${receipt.receiptNumber}`, 70, 165);
-      if (receipt.handwrittenReceiptNumber) {
-        doc.text(`Manual Receipt #: ${receipt.handwrittenReceiptNumber}`, 300, 165);
+      // Header section - scalable
+      const headerHeight = Math.min(50, receiptHeight * 0.3);
+      doc.rect(30, currentY, 552, headerHeight).fill('#2563eb');
+      
+      // Organization name - auto-scale font
+      const maxOrgWidth = 500;
+      let orgFontSize = 20;
+      doc.font('Helvetica-Bold');
+      while (doc.widthOfString(orgName, { fontSize: orgFontSize }) > maxOrgWidth && orgFontSize > 12) {
+        orgFontSize--;
       }
       
-      // Tenant details section
-      doc.fillColor('black');
-      doc.fontSize(14).font('Helvetica-Bold')
-         .text('Tenant Details', 70, 200);
+      doc.fontSize(orgFontSize).fillColor('white')
+         .text(orgName, 50, currentY + 10, { width: maxOrgWidth, align: 'center' });
+      doc.fontSize(12).text('PAYMENT RECEIPT', 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
       
-      const tenantBox = 220;
-      doc.rect(50, tenantBox, 250, 120).stroke('#e2e8f0');
-      doc.fontSize(11).font('Helvetica')
-         .text(`Name: ${receipt.tenantName}`, 70, tenantBox + 15)
-         .text(`Property: ${receipt.propertyName}`, 70, tenantBox + 35)
-         .text(`Unit: ${receipt.unitNumber}`, 70, tenantBox + 55)
-         .text(`Rent Month: ${receipt.rentMonth || 'N/A'}`, 70, tenantBox + 75)
-         .text(`Payment Method: ${receipt.paymentMethod}`, 70, tenantBox + 95);
+      // Content area
+      const contentY = currentY + headerHeight + 10;
+      doc.fillColor('black').font('Helvetica');
       
-      // Amount section (highlighted)
-      const amountBox = tenantBox;
-      doc.rect(320, amountBox, 242, 120).fill('#dcfce7').stroke('#16a34a');
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#15803d')
-         .text('Payment Summary', 340, amountBox + 15);
-      doc.fontSize(24).font('Helvetica-Bold').fillColor('#15803d')
-         .text(`$${receipt.amount.toFixed(2)}`, 340, amountBox + 50);
-      doc.fontSize(11).font('Helvetica').fillColor('#166534')
-         .text('Amount Received', 340, amountBox + 80)
-         .text('Status: PAID', 340, amountBox + 95);
+      // Left column - Receipt info
+      doc.fontSize(10).font('Helvetica-Bold')
+         .text('Receipt Information', 50, contentY);
+      doc.fontSize(9).font('Helvetica')
+         .text(`Receipt #: ${receipt.receiptNumber}`, 50, contentY + 15)
+         .text(`Date: ${receipt.paymentDate.toLocaleDateString()}`, 50, contentY + 28);
       
-      // Footer section
-      doc.fillColor('#64748b');
-      doc.rect(50, 700, 512, 60).fill('#f1f5f9').stroke('#cbd5e1');
-      doc.fontSize(12).font('Helvetica-Bold').fillColor('#334155')
-         .text('Thank you for your payment!', 50, 720, { align: 'center', width: 512 });
-      doc.fontSize(9).font('Helvetica').fillColor('#64748b')
-         .text('This receipt serves as proof of payment. Please retain for your records.', 50, 735, { align: 'center', width: 512 })
-         .text('Powered by HNV Property Management Solutions', 50, 745, { align: 'center', width: 512 });
+      if (receipt.handwrittenReceiptNumber) {
+        doc.text(`Manual #: ${receipt.handwrittenReceiptNumber}`, 50, contentY + 41);
+      }
+      
+      // Middle column - Tenant details
+      doc.fontSize(10).font('Helvetica-Bold')
+         .text('Tenant Details', 200, contentY);
+      doc.fontSize(9).font('Helvetica')
+         .text(`Name: ${receipt.tenantName}`, 200, contentY + 15)
+         .text(`Property: ${receipt.propertyName}`, 200, contentY + 28)
+         .text(`Unit: ${receipt.unitNumber}`, 200, contentY + 41)
+         .text(`Month: ${receipt.rentMonth || 'N/A'}`, 200, contentY + 54)
+         .text(`Method: ${receipt.paymentMethod}`, 200, contentY + 67);
+      
+      // Right column - Amount (highlighted)
+      doc.rect(400, contentY, 150, 80).fill('#dcfce7').stroke('#16a34a');
+      doc.fontSize(10).font('Helvetica-Bold').fillColor('#15803d')
+         .text('AMOUNT PAID', 420, contentY + 10);
+      doc.fontSize(18).font('Helvetica-Bold')
+         .text(`$${receipt.amount.toFixed(2)}`, 420, contentY + 30);
+      doc.fontSize(8).font('Helvetica').fillColor('#166534')
+         .text('Status: PAID', 420, contentY + 55)
+         .text('✓ Verified', 420, contentY + 65);
+      
+      // Footer for this receipt
+      doc.fillColor('#2563eb').fontSize(8)
+         .text('Powered by HNV Property Management Solutions', 50, currentY + receiptHeight - 25, { width: 500, align: 'center' })
+         .text('© 2024 HNV Solutions. All rights reserved.', 50, currentY + receiptHeight - 15, { width: 500, align: 'center' });
+      
+      currentY += receiptHeight + 20;
     });
+    
+    // Final watermark and branding
+    addWatermark(pageHeight - 200);
+    doc.fontSize(8).fillColor('#64748b')
+       .text('This document contains confidential payment information. Please retain for your records.', 50, pageHeight - 40, { width: 500, align: 'center' });
 
     doc.end();
   } catch (error) {
@@ -161,6 +196,104 @@ router.post('/thermal-print', async (req: any, res) => {
   } catch (error) {
     console.error('Thermal print error:', error);
     res.status(500).json({ success: false, message: 'Failed to generate print format' });
+  }
+});
+
+// Get all receipts
+router.get('/', async (req: any, res) => {
+  try {
+    const { search, date, status } = req.query;
+    const filter: any = { organizationId: req.user.organizationId };
+    
+    if (search) {
+      filter.$or = [
+        { receiptNumber: { $regex: search, $options: 'i' } },
+        { tenantName: { $regex: search, $options: 'i' } },
+        { propertyName: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (date && date !== 'all') {
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (date) {
+        case 'today':
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          startDate.setMonth(now.getMonth() - 1);
+          break;
+        case 'year':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+      
+      filter.paymentDate = { $gte: startDate };
+    }
+    
+    const receipts = await Receipt.find(filter)
+      .sort({ paymentDate: -1 })
+      .limit(100);
+    
+    res.status(200).json({ success: true, data: receipts });
+  } catch (error) {
+    console.error('Get receipts error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Get single receipt PDF
+router.get('/:id/pdf', async (req: any, res) => {
+  try {
+    const receipt = await Receipt.findOne({
+      _id: req.params.id,
+      organizationId: req.user.organizationId
+    }).populate('organizationId', 'name');
+    
+    if (!receipt) {
+      return res.status(404).json({ success: false, message: 'Receipt not found' });
+    }
+    
+    const doc = new PDFDocument({ margin: 50 });
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=receipt-${receipt.receiptNumber}.pdf`);
+    
+    doc.pipe(res);
+    
+    // Use same styling as bulk PDF but for single receipt
+    doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+    
+    const orgName = (receipt.organizationId as any)?.name || 'Property Management';
+    
+    // Header
+    doc.rect(30, 30, 552, 60).fill('#2563eb');
+    doc.fontSize(18).font('Helvetica-Bold').fillColor('white')
+       .text(orgName, 50, 50, { width: 500, align: 'center' });
+    doc.fontSize(14).text('PAYMENT RECEIPT', 50, 70, { width: 500, align: 'center' });
+    
+    // Content
+    doc.fillColor('black').fontSize(12).font('Helvetica')
+       .text(`Receipt #: ${receipt.receiptNumber}`, 50, 120)
+       .text(`Date: ${receipt.paymentDate.toLocaleDateString()}`, 50, 140)
+       .text(`Tenant: ${receipt.tenantName}`, 50, 180)
+       .text(`Property: ${receipt.propertyName}`, 50, 200)
+       .text(`Unit: ${receipt.unitNumber}`, 50, 220)
+       .text(`Amount: $${receipt.amount.toFixed(2)}`, 50, 260);
+    
+    // Footer
+    doc.fontSize(10).fillColor('#64748b')
+       .text('Powered by HNV Property Management Solutions', 50, 700, { width: 500, align: 'center' })
+       .text('© 2024 HNV Solutions. All rights reserved.', 50, 720, { width: 500, align: 'center' });
+    
+    doc.end();
+  } catch (error) {
+    console.error('Single receipt PDF error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate PDF' });
   }
 });
 
