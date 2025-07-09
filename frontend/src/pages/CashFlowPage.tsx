@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download, Sparkles, BarChart3, PieChart } from 'lucide-react';
+import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import AddCashFlowModal from '../components/common/AddCashFlowModal';
@@ -21,6 +24,7 @@ const fetchCashFlow = async () => {
 
 const CashFlowPage = () => {
   const { currency } = useCurrency();
+  const { stats } = useCrossData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -47,60 +51,38 @@ const CashFlowPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Cash Flow
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-          </h1>
-          <p className="text-text-secondary mt-2">
-            Track income, expenses, and financial performance
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowExport(true)}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-          >
-            <Download size={16} />
-            Export
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-              <Plus size={14} className="text-white" />
-            </div>
-            Add Record
-          </button>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Cash Flow"
+        subtitle="Track income, expenses, and financial performance"
+        icon={TrendingUp}
+        stats={[
+          { label: 'Income', value: `$${stats?.totalIncome?.toLocaleString() || 0}`, color: 'green' },
+          { label: 'Expenses', value: `$${stats?.totalExpenses?.toLocaleString() || 0}`, color: 'red' },
+          { label: 'Net Flow', value: `$${((stats?.totalIncome || 0) - (stats?.totalExpenses || 0)).toLocaleString()}`, color: (stats?.totalIncome || 0) >= (stats?.totalExpenses || 0) ? 'green' : 'red' }
+        ]}
+        actions={
+          <>
+            <UniversalActionButton variant="success" size="sm" icon={Download} onClick={() => setShowExport(true)}>Export</UniversalActionButton>
+            <UniversalActionButton variant="primary" icon={Plus} onClick={() => setShowAddModal(true)}>Add Record</UniversalActionButton>
+          </>
+        }
+      />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-green-500/10 hover:border-green-500/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <ArrowUp size={24} className="text-white" />
-              </div>
-              <span className="text-green-500 text-sm font-semibold bg-green-100 px-3 py-1 rounded-full">Income</span>
+      <div className="universal-grid universal-grid-3">
+        <UniversalCard gradient="green">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <ArrowUp size={24} className="text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-text-primary group-hover:text-green-600 transition-colors">
-              {currency}{cashFlow?.income?.toLocaleString() || '0'}
-            </h3>
-            <p className="text-text-secondary text-sm mt-2">Total income this month</p>
+            <span className="text-green-500 text-sm font-semibold bg-green-100 px-3 py-1 rounded-full">Income</span>
           </div>
-        </div>
+          <h3 className="text-3xl font-bold text-text-primary group-hover:text-green-600 transition-colors">
+            {currency}{cashFlow?.income?.toLocaleString() || '0'}
+          </h3>
+          <p className="text-text-secondary text-sm mt-2">Total income this month</p>
+        </UniversalCard>
 
         <div className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-red-500/10 hover:border-red-500/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-rose-500/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
@@ -209,7 +191,7 @@ const CashFlowPage = () => {
         filters={searchFilters}
         title="Export Cash Flow"
       />
-    </motion.div>
+    </div>
   );
 };
 

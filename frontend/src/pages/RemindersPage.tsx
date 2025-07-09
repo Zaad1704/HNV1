@@ -168,7 +168,7 @@ const RemindersPage = () => {
                   customMessage={reminder.message || 'Automated reminder notification'}
                 />
               </div>
-            </motion.div>
+            </UniversalCard>
           ))}
         </div>
       ) : (
@@ -180,13 +180,13 @@ const RemindersPage = () => {
           <p className="text-text-secondary mb-8 max-w-md mx-auto">
             Set up automated reminders to keep tenants informed about rent payments and important dates.
           </p>
-          <button 
+          <UniversalActionButton 
+            variant="primary"
+            icon={Plus}
             onClick={() => setShowAddModal(true)}
-            className="btn-gradient px-8 py-4 rounded-2xl font-semibold flex items-center gap-2 mx-auto"
           >
-            <Plus size={20} />
             Create First Reminder
-          </button>
+          </UniversalActionButton>
         </div>
       )}
       <UniversalExport

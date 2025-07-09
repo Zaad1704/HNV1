@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
-import { motion } from 'framer-motion';
-import { Receipt, Download, Eye, Search, Calendar, Filter } from 'lucide-react';
+import { Receipt, Download, Search, Calendar, Filter } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
+import { useCrossData } from '../hooks/useCrossData';
 
 const ReceiptsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    dateRange: 'all',
+    status: '',
+    sortBy: 'date',
+    sortOrder: 'desc'
+  });
+  const { stats } = useCrossData();
 
   const { data: receipts = [], isLoading } = useQuery({
     queryKey: ['receipts', searchQuery, dateFilter, statusFilter],
@@ -50,78 +62,28 @@ const ReceiptsPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-            <Receipt size={32} className="text-blue-600" />
-            Payment Receipts
-          </h1>
-          <p className="text-text-secondary mt-2">
-            View and manage all payment receipts ({receipts.length} total)
-          </p>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Payment Receipts"
+        subtitle={`View and manage all payment receipts (${receipts.length} total)`}
+        icon={Receipt}
+        stats={[
+          { label: 'Total', value: receipts.length, color: 'blue' },
+          { label: 'This Month', value: receipts.filter((r: any) => new Date(r.paymentDate).getMonth() === new Date().getMonth()).length, color: 'green' },
+          { label: 'Generated', value: receipts.filter((r: any) => r.receiptNumber).length, color: 'purple' }
+        ]}
+      />
 
-      {/* Filters */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search receipts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          
-          <div className="relative">
-            <Calendar size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Dates</option>
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          
-          <div className="relative">
-            <Filter size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <UniversalSearch
+        onSearch={setSearchFilters}
+        placeholder="Search receipts by tenant, property, or receipt number..."
+        showStatusFilter={false}
+      />
 
-      {/* Receipts List */}
       {receipts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
-          {receipts.map((receipt: any) => (
-            <motion.div
-              key={receipt._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="app-surface rounded-3xl p-6 border border-app-border hover:shadow-lg transition-all"
-            >
+        <div className="universal-grid universal-grid-1">
+          {receipts.map((receipt: any, index: number) => (
+            <UniversalCard key={receipt._id} delay={index * 0.05} gradient="blue">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -150,15 +112,14 @@ const ReceiptsPage = () => {
                     </p>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDownloadReceipt(receipt._id)}
-                      className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
-                      title="Download PDF"
-                    >
-                      <Download size={16} />
-                    </button>
-                  </div>
+                  <UniversalActionButton
+                    variant="primary"
+                    size="sm"
+                    icon={Download}
+                    onClick={() => handleDownloadReceipt(receipt._id)}
+                  >
+                    Download PDF
+                  </UniversalActionButton>
                 </div>
               </div>
               
@@ -169,15 +130,11 @@ const ReceiptsPage = () => {
                   </p>
                 </div>
               )}
-            </motion.div>
+            </UniversalCard>
           ))}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20"
-        >
+        <div className="text-center py-20">
           <div className="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
             <Receipt size={64} className="text-blue-600" />
           </div>
@@ -187,9 +144,9 @@ const ReceiptsPage = () => {
           <p className="text-text-secondary mb-8 max-w-lg mx-auto">
             No payment receipts match your current filters. Try adjusting your search criteria or generate new receipts from the payments section.
           </p>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

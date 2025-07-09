@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { CheckSquare, Clock, User, Building, Check, X, Download, Sparkles, AlertTriangle, Shield } from 'lucide-react';
+import { CheckSquare, Clock, User, Building, Check, X, Download, AlertTriangle, Shield } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import apiClient from '../api/client';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
@@ -24,6 +28,7 @@ const updateApproval = async ({ id, status }: { id: string; status: string }) =>
 
 const ApprovalRequestsPage = () => {
   const queryClient = useQueryClient();
+  const { stats } = useCrossData();
   const [showExport, setShowExport] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
@@ -60,39 +65,21 @@ const ApprovalRequestsPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Approval Requests
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              Manage agent permission requests ({approvals.length} requests)
-            </p>
-            <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
-              <Shield size={14} className="text-yellow-600" />
-              <span className="text-xs font-medium text-yellow-800">
-                {approvals.filter(a => a.status === 'Pending').length} Pending
-              </span>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => setShowExport(true)}
-          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-        >
-          <Download size={16} />
-          Export
-        </button>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Approval Requests"
+        subtitle={`Manage agent permission requests (${approvals.length} requests)`}
+        icon={CheckSquare}
+        stats={[
+          { label: 'Total', value: approvals.length, color: 'blue' },
+          { label: 'Pending', value: approvals.filter(a => a.status === 'Pending').length, color: 'yellow' },
+          { label: 'Approved', value: approvals.filter(a => a.status === 'Approved').length, color: 'green' },
+          { label: 'Rejected', value: approvals.filter(a => a.status === 'Rejected').length, color: 'red' }
+        ]}
+        actions={
+          <UniversalActionButton variant="success" size="sm" icon={Download} onClick={() => setShowExport(true)}>Export</UniversalActionButton>
+        }
+      />
 
       <UniversalSearch
         onSearch={setSearchFilters}
@@ -108,15 +95,7 @@ const ApprovalRequestsPage = () => {
       {approvals.length > 0 ? (
         <div className="space-y-6">
           {approvals.map((approval: any, index: number) => (
-            <motion.div
-              key={approval._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-            >
-              {/* Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+            <UniversalCard key={approval._id} delay={index * 0.1} gradient="purple">
               <div className="relative z-10 flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-4">
@@ -134,15 +113,13 @@ const ApprovalRequestsPage = () => {
                         <h3 className="text-xl font-bold text-text-primary group-hover:text-brand-blue transition-colors">
                           {approval.type?.replace('_', ' ').toUpperCase() || 'APPROVAL REQUEST'}
                         </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
-                          approval.status === 'Pending' 
-                            ? 'bg-yellow-100/90 text-yellow-800'
-                            : approval.status === 'Approved'
-                            ? 'bg-green-100/90 text-green-800'
-                            : 'bg-red-100/90 text-red-800'
-                        }`}>
-                          {approval.status || 'PENDING'}
-                        </span>
+                        <UniversalStatusBadge 
+                          status={approval.status || 'PENDING'}
+                          variant={
+                            approval.status === 'Pending' ? 'warning' :
+                            approval.status === 'Approved' ? 'success' : 'error'
+                          }
+                        />
                       </div>
                       <p className="text-sm text-text-secondary font-medium">
                         Agent requesting permission for restricted action
@@ -199,7 +176,7 @@ const ApprovalRequestsPage = () => {
                   />
                 </div>
               </div>
-            </motion.div>
+            </UniversalCard>
           ))}
         </div>
       ) : (
@@ -236,7 +213,7 @@ const ApprovalRequestsPage = () => {
         filters={searchFilters}
         title="Export Approval Requests"
       />
-    </motion.div>
+    </div>
   );
 };
 
