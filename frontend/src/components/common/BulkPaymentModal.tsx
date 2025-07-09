@@ -70,18 +70,38 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
     return months;
   };
 
-  // Check if tenant has past dues
-  const hasPastDues = (tenant: Tenant) => {
+  // Check if tenant has already paid for selected month
+  const { data: payments = [] } = useQuery({
+    queryKey: ['payments', selectedProperty, selectedMonth],
+    queryFn: async () => {
+      if (!selectedProperty || !selectedMonth) return [];
+      const { data } = await apiClient.get(`/payments/property/${selectedProperty}/month/${selectedMonth}`);
+      return data.data || [];
+    },
+    enabled: !!selectedProperty && !!selectedMonth
+  });
+
+  // Check if tenant has past dues or already paid
+  const getTenantStatus = (tenant: Tenant) => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     const selectedMonthDate = new Date(selectedMonth + '-01');
     const currentMonthDate = new Date(currentMonth + '-01');
     
+    // Check if already paid for selected month
+    const alreadyPaid = payments.some((payment: any) => 
+      payment.tenantId === tenant._id && 
+      payment.rentMonth === selectedMonth &&
+      payment.status === 'Paid'
+    );
+    
+    if (alreadyPaid) return 'paid';
+    
     // If selecting current month, check for past dues
     if (selectedMonthDate.getTime() === currentMonthDate.getTime()) {
-      // This would need actual payment history check - simplified for now
-      return tenant.status === 'Late';
+      return tenant.status === 'Late' ? 'pastdue' : 'eligible';
     }
-    return false;
+    
+    return 'eligible';
   };
 
   const calculateDiscountedAmount = (originalAmount: number) => {
@@ -104,17 +124,9 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
   };
 
   const handleSelectAllTenants = () => {
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const isCurrentMonth = selectedMonth === currentMonth;
-    
     const eligibleTenants = tenants.filter((t: Tenant) => {
-      if (isCurrentMonth) {
-        // For current month, exclude tenants with past dues
-        return t.status === 'Active' && !hasPastDues(t);
-      } else {
-        // For future months, include all active tenants
-        return t.status === 'Active';
-      }
+      const status = getTenantStatus(t);
+      return t.status === 'Active' && status === 'eligible';
     });
     
     setSelectedTenants(eligibleTenants.map((t: Tenant) => t._id));
@@ -254,14 +266,12 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                   <p className="text-red-500 text-center py-4">Error loading tenants</p>
                 ) : tenants.length > 0 ? (
                   tenants.map((tenant: Tenant) => {
-                    const isPastDue = hasPastDues(tenant);
-                    const currentMonth = new Date().toISOString().slice(0, 7);
-                    const isCurrentMonth = selectedMonth === currentMonth;
-                    const isDisabled = isCurrentMonth && isPastDue;
+                    const tenantStatus = getTenantStatus(tenant);
+                    const isDisabled = tenantStatus !== 'eligible';
                     
                     return (
                       <div key={tenant._id} className={`flex items-center justify-between p-2 rounded ${
-                        isDisabled ? 'bg-red-50 opacity-60' : 'hover:bg-gray-50'
+                        isDisabled ? (tenantStatus === 'paid' ? 'bg-green-50 opacity-60' : 'bg-red-50 opacity-60') : 'hover:bg-gray-50'
                       }`}>
                         <div className="flex items-center gap-3">
                           <input
@@ -281,7 +291,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                             <p className="font-medium text-gray-900">{tenant.name}</p>
                             <p className="text-sm text-gray-500">
                               Unit: {tenant.unit} | Status: {tenant.status}
-                              {isPastDue && isCurrentMonth && (
+                              {tenantStatus === 'paid' && (
+                                <span className="text-green-600 ml-2">(Already Paid for {selectedMonth})</span>
+                              )}
+                              {tenantStatus === 'pastdue' && (
                                 <span className="text-red-600 ml-2">(Past Due - Cannot select for current month)</span>
                               )}
                             </p>

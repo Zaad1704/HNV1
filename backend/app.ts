@@ -246,6 +246,7 @@ app.use('/api/site-settings', protect, siteSettingsRoutes);
 app.use('/api/localization', protect, localizationRoutes);
 app.use('/api/translation', cacheMiddleware({ ttl: 600 }), translationRoutes);
 app.use('/api/upload', protect, uploadRoutes);
+app.use('/api/upload/image', protect, require('./routes/imageUploadRoutes').default);
 app.use('/api/file-upload', protect, fileUploadRoutes);
 app.use('/api/invoices', protect, invoiceRoutes);
 app.use('/api/receipts', protect, receiptRoutes);
