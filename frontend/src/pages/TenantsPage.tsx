@@ -17,6 +17,7 @@ import UniversalExport from '../components/common/UniversalExport';
 import ComprehensiveTenantModal from '../components/common/ComprehensiveTenantModal';
 import EnhancedTenantCard from '../components/common/EnhancedTenantCard';
 import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalCard from '../components/common/UniversalCard';
 import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
@@ -255,11 +256,12 @@ const TenantsPage = () => {
       {filteredTenants && filteredTenants.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {filteredTenants.map((tenant: any, index: number) => (
-            <EnhancedTenantCard
-              key={tenant._id}
-              tenant={tenant}
-              index={index}
-            />
+            <UniversalCard key={tenant._id} delay={index * 0.1} gradient="green">
+              <EnhancedTenantCard
+                tenant={tenant}
+                index={index}
+              />
+            </UniversalCard>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
               
               {/* Selection Checkbox */}

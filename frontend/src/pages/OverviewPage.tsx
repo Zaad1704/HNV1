@@ -384,7 +384,7 @@ const OverviewPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="lg:col-span-2 app-surface rounded-3xl p-8 border border-app-border touch-feedback"
+          className="lg:col-span-2"
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-text-primary flex items-center gap-3">

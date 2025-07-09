@@ -13,6 +13,7 @@ import UniversalSearch, { SearchFilters } from '../components/common/UniversalSe
 import UniversalExport from '../components/common/UniversalExport';
 import EnhancedPropertyCard from '../components/common/EnhancedPropertyCard';
 import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalCard from '../components/common/UniversalCard';
 import { useCrossData } from '../hooks/useCrossData';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -441,11 +442,12 @@ const PropertiesPage = () => {
       {filteredProperties && filteredProperties.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {filteredProperties.map((property: any, index: number) => (
-            <EnhancedPropertyCard
-              key={property._id}
-              property={property}
-              index={index}
-            />
+            <UniversalCard key={property._id} delay={index * 0.1} gradient="blue">
+              <EnhancedPropertyCard
+                property={property}
+                index={index}
+              />
+            </UniversalCard>
 
           ))}
         </div>
