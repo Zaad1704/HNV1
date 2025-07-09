@@ -447,7 +447,6 @@ const PropertiesPage = () => {
               index={index}
             />
 
-            </motion.div>
           ))}
         </div>
       ) : (
