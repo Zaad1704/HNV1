@@ -15,6 +15,9 @@ import ShareButton from '../components/common/ShareButton';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
 import ComprehensiveTenantModal from '../components/common/ComprehensiveTenantModal';
+import EnhancedTenantCard from '../components/common/EnhancedTenantCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
@@ -34,6 +37,7 @@ const TenantsPage = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
+  const { stats } = useCrossData();
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -190,54 +194,17 @@ const TenantsPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Tenants
-            </span>
-            {propertyId && (
-              <span className="text-lg text-text-secondary font-normal">
-                (Property Filtered)
-              </span>
-            )}
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              {propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Show:</span>
-              <button
-                onClick={() => setShowArchived(false)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  !showArchived 
-                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Eye size={12} className="inline mr-1" />
-                Active ({filteredTenants.filter(t => t.status !== 'Archived').length})
-              </button>
-              <button
-                onClick={() => setShowArchived(true)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  showArchived 
-                    ? 'bg-orange-100 text-orange-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Archive size={12} className="inline mr-1" />
-                Archived ({tenants.filter(t => t.status === 'Archived').length})
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Tenants"
+        subtitle={propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
+        icon={Users}
+        stats={[
+          { label: 'Total', value: stats?.totalTenants || 0, color: 'blue' },
+          { label: 'Active', value: filteredTenants.filter(t => t.status !== 'Archived').length, color: 'green' },
+          { label: 'Late', value: tenants.filter(t => t.status === 'Late').length, color: 'red' },
+          { label: 'Archived', value: tenants.filter(t => t.status === 'Archived').length, color: 'yellow' }
+        ]}
         <div className="flex gap-3">
           <button
             onClick={() => setShowQuickPayment(true)}
@@ -286,15 +253,13 @@ const TenantsPage = () => {
       />
 
       {filteredTenants && filteredTenants.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="universal-grid universal-grid-3">
           {filteredTenants.map((tenant: any, index: number) => (
-            <motion.div
+            <EnhancedTenantCard
               key={tenant._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-            >
+              tenant={tenant}
+              index={index}
+            />
               {/* Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>

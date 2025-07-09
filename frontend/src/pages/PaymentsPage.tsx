@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { CreditCard, Plus, DollarSign, Calendar, User, Download, Building2, Users, FileText, Sparkles, Archive, Eye } from 'lucide-react';
+import { CreditCard, Plus, DollarSign, Calendar, User, Download, Building2, Users, FileText } from 'lucide-react';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalActionButton from '../components/common/UniversalActionButton';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import { useCrossData } from '../hooks/useCrossData';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
@@ -32,6 +36,7 @@ const PaymentsPage = () => {
   const queryClient = useQueryClient();
   const { currency } = useCurrency();
   const { user } = useAuthStore();
+  const { stats } = useCrossData();
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -83,91 +88,27 @@ const PaymentsPage = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              Payments
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-            {propertyId && (
-              <span className="text-lg text-text-secondary font-normal">
-                (Property Filtered)
-              </span>
-            )}
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              {propertyId ? `Payments for selected property (${payments.length} payments)` : `Track and manage rent payments (${payments.length} payments)`}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Show:</span>
-              <button
-                onClick={() => setShowArchived(false)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  !showArchived 
-                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Eye size={12} className="inline mr-1" />
-                Recent ({payments.length})
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => setShowBulkPayment(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Building2 size={16} />
-            Bulk Payment
-          </button>
-          <button
-            onClick={() => setShowQuickPayment(true)}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Users size={16} />
-            Quick Payment
-          </button>
-          <button
-            onClick={() => setShowCollectionSheet(true)}
-            className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <FileText size={16} />
-            Collection Sheet
-          </button>
-          <button
-            onClick={() => setShowAgentHandover(true)}
-            className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Users size={16} />
-            Agent Handover
-          </button>
-          <button
-            onClick={() => setShowExport(true)}
-            className="px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Download size={16} />
-            Export
-          </button>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="group btn-gradient px-6 py-3 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-              <DollarSign size={14} className="text-white" />
-            </div>
-            Payment Collection
-          </button>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <UniversalHeader
+        title="Payments"
+        subtitle={propertyId ? `Payments for selected property (${payments.length} payments)` : `Track and manage rent payments (${payments.length} payments)`}
+        icon={CreditCard}
+        stats={[
+          { label: 'Total', value: payments.length, color: 'blue' },
+          { label: 'This Month', value: payments.filter(p => new Date(p.paymentDate).getMonth() === new Date().getMonth()).length, color: 'green' },
+          { label: 'Amount', value: `$${stats?.totalIncome?.toLocaleString() || 0}`, color: 'purple' },
+          { label: 'Completed', value: payments.filter(p => p.status === 'Completed' || p.status === 'Paid').length, color: 'green' }
+        ]}
+        actions={
+          <>
+            <UniversalActionButton variant="secondary" size="sm" icon={Building2} onClick={() => setShowBulkPayment(true)}>Bulk Payment</UniversalActionButton>
+            <UniversalActionButton variant="success" size="sm" icon={Users} onClick={() => setShowQuickPayment(true)}>Quick Payment</UniversalActionButton>
+            <UniversalActionButton variant="warning" size="sm" icon={FileText} onClick={() => setShowCollectionSheet(true)}>Collection Sheet</UniversalActionButton>
+            <UniversalActionButton variant="success" size="sm" icon={Download} onClick={() => setShowExport(true)}>Export</UniversalActionButton>
+            <UniversalActionButton variant="primary" icon={DollarSign} onClick={() => setShowAddModal(true)}>Payment Collection</UniversalActionButton>
+          </>
+        }
+      />
 
       <UniversalSearch
         onSearch={setSearchFilters}
@@ -181,15 +122,9 @@ const PaymentsPage = () => {
       />
 
       {payments.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="universal-grid universal-grid-4">
           {payments.map((payment: any, index: number) => (
-            <motion.div
-              key={payment._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-            >
+            <UniversalCard key={payment._id} delay={index * 0.1} gradient="green">
               {/* Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>

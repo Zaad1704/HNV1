@@ -15,6 +15,7 @@ import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchRequests = async () => {
@@ -34,6 +35,7 @@ const updateRequestStatus = async ({ id, status }: { id: string, status: string 
 
 const MaintenanceRequestsPage = () => {
     const queryClient = useQueryClient();
+    const { stats } = useCrossData();
     const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<any>({});
@@ -270,8 +272,10 @@ const MaintenanceRequestsPage = () => {
                 subtitle={`Manage property maintenance requests (${requests.length} total)`}
                 icon={Wrench}
                 stats={[
-                    { label: 'Active', value: requests.filter(r => r.status !== 'Closed').length, color: 'blue' },
-                    { label: 'Closed', value: requests.filter(r => r.status === 'Closed').length, color: 'yellow' }
+                    { label: 'Total', value: requests.length, color: 'blue' },
+                    { label: 'Open', value: stats?.openMaintenance || 0, color: 'red' },
+                    { label: 'In Progress', value: requests.filter(r => r.status === 'In Progress').length, color: 'yellow' },
+                    { label: 'Closed', value: requests.filter(r => r.status === 'Closed').length, color: 'green' }
                 ]}
                 actions={
                     <>

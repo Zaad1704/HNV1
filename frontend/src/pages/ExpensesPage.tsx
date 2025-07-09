@@ -5,6 +5,7 @@ import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
+import { useCrossData } from '../hooks/useCrossData';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
@@ -27,6 +28,7 @@ const fetchExpenses = async () => {
 const ExpensesPage = () => {
   const queryClient = useQueryClient();
   const { currency } = useCurrency();
+  const { stats } = useCrossData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
@@ -116,7 +118,9 @@ const ExpensesPage = () => {
         subtitle={`Track property expenses and costs (${filteredExpenses.length} expenses)`}
         icon={DollarSign}
         stats={[
-          { label: 'Active', value: expenses.filter(e => e.status !== 'Archived').length, color: 'blue' },
+          { label: 'Total', value: expenses.length, color: 'blue' },
+          { label: 'This Month', value: expenses.filter(e => new Date(e.date).getMonth() === new Date().getMonth()).length, color: 'green' },
+          { label: 'Amount', value: `$${stats?.totalExpenses?.toLocaleString() || 0}`, color: 'red' },
           { label: 'Archived', value: expenses.filter(e => e.status === 'Archived').length, color: 'yellow' }
         ]}
         actions={

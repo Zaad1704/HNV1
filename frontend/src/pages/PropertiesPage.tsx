@@ -11,6 +11,9 @@ import BulkPaymentModal from '../components/common/BulkPaymentModal';
 import ActionButtons from '../components/common/ActionButtons';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
+import EnhancedPropertyCard from '../components/common/EnhancedPropertyCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import { useCrossData } from '../hooks/useCrossData';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDataExport } from '../hooks/useDataExport';
@@ -33,6 +36,7 @@ const fetchProperties = async () => {
 const PropertiesPage = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { stats } = useCrossData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any>(null);
@@ -378,45 +382,16 @@ const PropertiesPage = () => {
       className="space-y-8"
     >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-              {t('dashboard.properties')}
-            </span>
-            <Sparkles size={28} className="text-brand-orange animate-pulse" />
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <p className="text-text-secondary">
-              {t('property.manage_portfolio')} ({filteredProperties.length} properties)
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Show:</span>
-              <button
-                onClick={() => setShowArchived(false)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  !showArchived 
-                    ? 'bg-blue-100 text-blue-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Eye size={12} className="inline mr-1" />
-                Active ({properties.filter(p => p.status !== 'Archived').length})
-              </button>
-              <button
-                onClick={() => setShowArchived(true)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  showArchived 
-                    ? 'bg-orange-100 text-orange-800 shadow-sm' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <Archive size={12} className="inline mr-1" />
-                Archived ({properties.filter(p => p.status === 'Archived').length})
-              </button>
-            </div>
-          </div>
-        </div>
+      <UniversalHeader
+        title={t('dashboard.properties')}
+        subtitle={`${t('property.manage_portfolio')} (${filteredProperties.length} properties)`}
+        icon={Building2}
+        stats={[
+          { label: 'Total', value: stats?.totalProperties || 0, color: 'blue' },
+          { label: 'Active', value: properties.filter(p => p.status !== 'Archived').length, color: 'green' },
+          { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, color: 'purple' },
+          { label: 'Archived', value: properties.filter(p => p.status === 'Archived').length, color: 'yellow' }
+        ]}
         <div className="flex gap-3">
           <button
             onClick={() => setShowBulkPayment(true)}
@@ -468,15 +443,13 @@ const PropertiesPage = () => {
 
       {/* Properties Grid */}
       {filteredProperties && filteredProperties.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="universal-grid universal-grid-3">
           {filteredProperties.map((property: any, index: number) => (
-            <motion.div
+            <EnhancedPropertyCard
               key={property._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="group app-surface rounded-3xl overflow-hidden border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative backdrop-blur-sm"
-            >
+              property={property}
+              index={index}
+            />
               {/* Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
