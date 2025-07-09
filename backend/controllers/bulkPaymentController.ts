@@ -93,6 +93,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
         const Receipt = require('../models/Receipt').default;
         
         // Get property name
+        const Property = require('../models/Property').default;
         const property = await Property.findById(tenant.propertyId);
         
         const receipt = await Receipt.create({
