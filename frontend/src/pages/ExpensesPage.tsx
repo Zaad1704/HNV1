@@ -185,20 +185,28 @@ const ExpensesPage = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <UniversalActionButton
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteExpense(expense._id, expense.description)}
+              <div className="space-y-2">
+                <Link
+                  to={`/dashboard/expenses/${expense._id}`}
+                  className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center block group-hover:scale-105 transform"
                 >
-                  Delete
-                </UniversalActionButton>
-                <MessageButtons
-                  phone={expense.vendorPhone}
-                  email={expense.vendorEmail}
-                  name={expense.vendorName || 'Vendor'}
-                  customMessage={`Expense record: ${expense.description} - ${currency}${expense.amount}`}
-                />
+                  View Details
+                </Link>
+                <div className="flex gap-2">
+                  <UniversalActionButton
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDeleteExpense(expense._id, expense.description)}
+                  >
+                    Delete
+                  </UniversalActionButton>
+                  <MessageButtons
+                    phone={expense.vendorPhone}
+                    email={expense.vendorEmail}
+                    name={expense.vendorName || 'Vendor'}
+                    customMessage={`Expense record: ${expense.description} - ${currency}${expense.amount}`}
+                  />
+                </div>
               </div>
             </UniversalCard>
           ))}

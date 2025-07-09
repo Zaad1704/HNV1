@@ -1,149 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, DollarSign, Download, Users, CreditCard } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
 import apiClient from '../api/client';
-
-const fetchTenantDetails = async (tenantId: string) => {
-  const { data } = await apiClient.get(`/tenants/${tenantId}`);
-  return data.data;
-};
+import { motion } from 'framer-motion';
+import { ArrowLeft, Users, DollarSign, Calendar, MapPin, Phone, Mail, FileText, Wrench, AlertTriangle, Download, Edit } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import UniversalActionButton from '../components/common/UniversalActionButton';
 
 const TenantDetailsPage = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
-  const { user } = useAuthStore();
-  
-  const { data: tenant, isLoading, error } = useQuery({
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: tenant, isLoading } = useQuery({
     queryKey: ['tenant', tenantId],
-    queryFn: () => fetchTenantDetails(tenantId!),
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/tenants/${tenantId}`);
+      return data.data;
+    },
     enabled: !!tenantId
   });
 
-  const handleDownloadPDF = () => {
-    if (!tenant) return;
+  const { data: relatedData } = useQuery({
+    queryKey: ['tenantRelatedData', tenantId],
+    queryFn: async () => {
+      const [payments, expenses, maintenance, approvals] = await Promise.all([
+        apiClient.get(`/payments?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/expenses?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/maintenance?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/approvals?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } }))
+      ]);
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const organizationName = user?.organization?.name || user?.name + "'s Organization" || "Your Organization";
-    
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Tenant Details - ${tenant.name}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-            .footer { text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-style: italic; }
-            .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-            .section h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-            .field { margin-bottom: 10px; }
-            .field strong { display: inline-block; width: 150px; color: #555; }
-            .image-section { text-align: center; margin: 20px 0; }
-            .image-placeholder { width: 150px; height: 150px; border: 2px dashed #ccc; display: inline-block; margin: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${organizationName}</h1>
-            <h2>Tenant Details</h2>
-            <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-            <p><strong>Powered by HNV Property Management Solutions</strong></p>
-          </div>
-          
-          <div class="section">
-            <h3>Basic Information</h3>
-            <div class="grid">
-              <div class="field"><strong>Name:</strong> ${tenant.name || 'N/A'}</div>
-              <div class="field"><strong>Email:</strong> ${tenant.email || 'N/A'}</div>
-              <div class="field"><strong>Phone:</strong> ${tenant.phone || 'N/A'}</div>
-              <div class="field"><strong>WhatsApp:</strong> ${tenant.whatsappNumber || tenant.phone || 'N/A'}</div>
-              <div class="field"><strong>Status:</strong> ${tenant.status || 'N/A'}</div>
-              <div class="field"><strong>Unit:</strong> ${tenant.unit || 'N/A'}</div>
-            </div>
-          </div>
-          
-          <div class="section">
-            <h3>Property & Financial Details</h3>
-            <div class="grid">
-              <div class="field"><strong>Property:</strong> ${tenant.propertyId?.name || 'N/A'}</div>
-              <div class="field"><strong>Monthly Rent:</strong> $${tenant.rentAmount || 0}</div>
-              <div class="field"><strong>Security Deposit:</strong> $${tenant.securityDeposit || 0}</div>
-              <div class="field"><strong>Lease End:</strong> ${tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toLocaleDateString() : 'N/A'}</div>
-            </div>
-          </div>
-          
-          <div class="section">
-            <h3>Personal Details</h3>
-            <div class="grid">
-              <div class="field"><strong>Father's Name:</strong> ${tenant.fatherName || 'N/A'}</div>
-              <div class="field"><strong>Mother's Name:</strong> ${tenant.motherName || 'N/A'}</div>
-              <div class="field"><strong>Govt ID Number:</strong> ${tenant.govtIdNumber || 'N/A'}</div>
-              <div class="field"><strong>Number of Occupants:</strong> ${tenant.numberOfOccupants || 1}</div>
-            </div>
-            <div class="field"><strong>Present Address:</strong> ${tenant.presentAddress || 'N/A'}</div>
-            <div class="field"><strong>Permanent Address:</strong> ${tenant.permanentAddress || 'N/A'}</div>
-          </div>
-          
-          ${tenant.referenceName ? `
-          <div class="section">
-            <h3>Reference Details</h3>
-            <div class="grid">
-              <div class="field"><strong>Name:</strong> ${tenant.referenceName}</div>
-              <div class="field"><strong>Phone:</strong> ${tenant.referencePhone || 'N/A'}</div>
-              <div class="field"><strong>Email:</strong> ${tenant.referenceEmail || 'N/A'}</div>
-              <div class="field"><strong>Relation:</strong> ${tenant.referenceRelation || 'N/A'}</div>
-            </div>
-          </div>
-          ` : ''}
-          
-          ${tenant.additionalAdults?.length > 0 ? `
-          <div class="section">
-            <h3>Additional Adults</h3>
-            ${tenant.additionalAdults.map((adult: any, index: number) => `
-              <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 5px;">
-                <strong>Adult ${index + 1}:</strong><br>
-                Name: ${adult.name || 'N/A'}<br>
-                Phone: ${adult.phone || 'N/A'}<br>
-                Govt ID: ${adult.govtIdNumber || 'N/A'}<br>
-                Relation: ${adult.relation || 'N/A'}
-              </div>
-            `).join('')}
-          </div>
-          ` : ''}
-          
-          <div class="image-section">
-            <h3>Images</h3>
-            <p>Tenant Photo, Government ID (Front & Back)</p>
-            <div class="image-placeholder">Tenant Photo</div>
-            <div class="image-placeholder">ID Front</div>
-            <div class="image-placeholder">ID Back</div>
-            <p><em>Images are stored securely and available in the digital system</em></p>
-          </div>
-          
-          <div class="footer">
-            <p>Report generated by HNV Property Management Solutions</p>
-            <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
-          </div>
-          
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-              }, 500);
-            };
-          </script>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-  };
+      return {
+        payments: payments.data.data || [],
+        expenses: expenses.data.data || [],
+        maintenance: maintenance.data.data || [],
+        approvals: approvals.data.data || []
+      };
+    },
+    enabled: !!tenantId
+  });
 
   if (isLoading) {
     return (
@@ -154,35 +51,44 @@ const TenantDetailsPage = () => {
     );
   }
 
-  if (error || !tenant) {
+  if (!tenant) {
     return (
       <div className="text-center py-16">
         <h3 className="text-xl font-bold text-text-primary mb-2">Tenant Not Found</h3>
-        <p className="text-text-secondary mb-4">The tenant you're looking for doesn't exist.</p>
-        <Link
-          to="/dashboard/tenants"
-          className="btn-gradient px-6 py-3 rounded-2xl font-semibold inline-flex items-center gap-2"
-        >
-          <ArrowLeft size={20} />
+        <Link to="/dashboard/tenants" className="btn-gradient px-6 py-3 rounded-2xl font-semibold">
           Back to Tenants
         </Link>
       </div>
     );
   }
 
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Users },
+    { id: 'payments', label: 'Payment History', icon: DollarSign },
+    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
+    { id: 'documents', label: 'Documents', icon: FileText }
+  ];
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const payments = relatedData?.payments || [];
+  const totalPaid = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+  const currentMonthPayment = payments.find((p: any) => {
+    const paymentDate = new Date(p.paymentDate);
+    return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+  });
+  const outstandingAmount = currentMonthPayment ? 0 : (tenant.rentAmount || 0);
+  const monthsPaid = payments.length;
+  const leaseStartDate = tenant.createdAt ? new Date(tenant.createdAt) : null;
+  const monthsSinceStart = leaseStartDate ? 
+    (currentYear - leaseStartDate.getFullYear()) * 12 + (currentMonth - leaseStartDate.getMonth()) + 1 : 0;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard/tenants"
-            className="p-2 rounded-xl hover:bg-app-bg transition-colors"
-          >
+          <Link to="/dashboard/tenants" className="p-2 rounded-xl hover:bg-app-bg transition-colors">
             <ArrowLeft size={24} />
           </Link>
           <div>
@@ -190,206 +96,202 @@ const TenantDetailsPage = () => {
             <p className="text-text-secondary">Tenant Details</p>
           </div>
         </div>
-        <button 
-          onClick={handleDownloadPDF}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Download size={20} />
-          Download PDF
-        </button>
+        <div className="flex gap-3">
+          <UniversalActionButton variant="success" size="sm" icon={Download}>
+            Download PDF
+          </UniversalActionButton>
+          <UniversalActionButton variant="primary" icon={Edit}>
+            Edit Tenant
+          </UniversalActionButton>
+        </div>
       </div>
 
+      {/* Tabs */}
+      <div className="border-b border-app-border">
+        <nav className="flex space-x-8">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <h2 className="text-xl font-bold text-text-primary mb-6">Basic Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center gap-3">
-                <Mail size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Email</p>
-                  <p className="font-medium text-text-primary">{tenant.email}</p>
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              {/* Lease Information */}
+              <UniversalCard gradient="blue">
+                <h3 className="text-lg font-bold mb-4">Lease Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-text-secondary">Property</p>
+                    <p className="font-medium">{tenant.propertyId?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-text-secondary">Unit</p>
+                    <p className="font-medium">Unit {tenant.unit || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-text-secondary">Monthly Rent</p>
+                    <p className="font-medium text-green-600">${tenant.rentAmount || 0}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-text-secondary">Lease Start</p>
+                    <p className="font-medium">{leaseStartDate?.toLocaleDateString() || 'N/A'}</p>
+                  </div>
+                  {tenant.leaseEndDate && (
+                    <>
+                      <div>
+                        <p className="text-sm text-text-secondary">Lease End</p>
+                        <p className="font-medium">{new Date(tenant.leaseEndDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Days Remaining</p>
+                        <p className="font-medium text-orange-600">
+                          {Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Phone</p>
-                  <p className="font-medium text-text-primary">{tenant.phone}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPin size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Unit</p>
-                  <p className="font-medium text-text-primary">{tenant.unit}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <DollarSign size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Monthly Rent</p>
-                  <p className="font-medium text-text-primary">${tenant.rentAmount}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+              </UniversalCard>
 
-          {/* Personal Details */}
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <h2 className="text-xl font-bold text-text-primary mb-6">Personal Details</h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-text-secondary">Father's Name</p>
-                  <p className="font-medium text-text-primary">{tenant.fatherName || 'N/A'}</p>
+              {/* Payment Summary */}
+              <UniversalCard gradient="green">
+                <h3 className="text-lg font-bold mb-4">Payment Summary</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-green-50 rounded-xl">
+                    <p className="text-2xl font-bold text-green-600">{monthsPaid}</p>
+                    <p className="text-sm text-green-800">Months Paid</p>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 rounded-xl">
+                    <p className="text-2xl font-bold text-blue-600">{monthsSinceStart - monthsPaid}</p>
+                    <p className="text-sm text-blue-800">Months Due</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <p className="text-2xl font-bold text-purple-600">${totalPaid}</p>
+                    <p className="text-sm text-purple-800">Total Paid</p>
+                  </div>
+                  <div className="text-center p-4 bg-red-50 rounded-xl">
+                    <p className="text-2xl font-bold text-red-600">${outstandingAmount}</p>
+                    <p className="text-sm text-red-800">Outstanding</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-text-secondary">Mother's Name</p>
-                  <p className="font-medium text-text-primary">{tenant.motherName || 'N/A'}</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-text-secondary">Present Address</p>
-                <p className="font-medium text-text-primary">{tenant.presentAddress || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-secondary">Permanent Address</p>
-                <p className="font-medium text-text-primary">{tenant.permanentAddress || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-text-secondary">Government ID Number</p>
-                <p className="font-medium text-text-primary">{tenant.govtIdNumber || 'N/A'}</p>
-              </div>
+              </UniversalCard>
             </div>
-          </div>
+          )}
 
-          {/* Additional Adults */}
-          {tenant.additionalAdults?.length > 0 && (
-            <div className="app-surface rounded-3xl p-8 border border-app-border">
-              <h2 className="text-xl font-bold text-text-primary mb-6">Additional Adults</h2>
-              <div className="space-y-4">
-                {tenant.additionalAdults.map((adult: any, index: number) => (
-                  <div key={index} className="p-4 bg-app-bg rounded-2xl">
-                    <h3 className="font-semibold text-text-primary mb-3">Adult {index + 1}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-text-secondary">Name: </span>
-                        <span className="font-medium">{adult.name || 'N/A'}</span>
-                      </div>
-                      <div>
-                        <span className="text-text-secondary">Phone: </span>
-                        <span className="font-medium">{adult.phone || 'N/A'}</span>
-                      </div>
-                      <div>
-                        <span className="text-text-secondary">Govt ID: </span>
-                        <span className="font-medium">{adult.govtIdNumber || 'N/A'}</span>
-                      </div>
-                      <div>
-                        <span className="text-text-secondary">Relation: </span>
-                        <span className="font-medium">{adult.relation || 'N/A'}</span>
-                      </div>
+          {activeTab === 'payments' && (
+            <UniversalCard gradient="green">
+              <h3 className="text-lg font-bold mb-4">Payment History</h3>
+              <div className="space-y-3">
+                {payments.map((payment: any) => (
+                  <div key={payment._id} className="flex justify-between items-center p-4 bg-app-bg rounded-xl">
+                    <div>
+                      <p className="font-medium">${payment.amount}</p>
+                      <p className="text-sm text-text-secondary">{new Date(payment.paymentDate).toLocaleDateString()}</p>
                     </div>
+                    <UniversalStatusBadge 
+                      status={payment.status} 
+                      variant={payment.status === 'Paid' ? 'success' : 'warning'}
+                    />
                   </div>
                 ))}
               </div>
-            </div>
+            </UniversalCard>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <UniversalCard gradient="orange">
+              <h3 className="text-lg font-bold mb-4">Maintenance Requests</h3>
+              <div className="space-y-3">
+                {relatedData?.maintenance?.map((request: any) => (
+                  <div key={request._id} className="p-4 bg-app-bg rounded-xl">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium">{request.description}</h4>
+                      <UniversalStatusBadge 
+                        status={request.status}
+                        variant={request.status === 'Open' ? 'warning' : 'success'}
+                      />
+                    </div>
+                    <p className="text-sm text-text-secondary">{new Date(request.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            </UniversalCard>
           )}
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Status Card */}
-          <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Status</h3>
-            <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-              tenant.status === 'Active' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {tenant.status}
-            </span>
-          </div>
-
-          {/* Property Info */}
-          <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Property Details</h3>
+          {/* Tenant Info */}
+          <UniversalCard gradient="blue">
+            <div className="text-center mb-4">
+              <div className="w-24 h-24 gradient-dark-orange-blue rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
+                {tenant.name?.charAt(0).toUpperCase() || 'T'}
+              </div>
+              <h3 className="text-lg font-bold">{tenant.name}</h3>
+              <UniversalStatusBadge 
+                status={tenant.status} 
+                variant={tenant.status === 'Active' ? 'success' : 'warning'}
+              />
+            </div>
+            
             <div className="space-y-3">
-              <div>
-                <p className="text-sm text-text-secondary">Property</p>
-                <p className="font-medium text-text-primary">{tenant.propertyId?.name || 'N/A'}</p>
+              <div className="flex items-center gap-3">
+                <Mail size={16} className="text-text-muted" />
+                <span className="text-sm">{tenant.email}</span>
               </div>
-              <div>
-                <p className="text-sm text-text-secondary">Lease End Date</p>
-                <p className="font-medium text-text-primary">
-                  {tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toLocaleDateString() : 'N/A'}
-                </p>
-              </div>
-              {tenant.securityDeposit && (
-                <div>
-                  <p className="text-sm text-text-secondary">Security Deposit</p>
-                  <p className="font-medium text-text-primary">${tenant.securityDeposit}</p>
+              {tenant.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone size={16} className="text-text-muted" />
+                  <span className="text-sm">{tenant.phone}</span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Reference Info */}
-          {tenant.referenceName && (
-            <div className="app-surface rounded-3xl p-6 border border-app-border">
-              <h3 className="text-lg font-bold text-text-primary mb-4">Reference</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-text-secondary">Name</p>
-                  <p className="font-medium text-text-primary">{tenant.referenceName}</p>
-                </div>
-                {tenant.referencePhone && (
-                  <div>
-                    <p className="text-sm text-text-secondary">Phone</p>
-                    <p className="font-medium text-text-primary">{tenant.referencePhone}</p>
-                  </div>
-                )}
-                {tenant.referenceRelation && (
-                  <div>
-                    <p className="text-sm text-text-secondary">Relation</p>
-                    <p className="font-medium text-text-primary">{tenant.referenceRelation}</p>
-                  </div>
-                )}
-                {tenant.referenceAddress && (
-                  <div>
-                    <p className="text-sm text-text-secondary">Address</p>
-                    <p className="font-medium text-text-primary">{tenant.referenceAddress}</p>
-                  </div>
-                )}
-                {tenant.referenceGovtId && (
-                  <div>
-                    <p className="text-sm text-text-secondary">Government ID</p>
-                    <p className="font-medium text-text-primary">{tenant.referenceGovtId}</p>
-                  </div>
-                )}
+              <div className="flex items-center gap-3">
+                <MapPin size={16} className="text-text-muted" />
+                <span className="text-sm">Unit {tenant.unit}</span>
               </div>
             </div>
-          )}
+          </UniversalCard>
 
-          {/* Images */}
-          <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Documents</h3>
+          {/* Quick Actions */}
+          <UniversalCard gradient="purple">
+            <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <div className="text-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                <User size={32} className="mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Tenant Photo</p>
-              </div>
-              <div className="text-center p-4 border-2 border-dashed border-gray-300 rounded-lg">
-                <CreditCard size={32} className="mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Government ID</p>
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                Images are stored securely in the system
-              </p>
+              <Link 
+                to={`/dashboard/payments?tenantId=${tenant._id}`}
+                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors block text-center"
+              >
+                View Payments ({payments.length})
+              </Link>
+              <Link 
+                to={`/dashboard/maintenance?tenantId=${tenant._id}`}
+                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors block text-center"
+              >
+                Maintenance ({relatedData?.maintenance?.length || 0})
+              </Link>
+              <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors">
+                Send Message
+              </button>
             </div>
-          </div>
+          </UniversalCard>
         </div>
       </div>
     </motion.div>

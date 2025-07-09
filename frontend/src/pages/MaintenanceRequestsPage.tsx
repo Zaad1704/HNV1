@@ -238,20 +238,28 @@ const MaintenanceRequestsPage = () => {
                     <p className="text-light-text text-sm flex items-center gap-2 mb-2"><Calendar size={14}/> Date: {new Date(req.createdAt).toLocaleDateString()}</p>
                     <p className="text-light-text text-sm flex items-center gap-2 mb-2"><Users size={14}/> Requested By: {req.requestedBy?.name || 'N/A'}</p>
                     
-                    <div className="mt-3">
-                        <label htmlFor={`status-${req._id}`} className="block text-sm font-medium text-light-text mb-1">Update Status:</label>
-                        <select 
-                            id={`status-${req._id}`}
-                            value={req.status} 
-                            onChange={(e) => handleStatusChange(req._id, e.target.value)}
-                            className="block w-full border border-border-color rounded-md py-2 px-3 text-dark-text bg-light-bg focus:ring-brand-primary focus:border-brand-primary"
-                            disabled={mutation.isLoading}
+                    <div className="space-y-3">
+                        <Link
+                            to={`/dashboard/maintenance/${req._id}`}
+                            className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center block group-hover:scale-105 transform"
                         >
-                            <option value="Open">Open</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Closed">Closed</option>
-                        </select>
+                            View Details
+                        </Link>
+                        <div>
+                            <label htmlFor={`status-${req._id}`} className="block text-sm font-medium text-light-text mb-1">Update Status:</label>
+                            <select 
+                                id={`status-${req._id}`}
+                                value={req.status} 
+                                onChange={(e) => handleStatusChange(req._id, e.target.value)}
+                                className="block w-full border border-border-color rounded-md py-2 px-3 text-dark-text bg-light-bg focus:ring-brand-primary focus:border-brand-primary"
+                                disabled={mutation.isLoading}
+                            >
+                                <option value="Open">Open</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
                     </div>
                 </UniversalCard>
             ))}
