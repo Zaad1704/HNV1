@@ -7,6 +7,119 @@ import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X } f
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 
+// Units & Tenants Component
+const UnitsTenantsSection = ({ propertyId, property, tenants }: { propertyId: string, property: any, tenants: any[] }) => {
+  // Generate all units based on property numberOfUnits
+  const allUnits = Array.from({ length: property.numberOfUnits || 1 }, (_, i) => {
+    const unitNumber = (i + 1).toString();
+    const tenant = tenants.find(t => t.unit === unitNumber);
+    
+    return {
+      unitNumber,
+      tenant,
+      isOccupied: !!tenant,
+      status: tenant ? tenant.status : 'Vacant'
+    };
+  });
+
+  const occupiedUnits = allUnits.filter(unit => unit.isOccupied).length;
+  const vacantUnits = allUnits.filter(unit => !unit.isOccupied).length;
+
+  return (
+    <div className="app-surface rounded-3xl p-8 border border-app-border">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-text-primary">Units & Tenants</h2>
+          <p className="text-sm text-text-secondary">
+            {occupiedUnits} Occupied • {vacantUnits} Vacant • {property.numberOfUnits} Total
+          </p>
+        </div>
+        <Link 
+          to={`/dashboard/tenants/add?propertyId=${propertyId}`}
+          className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
+        >
+          Add Tenant
+        </Link>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {allUnits.map((unit) => (
+          <div
+            key={unit.unitNumber}
+            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+              unit.isOccupied 
+                ? 'border-green-200 bg-green-50 hover:border-green-300 hover:bg-green-100' 
+                : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
+            }`}
+            onClick={() => {
+              if (unit.tenant) {
+                window.location.href = `/dashboard/tenants/${unit.tenant._id}`;
+              } else {
+                window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unit.unitNumber}`;
+              }
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  unit.isOccupied 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-400 text-white'
+                }`}>
+                  {unit.isOccupied ? <Users size={16} /> : <Users size={16} />}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">Unit {unit.unitNumber}</h3>
+                  <p className={`text-xs font-medium ${
+                    unit.isOccupied ? 'text-green-600' : 'text-gray-500'
+                  }`}>
+                    {unit.isOccupied ? 'Occupied' : 'Vacant'}
+                  </p>
+                </div>
+              </div>
+              
+              {unit.isOccupied && (
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  unit.tenant.status === 'Active' 
+                    ? 'bg-green-100 text-green-800'
+                    : unit.tenant.status === 'Late'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {unit.tenant.status}
+                </span>
+              )}
+            </div>
+            
+            {unit.isOccupied ? (
+              <div>
+                <p className="font-medium text-text-primary mb-1">{unit.tenant.name}</p>
+                <p className="text-sm text-text-secondary mb-2">{unit.tenant.email}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-text-secondary">Monthly Rent</span>
+                  <span className="font-semibold text-text-primary">${unit.tenant.rentAmount || 0}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-2">
+                <p className="text-sm text-gray-500 mb-2">Unit Available</p>
+                <p className="text-xs text-blue-600 font-medium">Click to add tenant</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      {allUnits.length === 0 && (
+        <div className="text-center py-8">
+          <Users size={48} className="text-text-muted mx-auto mb-4" />
+          <p className="text-text-secondary mb-4">No units configured</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Rent Status Component
 const RentStatusSection = ({ propertyId }: { propertyId: string }) => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -357,51 +470,8 @@ const PropertyDetailsPage = () => {
           {/* Rent Status Overview */}
           <RentStatusSection propertyId={propertyId!} />
 
-          {/* Tenants List */}
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-text-primary">Tenants ({tenants.length})</h2>
-              <Link 
-                to={`/dashboard/tenants/add?propertyId=${propertyId}`}
-                className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
-              >
-                Add Tenant
-              </Link>
-            </div>
-            
-            {tenants.length > 0 ? (
-              <div className="space-y-4">
-                {tenants.map((tenant: any) => (
-                  <div key={tenant._id} className="flex items-center justify-between p-4 bg-app-bg rounded-2xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-brand-blue to-brand-orange rounded-full flex items-center justify-center">
-                        <Users size={20} className="text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-text-primary">{tenant.name}</h3>
-                        <p className="text-sm text-text-secondary">Unit: {tenant.unit} | Status: {tenant.status}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-text-primary">${tenant.rentAmount || 0}</p>
-                      <p className="text-sm text-text-secondary">Monthly Rent</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Users size={48} className="text-text-muted mx-auto mb-4" />
-                <p className="text-text-secondary mb-4">No tenants added yet</p>
-                <Link 
-                  to={`/dashboard/tenants/add?propertyId=${propertyId}`}
-                  className="bg-green-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-600 transition-colors inline-block"
-                >
-                  Add First Tenant
-                </Link>
-              </div>
-            )}
-          </div>
+          {/* Units & Tenants List */}
+          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} />
         </div>
 
         {/* Sidebar */}
