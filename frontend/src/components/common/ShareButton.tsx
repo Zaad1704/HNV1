@@ -113,7 +113,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
       </button>
       
       {showDropdown && (
-        <div className="absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 min-w-[160px]">
+        <div className="absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999] min-w-[160px]">
           {shareOptions.map((option, index) => (
             <button
               key={option.name}
@@ -134,7 +134,7 @@ const ShareButton: React.FC<ShareButtonProps> = ({
       
       {showDropdown && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[9998]" 
           onClick={() => setShowDropdown(false)}
         />
       )}

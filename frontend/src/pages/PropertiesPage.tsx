@@ -503,14 +503,18 @@ const PropertiesPage = () => {
                     src={property.imageUrl}
                     alt={property.name}
                     className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-500"
+                    onError={(e) => {
+                      console.log('Image failed to load:', property.imageUrl);
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-                      <Building2 size={32} className="text-white" />
-                    </div>
+                ) : null}
+                <div className={`w-full h-full flex items-center justify-center ${property.imageUrl ? 'hidden' : ''}`}>
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                    <Building2 size={32} className="text-white" />
                   </div>
-                )}
+                </div>
                 <div className="absolute top-4 right-4 z-10">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
                     property.status === 'Active' 
@@ -592,7 +596,7 @@ const PropertiesPage = () => {
                     </div>
                     
                     {/* Message and Share Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 relative z-50">
                       <MessageButtons
                         phone={property.contactPhone}
                         email={property.contactEmail}
@@ -603,13 +607,15 @@ const PropertiesPage = () => {
                           address: property.address?.formattedAddress
                         }}
                       />
-                      <ShareButton
-                        title={property.name}
-                        text={`Check out this property: ${property.name} - ${property.address?.formattedAddress}`}
-                        type="property"
-                        data={property}
-                        className="flex-1"
-                      />
+                      <div className="flex-1 relative">
+                        <ShareButton
+                          title={property.name}
+                          text={`Check out this property: ${property.name} - ${property.address?.formattedAddress}`}
+                          type="property"
+                          data={property}
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

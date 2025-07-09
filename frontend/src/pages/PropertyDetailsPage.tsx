@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
+import EditPropertyModal from '../components/common/EditPropertyModal';
 
 const fetchPropertyDetails = async (propertyId: string) => {
   const { data } = await apiClient.get(`/properties/${propertyId}`);
@@ -22,7 +23,9 @@ const fetchPropertyTenants = async (propertyId: string) => {
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
+  const queryClient = useQueryClient();
   const [showRentIncrease, setShowRentIncrease] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', propertyId],
@@ -81,13 +84,13 @@ const PropertyDetailsPage = () => {
             <p className="text-text-secondary">Property Details</p>
           </div>
         </div>
-        <Link 
-          to={`/dashboard/properties/${propertyId}/edit`}
+        <button
+          onClick={() => setShowEditModal(true)}
           className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
         >
           <Edit size={20} />
           Edit Property
-        </Link>
+        </button>
       </div>
 
       {/* Property Info */}
@@ -262,6 +265,16 @@ const PropertyDetailsPage = () => {
         onClose={() => setShowRentIncrease(false)}
         property={property}
         type="property"
+      />
+      
+      <EditPropertyModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onPropertyUpdated={(updatedProperty) => {
+          queryClient.setQueryData(['property', propertyId], updatedProperty);
+          queryClient.invalidateQueries({ queryKey: ['properties'] });
+        }}
+        property={property}
       />
     </motion.div>
   );
