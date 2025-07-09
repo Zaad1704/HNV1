@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, User, Search } from 'lucide-react';
+import { X, Upload, User, Search, Image } from 'lucide-react';
 import apiClient from '../../api/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -25,6 +25,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vacantUnits, setVacantUnits] = useState([]);
   const [showUnits, setShowUnits] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   const { data: properties = [] } = useQuery({
     queryKey: ['properties'],
@@ -65,15 +67,45 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     setShowUnits(false);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
+      let imageUrl = '';
+      
+      // Upload image if selected
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+        
+        try {
+          const imageResponse = await apiClient.post('/upload/image', imageFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          imageUrl = imageResponse.data?.data?.url || imageResponse.data?.url || '';
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+        }
+      }
+      
       const tenantData = {
         ...formData,
         rentAmount: Number(formData.rentAmount),
-        securityDeposit: Number(formData.securityDeposit)
+        securityDeposit: Number(formData.securityDeposit),
+        imageUrl
       };
       
       const response = await apiClient.post('/tenants', tenantData);
@@ -86,6 +118,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
           name: '', email: '', phone: '', propertyId: '', unit: '',
           rentAmount: '', leaseStartDate: '', leaseEndDate: '', securityDeposit: '', status: 'Active'
         });
+        setImageFile(null);
+        setImagePreview('');
       }
     } catch (error: any) {
       alert(`Error: ${error.response?.data?.message || 'Failed to add tenant'}`);
@@ -178,20 +212,28 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
               {/* Vacant Units Dropdown */}
               {showUnits && vacantUnits.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  <div className="p-2 border-b border-gray-200 bg-gray-50">
+                    <p className="text-xs text-gray-600 font-medium">Available Units ({vacantUnits.length})</p>
+                  </div>
                   {vacantUnits.map((unit: any, index) => (
                     <div
                       key={index}
                       onClick={() => handleUnitSelect(unit)}
-                      className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                      className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-colors"
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{unit.unitNumber}</p>
+                          <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                            Unit {unit.unitNumber}
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Vacant</span>
+                          </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {unit.lastRentAmount ? `Last rent: $${unit.lastRentAmount}` : 'No previous rent'}
+                            {unit.lastRentAmount ? `Previous rent: $${unit.lastRentAmount}` : unit.suggestedRent ? `Suggested: $${unit.suggestedRent}` : 'No rent history'}
                           </p>
                         </div>
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Vacant</span>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-green-600">Click to select</p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -199,26 +241,40 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
               )}
               
               {showUnits && vacantUnits.length === 0 && formData.propertyId && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-3">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">No vacant units available</p>
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4">
+                  <div className="text-center">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">No vacant units available</p>
+                    <p className="text-xs text-gray-400">All units in this property are occupied</p>
+                  </div>
                 </div>
               )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Rent Amount
-                {formData.rentAmount && (
-                  <span className="text-xs text-blue-600 ml-2">(Auto-filled from unit history)</span>
+                Monthly Rent Amount
+                {formData.unit && formData.rentAmount && (
+                  <span className="text-xs text-green-600 ml-2">
+                    ✓ Auto-filled for Unit {formData.unit}
+                  </span>
                 )}
               </label>
-              <input
-                type="number"
-                value={formData.rentAmount}
-                onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                placeholder="Enter rent amount"
-                required
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.rentAmount}
+                  onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
+                  className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder={formData.unit ? "Amount for selected unit" : "Enter rent amount"}
+                  required
+                />
+              </div>
+              {formData.unit && !formData.rentAmount && (
+                <p className="text-xs text-amber-600 mt-1">
+                  No previous rent data for Unit {formData.unit}. Please enter amount manually.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Security Deposit</label>
@@ -251,6 +307,47 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tenant Photo</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview('');
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Image size={32} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 mb-2">Upload tenant photo</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="tenant-image"
+                  />
+                  <label
+                    htmlFor="tenant-image"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100"
+                  >
+                    <Upload size={16} />
+                    Choose Photo
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 
