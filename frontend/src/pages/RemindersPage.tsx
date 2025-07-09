@@ -38,6 +38,10 @@ const RemindersPage = () => {
     retry: 1
   });
 
+  const handleReminderAdded = () => {
+    queryClient.invalidateQueries({ queryKey: ['reminders'] });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -168,7 +172,7 @@ const RemindersPage = () => {
                   customMessage={reminder.message || 'Automated reminder notification'}
                 />
               </div>
-            </UniversalCard>
+            </motion.div>
           ))}
         </div>
       ) : (
@@ -180,13 +184,13 @@ const RemindersPage = () => {
           <p className="text-text-secondary mb-8 max-w-md mx-auto">
             Set up automated reminders to keep tenants informed about rent payments and important dates.
           </p>
-          <UniversalActionButton 
-            variant="primary"
-            icon={Plus}
+          <button 
             onClick={() => setShowAddModal(true)}
+            className="btn-gradient px-6 py-3 rounded-xl flex items-center gap-2 font-semibold"
           >
+            <Plus size={16} />
             Create First Reminder
-          </UniversalActionButton>
+          </button>
         </div>
       )}
       <UniversalExport
