@@ -18,6 +18,7 @@ export interface IPayment extends Document {
   paymentMethod?: string;
   description?: string;
   notes?: string;
+  rentMonth?: string;
   collectionMethod?: string;
   receivedBy?: string;
   agentName?: string;
@@ -52,6 +53,7 @@ const PaymentSchema = new Schema<IPayment>({
   paymentMethod: { type: String, default: 'Bank Transfer' },
   description: { type: String, default: 'Monthly Rent Payment' },
   notes: { type: String },
+  rentMonth: { type: String },
   collectionMethod: { type: String },
   receivedBy: { type: String },
   agentName: { type: String },

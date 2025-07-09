@@ -32,7 +32,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
   const [discountValue, setDiscountValue] = useState('');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMethod, setPaymentMethod] = useState('Bank Transfer');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showReceipts, setShowReceipts] = useState(false);
+  const [generatedReceipts, setGeneratedReceipts] = useState([]);
 
   const { data: properties = [] } = useQuery({
     queryKey: ['properties'],
@@ -52,6 +55,34 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
     },
     enabled: !!selectedProperty
   });
+
+  // Get available months (current and future)
+  const getAvailableMonths = () => {
+    const months = [];
+    const currentDate = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
+      months.push({
+        value: date.toISOString().slice(0, 7),
+        label: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      });
+    }
+    return months;
+  };
+
+  // Check if tenant has past dues
+  const hasPastDues = (tenant: Tenant) => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const selectedMonthDate = new Date(selectedMonth + '-01');
+    const currentMonthDate = new Date(currentMonth + '-01');
+    
+    // If selecting current month, check for past dues
+    if (selectedMonthDate.getTime() === currentMonthDate.getTime()) {
+      // This would need actual payment history check - simplified for now
+      return tenant.status === 'Late';
+    }
+    return false;
+  };
 
   const calculateDiscountedAmount = (originalAmount: number) => {
     if (discountType === 'none') return originalAmount;
@@ -73,8 +104,20 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
   };
 
   const handleSelectAllTenants = () => {
-    const activeTenants = tenants.filter((t: Tenant) => t.status === 'Active');
-    setSelectedTenants(activeTenants.map((t: Tenant) => t._id));
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const isCurrentMonth = selectedMonth === currentMonth;
+    
+    const eligibleTenants = tenants.filter((t: Tenant) => {
+      if (isCurrentMonth) {
+        // For current month, exclude tenants with past dues
+        return t.status === 'Active' && !hasPastDues(t);
+      } else {
+        // For future months, include all active tenants
+        return t.status === 'Active';
+      }
+    });
+    
+    setSelectedTenants(eligibleTenants.map((t: Tenant) => t._id));
   };
 
   const handleDeselectAllTenants = () => {
@@ -113,22 +156,23 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
         };
       });
 
-      const response = await apiClient.post('/bulk/payments', { payments });
+      const response = await apiClient.post('/bulk/payments', { 
+        payments,
+        month: selectedMonth,
+        generateReceipts: true
+      });
       
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Failed to record payments');
       }
       
-      alert(`Bulk payment recorded successfully for ${selectedTenants.length} tenants!`);
-      onClose();
+      // Store generated receipts
+      setGeneratedReceipts(response.data.data.receipts || []);
+      setShowReceipts(true);
       
-      // Reset form
-      setSelectedProperty('');
-      setSelectedTenants([]);
-      setDiscountType('none');
-      setDiscountValue('');
-      setPaymentDate(new Date().toISOString().split('T')[0]);
-      setPaymentMethod('Bank Transfer');
+      alert(`Bulk payment recorded successfully for ${selectedTenants.length} tenants!`);
+      
+      // Don't reset form immediately - show receipts first
     } catch (error: any) {
       console.error('Failed to record bulk payment:', error);
       alert(error.response?.data?.message || 'Failed to record bulk payment. Please try again.');
@@ -209,36 +253,51 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                 ) : tenantsError ? (
                   <p className="text-red-500 text-center py-4">Error loading tenants</p>
                 ) : tenants.length > 0 ? (
-                  tenants.map((tenant: Tenant) => (
-                    <div key={tenant._id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedTenants.includes(tenant._id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedTenants(prev => [...prev, tenant._id]);
-                            } else {
-                              setSelectedTenants(prev => prev.filter(id => id !== tenant._id));
-                            }
-                          }}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900">{tenant.name}</p>
-                          <p className="text-sm text-gray-500">Unit: {tenant.unit} | Status: {tenant.status}</p>
+                  tenants.map((tenant: Tenant) => {
+                    const isPastDue = hasPastDues(tenant);
+                    const currentMonth = new Date().toISOString().slice(0, 7);
+                    const isCurrentMonth = selectedMonth === currentMonth;
+                    const isDisabled = isCurrentMonth && isPastDue;
+                    
+                    return (
+                      <div key={tenant._id} className={`flex items-center justify-between p-2 rounded ${
+                        isDisabled ? 'bg-red-50 opacity-60' : 'hover:bg-gray-50'
+                      }`}>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedTenants.includes(tenant._id)}
+                            disabled={isDisabled}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedTenants(prev => [...prev, tenant._id]);
+                              } else {
+                                setSelectedTenants(prev => prev.filter(id => id !== tenant._id));
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900">{tenant.name}</p>
+                            <p className="text-sm text-gray-500">
+                              Unit: {tenant.unit} | Status: {tenant.status}
+                              {isPastDue && isCurrentMonth && (
+                                <span className="text-red-600 ml-2">(Past Due - Cannot select for current month)</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-gray-900">{currency}{tenant.rentAmount || 0}</p>
+                          {discountType !== 'none' && selectedTenants.includes(tenant._id) && (
+                            <p className="text-sm text-green-600">
+                              After discount: {currency}{calculateDiscountedAmount(tenant.rentAmount || 0).toFixed(2)}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">{currency}{tenant.rentAmount || 0}</p>
-                        {discountType !== 'none' && selectedTenants.includes(tenant._id) && (
-                          <p className="text-sm text-green-600">
-                            After discount: {currency}{calculateDiscountedAmount(tenant.rentAmount || 0).toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-gray-500 text-center py-4">No tenants found for this property</p>
                 )}
@@ -310,6 +369,26 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
             </div>
           )}
 
+          {/* Month Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Rent Month
+            </label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => {
+                setSelectedMonth(e.target.value);
+                setSelectedTenants([]); // Reset selection when month changes
+              }}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              {getAvailableMonths().map(month => (
+                <option key={month.value} value={month.value}>{month.label}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Payment Details */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -377,6 +456,75 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
           </div>
         </form>
       </div>
+      
+      {/* Receipts Modal */}
+      {showReceipts && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4">Payment Receipts Generated</h3>
+            <p className="text-gray-600 mb-6">
+              {generatedReceipts.length} receipts have been generated successfully.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await apiClient.post('/receipts/bulk-pdf', {
+                      receiptIds: generatedReceipts.map((r: any) => r._id)
+                    }, { responseType: 'blob' });
+                    
+                    const blob = new Blob([response.data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `bulk-receipts-${selectedMonth}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  } catch (error) {
+                    alert('Failed to download PDF');
+                  }
+                }}
+                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+              >
+                📄 Download PDF
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await apiClient.post('/receipts/thermal-print', {
+                      receiptIds: generatedReceipts.map((r: any) => r._id)
+                    });
+                    alert('Receipts sent to thermal printer!');
+                  } catch (error) {
+                    alert('Failed to print receipts');
+                  }
+                }}
+                className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+              >
+                🖨️ Thermal Print
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setShowReceipts(false);
+                onClose();
+                // Reset form
+                setSelectedProperty('');
+                setSelectedTenants([]);
+                setDiscountType('none');
+                setDiscountValue('');
+                setPaymentDate(new Date().toISOString().split('T')[0]);
+                setPaymentMethod('Bank Transfer');
+                setSelectedMonth(new Date().toISOString().slice(0, 7));
+                setGeneratedReceipts([]);
+              }}
+              className="w-full mt-3 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

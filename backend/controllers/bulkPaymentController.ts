@@ -14,7 +14,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const { payments } = req.body; // Array of payment objects
+    const { payments, month, generateReceipts = false } = req.body; // Array of payment objects
 
     if (!payments || !Array.isArray(payments) || payments.length === 0) {
       return res.status(400).json({ success: false, message: 'Valid payments array required' });
@@ -22,6 +22,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
 
     const createdPayments = [];
     const createdInvoices = [];
+    const createdReceipts = [];
 
     for (const paymentData of payments) {
       const { 
@@ -58,11 +59,12 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
         } : undefined,
         paymentDate,
         paymentMethod: paymentMethod || 'Bank Transfer',
-        description: description || 'Monthly Rent Payment',
+        description: description || `Monthly Rent Payment - ${month || new Date().toISOString().slice(0, 7)}`,
         status,
         organizationId: req.user.organizationId,
         recordedBy: req.user._id,
-        notes: discount ? `Applied ${discount.type} discount: ${discount.type === 'percentage' ? discount.value + '%' : '$' + discount.value}` : undefined
+        notes: discount ? `Applied ${discount.type} discount: ${discount.type === 'percentage' ? discount.value + '%' : '$' + discount.value}` : undefined,
+        rentMonth: month
       });
 
       // Auto-generate invoice
@@ -85,6 +87,26 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
 
       createdPayments.push(payment);
       createdInvoices.push(invoice);
+      
+      // Generate receipt if requested
+      if (generateReceipts) {
+        const Receipt = require('../models/Receipt').default;
+        const receipt = await Receipt.create({
+          tenantId,
+          propertyId: tenant.propertyId,
+          organizationId: req.user.organizationId,
+          paymentId: payment._id,
+          receiptNumber: `RCP-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${Date.now()}-${createdReceipts.length + 1}`,
+          amount,
+          paymentDate,
+          paymentMethod,
+          rentMonth: month,
+          tenantName: tenant.name,
+          propertyName: tenant.propertyId?.name || 'Property',
+          unitNumber: tenant.unit
+        });
+        createdReceipts.push(receipt);
+      }
     }
 
     res.status(201).json({
@@ -92,6 +114,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
       data: {
         payments: createdPayments,
         invoices: createdInvoices,
+        receipts: createdReceipts,
         count: createdPayments.length
       }
     });
