@@ -262,6 +262,17 @@ const OverviewPage = () => {
           transition: isPulling ? 'none' : 'transform 0.3s ease'
         }}
       >
+      <UniversalHeader
+        title="Overview"
+        subtitle="Property management dashboard overview"
+        icon={Building2}
+        stats={[
+          { label: 'Properties', value: stats?.totalProperties || 0, color: 'blue' },
+          { label: 'Tenants', value: stats?.activeTenants || 0, color: 'green' },
+          { label: 'Revenue', value: `${currency}${stats?.monthlyRevenue || 0}`, color: 'purple' },
+          { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, color: 'orange' }
+        ]}
+      />
       {/* Welcome Section - Redesigned */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Welcome Card */}

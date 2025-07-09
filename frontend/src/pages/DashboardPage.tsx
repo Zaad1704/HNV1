@@ -247,6 +247,17 @@ const DashboardPage = () => {
       <FloatingHelpCenter />
       <FloatingQuickActions />
       <main className={`dashboard-container p-6 pt-0 ${isLoading && stats ? 'opacity-90' : ''} ${hasRestrictedAccess ? 'pointer-events-none opacity-75' : ''}`}>
+      <UniversalHeader
+        title="Dashboard"
+        subtitle="Property management overview"
+        icon={BarChart3}
+        stats={[
+          { label: 'Properties', value: dashboardStats.totalProperties, color: 'blue' },
+          { label: 'Tenants', value: dashboardStats.totalTenants, color: 'green' },
+          { label: 'Revenue', value: `$${dashboardStats.monthlyRevenue}`, color: 'purple' },
+          { label: 'Occupancy', value: `${dashboardStats.occupancyRate}%`, color: 'orange' }
+        ]}
+      />
       {isLoading && stats && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-brand-blue text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
