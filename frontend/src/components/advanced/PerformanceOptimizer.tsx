@@ -27,7 +27,7 @@ const PerformanceOptimizer: React.FC = () => {
   const generateOptimizations = () => {
     setIsAnalyzing(true);
     
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       const optimizations: OptimizationSuggestion[] = [
         {
           id: '1',
@@ -78,6 +78,8 @@ const PerformanceOptimizer: React.FC = () => {
       setSuggestions(optimizations);
       setIsAnalyzing(false);
     }, 1500);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const getCategoryIcon = (category: string) => {

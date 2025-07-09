@@ -12,6 +12,7 @@ interface SmartInsight {
   description: string;
   impact: 'high' | 'medium' | 'low';
   actionable: boolean;
+  confidence?: number;
   data?: any;
 }
 
@@ -32,7 +33,7 @@ const SmartDashboard: React.FC = () => {
   const generateSmartInsights = async () => {
     setIsAnalyzing(true);
     
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       const smartInsights: SmartInsight[] = [
         {
           id: '1',
@@ -64,6 +65,8 @@ const SmartDashboard: React.FC = () => {
       setInsights(smartInsights);
       setIsAnalyzing(false);
     }, 2000);
+    
+    return () => clearTimeout(timeoutId);
   };
 
   const getInsightIcon = (type: string) => {
