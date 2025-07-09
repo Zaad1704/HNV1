@@ -70,8 +70,9 @@ router.post('/bulk-pdf', async (req: any, res) => {
       doc.rect(30, currentY, 552, headerHeight).fill('#2563eb');
       
       // Organization name
+      const maxOrgWidth = 500;
       doc.font('Helvetica-Bold').fontSize(18).fillColor('white')
-         .text(orgName, 50, currentY + 10, { width: 500, align: 'center' });
+         .text(orgName, 50, currentY + 10, { width: maxOrgWidth, align: 'center' });
       
       doc.fontSize(12).text(t('receipt.paymentReceipt', userLang), 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
       
