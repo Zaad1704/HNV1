@@ -52,7 +52,7 @@ const RemindersPage = () => {
   }
 
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-8"
@@ -119,7 +119,7 @@ const RemindersPage = () => {
       {reminders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reminders.map((reminder: any, index: number) => (
-            <motion.div
+            <div
               key={reminder._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -172,7 +172,7 @@ const RemindersPage = () => {
                   customMessage={reminder.message || 'Automated reminder notification'}
                 />
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       ) : (
@@ -207,7 +207,7 @@ const RemindersPage = () => {
         onClose={() => setShowAddModal(false)}
         onReminderCreated={handleReminderAdded}
       />
-    </motion.div>
+    </div>
   );
 };
 

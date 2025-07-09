@@ -91,7 +91,7 @@ const UsersPage = () => {
   }
 
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-8"
@@ -172,7 +172,7 @@ const UsersPage = () => {
         {users.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {users.map((user: any, index: number) => (
-              <motion.div
+              <div
                 key={user._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -247,7 +247,7 @@ const UsersPage = () => {
         {invites.length > 0 ? (
           <div className="space-y-3">
             {invites.map((invite: any, index: number) => (
-              <motion.div
+              <div
                 key={invite._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -278,7 +278,7 @@ const UsersPage = () => {
                     companyName: 'Property Management'
                   }}
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
         ) : (
@@ -382,7 +382,7 @@ const UsersPage = () => {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

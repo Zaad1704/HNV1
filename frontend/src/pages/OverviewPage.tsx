@@ -252,7 +252,7 @@ const OverviewPage = () => {
         </div>
       )}
       
-      <motion.div
+      <div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -369,7 +369,7 @@ const OverviewPage = () => {
       
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <motion.div 
+        <div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
@@ -392,9 +392,9 @@ const OverviewPage = () => {
           <div onClick={() => navigate('/dashboard/cashflow')} className="cursor-pointer">
             <FinancialChart data={financialData || []} />
           </div>
-        </motion.div>
+        </div>
         
-        <motion.div 
+        <div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
@@ -417,7 +417,7 @@ const OverviewPage = () => {
           <div onClick={() => navigate('/dashboard/payments')} className="cursor-pointer">
             <RentStatusChart data={rentStatusData || []} />
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Floating Quick Actions */}
@@ -464,7 +464,7 @@ const OverviewPage = () => {
 
       {/* Action Items */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div 
+        <div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.5 }}
@@ -480,9 +480,9 @@ const OverviewPage = () => {
             isActionLoading={reminderMutation.isPending}
             loadingItemId={remindingTenantId}
           />
-        </motion.div>
+        </div>
         
-        <motion.div 
+        <div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.5 }}
@@ -496,9 +496,9 @@ const OverviewPage = () => {
             linkTo="/dashboard/tenants?filter=expiring"
             onActionClick={(itemId) => alert(`Renew Lease for ${itemId}`)}
           />
-        </motion.div>
+        </div>
       </div>
-      </motion.div>
+      </div>
       
       {/* Modals */}
       <AddPropertyModal

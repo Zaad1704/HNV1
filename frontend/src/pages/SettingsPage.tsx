@@ -294,7 +294,7 @@ const SettingsPage = () => {
   ];
 
   return (
-    <motion.div
+    <div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-8"
@@ -650,7 +650,7 @@ const SettingsPage = () => {
         isOpen={showOrgSettings}
         onClose={() => setShowOrgSettings(false)}
       />
-    </motion.div>
+    </div>
   );
 };
 
