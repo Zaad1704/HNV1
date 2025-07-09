@@ -52,11 +52,7 @@ const UnitsTenantsSection = ({ propertyId, property, tenants }: { propertyId: st
                 : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
             }`}
             onClick={() => {
-              if (unit.tenant) {
-                window.location.href = `/dashboard/tenants/${unit.tenant._id}`;
-              } else {
-                window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unit.unitNumber}`;
-              }
+              window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
             }}
           >
             <div className="flex items-center justify-between mb-3">
