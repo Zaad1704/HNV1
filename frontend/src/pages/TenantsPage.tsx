@@ -206,7 +206,8 @@ const TenantsPage = () => {
           { label: 'Late', value: tenants.filter(t => t.status === 'Late').length, color: 'red' },
           { label: 'Archived', value: tenants.filter(t => t.status === 'Archived').length, color: 'yellow' }
         ]}
-        <div className="flex gap-3">
+        actions={
+          <div className="flex gap-3">
           <button
             onClick={() => setShowQuickPayment(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
@@ -237,8 +238,9 @@ const TenantsPage = () => {
             </div>
             Add Tenant
           </button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* Universal Search */}
       <UniversalSearch
@@ -262,156 +264,6 @@ const TenantsPage = () => {
                 index={index}
               />
             </UniversalCard>
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-              
-              {/* Selection Checkbox */}
-              <div className="absolute top-4 right-4 z-10">
-                <input
-                  type="checkbox"
-                  checked={selectedTenants.includes(tenant._id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedTenants(prev => [...prev, tenant._id]);
-                    } else {
-                      setSelectedTenants(prev => prev.filter(id => id !== tenant._id));
-                    }
-                  }}
-                  className="w-5 h-5 rounded border-2 border-gray-300 text-brand-blue focus:ring-brand-blue transition-colors"
-                />
-              </div>
-              
-              {/* Header */}
-              <div className="relative z-10 mb-6">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                    {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-text-primary group-hover:text-brand-blue transition-colors">
-                      {tenant.name || 'Unknown'}
-                    </h3>
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                      tenant.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : tenant.status === 'Archived'
-                        ? 'bg-gray-100 text-gray-800'
-                        : tenant.status === 'Late'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {tenant.status === 'Archived' && <Archive size={10} className="mr-1" />}
-                      {tenant.status || 'Unknown'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="relative z-10 space-y-4 mb-6">
-                <div className="bg-app-bg/50 rounded-2xl p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Mail size={14} className="text-blue-600" />
-                    </div>
-                    <span className="text-sm text-text-primary font-medium truncate">{tenant.email || 'No email'}</span>
-                  </div>
-                  {tenant.phone && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Phone size={14} className="text-green-600" />
-                      </div>
-                      <span className="text-sm text-text-primary font-medium">{tenant.phone}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <MapPin size={14} className="text-purple-600" />
-                    </div>
-                    <span className="text-sm text-text-primary font-medium truncate">
-                      Unit {tenant.unit || 'N/A'} • {tenant.propertyId?.name || 'No property'}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Rent Amount Highlight */}
-                {tenant.rentAmount && (
-                  <div className="bg-gradient-to-r from-brand-blue via-purple-600 to-brand-orange p-4 rounded-2xl text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                          <DollarSign size={14} />
-                        </div>
-                        <span className="text-sm font-medium">Monthly Rent</span>
-                      </div>
-                      <span className="text-xl font-bold group-hover:scale-110 transition-transform duration-300">${tenant.rentAmount}</span>
-                    </div>
-                  </div>
-                )}
-                
-                {tenant.leaseEndDate && (
-                  <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-xl">
-                    <Calendar size={14} className="text-yellow-600" />
-                    <span className="text-sm text-yellow-800 font-medium">
-                      Lease ends: {new Date(tenant.leaseEndDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="relative z-10 flex flex-col gap-3">
-                <Link 
-                  to={`/dashboard/tenants/${tenant._id}`}
-                  className="w-full gradient-dark-orange-blue text-white py-3 px-4 rounded-2xl text-sm font-semibold transition-all hover:shadow-xl text-center group-hover:scale-105 transform hover:shadow-brand-blue/25 relative overflow-hidden"
-                >
-                  <span className="relative z-10">View Details</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                </Link>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => handleArchiveTenant(tenant._id, tenant.name, tenant.status)}
-                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium transition-all border ${
-                      tenant.status === 'Archived'
-                        ? 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
-                        : 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200'
-                    }`}
-                  >
-                    {tenant.status === 'Archived' ? (
-                      <><ArchiveRestore size={12} className="inline mr-1" />Restore</>
-                    ) : (
-                      <><Archive size={12} className="inline mr-1" />Archive</>
-                    )}
-                  </button>
-                  {tenant.status !== 'Archived' && (
-                    <div className="flex gap-1 flex-1">
-                      <MessageButtons
-                        phone={tenant.phone}
-                        email={tenant.email}
-                        name={tenant.name}
-                        messageType="rentReminder"
-                        additionalData={{
-                          amount: tenant.rentAmount,
-                          dueDate: new Date().toLocaleDateString()
-                        }}
-                      />
-                      <ShareButton
-                        title={`Tenant: ${tenant.name}`}
-                        text={`Tenant information for ${tenant.name} at ${tenant.propertyId?.name || 'Property'}`}
-                        type="tenant"
-                        data={tenant}
-                        className="ml-1"
-                      />
-                    </div>
-                  )}
-                  <button 
-                    onClick={() => handleDeleteTenant(tenant._id, tenant.name)}
-                    className="bg-red-50 hover:bg-red-100 text-red-600 py-2 px-2 rounded-xl text-xs font-medium transition-colors border border-red-200"
-                    title="Delete Permanently"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
           ))}
         </div>
       ) : (
@@ -420,32 +272,17 @@ const TenantsPage = () => {
             <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
               <Users size={64} className="text-white" />
             </div>
-            <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-xs font-bold text-yellow-900">!</span>
-            </div>
           </div>
           <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
-            {showArchived ? 'No Archived Tenants' : 'No Active Tenants'}
+            No Tenants Found
           </h3>
           <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
-            {showArchived 
-              ? 'No tenants have been archived yet. Archived tenants are those who have left the property.'
-              : 'Start building your tenant community by adding your first tenant. Manage leases, payments, and communications all in one place.'
-            }
+            Start by adding your first tenant to begin managing your rental properties.
           </p>
-          {!showArchived && (
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="group relative btn-gradient px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
-            >
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-                <Plus size={16} className="text-white" />
-              </div>
-              Add Your First Tenant
-            </button>
-          )}
         </div>
       )}
+
+
 
       <BulkActions
         selectedItems={selectedTenants}

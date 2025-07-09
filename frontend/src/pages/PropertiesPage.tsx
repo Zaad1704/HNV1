@@ -389,7 +389,8 @@ const PropertiesPage = () => {
           { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, color: 'purple' },
           { label: 'Archived', value: properties.filter(p => p.status === 'Archived').length, color: 'yellow' }
         ]}
-        <div className="flex gap-3">
+        actions={
+          <div className="flex gap-3">
           <button
             onClick={() => setShowBulkPayment(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
@@ -413,8 +414,9 @@ const PropertiesPage = () => {
             </div>
             {t('property.add_property')}
           </button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* Universal Search */}
       <UniversalSearch
