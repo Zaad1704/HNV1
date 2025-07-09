@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 import { Receipt, Download, Search, Calendar, Filter } from 'lucide-react';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
+import MessageButtons from '../components/common/MessageButtons';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalActionButton from '../components/common/UniversalActionButton';
@@ -52,13 +58,11 @@ const ReceiptsPage = () => {
     }
   };
 
+  // Background refresh
+  useBackgroundRefresh([['receipts']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading receipts...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={8} />;
   }
 
   return (
@@ -83,22 +87,45 @@ const ReceiptsPage = () => {
       {receipts.length > 0 ? (
         <div className="universal-grid universal-grid-1">
           {receipts.map((receipt: any, index: number) => (
-            <UniversalCard key={receipt._id} delay={index * 0.05} gradient="blue">
+            <LazyLoader key={receipt._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onView={() => handleDownloadReceipt(receipt._id)}
+                >
+                  <UniversalCard delay={index * 0.05} gradient="blue">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Receipt size={24} className="text-blue-600" />
+                  <div className="w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                    <Receipt size={24} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-text-primary">
+                    <h3 className="text-xl font-bold text-text-primary group-hover:text-brand-blue transition-colors">
                       Receipt #{receipt.receiptNumber}
                     </h3>
-                    <p className="text-sm text-text-secondary">
+                    <p className="text-sm text-text-secondary font-medium">
                       {receipt.tenantName} - {receipt.propertyName}
                     </p>
                     <p className="text-xs text-text-muted">
                       {new Date(receipt.paymentDate).toLocaleDateString()} • Unit: {receipt.unitNumber}
                     </p>
+                    {/* Related Data */}
+                    <div className="flex items-center gap-4 mt-2 text-xs">
+                      <span className={`px-2 py-1 rounded-full ${
+                        receipt.receiptGenerated ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {receipt.receiptGenerated ? 'Generated' : 'Manual'}
+                      </span>
+                      {receipt.isLatePayment && (
+                        <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">
+                          Late Payment
+                        </span>
+                      )}
+                      {receipt.remindersSent > 0 && (
+                        <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                          {receipt.remindersSent} Reminders Sent
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -123,14 +150,62 @@ const ReceiptsPage = () => {
                 </div>
               </div>
               
-              {receipt.handwrittenReceiptNumber && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-sm text-text-secondary">
-                    Manual Receipt #: {receipt.handwrittenReceiptNumber}
-                  </p>
+              {/* Quick Actions */}
+              <div className="mt-4 pt-4 border-t border-app-border">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => window.open(`/dashboard/tenants/${receipt.tenantId}`, '_blank')}
+                      className="bg-blue-100 text-blue-800 py-1 px-3 rounded-lg text-xs font-medium hover:bg-blue-200 transition-colors"
+                    >
+                      View Tenant
+                    </button>
+                    <button 
+                      onClick={() => window.open(`/dashboard/payments/${receipt.paymentId}`, '_blank')}
+                      className="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors"
+                    >
+                      View Payment
+                    </button>
+                  </div>
+                  <MessageButtons
+                    phone={receipt.tenantPhone}
+                    email={receipt.tenantEmail}
+                    name={receipt.tenantName}
+                    messageType="receiptConfirmation"
+                    additionalData={{
+                      receiptNumber: receipt.receiptNumber,
+                      amount: receipt.amount,
+                      date: new Date(receipt.paymentDate).toLocaleDateString()
+                    }}
+                  />
                 </div>
-              )}
-            </UniversalCard>
+                {receipt.handwrittenReceiptNumber && (
+                  <div className="mt-2 pt-2 border-t border-gray-100">
+                    <p className="text-xs text-text-secondary">
+                      Manual Receipt #: {receipt.handwrittenReceiptNumber}
+                    </p>
+                  </div>
+                )}
+              </div>
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.05} gradient="blue">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center shadow-lg">
+                        <Receipt size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-text-primary">Receipt #{receipt.receiptNumber}</h3>
+                        <p className="text-sm text-text-secondary">{receipt.tenantName} - {receipt.propertyName}</p>
+                      </div>
+                    </div>
+                  </div>
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (

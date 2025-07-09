@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { CheckSquare, Clock, User, Building, Check, X, Download, AlertTriangle, Shield } from 'lucide-react';
+import { CheckSquare, Clock, User, Building, Check, X, Download, AlertTriangle, Shield, DollarSign } from 'lucide-react';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
@@ -131,20 +131,63 @@ const ApprovalRequestsPage = () => {
                     {approval.description || 'No description provided'}
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-text-secondary">
-                    <div className="flex items-center gap-2">
-                      <User size={14} />
-                      <span>Requested by: {approval.requestedBy?.name || 'Unknown'}</span>
+                  <div className="bg-app-bg/50 rounded-2xl p-4 space-y-3 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <User size={14} className="text-blue-600" />
+                      </div>
+                      <span className="text-sm text-text-primary font-medium">
+                        Requested by: {approval.requestedBy?.name || 'Unknown'}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Building size={14} />
-                      <span>Property: {approval.propertyId?.name || 'General'}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Building size={14} className="text-green-600" />
+                      </div>
+                      <span className="text-sm text-text-primary font-medium">
+                        Property: {approval.propertyId?.name || 'General'}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock size={14} />
-                      <span>{approval.createdAt ? new Date(approval.createdAt).toLocaleDateString() : 'No date'}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Clock size={14} className="text-purple-600" />
+                      </div>
+                      <span className="text-sm text-text-primary font-medium">
+                        {approval.createdAt ? new Date(approval.createdAt).toLocaleDateString() : 'No date'}
+                      </span>
                     </div>
+                    {approval.amount && (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                          <DollarSign size={14} className="text-yellow-600" />
+                        </div>
+                        <span className="text-sm text-text-primary font-medium">
+                          Amount: ${approval.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Business Rules & Approval Chain */}
+                  {(approval.businessRules || approval.approvalChain) && (
+                    <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-3 mb-4">
+                      <h4 className="text-xs font-semibold text-orange-800 mb-2">Approval Requirements</h4>
+                      <div className="space-y-1 text-xs text-orange-700">
+                        {approval.businessRules?.autoApprovalThreshold && (
+                          <div>• Auto-approval threshold: ${approval.businessRules.autoApprovalThreshold}</div>
+                        )}
+                        {approval.businessRules?.requiresMultipleApprovals && (
+                          <div>• Requires multiple approvals</div>
+                        )}
+                        {approval.approvalChain?.requiredApprovers?.length > 0 && (
+                          <div>• Required approvers: {approval.approvalChain.requiredApprovers.length}</div>
+                        )}
+                        {approval.businessRules?.escalationTimeout && (
+                          <div>• Escalates after: {approval.businessRules.escalationTimeout} hours</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex flex-col gap-2 ml-4">

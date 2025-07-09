@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { CreditCard, Plus, DollarSign, Calendar, User, Download, Building2, Users, FileText } from 'lucide-react';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalActionButton from '../components/common/UniversalActionButton';
 import UniversalCard from '../components/common/UniversalCard';
@@ -78,13 +82,11 @@ const PaymentsPage = () => {
     }
   };
 
+  // Background refresh
+  useBackgroundRefresh([['payments']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading payments...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={8} />;
   }
 
   return (
@@ -124,7 +126,13 @@ const PaymentsPage = () => {
       {payments.length > 0 ? (
         <div className="universal-grid universal-grid-4">
           {payments.map((payment: any, index: number) => (
-            <UniversalCard key={payment._id} delay={index * 0.1} gradient="green">
+            <LazyLoader key={payment._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onDelete={() => handleDeletePayment(payment._id, payment.amount)}
+                  onView={() => window.open(`/dashboard/payments/${payment._id}`, '_blank')}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="green">
               {/* Background Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
@@ -224,7 +232,36 @@ const PaymentsPage = () => {
                   />
                 </div>
               </div>
-            </UniversalCard>
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.1} gradient="green">
+                  {/* Same content as mobile but without swipe */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+                  <div className="relative z-10 flex items-center justify-between mb-4">
+                    <div className="w-14 h-14 gradient-dark-orange-blue rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      <DollarSign size={24} className="text-white" />
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
+                      payment.status === 'Completed' || payment.status === 'Paid'
+                        ? 'bg-green-100/90 text-green-800' 
+                        : payment.status === 'Failed'
+                        ? 'bg-red-100/90 text-red-800'
+                        : 'bg-yellow-100/90 text-yellow-800'
+                    }`}>
+                      {payment.status || 'Pending'}
+                    </span>
+                  </div>
+                  <div className="relative z-10 mb-4">
+                    <h3 className="text-2xl font-bold text-text-primary group-hover:text-brand-blue transition-colors duration-300">
+                      {currency}{payment.amount?.toLocaleString() || '0'}
+                    </h3>
+                  </div>
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (

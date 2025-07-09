@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bell, Plus, Calendar, User, Clock, Download } from 'lucide-react';
 import apiClient from '../api/client';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import UniversalSearch, { SearchFilters } from '../components/common/UniversalSearch';
 import UniversalExport from '../components/common/UniversalExport';
 import CreateReminderModal from '../components/common/CreateReminderModal';
@@ -47,13 +51,11 @@ const RemindersPage = () => {
     queryClient.invalidateQueries({ queryKey: ['reminders'] });
   };
 
+  // Background refresh
+  useBackgroundRefresh([['reminders']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading reminders...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={6} />;
   }
 
   return (
@@ -89,7 +91,13 @@ const RemindersPage = () => {
       {reminders.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {reminders.map((reminder: any, index: number) => (
-            <UniversalCard key={reminder._id} delay={index * 0.1} gradient="purple">
+            <LazyLoader key={reminder._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onEdit={() => console.log('Edit reminder', reminder._id)}
+                  onView={() => console.log('View reminder', reminder._id)}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="purple">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
                   <Bell size={24} className="text-white" />
@@ -108,20 +116,57 @@ const RemindersPage = () => {
                 {reminder.message || 'Automated rent payment reminder'}
               </p>
               
-              <div className="space-y-2 text-sm text-text-secondary">
-                <div className="flex items-center gap-2">
-                  <User size={14} />
-                  <span>{reminder.tenantId?.name || 'All Tenants'}</span>
+              <div className="bg-app-bg/50 rounded-2xl p-4 space-y-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User size={14} className="text-blue-600" />
+                  </div>
+                  <span className="text-sm text-text-primary font-medium">
+                    {reminder.scope === 'all' ? 'All Tenants' : reminder.tenantId?.name || 'Specific Tenant'}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} />
-                  <span>{reminder.frequency || 'Monthly'}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Clock size={14} className="text-green-600" />
+                  </div>
+                  <span className="text-sm text-text-primary font-medium">
+                    {reminder.frequency || 'Monthly'} • {reminder.deliveryMethod || 'Email'}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={14} />
-                  <span>Next: {reminder.nextSend ? new Date(reminder.nextSend).toLocaleDateString() : 'Not scheduled'}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Calendar size={14} className="text-purple-600" />
+                  </div>
+                  <span className="text-sm text-text-primary font-medium">
+                    Next: {reminder.nextSend ? new Date(reminder.nextSend).toLocaleDateString() : 'Not scheduled'}
+                  </span>
                 </div>
+                {reminder.responseRate && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <Bell size={14} className="text-yellow-600" />
+                    </div>
+                    <span className="text-sm text-text-primary font-medium">
+                      Response Rate: {reminder.responseRate}%
+                    </span>
+                  </div>
+                )}
               </div>
+              
+              {/* Automation Rules */}
+              {reminder.automationRules && (
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-3 mb-4">
+                  <h4 className="text-xs font-semibold text-purple-800 mb-2">Automation Rules</h4>
+                  <div className="space-y-1 text-xs text-purple-700">
+                    {reminder.automationRules.triggerConditions?.map((condition: string, i: number) => (
+                      <div key={i}>• Trigger: {condition}</div>
+                    ))}
+                    {reminder.automationRules.escalationRules?.length > 0 && (
+                      <div>• Escalates after {reminder.automationRules.escalationRules.length} attempts</div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div className="mt-4">
                 <MessageButtons
@@ -131,7 +176,20 @@ const RemindersPage = () => {
                   customMessage={reminder.message || 'Automated reminder notification'}
                 />
               </div>
-            </UniversalCard>
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.1} gradient="purple">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 app-gradient rounded-xl flex items-center justify-center">
+                      <Bell size={24} className="text-white" />
+                    </div>
+                    <UniversalStatusBadge status={reminder.status || 'Active'} variant={reminder.status === 'Active' ? 'success' : 'default'} />
+                  </div>
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (

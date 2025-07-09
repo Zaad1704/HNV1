@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, DollarSign, ArrowUp, ArrowDown, Plus, Download } from 'lucide-react';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalActionButton from '../components/common/UniversalActionButton';
@@ -41,13 +43,11 @@ const CashFlowPage = () => {
     retry: 1
   });
 
+  // Background refresh
+  useBackgroundRefresh([['cashFlow']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading cash flow...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={3} />;
   }
 
   return (

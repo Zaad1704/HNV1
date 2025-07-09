@@ -2,6 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
+import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { motion } from 'framer-motion';
 import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -167,13 +172,11 @@ const TenantsPage = () => {
     }
   ];
 
+  // Background refresh
+  useBackgroundRefresh([['tenants']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading tenants...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={6} />;
   }
 
   if (error) {
@@ -258,12 +261,24 @@ const TenantsPage = () => {
       {filteredTenants && filteredTenants.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {filteredTenants.map((tenant: any, index: number) => (
-            <UniversalCard key={tenant._id} delay={index * 0.1} gradient="green">
-              <EnhancedTenantCard
-                tenant={tenant}
-                index={index}
-              />
-            </UniversalCard>
+            <LazyLoader key={tenant._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onEdit={() => console.log('Edit tenant', tenant._id)}
+                  onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
+                  onView={() => window.open(`/dashboard/tenants/${tenant._id}`, '_blank')}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="green">
+                    <EnhancedTenantCard tenant={tenant} index={index} />
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.1} gradient="green">
+                  <EnhancedTenantCard tenant={tenant} index={index} />
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (

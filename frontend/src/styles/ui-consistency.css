@@ -146,3 +146,38 @@
 .dark .badge-info {
   @apply bg-blue-900 text-blue-200;
 }
+
+/* Universal Grid System */
+.universal-grid {
+  @apply grid gap-6;
+}
+
+.universal-grid-1 {
+  @apply grid-cols-1;
+}
+
+.universal-grid-2 {
+  @apply grid-cols-1 md:grid-cols-2;
+}
+
+.universal-grid-3 {
+  @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.universal-grid-4 {
+  @apply grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+/* Touch feedback for mobile */
+.touch-feedback {
+  @apply active:scale-95 transition-transform duration-150;
+}
+
+/* Brand colors */
+.brand-blue {
+  color: var(--brand-blue);
+}
+
+.brand-orange {
+  color: var(--brand-orange);
+}

@@ -2,6 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
@@ -312,13 +318,14 @@ const PropertiesPage = () => {
 
   const handleDeleteProperty = async (propertyId: string) => {
     if (confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+      // Optimistic update
+      removeOptimistic(propertyId);
       try {
         await apiClient.delete(`/properties/${propertyId}`);
-        queryClient.setQueryData(['properties'], (old: any) => 
-          (old || []).filter((p: any) => p._id !== propertyId)
-        );
         alert('Property deleted successfully!');
       } catch (error: any) {
+        // Revert on error
+        queryClient.invalidateQueries({ queryKey: ['properties'] });
         alert(`Error: ${error.response?.data?.message || 'Failed to delete property'}`);
       }
     }
@@ -349,13 +356,14 @@ const PropertiesPage = () => {
     }
   };
 
+  // Background refresh
+  useBackgroundRefresh([['properties']], 60000);
+
+  // Optimistic updates
+  const { addOptimistic, updateOptimistic, removeOptimistic } = useOptimisticUpdate(['properties'], properties);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">{t('property.loading_properties')}</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={6} />;
   }
 
   if (error) {
@@ -444,13 +452,24 @@ const PropertiesPage = () => {
       {filteredProperties && filteredProperties.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {filteredProperties.map((property: any, index: number) => (
-            <UniversalCard key={property._id} delay={index * 0.1} gradient="blue">
-              <EnhancedPropertyCard
-                property={property}
-                index={index}
-              />
-            </UniversalCard>
-
+            <LazyLoader key={property._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onEdit={() => handleEditProperty(property)}
+                  onDelete={() => handleDeleteProperty(property._id)}
+                  onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="blue">
+                    <EnhancedPropertyCard property={property} index={index} />
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.1} gradient="blue">
+                  <EnhancedPropertyCard property={property} index={index} />
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (

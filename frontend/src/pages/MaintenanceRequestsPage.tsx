@@ -1,7 +1,12 @@
 // frontend/src/pages/MaintenanceRequestsPage.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import { useWindowSize } from '../hooks/useWindowSize';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
@@ -143,7 +148,10 @@ const MaintenanceRequestsPage = () => {
         out: { opacity: 0, y: -20 },
     };
 
-    if (isLoading) return <div className="text-center p-8 text-dark-text dark:text-dark-text-dark">Loading requests...</div>;
+    // Background refresh
+    useBackgroundRefresh([['maintenanceRequests']], 60000);
+
+    if (isLoading) return <SkeletonLoader type="card" count={6} />;
     if (isError) return <div className="text-center p-8 text-red-400 dark:text-red-400">Failed to fetch maintenance requests.</div>;
 
     const DesktopView = () => (
@@ -212,7 +220,12 @@ const MaintenanceRequestsPage = () => {
     const MobileView = () => (
         <div className="universal-grid universal-grid-3">
             {filteredRequests.map((req: any, index: number) => (
-                <UniversalCard key={req._id} delay={index * 0.1} gradient="blue">
+                <LazyLoader key={req._id}>
+                    <SwipeableCard
+                        onEdit={() => console.log('Edit request', req._id)}
+                        onView={() => window.open(`/dashboard/maintenance/${req._id}`, '_blank')}
+                    >
+                        <UniversalCard delay={index * 0.1} gradient="blue">
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -261,7 +274,9 @@ const MaintenanceRequestsPage = () => {
                             </select>
                         </div>
                     </div>
-                </UniversalCard>
+                        </UniversalCard>
+                    </SwipeableCard>
+                </LazyLoader>
             ))}
         </div>
     );

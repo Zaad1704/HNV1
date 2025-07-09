@@ -1,6 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { DollarSign, Plus, Calendar, Tag, Building, Download, Eye } from 'lucide-react';
+import LazyLoader from '../components/common/LazyLoader';
+import SkeletonLoader from '../components/common/SkeletonLoader';
+import SwipeableCard from '../components/mobile/SwipeableCard';
+import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
@@ -102,13 +107,11 @@ const ExpensesPage = () => {
     return filtered;
   }, [expenses, searchFilters]);
 
+  // Background refresh
+  useBackgroundRefresh([['expenses']], 60000);
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading expenses...</span>
-      </div>
-    );
+    return <SkeletonLoader type="card" count={8} />;
   }
 
   return (
@@ -153,7 +156,14 @@ const ExpensesPage = () => {
       {filteredExpenses.length > 0 ? (
         <div className="universal-grid universal-grid-4">
           {filteredExpenses.map((expense: any, index: number) => (
-            <UniversalCard key={expense._id} delay={index * 0.1} gradient="red">
+            <LazyLoader key={expense._id}>
+              <div className="md:hidden">
+                <SwipeableCard
+                  onEdit={() => console.log('Edit expense', expense._id)}
+                  onDelete={() => handleDeleteExpense(expense._id, expense.description)}
+                  onView={() => window.open(`/dashboard/expenses/${expense._id}`, '_blank')}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="red">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                   <DollarSign size={24} className="text-white" />
@@ -208,7 +218,25 @@ const ExpensesPage = () => {
                   />
                 </div>
               </div>
-            </UniversalCard>
+                  </UniversalCard>
+                </SwipeableCard>
+              </div>
+              <div className="hidden md:block">
+                <UniversalCard delay={index * 0.1} gradient="red">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      <DollarSign size={24} className="text-white" />
+                    </div>
+                    <UniversalStatusBadge status={expense.category || 'Expense'} variant="error" />
+                  </div>
+                  <div className="mb-4">
+                    <h3 className="text-2xl font-bold text-text-primary group-hover:text-red-600 transition-colors duration-300">
+                      {currency}{expense.amount?.toLocaleString() || '0'}
+                    </h3>
+                  </div>
+                </UniversalCard>
+              </div>
+            </LazyLoader>
           ))}
         </div>
       ) : (
