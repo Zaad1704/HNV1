@@ -1,6 +1,7 @@
 @import './styles/mobile-fixes.css';
 @import './styles/ui-consistency.css';
 @import './styles/dashboard.css';
+@import './styles/phase4-mobile.css';
 
 /* Import styles first */
 @import './styles/mobile.css';

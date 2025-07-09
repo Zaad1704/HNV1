@@ -3,6 +3,7 @@ import { Brain, TrendingUp, AlertTriangle, Lightbulb, Target, Zap } from 'lucide
 import UniversalCard from '../common/UniversalCard';
 import UniversalHeader from '../common/UniversalHeader';
 import { useCrossData } from '../../hooks/useCrossData';
+import { useAdvancedAnalytics } from '../../hooks/useAdvancedAnalytics';
 
 interface SmartInsight {
   id: string;
@@ -16,12 +17,17 @@ interface SmartInsight {
 
 const SmartDashboard: React.FC = () => {
   const { stats } = useCrossData();
+  const { analyticsData, isLoading, refreshAnalytics } = useAdvancedAnalytics();
   const [insights, setInsights] = useState<SmartInsight[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
-    generateSmartInsights();
-  }, [stats]);
+    if (analyticsData?.insights) {
+      setInsights(analyticsData.insights);
+    } else {
+      generateSmartInsights();
+    }
+  }, [analyticsData, stats]);
 
   const generateSmartInsights = async () => {
     setIsAnalyzing(true);
@@ -82,17 +88,20 @@ const SmartDashboard: React.FC = () => {
         ]}
         actions={
           <button
-            onClick={generateSmartInsights}
-            disabled={isAnalyzing}
+            onClick={() => {
+              refreshAnalytics();
+              generateSmartInsights();
+            }}
+            disabled={isAnalyzing || isLoading}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:opacity-50"
           >
-            <Zap size={16} className={isAnalyzing ? 'animate-pulse' : ''} />
-            {isAnalyzing ? 'Analyzing...' : 'Refresh Insights'}
+            <Zap size={16} className={isAnalyzing || isLoading ? 'animate-pulse' : ''} />
+            {isAnalyzing || isLoading ? 'Analyzing...' : 'Refresh Insights'}
           </button>
         }
       />
 
-      {isAnalyzing ? (
+      {isAnalyzing || isLoading ? (
         <UniversalCard gradient="blue">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">

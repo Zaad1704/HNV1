@@ -9,6 +9,7 @@ import ActionItemWidget from '../components/dashboard/ActionItemWidget';
 import MessageButtons from '../components/common/MessageButtons';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
+import QuickInsightsWidget from '../components/advanced/QuickInsightsWidget';
 import { useCrossData } from '../hooks/useCrossData';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import AddTenantModal from '../components/common/AddTenantModal';

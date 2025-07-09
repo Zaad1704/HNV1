@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Brain, TrendingUp, Bot, BarChart3 } from 'lucide-react';
-import SmartDashboard from '../components/advanced/SmartDashboard';
-import PredictiveAnalytics from '../components/advanced/PredictiveAnalytics';
-import AutomationCenter from '../components/advanced/AutomationCenter';
-import PerformanceOptimizer from '../components/advanced/PerformanceOptimizer';
+import { 
+  SmartDashboard, 
+  PredictiveAnalytics, 
+  AutomationCenter, 
+  PerformanceOptimizer 
+} from '../components/advanced';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import { useCrossData } from '../hooks/useCrossData';
@@ -36,8 +38,8 @@ const SmartDashboardPage: React.FC = () => {
       />
 
       {/* Tab Navigation */}
-      <UniversalCard gradient="blue">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <UniversalCard gradient="blue" className="phase4-container">
+        <div className="phase4-tab-navigation">
           {tabs.map((tab) => (
             <button
               key={tab.id}
