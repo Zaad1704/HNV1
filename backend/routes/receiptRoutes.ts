@@ -63,7 +63,7 @@ router.post('/bulk-pdf', async (req: any, res) => {
       addWatermark(currentY + 60);
       
       // Receipt container
-      doc.rect(30, currentY, 552, receiptHeight).fill('white').stroke('#2563eb', 2);
+      doc.rect(30, currentY, 552, receiptHeight).fill('white').strokeColor('#2563eb').lineWidth(2).stroke();
       
       // Header section - scalable
       const headerHeight = Math.min(50, receiptHeight * 0.3);
