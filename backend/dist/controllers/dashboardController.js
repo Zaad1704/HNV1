@@ -59,7 +59,7 @@ exports.getOverviewStats = safeAsync(async (req, res) => {
     const organizationId = req.user.organizationId;
     const [propertiesResult, tenantsResult, revenueResult] = await Promise.allSettled([
         Property_1.default.countDocuments({ organizationId }).exec(),
-        Tenant_1.default.countDocuments({ organizationId, status: 'Active' }).exec(),
+        Tenant_1.default.countDocuments({ organizationId, status: { $in: ['Active', 'Late'] } }).exec(),
         Payment_1.default.aggregate([
             { $match: { organizationId, status: { $in: ['Paid', 'completed', 'Completed'] } } },
             { $group: { _id: null, total: { $sum: '$amount' } } }
@@ -149,9 +149,11 @@ exports.getRentStatus = safeAsync(async (req, res) => {
     }
     const activeCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Active' }) || 0;
     const lateCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Late' }) || 0;
+    const archivedCount = await Tenant_1.default.countDocuments({ organizationId: req.user.organizationId, status: 'Archived' }) || 0;
     const data = [
         { name: 'Paid / Current', value: activeCount },
-        { name: 'Overdue', value: lateCount }
+        { name: 'Overdue', value: lateCount },
+        { name: 'Archived', value: archivedCount }
     ];
     res.status(200).json({ success: true, data });
 });
@@ -175,7 +177,8 @@ exports.getStats = safeAsync(async (req, res) => {
                 status: 'active'
             });
             try {
-                await subscriptionService.createTrialSubscription(organization._id.toString());
+                const trialPlan = await Plan.findOne({ name: 'Free Trial' });
+                await subscriptionService.createTrialSubscription(organization._id.toString(), trialPlan?._id?.toString() || 'default-plan');
                 console.log('✅ Trial subscription created for user:', req.user.email);
             }
             catch (error) {
@@ -201,7 +204,7 @@ exports.getStats = safeAsync(async (req, res) => {
         }
     }
     console.log('Fetching stats for organization:', req.user.organizationId);
-    const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId);
+    const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId, req.user.role, req.user._id);
     console.log('Dashboard stats result:', stats);
     res.status(200).json({ success: true, data: stats });
 });
@@ -222,7 +225,7 @@ exports.getDashboardStats = safeAsync(async (req, res) => {
         });
     }
     console.log('Fetching dashboard stats for organization:', req.user.organizationId);
-    const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId);
+    const stats = await dashboardService_1.default.getDashboardStats(req.user.organizationId, req.user.role, req.user._id);
     console.log('Dashboard stats result:', stats);
     res.status(200).json({ success: true, data: stats });
 });

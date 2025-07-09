@@ -42,11 +42,13 @@ const UserSchema = new mongoose_1.Schema({
     },
     role: { type: String, enum: ['Super Admin', 'Super Moderator', 'Landlord', 'Agent', 'Tenant'], default: 'Landlord' },
     organizationId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Organization' },
+    tenantId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Tenant' },
     createdAt: { type: Date, default: Date.now },
     googleId: String,
     status: { type: String, enum: ['active', 'suspended', 'pending'], default: 'active' },
     permissions: { type: [String], default: [] },
     managedAgentIds: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }],
+    managedProperties: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Property' }],
     isEmailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
@@ -68,6 +70,11 @@ const UserSchema = new mongoose_1.Schema({
         }],
     language: { type: String, default: 'en' },
     autoDetectLanguage: { type: Boolean, default: true },
+    notificationPreferences: {
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: false },
+        push: { type: Boolean, default: true }
+    },
     passkeyChallenge: { type: String, select: false },
     passkeyChallengeExpires: { type: Date, select: false }
 });

@@ -2,7 +2,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
 import { Request } from 'express';
-import { s3, S3_CONFIG } from '../config/aws';
+import { s3Client, S3_CONFIG } from '../config/aws';
 
 // File filter for security
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -38,7 +38,7 @@ function getUploadFolder(fieldname: string): string {
 // S3 Upload Configuration
 const upload = multer({
   storage: multerS3({
-    s3: s3,
+    s3: s3Client,
     bucket: S3_CONFIG.bucket,
     acl: 'public-read',
     key: (req, file, cb) => {

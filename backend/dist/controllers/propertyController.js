@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -12,6 +35,18 @@ const createProperty = async (req, res) => {
         res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
         return;
     }
+    const subscriptionService = (await Promise.resolve().then(() => __importStar(require('../services/subscriptionService')))).default;
+    const usageCheck = await subscriptionService.checkUsageLimit(user.organizationId, 'properties');
+    if (!usageCheck.allowed) {
+        res.status(403).json({
+            success: false,
+            message: 'Property limit exceeded',
+            reason: usageCheck.reason,
+            currentUsage: usageCheck.currentUsage,
+            limit: usageCheck.limit
+        });
+        return;
+    }
     try {
         const imageUrl = req.file ? req.file.imageUrl : undefined;
         const property = await Property_1.default.create({
@@ -22,6 +57,7 @@ const createProperty = async (req, res) => {
             managedByAgentId: req.body.managedByAgentId || null
         });
         await actionChainService_1.default.onPropertyAdded(property, user._id, user.organizationId);
+        await subscriptionService.updateUsage(user.organizationId, 'properties', 1);
         res.status(201).json({
             success: true,
             data: property
@@ -44,12 +80,11 @@ const getProperties = async (req, res) => {
     try {
         let query = { organizationId: user.organizationId };
         if (user.role === 'Agent') {
+            const userData = await require('../models/User').default.findById(user._id).select('managedProperties');
+            const managedPropertyIds = userData?.managedProperties || [];
             query = {
                 organizationId: user.organizationId,
-                $or: [
-                    { managedByAgentId: user._id },
-                    { createdBy: user._id }
-                ]
+                _id: { $in: managedPropertyIds }
             };
         }
         const properties = await Property_1.default.find(query)

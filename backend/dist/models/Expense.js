@@ -33,7 +33,7 @@ const ExpenseSchema = new mongoose_1.Schema({
         required: true
     },
     date: { type: Date, default: Date.now, required: true },
-    propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property', required: true },
+    propertyId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Property' },
     organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
     documentUrl: { type: String },
     paidToAgentId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' }

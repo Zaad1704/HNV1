@@ -57,7 +57,12 @@ const createExpense = async (req, res) => {
         res.status(201).json({ success: true, data: newExpense });
     }
     catch (error) {
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('Create expense error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Server error',
+            error: process.env.NODE_ENV === 'development' ? error : undefined
+        });
     }
 };
 exports.createExpense = createExpense;

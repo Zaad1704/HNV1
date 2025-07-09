@@ -38,12 +38,14 @@ const createTenant = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
         const { propertyId } = req.body;
-        const property = await Property_1.default.findById(propertyId);
-        if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid property'
-            });
+        if (propertyId) {
+            const property = await Property_1.default.findById(propertyId);
+            if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid property'
+                });
+            }
         }
         const tenantData = {
             ...req.body,

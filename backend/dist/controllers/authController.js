@@ -107,7 +107,7 @@ const registerUser = async (req, res, next) => {
         const verificationToken = user.getEmailVerificationToken();
         await user.save();
         try {
-            await subscriptionService_1.default.createTrialSubscription(organization._id.toString());
+            await subscriptionService_1.default.createTrialSubscription(organization._id.toString(), trialPlan._id.toString());
             console.log('✅ Trial subscription created for new user:', user.email);
         }
         catch (error) {

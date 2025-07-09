@@ -1,76 +1,27 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const planSchema = new mongoose_1.Schema({
-    name: { type: String, required: true, unique: true },
-    description: { type: String, default: '' },
+const mongoose_1 = require("mongoose");
+const PlanSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    description: { type: String, required: true },
     price: { type: Number, required: true },
-    duration: {
-        type: String,
-        required: true,
-        enum: ['daily', 'weekly', 'monthly', 'yearly'],
-        default: 'monthly',
+    currency: { type: String, default: 'USD' },
+    billingCycle: { type: String, enum: ['monthly', 'yearly'], required: true },
+    duration: { type: String, required: true },
+    features: [{ type: String }],
+    limits: {
+        properties: { type: Number, required: true },
+        tenants: { type: Number, required: true },
+        users: { type: Number, required: true },
+        storage: { type: Number, required: true },
+        exports: { type: Number, required: true }
     },
-    interval: {
-        type: String,
-        enum: ['month', 'monthly', 'yearly'],
-        default: 'monthly'
-    },
-    features: { type: [String], default: [] },
-    maxProperties: { type: Number, default: 1 },
-    maxUsers: { type: Number, default: 1 },
-    maxTenants: { type: Number, default: 5 },
-    maxAgents: { type: Number, default: 0 },
-    isPublic: { type: Boolean, default: true },
+    twocheckoutProductId: { type: String },
+    stripeProductId: { type: String },
+    stripePriceId: { type: String },
     isActive: { type: Boolean, default: true },
     isPopular: { type: Boolean, default: false },
-    trialDays: { type: Number, default: 14 },
-    setupFee: { type: Number, default: 0 },
-    discountPercentage: { type: Number, default: 0 },
-    currency: { type: String, default: 'USD' },
-    billingCycle: {
-        type: String,
-        enum: ['monthly', 'yearly', 'one-time'],
-        default: 'monthly'
-    },
-    planType: {
-        type: String,
-        enum: ['basic', 'standard', 'premium', 'enterprise'],
-        default: 'standard'
-    },
-    allowedFeatures: {
-        analytics: { type: Boolean, default: false },
-        multipleProperties: { type: Boolean, default: false },
-        tenantPortal: { type: Boolean, default: false },
-        maintenanceTracking: { type: Boolean, default: false },
-        financialReporting: { type: Boolean, default: false },
-        documentStorage: { type: Boolean, default: false },
-        apiAccess: { type: Boolean, default: false },
-        customBranding: { type: Boolean, default: false },
-        prioritySupport: { type: Boolean, default: false }
-    }
+    sortOrder: { type: Number, default: 0 }
 }, { timestamps: true });
-exports.default = mongoose_1.default.model('Plan', planSchema);
+PlanSchema.index({ isActive: 1, sortOrder: 1 });
+exports.default = (0, mongoose_1.model)('Plan', PlanSchema);

@@ -49,6 +49,12 @@ const PaymentSchema = new mongoose_1.Schema({
     paymentMethod: { type: String, default: 'Bank Transfer' },
     description: { type: String, default: 'Monthly Rent Payment' },
     notes: { type: String },
+    rentMonth: { type: String },
+    collectionMethod: { type: String },
+    receivedBy: { type: String },
+    agentName: { type: String },
+    handoverDate: { type: Date },
+    referenceNumber: { type: String },
 }, { timestamps: true });
 PaymentSchema.index({ organizationId: 1, paymentDate: -1 });
 PaymentSchema.index({ tenantId: 1, status: 1 });

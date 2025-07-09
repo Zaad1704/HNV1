@@ -29,6 +29,14 @@ const PropertySchema = new mongoose_1.Schema({
         required: true,
         default: 1,
     },
+    totalUnits: {
+        type: Number,
+        default: 1,
+    },
+    rentAmount: {
+        type: Number,
+        default: 0,
+    },
     organizationId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'Organization',
@@ -45,7 +53,7 @@ const PropertySchema = new mongoose_1.Schema({
     },
     status: {
         type: String,
-        enum: ['Active', 'Inactive', 'Under Renovation'],
+        enum: ['Active', 'Inactive', 'Under Renovation', 'Archived'],
         default: 'Active',
     },
     occupancyRate: {
