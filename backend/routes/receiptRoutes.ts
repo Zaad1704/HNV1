@@ -69,17 +69,9 @@ router.post('/bulk-pdf', async (req: any, res) => {
       const headerHeight = Math.min(50, receiptHeight * 0.3);
       doc.rect(30, currentY, 552, headerHeight).fill('#2563eb');
       
-      // Organization name - auto-scale font
-      const maxOrgWidth = 500;
-      let orgFontSize = 20;
-      doc.font('Helvetica-Bold').fontSize(orgFontSize);
-      while (doc.widthOfString(orgName) > maxOrgWidth && orgFontSize > 12) {
-        orgFontSize--;
-        doc.fontSize(orgFontSize);
-      }
-      
-      doc.fontSize(orgFontSize).fillColor('white')
-         .text(orgName, 50, currentY + 10, { width: maxOrgWidth, align: 'center' });
+      // Organization name
+      doc.font('Helvetica-Bold').fontSize(18).fillColor('white')
+         .text(orgName, 50, currentY + 10, { width: 500, align: 'center' });
       
       doc.fontSize(12).text(t('receipt.paymentReceipt', userLang), 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
       
