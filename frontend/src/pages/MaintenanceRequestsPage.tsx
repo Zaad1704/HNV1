@@ -10,8 +10,11 @@ import UniversalSearch, { SearchFilters } from '../components/common/UniversalSe
 import UniversalExport from '../components/common/UniversalExport';
 import AddMaintenanceModal from '../components/common/AddMaintenanceModal';
 import MessageButtons from '../components/common/MessageButtons';
-import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Trash2, Sparkles, Archive, Eye, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Wrench, Calendar, Home, AlertCircle, Users, Download, Plus, Eye, CheckCircle } from 'lucide-react';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
+import UniversalActionButton from '../components/common/UniversalActionButton';
 import { useDataExport } from '../hooks/useDataExport';
 
 const fetchRequests = async () => {
@@ -205,18 +208,10 @@ const MaintenanceRequestsPage = () => {
     );
 
     const MobileView = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="universal-grid universal-grid-3">
             {filteredRequests.map((req: any, index: number) => (
-                <motion.div 
-                    key={req._id} 
-                    className="group app-surface rounded-3xl p-6 border border-app-border hover:shadow-2xl hover:shadow-brand-blue/10 hover:border-brand-blue/30 hover:-translate-y-2 transition-all duration-500 relative overflow-hidden backdrop-blur-sm"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                >
-                    {/* Background Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 via-purple-500/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                    <div className="relative z-10 flex justify-between items-start mb-4">
+                <UniversalCard key={req._id} delay={index * 0.1} gradient="blue">
+                    <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                 <Wrench size={20} className="text-white" />
@@ -225,29 +220,29 @@ const MaintenanceRequestsPage = () => {
                                 <h3 className="font-bold text-text-primary text-lg group-hover:text-brand-blue transition-colors">
                                     {req.description}
                                 </h3>
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full shadow-lg backdrop-blur-sm ${
-                                    req.status === 'Open' ? 'bg-yellow-100/90 text-yellow-800' :
-                                    req.status === 'In Progress' ? 'bg-blue-100/90 text-blue-800' :
-                                    req.status === 'Resolved' ? 'bg-green-100/90 text-green-800' :
-                                    'bg-gray-100/90 text-gray-800'
-                                }`}>
-                                    {req.status === 'Resolved' && <CheckCircle size={10} className="inline mr-1" />}
-                                    {req.status}
-                                </span>
+                                <UniversalStatusBadge 
+                                    status={req.status}
+                                    variant={
+                                        req.status === 'Open' ? 'warning' :
+                                        req.status === 'In Progress' ? 'info' :
+                                        req.status === 'Resolved' ? 'success' : 'default'
+                                    }
+                                    icon={req.status === 'Resolved' ? CheckCircle : undefined}
+                                />
                             </div>
                         </div>
                     </div>
-                    <p className="text-light-text text-sm flex items-center gap-2 mb-1 dark:text-light-text-dark"><Home size={14}/> Property: {req.propertyId?.name || 'N/A'}</p>
-                    <p className="text-light-text text-sm flex items-center gap-2 mb-2 dark:text-light-text-dark"><Calendar size={14}/> Date: {new Date(req.createdAt).toLocaleDateString()}</p>
-                    <p className="text-light-text text-sm flex items-center gap-2 mb-2 dark:text-light-text-dark"><Users size={14}/> Requested By: {req.requestedBy?.name || 'N/A'}</p>
+                    <p className="text-light-text text-sm flex items-center gap-2 mb-1"><Home size={14}/> Property: {req.propertyId?.name || 'N/A'}</p>
+                    <p className="text-light-text text-sm flex items-center gap-2 mb-2"><Calendar size={14}/> Date: {new Date(req.createdAt).toLocaleDateString()}</p>
+                    <p className="text-light-text text-sm flex items-center gap-2 mb-2"><Users size={14}/> Requested By: {req.requestedBy?.name || 'N/A'}</p>
                     
                     <div className="mt-3">
-                        <label htmlFor={`status-${req._id}`} className="block text-sm font-medium text-light-text mb-1 dark:text-light-text-dark">Update Status:</label>
+                        <label htmlFor={`status-${req._id}`} className="block text-sm font-medium text-light-text mb-1">Update Status:</label>
                         <select 
                             id={`status-${req._id}`}
                             value={req.status} 
                             onChange={(e) => handleStatusChange(req._id, e.target.value)}
-                            className={`block w-full border border-border-color rounded-md py-2 px-3 text-dark-text bg-light-bg focus:ring-brand-primary focus:border-brand-primary dark:bg-dark-bg dark:border-border-color-dark dark:text-dark-text-dark`}
+                            className="block w-full border border-border-color rounded-md py-2 px-3 text-dark-text bg-light-bg focus:ring-brand-primary focus:border-brand-primary"
                             disabled={mutation.isLoading}
                         >
                             <option value="Open">Open</option>
@@ -256,7 +251,7 @@ const MaintenanceRequestsPage = () => {
                             <option value="Closed">Closed</option>
                         </select>
                     </div>
-                </motion.div>
+                </UniversalCard>
             ))}
         </div>
     );
@@ -270,64 +265,34 @@ const MaintenanceRequestsPage = () => {
             transition={{ duration: 0.4 }}
             className="text-dark-text dark:text-dark-text-dark"
         >
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center gap-3">
-                        <span className="bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
-                            Maintenance Requests
-                        </span>
-                        <Sparkles size={28} className="text-brand-orange animate-pulse" />
-                    </h1>
-                    <div className="flex items-center gap-4 mt-2">
-                        <p className="text-text-secondary">
-                            Manage property maintenance requests ({requests.length} total)
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-text-secondary">Show:</span>
-                            <button
-                                onClick={() => setShowArchived(false)}
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                                    !showArchived 
-                                        ? 'bg-blue-100 text-blue-800 shadow-sm' 
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                            >
-                                <Eye size={12} className="inline mr-1" />
-                                Active ({requests.filter(r => r.status !== 'Closed').length})
-                            </button>
-                            <button
-                                onClick={() => setShowArchived(true)}
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                                    showArchived 
-                                        ? 'bg-orange-100 text-orange-800 shadow-sm' 
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                            >
-                                <Archive size={12} className="inline mr-1" />
-                                Closed ({requests.filter(r => r.status === 'Closed').length})
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => setShowUniversalExport(true)}
-                        className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-                    >
-                        <Download size={16} />
-                        Export
-                    </button>
-                    <button 
-                        onClick={() => setShowAddModal(true)}
-                        className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                    >
-                        <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-                            <Plus size={14} className="text-white" />
-                        </div>
-                        Add Request
-                    </button>
-                </div>
-            </div>
+            <UniversalHeader
+                title="Maintenance Requests"
+                subtitle={`Manage property maintenance requests (${requests.length} total)`}
+                icon={Wrench}
+                stats={[
+                    { label: 'Active', value: requests.filter(r => r.status !== 'Closed').length, color: 'blue' },
+                    { label: 'Closed', value: requests.filter(r => r.status === 'Closed').length, color: 'yellow' }
+                ]}
+                actions={
+                    <>
+                        <UniversalActionButton
+                            variant="success"
+                            size="sm"
+                            icon={Download}
+                            onClick={() => setShowUniversalExport(true)}
+                        >
+                            Export
+                        </UniversalActionButton>
+                        <UniversalActionButton
+                            variant="primary"
+                            icon={Plus}
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            Add Request
+                        </UniversalActionButton>
+                    </>
+                }
+            />
 
             <UniversalSearch
                 onSearch={setSearchFilters}
