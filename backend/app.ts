@@ -217,6 +217,8 @@ app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/dashboard', protect, dashboardRoutes);
 app.use('/api/properties', protect, propertiesRoutes);
 app.use('/api/properties', protect, propertyVacantUnitsRoutes);
+import propertyRentStatusRoutes from './routes/propertyRentStatusRoutes';
+app.use('/api/properties', protect, propertyRentStatusRoutes);
 app.use('/api/tenants', protect, tenantsRoutes);
 app.use('/api/payments', protect, paymentsRoutes);
 app.use('/api/expenses', protect, expenseRoutes);
