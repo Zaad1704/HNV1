@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import UniversalCard from '../components/common/UniversalCard';
+import UniversalHeader from '../components/common/UniversalHeader';
+import { useCrossData } from '../hooks/useCrossData';
 import { Building2, Users, DollarSign, TrendingUp, Bell, Calendar, Settings, BarChart3, Lock, Sparkles, Crown, Shield, Activity, Eye, MessageCircle, Share2 } from 'lucide-react';
 import apiClient from '../api/client';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -65,6 +68,7 @@ const DashboardPage = () => {
   const { currency } = useCurrency();
   const { user, fetchUserData } = useAuthStore();
   const [showRestrictionOverlay, setShowRestrictionOverlay] = React.useState(true);
+  const { stats: crossStats } = useCrossData();
   
   React.useEffect(() => {
     fetchUserData();
