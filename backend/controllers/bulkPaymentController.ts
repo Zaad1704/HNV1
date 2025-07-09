@@ -34,7 +34,8 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
         paymentDate, 
         paymentMethod,
         description,
-        status = 'Paid' 
+        status = 'Paid',
+        handwrittenReceiptNumber
       } = paymentData;
 
       if (!tenantId || !amount) {
@@ -102,6 +103,7 @@ export const createBulkPayments = async (req: AuthRequest, res: Response) => {
           organizationId: req.user.organizationId,
           paymentId: payment._id,
           receiptNumber: `RCP-${req.user.organizationId.toString().substring(0, 5).toUpperCase()}-${Date.now()}-${createdReceipts.length + 1}`,
+          handwrittenReceiptNumber: handwrittenReceiptNumber || null,
           amount,
           paymentDate,
           paymentMethod,

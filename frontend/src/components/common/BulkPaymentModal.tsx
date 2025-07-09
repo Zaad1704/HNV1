@@ -36,6 +36,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReceipts, setShowReceipts] = useState(false);
   const [generatedReceipts, setGeneratedReceipts] = useState([]);
+  const [handwrittenReceipts, setHandwrittenReceipts] = useState<{[key: string]: string}>({});
 
   const { data: properties = [] } = useQuery({
     queryKey: ['properties'],
@@ -169,7 +170,10 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
       });
 
       const response = await apiClient.post('/bulk/payments', { 
-        payments,
+        payments: payments.map(payment => ({
+          ...payment,
+          handwrittenReceiptNumber: handwrittenReceipts[payment.tenantId] || null
+        })),
         month: selectedMonth,
         generateReceipts: true
       });
@@ -288,16 +292,32 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-50"
                           />
                           <div>
-                            <p className="font-medium text-gray-900">{tenant.name}</p>
-                            <p className="text-sm text-gray-500">
-                              Unit: {tenant.unit} | Status: {tenant.status}
-                              {tenantStatus === 'paid' && (
-                                <span className="text-green-600 ml-2">(Already Paid for {selectedMonth})</span>
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <p className="font-medium text-gray-900">{tenant.name}</p>
+                                <p className="text-sm text-gray-500">
+                                  Unit: {tenant.unit} | Status: {tenant.status}
+                                  {tenantStatus === 'paid' && (
+                                    <span className="text-green-600 ml-2">(Already Paid for {selectedMonth})</span>
+                                  )}
+                                  {tenantStatus === 'pastdue' && (
+                                    <span className="text-red-600 ml-2">(Past Due - Cannot select for current month)</span>
+                                  )}
+                                </p>
+                              </div>
+                              {selectedTenants.includes(tenant._id) && (
+                                <input
+                                  type="text"
+                                  placeholder="Receipt #"
+                                  value={handwrittenReceipts[tenant._id] || ''}
+                                  onChange={(e) => setHandwrittenReceipts(prev => ({
+                                    ...prev,
+                                    [tenant._id]: e.target.value
+                                  }))}
+                                  className="w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                                />
                               )}
-                              {tenantStatus === 'pastdue' && (
-                                <span className="text-red-600 ml-2">(Past Due - Cannot select for current month)</span>
-                              )}
-                            </p>
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
@@ -544,6 +564,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
                 setPaymentMethod('Bank Transfer');
                 setSelectedMonth(new Date().toISOString().slice(0, 7));
                 setGeneratedReceipts([]);
+                setHandwrittenReceipts({});
               }}
               className="w-full mt-3 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300"
             >

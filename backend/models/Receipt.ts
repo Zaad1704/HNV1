@@ -6,6 +6,7 @@ export interface IReceipt extends Document {
   organizationId: mongoose.Types.ObjectId;
   paymentId: mongoose.Types.ObjectId;
   receiptNumber: string;
+  handwrittenReceiptNumber?: string;
   amount: number;
   paymentDate: Date;
   paymentMethod: string;
@@ -23,6 +24,7 @@ const ReceiptSchema = new Schema<IReceipt>({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
   paymentId: { type: Schema.Types.ObjectId, ref: 'Payment', required: true },
   receiptNumber: { type: String, required: true, unique: true },
+  handwrittenReceiptNumber: { type: String },
   amount: { type: Number, required: true },
   paymentDate: { type: Date, required: true },
   paymentMethod: { type: String, required: true },
