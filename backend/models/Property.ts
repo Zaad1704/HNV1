@@ -14,6 +14,8 @@ export interface IProperty extends Document {
     coordinates: [number, number];
   };
   numberOfUnits: number;
+  totalUnits?: number;
+  rentAmount?: number;
   organizationId: Schema.Types.ObjectId;
   createdBy: Schema.Types.ObjectId;
   managedByAgentId?: Schema.Types.ObjectId;
@@ -55,6 +57,14 @@ const PropertySchema = new Schema<IProperty>({
     type: Number,
     required: true,
     default: 1,
+  },
+  totalUnits: {
+    type: Number,
+    default: 1,
+  },
+  rentAmount: {
+    type: Number,
+    default: 0,
   },
   organizationId: {
     type: Schema.Types.ObjectId,
