@@ -491,17 +491,31 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({ isOpen, onClose }) 
               <button
                 onClick={async () => {
                   try {
-                    await apiClient.post('/receipts/thermal-print', {
+                    const response = await apiClient.post('/receipts/thermal-print', {
                       receiptIds: generatedReceipts.map((r: any) => r._id)
                     });
-                    alert('Receipts sent to thermal printer!');
+                    
+                    // Open print window with thermal receipt format
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      printWindow.document.write(response.data);
+                      printWindow.document.close();
+                      
+                      // Auto-print when loaded
+                      printWindow.onload = () => {
+                        printWindow.print();
+                        printWindow.close();
+                      };
+                    }
+                    
+                    alert('Receipts sent to printer!');
                   } catch (error) {
                     alert('Failed to print receipts');
                   }
                 }}
                 className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
               >
-                🖨️ Thermal Print
+                🖨️ Print Receipts
               </button>
             </div>
             <button

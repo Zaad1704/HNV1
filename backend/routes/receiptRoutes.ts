@@ -53,7 +53,7 @@ router.post('/bulk-pdf', async (req: any, res) => {
   }
 });
 
-// Send to thermal printer
+// Generate thermal print HTML
 router.post('/thermal-print', async (req: any, res) => {
   try {
     const { receiptIds } = req.body;
@@ -63,19 +63,53 @@ router.post('/thermal-print', async (req: any, res) => {
       organizationId: req.user.organizationId
     });
 
-    // Simulate thermal printing (in real implementation, this would connect to printer)
-    console.log('Sending to thermal printer:', receipts.length, 'receipts');
+    // Generate thermal printer compatible HTML
+    const thermalHTML = receipts.map(receipt => `
+      <div class="receipt" style="width: 80mm; font-family: monospace; font-size: 12px; margin-bottom: 20px; page-break-after: always;">
+        <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">
+          PAYMENT RECEIPT
+        </div>
+        <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
+        <div>Receipt #: ${receipt.receiptNumber}</div>
+        <div>Date: ${receipt.paymentDate.toLocaleDateString()}</div>
+        <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
+        <div>Tenant: ${receipt.tenantName}</div>
+        <div>Property: ${receipt.propertyName}</div>
+        <div>Unit: ${receipt.unitNumber}</div>
+        <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
+        <div>Rent Month: ${receipt.rentMonth || 'N/A'}</div>
+        <div>Payment Method: ${receipt.paymentMethod}</div>
+        <div style="font-weight: bold; font-size: 14px; margin-top: 10px;">
+          Amount: $${receipt.amount.toFixed(2)}
+        </div>
+        <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
+        <div style="text-align: center; font-size: 10px;">
+          Thank you for your payment!
+        </div>
+      </div>
+    `).join('');
     
-    // Here you would integrate with actual thermal printer API
-    // For now, just return success
+    const fullHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Thermal Print Receipts</title>
+        <style>
+          @media print {
+            body { margin: 0; }
+            .receipt { page-break-after: always; }
+          }
+        </style>
+      </head>
+      <body>${thermalHTML}</body>
+      </html>
+    `;
     
-    res.status(200).json({ 
-      success: true, 
-      message: `${receipts.length} receipts sent to thermal printer` 
-    });
+    res.setHeader('Content-Type', 'text/html');
+    res.send(fullHTML);
   } catch (error) {
     console.error('Thermal print error:', error);
-    res.status(500).json({ success: false, message: 'Failed to print receipts' });
+    res.status(500).json({ success: false, message: 'Failed to generate print format' });
   }
 });
 

@@ -100,12 +100,23 @@ const PropertyDetailsPage = () => {
           {/* Property Image */}
           <div className="app-surface rounded-3xl overflow-hidden border border-app-border">
             <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-orange relative">
-              {property.imageUrl ? (
-                <img
-                  src={property.imageUrl}
-                  alt={property.name}
-                  className="w-full h-full object-cover"
-                />
+              {property.imageUrl && property.imageUrl.trim() !== '' ? (
+                <>
+                  <img
+                    src={property.imageUrl}
+                    alt={property.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.log('Property image failed to load:', property.imageUrl);
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+                      if (fallback) fallback.classList.remove('hidden');
+                    }}
+                  />
+                  <div className="fallback-icon hidden w-full h-full flex items-center justify-center absolute inset-0">
+                    <Users size={48} className="text-white/80" />
+                  </div>
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Users size={48} className="text-white/80" />
