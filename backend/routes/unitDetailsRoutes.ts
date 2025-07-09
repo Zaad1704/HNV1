@@ -41,11 +41,14 @@ router.get('/:propertyId/units/:unitNumber', async (req: any, res) => {
     const payments = await Payment.find({
       propertyId,
       organizationId: req.user.organizationId
-    }).populate('tenantId', 'name unit').then(payments => 
-      payments.filter(p => p.tenantId?.unit === unitNumber)
-    );
+    }).populate('tenantId', 'name unit');
+    
+    const unitPayments = payments.filter(p => {
+      const tenant = p.tenantId as any;
+      return tenant?.unit === unitNumber;
+    });
 
-    const totalPayments = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPayments = unitPayments.reduce((sum, p) => sum + p.amount, 0);
     const totalExpenses = 0; // TODO: Add expense calculation
 
     res.status(200).json({
@@ -93,7 +96,10 @@ router.get('/:propertyId/units/:unitNumber/payments', async (req: any, res) => {
       organizationId: req.user.organizationId
     }).populate('tenantId', 'name unit').sort({ paymentDate: -1 });
 
-    const unitPayments = payments.filter(p => p.tenantId?.unit === unitNumber);
+    const unitPayments = payments.filter(p => {
+      const tenant = p.tenantId as any;
+      return tenant?.unit === unitNumber;
+    });
 
     res.status(200).json({ success: true, data: unitPayments });
   } catch (error) {
