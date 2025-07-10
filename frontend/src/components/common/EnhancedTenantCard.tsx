@@ -67,10 +67,11 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
         <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
           {tenant.imageUrl || tenant.tenantImage ? (
             <img 
-              src={tenant.imageUrl || tenant.tenantImage} 
+              src={tenant.imageUrl?.startsWith('/') ? `${window.location.origin}${tenant.imageUrl}` : (tenant.imageUrl || tenant.tenantImage)}
               alt={tenant.name}
               className="w-full h-full object-cover"
               onError={(e) => {
+                console.error('Tenant image failed to load:', tenant.imageUrl || tenant.tenantImage);
                 e.currentTarget.style.display = 'none';
                 const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
                 if (fallback) fallback.classList.remove('hidden');
