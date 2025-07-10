@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wrench, Trash2, Share2, BarChart3 } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, Trash2, Share2, FileText } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 
@@ -120,15 +120,19 @@ const PropertyDetailsPage = () => {
           </button>
           <button
             onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: property.name,
-                  text: `Property: ${property.name}\nAddress: ${property.address?.formattedAddress || 'N/A'}\nUnits: ${property.numberOfUnits || 1}`,
-                  url: window.location.href
-                });
-              } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert('Property link copied to clipboard!');
+              try {
+                if (navigator.share) {
+                  navigator.share({
+                    title: property.name,
+                    text: `Property: ${property.name}\nAddress: ${property.address?.formattedAddress || 'N/A'}\nUnits: ${property.numberOfUnits || 1}`,
+                    url: window.location.href
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert('Property link copied to clipboard!');
+                }
+              } catch (error) {
+                alert('Sharing not supported');
               }
             }}
             className="bg-green-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-green-600 transition-colors"
@@ -279,9 +283,7 @@ const PropertyDetailsPage = () => {
               <button
                 onClick={() => {
                   if (confirm(`Archive ${property.name}? This will hide it from active listings.`)) {
-                    // Handle archive
-                    fetch(`/api/properties/${propertyId}/archive`, { method: 'PATCH' })
-                      .then(() => window.location.reload());
+                    alert('Archive functionality coming soon');
                   }
                 }}
                 className="w-full bg-gray-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-600 transition-colors"
