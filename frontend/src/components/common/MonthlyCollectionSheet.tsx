@@ -8,12 +8,13 @@ import apiClient from '../../api/client';
 interface MonthlyCollectionSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  preSelectedProperty?: string;
 }
 
-const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen, onClose }) => {
+const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen, onClose, preSelectedProperty }) => {
   const { currency } = useCurrency();
   const { user } = useAuthStore();
-  const [selectedProperty, setSelectedProperty] = useState('');
+  const [selectedProperty, setSelectedProperty] = useState(preSelectedProperty || '');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isGenerating, setIsGenerating] = useState(false);

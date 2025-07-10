@@ -8,6 +8,7 @@ import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import DataPreviewSections from '../components/property/DataPreviewSections';
 import UnitDataModal from '../components/property/UnitDataModal';
+import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 
 // Units & Tenants Component
 const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, onAddTenant }: { propertyId: string, property: any, tenants: any[], onUnitDataClick: (unitNumber: string) => void, onAddTenant: (unitNumber?: string) => void }) => {
@@ -589,6 +590,7 @@ const PropertyDetailsPage = () => {
   const [showRentIncrease, setShowRentIncrease] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUnitDataModal, setShowUnitDataModal] = useState(false);
+  const [showCollectionSheet, setShowCollectionSheet] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string>('');
 
   const handleUnitDataClick = (unitNumber: string) => {
@@ -863,6 +865,13 @@ const PropertyDetailsPage = () => {
                 Archive Property
               </button>
               <button
+                onClick={() => setShowCollectionSheet(true)}
+                className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText size={16} />
+                Collection Sheet
+              </button>
+              <button
                 onClick={() => setShowRentIncrease(true)}
                 className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
               >
@@ -897,6 +906,12 @@ const PropertyDetailsPage = () => {
         propertyId={propertyId!}
         unitNumber={selectedUnit}
         unitName={`Unit ${selectedUnit}`}
+      />
+      
+      <MonthlyCollectionSheet
+        isOpen={showCollectionSheet}
+        onClose={() => setShowCollectionSheet(false)}
+        preSelectedProperty={propertyId}
       />
     </motion.div>
   );

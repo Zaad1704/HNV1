@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
-import { generateFinancialReport } from '../controllers/reportController';
+import { getCollectionSheet } from '../controllers/reportController';
 
 const router = Router();
 
 router.use(protect);
 
-router.get('/financial', generateFinancialReport);
+router.get('/collection-sheet', getCollectionSheet);
 
 export default router;

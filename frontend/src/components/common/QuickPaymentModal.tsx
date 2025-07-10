@@ -45,7 +45,32 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
     enabled: !!selectedProperty
   });
 
-  const filteredTenants = tenants.filter((tenant: any) => 
+  const { data: payments = [] } = useQuery({
+    queryKey: ['payments', selectedProperty],
+    queryFn: async () => {
+      if (!selectedProperty) return [];
+      const { data } = await apiClient.get(`/payments?propertyId=${selectedProperty}`);
+      return data.data || [];
+    },
+    enabled: !!selectedProperty
+  });
+
+  // Filter out tenants who have already paid this month
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  const unpaidTenants = tenants.filter((tenant: any) => {
+    const hasCurrentMonthPayment = payments.some((payment: any) => {
+      const paymentDate = new Date(payment.paymentDate);
+      return payment.tenantId === tenant._id &&
+             paymentDate.getMonth() === currentMonth &&
+             paymentDate.getFullYear() === currentYear &&
+             payment.status === 'Paid';
+    });
+    return !hasCurrentMonthPayment;
+  });
+  
+  const filteredTenants = unpaidTenants.filter((tenant: any) => 
     tenant.name.toLowerCase().includes(tenantSearch.toLowerCase())
   );
 
@@ -276,26 +301,35 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose }
                 />
               </div>
               <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-lg">
-                {filteredTenants.map((tenant: any) => (
-                  <div
-                    key={tenant._id}
-                    onClick={() => {
-                      setSelectedTenant(tenant._id);
-                      setFormData({ ...formData, amount: tenant.rentAmount?.toString() || '' });
-                    }}
-                    className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
-                      selectedTenant === tenant._id ? 'bg-blue-50 border-blue-200' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{tenant.name}</p>
-                        <p className="text-sm text-gray-500">Unit: {tenant.unit}</p>
+                {filteredTenants.length > 0 ? (
+                  filteredTenants.map((tenant: any) => (
+                    <div
+                      key={tenant._id}
+                      onClick={() => {
+                        setSelectedTenant(tenant._id);
+                        setFormData({ ...formData, amount: tenant.rentAmount?.toString() || '' });
+                      }}
+                      className={`p-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 ${
+                        selectedTenant === tenant._id ? 'bg-blue-50 border-blue-200' : ''
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{tenant.name}</p>
+                          <p className="text-sm text-gray-500">Unit: {tenant.unit}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">${tenant.rentAmount || 0}</p>
+                          <p className="text-xs text-orange-600">Payment Due</p>
+                        </div>
                       </div>
-                      <p className="font-medium">${tenant.rentAmount || 0}</p>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    {tenants.length === 0 ? 'No tenants found' : 'All tenants have paid for this month'}
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}

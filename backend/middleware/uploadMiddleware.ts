@@ -6,14 +6,21 @@ import s3Service from '../services/s3Service';
 
 // File filter for security
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp|svg/;
+  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp|svg|bmp|tiff/;
+  const allowedMimeTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff',
+    'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ];
+  
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const mimetype = allowedMimeTypes.includes(file.mimetype);
 
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only images and documents are allowed.'));
+    console.log('File rejected:', { originalname: file.originalname, mimetype: file.mimetype, fieldname: file.fieldname });
+    cb(new Error(`Invalid file type: ${file.mimetype}. Only images and documents are allowed.`));
   }
 };
 
@@ -28,6 +35,10 @@ function getUploadFolder(fieldname: string): string {
       return 'profiles';
     case 'property':
       return 'properties';
+    case 'tenantImage':
+    case 'govtIdFront':
+    case 'govtIdBack':
+      return 'tenants';
     case 'document':
       return 'documents';
     default:

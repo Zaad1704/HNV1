@@ -120,8 +120,24 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
         submitData.append('govtIdBack', images.govtIdBack);
       }
       
-      // Add additional adults
-      submitData.append('additionalAdults', JSON.stringify(additionalAdults));
+      // Add additional adults with images
+      const adultsData = additionalAdults.map((adult, index) => {
+        const adultData = { ...adult };
+        delete adultData.image;
+        delete adultData.govtIdImage;
+        return adultData;
+      });
+      submitData.append('additionalAdults', JSON.stringify(adultsData));
+      
+      // Add additional adult images
+      additionalAdults.forEach((adult, index) => {
+        if (adult.image) {
+          submitData.append(`additionalAdultImage_${index}`, adult.image);
+        }
+        if (adult.govtIdImage) {
+          submitData.append(`additionalAdultGovtId_${index}`, adult.govtIdImage);
+        }
+      });
       
       const { data } = await apiClient.post('/tenants', submitData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -466,6 +482,30 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                       onChange={(e) => updateAdditionalAdult(index, 'relation', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-lg"
                     />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Photo
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => updateAdditionalAdult(index, 'image', e.target.files?.[0] || null)}
+                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Government ID Image
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => updateAdditionalAdult(index, 'govtIdImage', e.target.files?.[0] || null)}
+                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
