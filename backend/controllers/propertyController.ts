@@ -14,6 +14,11 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
     res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     return;
   }
+  
+  console.log('Create property request:', {
+    body: req.body,
+    file: req.file ? { filename: req.file.filename, originalname: req.file.originalname } : null
+  });
 
   // Check usage limit before creating
   const subscriptionService = (await import('../services/subscriptionService')).default;
@@ -31,9 +36,28 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    const imageUrl = req.file ? req.file.imageUrl : undefined;
+    // Handle image URL from uploaded file or direct URL
+    let imageUrl = req.body.imageUrl || '';
+    if (req.file) {
+      // If file was uploaded, construct the URL
+      imageUrl = `/uploads/${req.file.filename}`;
+      console.log('Image uploaded:', imageUrl);
+    }
+    
+    // Handle nested address object from FormData
+    const address = {
+      street: req.body['address[street]'] || req.body.address?.street || '',
+      city: req.body['address[city]'] || req.body.address?.city || '',
+      state: req.body['address[state]'] || req.body.address?.state || '',
+      zipCode: req.body['address[zipCode]'] || req.body.address?.zipCode || ''
+    };
+    
     const property = await Property.create({
-      ...req.body,
+      name: req.body.name,
+      address: address,
+      numberOfUnits: parseInt(req.body.numberOfUnits) || 1,
+      propertyType: req.body.propertyType || 'Apartment',
+      status: req.body.status || 'Active',
       imageUrl: imageUrl,
       organizationId: user.organizationId,
       createdBy: user._id,
@@ -127,6 +151,11 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     res.status(401).json({ success: false, message: 'Not authorized or not part of an organization' });
     return;
   }
+  
+  console.log('Update property request:', {
+    body: req.body,
+    file: req.file ? { filename: req.file.filename, originalname: req.file.originalname } : null
+  });
 
   try {
     let property = await Property.findById(req.params.id);
@@ -140,9 +169,33 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const updates = { ...req.body };
+    // Handle nested address object from FormData
+    const updates: any = {
+      name: req.body.name,
+      numberOfUnits: parseInt(req.body.numberOfUnits) || property.numberOfUnits,
+      propertyType: req.body.propertyType || property.propertyType,
+      status: req.body.status || property.status
+    };
+    
+    // Handle address if provided
+    if (req.body['address[street]'] || req.body.address) {
+      updates.address = {
+        street: req.body['address[street]'] || req.body.address?.street || property.address?.street || '',
+        city: req.body['address[city]'] || req.body.address?.city || property.address?.city || '',
+        state: req.body['address[state]'] || req.body.address?.state || property.address?.state || '',
+        zipCode: req.body['address[zipCode]'] || req.body.address?.zipCode || property.address?.zipCode || ''
+      };
+    }
+    
+    // Handle image URL
     if (req.file) {
-      updates.imageUrl = req.file.imageUrl;
+      // If file was uploaded, construct the URL
+      updates.imageUrl = `/uploads/${req.file.filename}`;
+      console.log('Image updated:', updates.imageUrl);
+    } else if (req.body.imageUrl !== undefined) {
+      // Keep existing or set new URL
+      updates.imageUrl = req.body.imageUrl;
+      console.log('Image URL set:', updates.imageUrl);
     }
 
     property = await Property.findByIdAndUpdate(req.params.id, updates, {

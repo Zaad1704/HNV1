@@ -10,6 +10,7 @@ import {
 } from '../controllers/propertyController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
+import upload from '../middleware/uploadMiddleware';
 
 const router = Router();
 
@@ -17,11 +18,11 @@ router.use(protect);
 
 router.route('/')
   .get(getProperties)
-  .post(createProperty);
+  .post(upload.single('image'), createProperty);
 
 router.route('/:id')
   .get(getPropertyById)
-  .put(updateProperty)
+  .put(upload.single('image'), updateProperty)
   .delete(async (req: any, res) => {
     try {
       await cascadePropertyChanges(req.params.id, 'delete', req.user.organizationId);

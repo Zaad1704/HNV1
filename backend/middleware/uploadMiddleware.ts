@@ -35,9 +35,33 @@ function getUploadFolder(fieldname: string): string {
   }
 }
 
+// Disk storage for local file uploads
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../uploads');
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
 // Memory storage for processing before S3 upload
+const memoryStorage = multer.memoryStorage();
+
+// Default upload with disk storage
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: diskStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: fileFilter
+});
+
+// S3 upload with memory storage
+const uploadToMemory = multer({
+  storage: memoryStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -55,4 +79,5 @@ export const uploadToS3 = async (file: Express.Multer.File, fieldname: string) =
   return { url, filename };
 };
 
+export { uploadToMemory };
 export default upload;

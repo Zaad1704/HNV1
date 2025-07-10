@@ -692,11 +692,11 @@ const PropertyDetailsPage = () => {
               {property.imageUrl && property.imageUrl.trim() !== '' ? (
                 <>
                   <img
-                    src={property.imageUrl}
+                    src={property.imageUrl.startsWith('/') ? `${window.location.origin}${property.imageUrl}` : property.imageUrl}
                     alt={property.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.log('Property image failed to load:', property.imageUrl);
+                      console.error('Property image failed to load:', property.imageUrl);
                       e.currentTarget.style.display = 'none';
                       const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
                       if (fallback) fallback.classList.remove('hidden');
@@ -705,6 +705,12 @@ const PropertyDetailsPage = () => {
                   <div className="fallback-icon hidden w-full h-full flex items-center justify-center absolute inset-0">
                     <Users size={48} className="text-white/80" />
                   </div>
+                  {/* Debug info - remove in production */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
+                      {property.imageUrl}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

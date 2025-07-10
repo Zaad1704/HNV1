@@ -25,18 +25,20 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
     <UniversalCard delay={index * 0.1} gradient="blue">
       {/* Property Image */}
       <div className="h-48 bg-gradient-to-br from-brand-blue via-purple-600 to-brand-orange relative overflow-hidden rounded-2xl mb-4">
-        {property.imageUrl ? (
+        {property.imageUrl && property.imageUrl.trim() !== '' ? (
           <img
-            src={property.imageUrl}
+            src={property.imageUrl.startsWith('/') ? `${window.location.origin}${property.imageUrl}` : property.imageUrl}
             alt={property.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500"
             onError={(e) => {
+              console.error('Image failed to load:', property.imageUrl);
               e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
+              if (fallback) fallback.classList.remove('hidden');
             }}
           />
         ) : null}
-        <div className={`w-full h-full flex items-center justify-center ${property.imageUrl ? 'hidden' : ''}`}>
+        <div className={`fallback-icon w-full h-full flex items-center justify-center ${property.imageUrl && property.imageUrl.trim() !== '' ? 'hidden' : ''}`}>
           <Building2 size={32} className="text-white" />
         </div>
         <div className="absolute top-4 right-4">
@@ -45,6 +47,12 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             variant={property.status === 'Active' ? 'success' : 'warning'}
           />
         </div>
+        {/* Debug info - remove in production */}
+        {process.env.NODE_ENV === 'development' && property.imageUrl && (
+          <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
+            {property.imageUrl}
+          </div>
+        )}
       </div>
 
       {/* Property Info */}

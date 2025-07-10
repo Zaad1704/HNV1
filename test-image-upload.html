@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Image Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"] { margin-bottom: 10px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        img { max-width: 300px; margin-top: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Image Upload</h1>
+        
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="imageFile">Select Image:</label>
+                <input type="file" id="imageFile" name="image" accept="image/*" required>
+            </div>
+            <button type="submit">Upload Image</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <h2>Test Property Creation</h2>
+        <form id="propertyForm">
+            <div class="form-group">
+                <label for="propertyName">Property Name:</label>
+                <input type="text" id="propertyName" name="name" value="Test Property" required>
+            </div>
+            <div class="form-group">
+                <label for="propertyImage">Property Image:</label>
+                <input type="file" id="propertyImage" name="image" accept="image/*">
+            </div>
+            <button type="submit">Create Property</button>
+        </form>
+        
+        <div id="propertyResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let authToken = '';
+
+        // Simple login for testing
+        async function login() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@example.com', // Replace with your test credentials
+                        password: 'password123'
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    authToken = data.token;
+                    console.log('Logged in successfully');
+                } else {
+                    console.error('Login failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+            }
+        }
+
+        // Test image upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!authToken) await login();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageFile');
+            formData.append('image', fileInput.files[0]);
+            
+            try {
+                const response = await fetch(`${API_BASE}/test/image/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('result');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Upload Successful!</h3>
+                            <p><strong>URL:</strong> ${result.data.url}</p>
+                            <p><strong>Full URL:</strong> ${result.data.fullUrl}</p>
+                            <p><strong>Filename:</strong> ${result.data.filename}</p>
+                            <img src="${result.data.fullUrl}" alt="Uploaded image">
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Upload Failed</h3>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="error">
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Test property creation
+        document.getElementById('propertyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!authToken) await login();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('propertyName').value);
+            formData.append('address[street]', '123 Test St');
+            formData.append('address[city]', 'Test City');
+            formData.append('address[state]', 'TS');
+            formData.append('address[zipCode]', '12345');
+            formData.append('numberOfUnits', '1');
+            formData.append('propertyType', 'Apartment');
+            formData.append('status', 'Active');
+            
+            const imageInput = document.getElementById('propertyImage');
+            if (imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/properties`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('propertyResult');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>Property Created!</h3>
+                            <p><strong>Name:</strong> ${result.data.name}</p>
+                            <p><strong>Image URL:</strong> ${result.data.imageUrl || 'None'}</p>
+                            ${result.data.imageUrl ? `<img src="${window.location.origin}${result.data.imageUrl}" alt="Property image">` : ''}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>Property Creation Failed</h3>
+                            <p>${result.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('propertyResult').innerHTML = `
+                    <div class="error">
+                        <h3>Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

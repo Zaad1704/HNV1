@@ -196,7 +196,9 @@ app.use('/api', (req, res, next) => {
 });
 // Test routes (no auth required)
 import testRoutes from './routes/testRoutes';
+import testImageRoutes from './routes/testImageRoutes';
 app.use('/api/test', testRoutes);
+app.use('/api/test/image', testImageRoutes);
 // Health check routes (no auth required)
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes);
@@ -275,8 +277,13 @@ app.use('/api/agent-handovers', protect, agentHandoverRoutes);
 app.use('/api/test-email', testEmailRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve uploaded files with CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 // Error routes
 app.use('/api/error', errorRoutes);
 // Route error handler

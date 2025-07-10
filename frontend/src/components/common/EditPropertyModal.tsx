@@ -63,41 +63,35 @@ const EditPropertyModal: React.FC<EditPropertyModalProps> = ({ isOpen, onClose, 
     setIsSubmitting(true);
     
     try {
-      let imageUrl = formData.imageUrl;
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('address[street]', formData.address.street);
+      formDataToSend.append('address[city]', formData.address.city);
+      formDataToSend.append('address[state]', formData.address.state);
+      formDataToSend.append('address[zipCode]', formData.address.zipCode);
+      formDataToSend.append('numberOfUnits', formData.numberOfUnits.toString());
+      formDataToSend.append('propertyType', formData.propertyType);
+      formDataToSend.append('status', formData.status);
       
-      if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append('image', imageFile);
-        
-        try {
-          const imageResponse = await apiClient.post('/upload/image', imageFormData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-          imageUrl = imageResponse.data?.data?.url || imageResponse.data?.url || '';
-        } catch (error) {
-          console.error('Failed to upload image:', error);
-        }
+      if (!imageFile && formData.imageUrl) {
+        formDataToSend.append('imageUrl', formData.imageUrl);
       }
       
-      const propertyData = {
-        name: formData.name,
-        address: {
-          street: formData.address.street,
-          city: formData.address.city,
-          state: formData.address.state,
-          zipCode: formData.address.zipCode,
-          formattedAddress: `${formData.address.street}, ${formData.address.city}, ${formData.address.state} ${formData.address.zipCode}`.trim()
-        },
-        numberOfUnits: formData.numberOfUnits,
-        propertyType: formData.propertyType,
-        status: formData.status,
-        imageUrl
-      };
+      if (imageFile) {
+        formDataToSend.append('image', imageFile);
+      }
       
-      const response = await apiClient.put(`/properties/${property._id}`, propertyData);
+      const response = await apiClient.put(`/properties/${property._id}`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       
       if (response.data?.success) {
-        onPropertyUpdated(response.data.data);
+        // Force image cache refresh
+        const updatedProperty = {
+          ...response.data.data,
+          imageUrl: response.data.data.imageUrl ? `${response.data.data.imageUrl}?t=${Date.now()}` : ''
+        };
+        onPropertyUpdated(updatedProperty);
         alert('Property updated successfully!');
         onClose();
       }
