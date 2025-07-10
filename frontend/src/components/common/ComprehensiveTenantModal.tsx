@@ -82,6 +82,15 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     enabled: isOpen
   });
 
+  const { data: tenants = [] } = useQuery({
+    queryKey: ['tenants'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/tenants');
+      return data.data || [];
+    },
+    enabled: isOpen && formData.propertyId
+  });
+
 
 
   const handleImageUpload = (field: string, file: File) => {
@@ -341,14 +350,57 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Unit Number *
                 </label>
-                <input
-                  type="text"
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter unit number"
-                  required
-                />
+                {formData.propertyId ? (
+                  <select
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select Available Unit</option>
+                    {(() => {
+                      const selectedProperty = properties.find(p => p._id === formData.propertyId);
+                      if (!selectedProperty) return null;
+                      
+                      const occupiedUnits = tenants
+                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
+                        .map(t => t.unit);
+                      
+                      const allUnits = Array.from({ length: selectedProperty.numberOfUnits || 1 }, (_, i) => (i + 1).toString());
+                      const vacantUnits = allUnits.filter(unit => !occupiedUnits.includes(unit));
+                      
+                      return vacantUnits.map(unit => (
+                        <option key={unit} value={unit} className="text-green-600">
+                          Unit {unit} (Vacant)
+                        </option>
+                      ));
+                    })()}
+                    {(() => {
+                      const selectedProperty = properties.find(p => p._id === formData.propertyId);
+                      if (!selectedProperty) return null;
+                      
+                      const occupiedUnits = tenants
+                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
+                        .map(t => ({ unit: t.unit, name: t.name }));
+                      
+                      return occupiedUnits.map(({ unit, name }) => (
+                        <option key={unit} value={unit} disabled className="text-red-600">
+                          Unit {unit} (Occupied by {name})
+                        </option>
+                      ));
+                    })()}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Select property first"
+                    disabled
+                    required
+                  />
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
