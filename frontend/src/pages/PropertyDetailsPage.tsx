@@ -731,15 +731,6 @@ const PropertyDetailsPage = () => {
             </p>
           </div>
 
-          {/* Property Statistics */}
-          <PropertyStatsSection propertyId={propertyId!} />
-          
-          {/* Rent Status Overview */}
-          <RentStatusSection propertyId={propertyId!} />
-
-          {/* Units & Tenants List */}
-          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} />
-          
           {/* NEW: Data Preview Sections */}
           <div className="app-surface rounded-3xl p-8 border border-app-border">
             <div className="flex items-center justify-between mb-6">
@@ -752,6 +743,15 @@ const PropertyDetailsPage = () => {
             </div>
             <DataPreviewSections propertyId={propertyId!} />
           </div>
+
+          {/* Property Statistics */}
+          <PropertyStatsSection propertyId={propertyId!} />
+          
+          {/* Rent Status Overview */}
+          <RentStatusSection propertyId={propertyId!} />
+
+          {/* Units & Tenants List */}
+          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} />
         </div>
 
         {/* Sidebar */}
