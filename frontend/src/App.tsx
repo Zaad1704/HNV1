@@ -164,10 +164,11 @@ function App() {
               <DashboardLayout />
             </DashboardErrorBoundary>
           }>
-            {/* General User Dashboards */}
-            <Route index element={<OverviewPage />} />
+            {/* Smart Dashboard - Main Entry Point */}
+            <Route index element={<SmartDashboardPage />} />
             <Route path="complex" element={<DashboardPageComplex />} />
             <Route path="overview" element={<OverviewPage />} />
+            <Route path="smart-dashboard" element={<SmartDashboardPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<TenantProfilePage />} /> {/* Assuming a generic profile page */}
 
