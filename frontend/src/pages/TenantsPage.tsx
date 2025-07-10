@@ -27,7 +27,6 @@ import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
-import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
 const fetchTenants = async (propertyId?: string) => {
   try {
@@ -46,7 +45,6 @@ const TenantsPage = () => {
   const propertyId = searchParams.get('propertyId');
   const unitParam = searchParams.get('unit');
   const { stats } = useCrossData() || {};
-  const { triggerTenantWorkflow } = useWorkflowTriggers() || { triggerTenantWorkflow: () => {} };
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -78,11 +76,8 @@ const TenantsPage = () => {
   const handleTenantAdded = async (newTenant: any) => {
     try {
       queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
-      
-      // Trigger smart workflow safely
-      if (triggerTenantWorkflow) {
-        await triggerTenantWorkflow(newTenant);
-      }
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['crossData'] });
     } catch (error) {
       console.error('Error handling tenant added:', error);
     }
