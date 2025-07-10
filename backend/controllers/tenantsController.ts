@@ -156,3 +156,189 @@ export const deleteTenant = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// NEW DATA PREVIEW ENDPOINTS
+export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { tenantId } = req.params;
+    const { status, date } = req.query;
+
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant || tenant.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const [Payment, Receipt, Expense, MaintenanceRequest, Reminder, ApprovalRequest, AuditLog] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/Receipt'),
+      import('../models/Expense'),
+      import('../models/MaintenanceRequest'),
+      import('../models/Reminder'),
+      import('../models/ApprovalRequest'),
+      import('../models/AuditLog')
+    ]);
+
+    let baseQuery: any = { tenantId, organizationId: user.organizationId };
+    
+    const [payments, receipts, expenses, maintenance, reminders, approvals, auditLogs] = await Promise.all([
+      Payment.default.find(baseQuery).populate('propertyId', 'name').sort({ paymentDate: -1 }).limit(5).lean(),
+      Receipt.default.find(baseQuery).populate('propertyId', 'name').sort({ createdAt: -1 }).limit(5).lean(),
+      Expense.default.find({ propertyId: tenant.propertyId, organizationId: user.organizationId }).sort({ date: -1 }).limit(5).lean(),
+      MaintenanceRequest.default.find(baseQuery).populate('assignedTo', 'name').sort({ createdAt: -1 }).limit(5).lean(),
+      Reminder.default.find(baseQuery).sort({ nextRunDate: 1 }).limit(5).lean(),
+      ApprovalRequest.default.find({ tenantId, organizationId: user.organizationId }).populate('requestedBy', 'name').sort({ createdAt: -1 }).limit(5).lean(),
+      AuditLog.default.find({ 
+        organizationId: user.organizationId,
+        $or: [{ resourceId: tenantId }, { 'metadata.tenantId': tenantId }]
+      }).populate('userId', 'name').sort({ timestamp: -1 }).limit(10).lean()
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        payments: payments.map(p => ({
+          _id: p._id,
+          amount: p.amount,
+          status: p.status,
+          paymentDate: p.paymentDate,
+          paymentMethod: p.paymentMethod,
+          rentMonth: p.rentMonth,
+          property: p.propertyId
+        })),
+        receipts: receipts.map(r => ({
+          _id: r._id,
+          receiptNumber: r.receiptNumber,
+          amount: r.amount,
+          paymentDate: r.paymentDate,
+          paymentMethod: r.paymentMethod,
+          property: r.propertyId
+        })),
+        expenses: expenses.map(e => ({
+          _id: e._id,
+          description: e.description,
+          amount: e.amount,
+          category: e.category,
+          date: e.date
+        })),
+        maintenance: maintenance.map(m => ({
+          _id: m._id,
+          description: m.description,
+          status: m.status,
+          priority: m.priority,
+          assignedTo: m.assignedTo,
+          createdAt: m.createdAt
+        })),
+        reminders: reminders.map(r => ({
+          _id: r._id,
+          title: r.title,
+          type: r.type,
+          status: r.status,
+          nextRunDate: r.nextRunDate
+        })),
+        approvals: approvals.map(a => ({
+          _id: a._id,
+          type: a.type,
+          description: a.description,
+          status: a.status,
+          priority: a.priority,
+          requestedBy: a.requestedBy,
+          createdAt: a.createdAt
+        })),
+        auditLogs: auditLogs.map(l => ({
+          _id: l._id,
+          action: l.action,
+          resource: l.resource,
+          description: l.description,
+          user: l.userId,
+          timestamp: l.timestamp,
+          severity: l.severity
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Tenant data previews error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+export const getTenantStats = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { tenantId } = req.params;
+
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant || tenant.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const [Payment, MaintenanceRequest] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/MaintenanceRequest')
+    ]);
+
+    const [payments, maintenance] = await Promise.all([
+      Payment.default.find({ tenantId, organizationId: user.organizationId }).lean(),
+      MaintenanceRequest.default.find({ tenantId, organizationId: user.organizationId }).lean()
+    ]);
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyPayments = payments.filter((p: any) => {
+      const paymentDate = new Date(p.paymentDate);
+      return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+    });
+    
+    const totalPaid = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    const monthlyPaid = monthlyPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    const outstandingAmount = monthlyPaid >= (tenant.rentAmount || 0) ? 0 : (tenant.rentAmount || 0) - monthlyPaid;
+    
+    const openMaintenance = maintenance.filter((m: any) => m.status === 'Open').length;
+    const totalMaintenance = maintenance.length;
+    
+    const leaseStartDate = tenant.createdAt ? new Date(tenant.createdAt) : new Date();
+    const monthsSinceStart = (currentYear - leaseStartDate.getFullYear()) * 12 + (currentMonth - leaseStartDate.getMonth()) + 1;
+    const monthsPaid = payments.length;
+    const paymentRate = monthsSinceStart > 0 ? (monthsPaid / monthsSinceStart) * 100 : 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        payments: {
+          total: payments.length,
+          totalAmount: totalPaid,
+          monthlyPaid,
+          outstanding: outstandingAmount,
+          paymentRate: Math.round(paymentRate)
+        },
+        maintenance: {
+          total: totalMaintenance,
+          open: openMaintenance,
+          closed: totalMaintenance - openMaintenance
+        },
+        lease: {
+          startDate: leaseStartDate,
+          monthsSinceStart,
+          monthsPaid,
+          rentAmount: tenant.rentAmount || 0
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Tenant stats error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

@@ -8,6 +8,7 @@ import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
+import TenantDataPreviewSections from '../components/tenant/TenantDataPreviewSections';
 
 const TenantDetailsPage = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
@@ -193,6 +194,19 @@ const TenantDetailsPage = () => {
                     <p className="text-sm text-red-800">Outstanding</p>
                   </div>
                 </div>
+              </UniversalCard>
+
+              {/* NEW: Tenant Data Overview */}
+              <UniversalCard gradient="purple">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-text-primary">Tenant Data Overview</h3>
+                    <p className="text-sm text-text-secondary">
+                      Recent activity and data across all tenant operations
+                    </p>
+                  </div>
+                </div>
+                <TenantDataPreviewSections tenantId={tenantId!} tenant={tenant} />
               </UniversalCard>
             </div>
           )}

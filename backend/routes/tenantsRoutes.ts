@@ -7,7 +7,9 @@ import {
   createTenant,
   getTenantById,
   updateTenant,
-  deleteTenant
+  deleteTenant,
+  getTenantDataPreviews,
+  getTenantStats
 } from '../controllers/tenantsController';
 
 const router = Router();
@@ -45,5 +47,9 @@ router.patch('/:id/archive', async (req: any, res) => {
     res.status(500).json({ success: false, message: 'Failed to archive tenant' });
   }
 });
+
+// NEW DATA PREVIEW ROUTES
+router.get('/:tenantId/data-previews', getTenantDataPreviews);
+router.get('/:tenantId/stats', getTenantStats);
 
 export default router;
