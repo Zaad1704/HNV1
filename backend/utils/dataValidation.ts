@@ -6,8 +6,7 @@ export const validatePropertyTenantConnection = async (organizationId: string) =
     const properties = await Property.find({ organizationId });
     const tenants = await Tenant.find({ organizationId, status: 'Active' });
     
-    const issues = [];
-    const fixes = [];
+    const issues: any[] = [];
     
     for (const property of properties) {
       const propertyTenants = tenants.filter(t => t.propertyId?.toString() === property._id.toString());
@@ -39,14 +38,14 @@ export const validatePropertyTenantConnection = async (organizationId: string) =
       }
       
       // Check for duplicate units
-      const unitCounts = {};
+      const unitCounts: Record<string, number> = {};
       propertyTenants.forEach(tenant => {
         if (tenant.unit) {
           unitCounts[tenant.unit] = (unitCounts[tenant.unit] || 0) + 1;
         }
       });
       
-      Object.entries(unitCounts).forEach(([unit, count]) => {
+      Object.entries(unitCounts).forEach(([unit, count]: [string, number]) => {
         if (count > 1) {
           issues.push({
             type: 'duplicate_unit',
@@ -81,13 +80,14 @@ export const validatePropertyTenantConnection = async (organizationId: string) =
 export const fixDataInconsistencies = async (organizationId: string) => {
   try {
     const validation = await validatePropertyTenantConnection(organizationId);
-    const fixes = [];
+    const fixes: any[] = [];
     
     for (const issue of validation.issues) {
       switch (issue.type) {
         case 'missing_unit':
           // Auto-assign next available unit
           const property = await Property.findById(issue.propertyId);
+          if (!property) continue;
           const occupiedUnits = await Tenant.find({ 
             propertyId: issue.propertyId, 
             organizationId,
@@ -114,6 +114,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
         case 'invalid_unit':
           // Move to next available valid unit
           const validProperty = await Property.findById(issue.propertyId);
+          if (!validProperty) continue;
           const validOccupiedUnits = await Tenant.find({ 
             propertyId: issue.propertyId, 
             organizationId,
@@ -144,6 +145,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
           const duplicateTenants = issue.tenants.slice(1); // Skip first tenant
           for (const tenant of duplicateTenants) {
             const dupProperty = await Property.findById(issue.propertyId);
+            if (!dupProperty) continue;
             const dupOccupiedUnits = await Tenant.find({ 
               propertyId: issue.propertyId, 
               organizationId,
