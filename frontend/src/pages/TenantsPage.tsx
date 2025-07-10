@@ -311,56 +311,118 @@ const TenantsPage = () => {
         }
       />
 
-      {/* Advanced Filter Buttons */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <button
-          onClick={() => setShowLateOnly(!showLateOnly)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showLateOnly 
-              ? 'bg-red-500 text-white' 
-              : 'bg-red-50 text-red-600 hover:bg-red-100'
-          }`}
-        >
-          <AlertTriangle size={16} />
-          {showLateOnly ? 'Show All' : 'Late Payments Only'}
-        </button>
+      {/* Enhanced Smart Filter Bar */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+            <Filter size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-text-primary">Smart Filters</h3>
+            <p className="text-sm text-text-secondary">Filter tenants by status, lease expiry, and property</p>
+          </div>
+        </div>
         
-        <button
-          onClick={() => setShowExpiringLeases(!showExpiringLeases)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showExpiringLeases 
-              ? 'bg-orange-500 text-white' 
-              : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-          }`}
-        >
-          <Calendar size={16} />
-          {showExpiringLeases ? 'Show All' : 'Expiring Leases'}
-        </button>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button
+            onClick={() => setShowLateOnly(!showLateOnly)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
+              showLateOnly 
+                ? 'bg-red-500 text-white shadow-lg scale-105' 
+                : 'bg-white text-red-600 hover:bg-red-50 border border-red-200'
+            }`}
+          >
+            <AlertTriangle size={16} />
+            <span className="text-sm font-medium">{showLateOnly ? 'All Tenants' : 'Late Payments'}</span>
+          </button>
+          
+          <button
+            onClick={() => setShowExpiringLeases(!showExpiringLeases)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
+              showExpiringLeases 
+                ? 'bg-orange-500 text-white shadow-lg scale-105' 
+                : 'bg-white text-orange-600 hover:bg-orange-50 border border-orange-200'
+            }`}
+          >
+            <Calendar size={16} />
+            <span className="text-sm font-medium">{showExpiringLeases ? 'All Leases' : 'Expiring Soon'}</span>
+          </button>
+          
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
+              showArchived 
+                ? 'bg-gray-500 text-white shadow-lg scale-105' 
+                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+            }`}
+          >
+            {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+            <span className="text-sm font-medium">{showArchived ? 'Active Only' : 'Show Archived'}</span>
+          </button>
+          
+          <select
+            value={selectedProperty}
+            onChange={(e) => setSelectedProperty(e.target.value)}
+            className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium"
+          >
+            <option value="">All Properties ({properties.length})</option>
+            {properties.map((property: any) => (
+              <option key={property._id} value={property._id}>
+                {property.name} ({tenants.filter((t: any) => t.propertyId?._id === property._id).length})
+              </option>
+            ))}
+          </select>
+        </div>
         
-        <button
-          onClick={() => setShowArchived(!showArchived)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showArchived 
-              ? 'bg-gray-500 text-white' 
-              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-          {showArchived ? 'Show Active' : 'Show Archived'}
-        </button>
-        
-        <select
-          value={selectedProperty}
-          onChange={(e) => setSelectedProperty(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="">All Properties ({properties.length})</option>
-          {properties.map((property: any) => (
-            <option key={property._id} value={property._id}>
-              {property.name} ({tenants.filter((t: any) => t.propertyId?._id === property._id).length} tenants)
-            </option>
-          ))}
-        </select>
+        {/* Active Filters Display */}
+        {(showLateOnly || showExpiringLeases || showArchived || selectedProperty) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="text-sm text-text-secondary">Active filters:</span>
+            {showLateOnly && (
+              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium flex items-center gap-1">
+                Late Payments
+                <button onClick={() => setShowLateOnly(false)} className="ml-1 hover:bg-red-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            {showExpiringLeases && (
+              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium flex items-center gap-1">
+                Expiring Leases
+                <button onClick={() => setShowExpiringLeases(false)} className="ml-1 hover:bg-orange-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            {showArchived && (
+              <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1">
+                Archived
+                <button onClick={() => setShowArchived(false)} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            {selectedProperty && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1">
+                {properties.find((p: any) => p._id === selectedProperty)?.name}
+                <button onClick={() => setSelectedProperty('')} className="ml-1 hover:bg-blue-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            <button
+              onClick={() => {
+                setShowLateOnly(false);
+                setShowExpiringLeases(false);
+                setShowArchived(false);
+                setSelectedProperty('');
+              }}
+              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200"
+            >
+              Clear All
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Universal Search */}
