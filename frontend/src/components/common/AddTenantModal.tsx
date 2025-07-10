@@ -88,12 +88,19 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
 
   // Auto-fill rent amount when unit is selected
   const handleUnitSelect = (unit: any) => {
-    setFormData({
-      ...formData,
-      unit: unit.unitNumber,
-      rentAmount: unit.lastRentAmount || unit.suggestedRent || ''
-    });
-    setShowUnits(false);
+    try {
+      if (unit && unit.unitNumber) {
+        setFormData(prev => ({
+          ...prev,
+          unit: unit.unitNumber,
+          rentAmount: unit.lastRentAmount || unit.suggestedRent || prev.rentAmount
+        }));
+      }
+      setShowUnits(false);
+    } catch (error) {
+      console.error('Error selecting unit:', error);
+      setShowUnits(false);
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,7 +302,11 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
                   {vacantUnits.map((unit: any, index) => (
                     <div
                       key={index}
-                      onClick={() => handleUnitSelect(unit)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUnitSelect(unit);
+                      }}
                       className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-colors"
                     >
                       <div className="flex justify-between items-center">
