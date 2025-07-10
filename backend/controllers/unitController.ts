@@ -26,7 +26,7 @@ export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
     for (let i = 1; i <= property.numberOfUnits; i++) {
       units.push({
         unitNumber: i.toString(),
-        rentAmount: property.baseRentAmount || 0, // You can add this field to Property model
+        rentAmount: 0, // Default rent amount, can be customized per unit later
         propertyId: property._id
       });
     }
