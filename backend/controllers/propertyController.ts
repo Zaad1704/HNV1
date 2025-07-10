@@ -3,6 +3,19 @@ import Property from '../models/Property';
 import actionChainService from '../services/actionChainService';
 import { checkUsageLimit, updateUsageCount } from '../middleware/subscriptionMiddleware';
 
+// AI Description Generator
+const generatePropertyDescription = (property: any): string => {
+  const templates = [
+    `This ${property.propertyType?.toLowerCase() || 'property'} offers ${property.numberOfUnits} ${property.numberOfUnits === 1 ? 'unit' : 'units'} in the heart of ${property.address?.city || 'the city'}. Located on ${property.address?.street || 'a prime street'}, this well-maintained property provides excellent investment potential with modern amenities and convenient access to local attractions.`,
+    `Discover this exceptional ${property.propertyType?.toLowerCase() || 'property'} featuring ${property.numberOfUnits} ${property.numberOfUnits === 1 ? 'residential unit' : 'residential units'} in ${property.address?.city || 'a desirable location'}. The property at ${property.address?.street || 'this address'} combines comfort and convenience, making it an ideal choice for both residents and investors seeking quality accommodation.`,
+    `Welcome to this outstanding ${property.propertyType?.toLowerCase() || 'property'} with ${property.numberOfUnits} ${property.numberOfUnits === 1 ? 'unit' : 'units'} situated in ${property.address?.city || 'a vibrant neighborhood'}. This ${property.address?.street || 'strategically located'} property offers excellent rental potential and is perfect for those looking for a solid investment opportunity in real estate.`,
+    `Experience premium living at this ${property.propertyType?.toLowerCase() || 'property'} boasting ${property.numberOfUnits} ${property.numberOfUnits === 1 ? 'unit' : 'units'} in ${property.address?.city || 'an excellent area'}. Positioned on ${property.address?.street || 'a desirable street'}, this property combines modern living standards with investment appeal, offering residents comfort and investors strong returns.`
+  ];
+  
+  const randomIndex = Math.floor(Math.random() * templates.length);
+  return templates[randomIndex];
+};
+
 interface AuthRequest extends Request {
   user?: any;
   file?: any;
@@ -52,7 +65,7 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       zipCode: req.body['address[zipCode]'] || req.body.address?.zipCode || ''
     };
     
-    const property = await Property.create({
+    const propertyData = {
       name: req.body.name,
       address: address,
       numberOfUnits: parseInt(req.body.numberOfUnits) || 1,
@@ -62,7 +75,12 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       organizationId: user.organizationId,
       createdBy: user._id,
       managedByAgentId: req.body.managedByAgentId || null
-    });
+    };
+    
+    // Generate AI description
+    propertyData.description = generatePropertyDescription(propertyData);
+    
+    const property = await Property.create(propertyData);
 
     // Trigger action chain
     await actionChainService.onPropertyAdded(property, user._id, user.organizationId);
@@ -176,6 +194,11 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
       propertyType: req.body.propertyType || property.propertyType,
       status: req.body.status || property.status
     };
+    
+    // Regenerate description if key fields changed
+    if (req.body.name !== property.name || req.body.propertyType !== property.propertyType || req.body.numberOfUnits !== property.numberOfUnits) {
+      updates.description = generatePropertyDescription({ ...property.toObject(), ...updates });
+    }
     
     // Handle address if provided
     if (req.body['address[street]'] || req.body.address) {

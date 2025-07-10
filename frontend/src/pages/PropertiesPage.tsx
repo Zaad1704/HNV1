@@ -65,6 +65,15 @@ const PropertiesPage = () => {
   });
   const [showArchived, setShowArchived] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showVacant, setShowVacant] = useState(false);
+  
+  // Check URL params for filters
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('filter') === 'vacant') {
+      setShowVacant(true);
+    }
+  }, []);
   const queryClient = useQueryClient();
   const { exportProperties, isExporting } = useDataExport() || { exportProperties: () => {}, isExporting: false };
   const { triggerPaymentWorkflow } = useWorkflowTriggers();
@@ -78,6 +87,19 @@ const PropertiesPage = () => {
       console.error('Properties query error:', error);
     }
   });
+  
+  // Fetch tenants data for vacancy check
+  const { data: allTenants = [] } = useQuery({
+    queryKey: ['tenants'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/tenants');
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
+    }
+  });
 
   const filteredProperties = useMemo(() => {
     if (!properties) return [];
@@ -89,6 +111,13 @@ const PropertiesPage = () => {
       const isArchived = property.status === 'Archived';
       if (showArchived && !isArchived) return false;
       if (!showArchived && isArchived) return false;
+      
+      // Vacant filter
+      if (showVacant) {
+        const propertyTenants = allTenants.filter((t: any) => t.propertyId === property._id && t.status === 'Active');
+        const isVacant = propertyTenants.length === 0 || propertyTenants.length < (property.numberOfUnits || 1);
+        if (!isVacant) return false;
+      }
       
       // Universal search
       const matchesUniversalSearch = !searchFilters.query || 
@@ -431,14 +460,36 @@ const PropertiesPage = () => {
         }
       />
 
-      {/* Global Search Button */}
-      <div className="flex items-center gap-4">
+      {/* Filter Buttons */}
+      <div className="flex items-center gap-4 flex-wrap">
         <button
           onClick={() => setShowGlobalSearch(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
         >
           <Search size={16} />
           Global Search (Ctrl+K)
+        </button>
+        <button
+          onClick={() => setShowVacant(!showVacant)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showVacant 
+              ? 'bg-orange-500 text-white' 
+              : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+          }`}
+        >
+          <EyeOff size={16} />
+          {showVacant ? 'Show All' : 'Vacant Only'}
+        </button>
+        <button
+          onClick={() => setShowArchived(!showArchived)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showArchived 
+              ? 'bg-gray-500 text-white' 
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+          {showArchived ? 'Show Active' : 'Show Archived'}
         </button>
       </div>
 

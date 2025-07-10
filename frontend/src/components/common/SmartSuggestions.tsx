@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lightbulb, X, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useCrossData } from '../../hooks/useCrossData';
+import { useNavigate } from 'react-router-dom';
 
 interface Suggestion {
   id: string;
@@ -8,6 +9,7 @@ interface Suggestion {
   title: string;
   description: string;
   action?: string;
+  actionUrl?: string;
   priority: 'low' | 'medium' | 'high';
 }
 
@@ -15,6 +17,7 @@ const SmartSuggestions: React.FC = () => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const { stats, properties, tenants, payments, expenses } = useCrossData();
+  const navigate = useNavigate();
 
   useEffect(() => {
     generateSuggestions();
@@ -31,6 +34,7 @@ const SmartSuggestions: React.FC = () => {
         title: 'Low Occupancy Rate',
         description: `Your occupancy rate is ${stats.occupancyRate}%. Consider marketing vacant units.`,
         action: 'View vacant properties',
+        actionUrl: '/dashboard/properties?filter=vacant',
         priority: 'high'
       });
     }
@@ -44,6 +48,7 @@ const SmartSuggestions: React.FC = () => {
         title: 'Late Payment Follow-up',
         description: `${latePayments} tenants have late payments. Set up automated reminders.`,
         action: 'Create reminders',
+        actionUrl: '/dashboard/reminders',
         priority: 'medium'
       });
     }
@@ -57,6 +62,7 @@ const SmartSuggestions: React.FC = () => {
         title: 'Maintenance Backlog',
         description: `${openMaintenance} open maintenance requests. Consider prioritizing urgent items.`,
         action: 'View maintenance',
+        actionUrl: '/dashboard/maintenance',
         priority: 'high'
       });
     }
@@ -70,6 +76,7 @@ const SmartSuggestions: React.FC = () => {
         title: 'Investment Opportunity',
         description: `Strong cash flow of $${netFlow.toLocaleString()}. Consider property improvements or expansion.`,
         action: 'View cash flow',
+        actionUrl: '/dashboard/cash-flow',
         priority: 'low'
       });
     }
@@ -83,6 +90,7 @@ const SmartSuggestions: React.FC = () => {
         title: 'High Expense Ratio',
         description: 'Expenses are over 70% of income. Review and optimize costs.',
         action: 'View expenses',
+        actionUrl: '/dashboard/expenses',
         priority: 'medium'
       });
     }
@@ -138,7 +146,10 @@ const SmartSuggestions: React.FC = () => {
                   <h4 className="font-medium text-gray-900">{suggestion.title}</h4>
                   <p className="text-sm text-gray-600 mt-1">{suggestion.description}</p>
                   {suggestion.action && (
-                    <button className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium">
+                    <button 
+                      onClick={() => suggestion.actionUrl && navigate(suggestion.actionUrl)}
+                      className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium"
+                    >
                       {suggestion.action} →
                     </button>
                   )}

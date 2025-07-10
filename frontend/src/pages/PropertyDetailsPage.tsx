@@ -731,9 +731,12 @@ const PropertyDetailsPage = () => {
 
           {/* Description */}
           <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <h2 className="text-xl font-bold text-text-primary mb-4">Description</h2>
-            <p className="text-text-secondary">
-              {property.description || 'No description available for this property.'}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-text-primary">Property Description</h2>
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">AI Generated</span>
+            </div>
+            <p className="text-text-secondary leading-relaxed">
+              {property.description || 'Generating description...'}
             </p>
           </div>
 
@@ -830,6 +833,18 @@ const PropertyDetailsPage = () => {
               >
                 View Payments
               </Link>
+              <button
+                onClick={() => {
+                  if (confirm(`Archive ${property.name}? This will hide it from active listings.`)) {
+                    // Handle archive
+                    fetch(`/api/properties/${propertyId}/archive`, { method: 'PATCH' })
+                      .then(() => window.location.reload());
+                  }
+                }}
+                className="w-full bg-gray-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-600 transition-colors"
+              >
+                Archive Property
+              </button>
               <button
                 onClick={() => setShowRentIncrease(true)}
                 className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"

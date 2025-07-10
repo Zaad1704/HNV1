@@ -27,6 +27,8 @@ export interface IProperty extends Document {
   };
   maintenanceStatus?: string;
   imageUrl?: string;
+  propertyType?: string;
+  description?: string;
   createdAt: Date;
 }
 
@@ -98,6 +100,12 @@ const PropertySchema = new Schema<IProperty>({
     default: 'normal'
   },
   imageUrl: { type: String },
+  propertyType: {
+    type: String,
+    enum: ['Apartment', 'House', 'Commercial', 'Other'],
+    default: 'Apartment'
+  },
+  description: { type: String },
   createdAt: {
     type: Date,
     default: Date.now,
