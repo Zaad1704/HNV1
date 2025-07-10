@@ -193,7 +193,6 @@ function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="billing" element={<BillingPage />} />
             <Route path="audit-log" element={<AuditLogPage />} />
-            <Route path="smart-dashboard" element={<SmartDashboardPage />} />
             <Route path="resubscribe" element={<PlansPage />} />
             
             {/* Tenant Specific Dashboard */}
