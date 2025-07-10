@@ -19,6 +19,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     rentAmount: '',
     leaseStartDate: '',
     leaseEndDate: '',
+    leaseDuration: '12',
     securityDeposit: '',
     status: 'Active'
   });
@@ -76,6 +77,20 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     };
     fetchVacantUnits();
   }, [formData.propertyId]);
+
+  // Auto-calculate lease end date when duration or start date changes
+  useEffect(() => {
+    if (formData.leaseStartDate && formData.leaseDuration) {
+      const startDate = new Date(formData.leaseStartDate);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + parseInt(formData.leaseDuration));
+      const calculatedEndDate = endDate.toISOString().split('T')[0];
+      
+      if (calculatedEndDate !== formData.leaseEndDate) {
+        setFormData(prev => ({ ...prev, leaseEndDate: calculatedEndDate }));
+      }
+    }
+  }, [formData.leaseStartDate, formData.leaseDuration]);
 
   // Auto-fill rent amount when unit is selected
   const handleUnitSelect = (unit: any) => {
@@ -194,7 +209,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
         // Reset form
         setFormData({
           name: '', email: '', phone: '', propertyId: '', unit: '',
-          rentAmount: '', leaseStartDate: '', leaseEndDate: '', securityDeposit: '', status: 'Active'
+          rentAmount: '', leaseStartDate: '', leaseEndDate: '', leaseDuration: '12', securityDeposit: '', status: 'Active'
         });
         setImageFile(null);
         setImagePreview('');
@@ -286,69 +301,45 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <div className="relative">
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Unit
-                {loadingUnits && <span className="text-xs text-blue-600 ml-2">Loading units...</span>}
-                {vacantUnits.length > 0 && <span className="text-xs text-green-600 ml-2">{vacantUnits.length} vacant units</span>}
+                Unit *
+                {loadingUnits && <span className="text-xs text-blue-600 ml-2">Loading...</span>}
+                {vacantUnits.length > 0 && <span className="text-xs text-green-600 ml-2">{vacantUnits.length} available</span>}
               </label>
-              <div className="relative" ref={dropdownRef}>
+              {formData.propertyId && vacantUnits.length > 0 ? (
+                <select
+                  value={formData.unit}
+                  onChange={(e) => {
+                    const selectedUnit = vacantUnits.find((u: any) => u.unitNumber === e.target.value);
+                    setFormData(prev => ({
+                      ...prev,
+                      unit: e.target.value,
+                      rentAmount: selectedUnit?.lastRentAmount || selectedUnit?.suggestedRent || prev.rentAmount
+                    }));
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  required
+                >
+                  <option value="">Select vacant unit</option>
+                  {vacantUnits.map((unit: any) => (
+                    <option key={unit.unitNumber} value={unit.unitNumber}>
+                      Unit {unit.unitNumber} {unit.lastRentAmount > 0 ? `($${unit.lastRentAmount}/month)` : '(No previous rent)'}
+                    </option>
+                  ))}
+                </select>
+              ) : (
                 <input
                   type="text"
                   value={formData.unit}
                   onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  onClick={handleUnitInputClick}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer"
-                  placeholder={formData.propertyId ? "Click to select unit or type manually" : "Select property first"}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder={formData.propertyId ? (loadingUnits ? "Loading units..." : "No vacant units or enter manually") : "Select property first"}
                   required
                 />
-                {formData.propertyId && vacantUnits.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleUnitInputClick}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700"
-                  >
-                    <Search size={16} />
-                  </button>
-                )}
-              </div>
-              
-              {/* Vacant Units Dropdown */}
-              {showUnits && vacantUnits.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {vacantUnits.map((unit: any) => (
-                    <button
-                      key={unit.unitNumber}
-                      type="button"
-                      onClick={() => handleUnitSelect(unit)}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Unit {unit.unitNumber}</span>
-                        {unit.lastRentAmount > 0 && (
-                          <span className="text-sm text-green-600 font-medium">
-                            ${unit.lastRentAmount}/month
-                          </span>
-                        )}
-                      </div>
-                      {unit.lastRentAmount > 0 ? (
-                        <div className="text-xs text-green-600 mt-1">
-                          ✓ Previous rent available
-                        </div>
-                      ) : (
-                        <div className="text-xs text-gray-500 mt-1">
-                          No previous rent data
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
               )}
-              
               {formData.propertyId && vacantUnits.length === 0 && !loadingUnits && (
-                <p className="text-xs text-amber-600 mt-1">
-                  No vacant units available. All units may be occupied.
-                </p>
+                <p className="text-xs text-red-600 mt-1">⚠️ No vacant units available</p>
               )}
             </div>
             <div>
@@ -389,9 +380,9 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease Start</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease Start *</label>
               <input
                 type="date"
                 value={formData.leaseStartDate}
@@ -401,14 +392,31 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease End</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration (Months) *</label>
+              <select
+                value={formData.leaseDuration}
+                onChange={(e) => setFormData({ ...formData, leaseDuration: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                required
+              >
+                <option value="6">6 Months</option>
+                <option value="12">12 Months</option>
+                <option value="18">18 Months</option>
+                <option value="24">24 Months</option>
+                <option value="36">36 Months</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease End (Auto-calculated)</label>
               <input
                 type="date"
                 value={formData.leaseEndDate}
-                onChange={(e) => setFormData({ ...formData, leaseEndDate: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                readOnly
               />
+              {formData.leaseStartDate && formData.leaseDuration && (
+                <p className="text-xs text-green-600 mt-1">✓ {formData.leaseDuration} months from start</p>
+              )}
             </div>
           </div>
 
@@ -436,7 +444,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
                   <p className="text-sm text-gray-500 mb-2">Upload tenant photo</p>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.HEIC,.webp,.avif"
                     onChange={handleImageChange}
                     className="hidden"
                     id="tenant-image"

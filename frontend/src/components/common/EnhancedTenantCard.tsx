@@ -64,8 +64,22 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
     <UniversalCard delay={index * 0.1} gradient="green">
       {/* Header */}
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 gradient-dark-orange-blue rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-          {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
+        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+          {tenant.imageUrl || tenant.tenantImage ? (
+            <img 
+              src={tenant.imageUrl || tenant.tenantImage} 
+              alt={tenant.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
+                if (fallback) fallback.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <div className={`fallback-text text-white font-bold text-xl ${tenant.imageUrl || tenant.tenantImage ? 'hidden' : ''}`}>
+            {tenant.name ? tenant.name.charAt(0).toUpperCase() : 'T'}
+          </div>
         </div>
         <div className="flex-1">
           <h3 className="font-bold text-lg text-text-primary group-hover:text-brand-blue transition-colors">

@@ -254,8 +254,22 @@ const TenantDetailsPage = () => {
           {/* Tenant Info */}
           <UniversalCard gradient="blue">
             <div className="text-center mb-4">
-              <div className="w-24 h-24 gradient-dark-orange-blue rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
-                {tenant.name?.charAt(0).toUpperCase() || 'T'}
+              <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                {tenant.imageUrl || tenant.tenantImage ? (
+                  <img 
+                    src={tenant.imageUrl || tenant.tenantImage} 
+                    alt={tenant.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
+                      if (fallback) fallback.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`fallback-text text-white font-bold text-2xl ${tenant.imageUrl || tenant.tenantImage ? 'hidden' : ''}`}>
+                  {tenant.name?.charAt(0).toUpperCase() || 'T'}
+                </div>
               </div>
               <h3 className="text-lg font-bold">{tenant.name}</h3>
               <UniversalStatusBadge 
