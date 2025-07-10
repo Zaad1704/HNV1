@@ -81,8 +81,8 @@ const upload = multer({
   storage: diskStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 10, // Maximum 10 files
-    fields: 20 // Maximum 20 fields
+    files: 15, // Maximum 15 files
+    fields: 50 // Maximum 50 fields for comprehensive tenant form
   },
   fileFilter: fileFilter
 });
@@ -92,6 +92,8 @@ const uploadToMemory = multer({
   storage: memoryStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 15,
+    fields: 50
   },
   fileFilter: fileFilter
 });
