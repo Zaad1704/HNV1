@@ -8,6 +8,7 @@ import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import UnitsSection from '../components/property/UnitsSection';
 import PropertyStatsSection from '../components/property/PropertyStatsSection';
+import DataPreviewSections from '../components/property/DataPreviewSections';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 
 
@@ -206,6 +207,13 @@ const PropertyDetailsPage = () => {
           
           {/* Units Section */}
           <UnitsSection propertyId={propertyId!} />
+          
+          {/* Data Preview Sections */}
+          <DataPreviewSections 
+            propertyId={propertyId!} 
+            property={property}
+            tenants={tenants}
+          />
 
 
 
