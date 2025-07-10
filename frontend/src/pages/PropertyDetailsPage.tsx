@@ -56,7 +56,7 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, o
             }`}
             onClick={() => {
               if (unit.isOccupied) {
-                window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
+                onUnitDataClick(unit.unitNumber);
               } else {
                 onAddTenant(unit.unitNumber);
               }
@@ -102,29 +102,16 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, o
                   <span className="text-sm text-text-secondary">Monthly Rent</span>
                   <span className="font-semibold text-text-primary">${unit.tenant.rentAmount || 0}</span>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUnitDataClick(unit.unitNumber);
-                  }}
-                  className="w-full bg-blue-500 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <BarChart3 size={14} />
-                  View Unit Data
-                </button>
+                <div className="text-center">
+                  <p className="text-sm text-green-600 font-medium">Click to view details</p>
+                </div>
               </div>
             ) : (
               <div className="text-center py-2">
                 <p className="text-sm text-gray-500 mb-2">Unit Available</p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddTenant(unit.unitNumber);
-                  }}
-                  className="w-full bg-green-500 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors"
-                >
-                  Add Tenant
-                </button>
+                <div className="text-center">
+                  <p className="text-sm text-blue-600 font-medium">Click to add tenant</p>
+                </div>
               </div>
             )}
           </div>
