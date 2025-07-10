@@ -88,7 +88,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
       const { data } = await apiClient.get('/tenants');
       return data.data || [];
     },
-    enabled: isOpen && formData.propertyId
+    enabled: isOpen
   });
 
 
@@ -360,34 +360,31 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                     <option value="">Select Available Unit</option>
                     {(() => {
                       const selectedProperty = properties.find(p => p._id === formData.propertyId);
-                      if (!selectedProperty) return null;
+                      if (!selectedProperty || !tenants) return null;
                       
                       const occupiedUnits = tenants
                         .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
-                        .map(t => t.unit);
+                        .map(t => t.unit)
+                        .filter(Boolean);
                       
                       const allUnits = Array.from({ length: selectedProperty.numberOfUnits || 1 }, (_, i) => (i + 1).toString());
                       const vacantUnits = allUnits.filter(unit => !occupiedUnits.includes(unit));
                       
-                      return vacantUnits.map(unit => (
-                        <option key={unit} value={unit} className="text-green-600">
+                      const vacantOptions = vacantUnits.map(unit => (
+                        <option key={`vacant-${unit}`} value={unit} className="text-green-600">
                           Unit {unit} (Vacant)
                         </option>
                       ));
-                    })()}
-                    {(() => {
-                      const selectedProperty = properties.find(p => p._id === formData.propertyId);
-                      if (!selectedProperty) return null;
                       
-                      const occupiedUnits = tenants
-                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
-                        .map(t => ({ unit: t.unit, name: t.name }));
+                      const occupiedOptions = tenants
+                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active' && t.unit)
+                        .map(t => (
+                          <option key={`occupied-${t.unit}`} value={t.unit} disabled className="text-red-600">
+                            Unit {t.unit} (Occupied by {t.name})
+                          </option>
+                        ));
                       
-                      return occupiedUnits.map(({ unit, name }) => (
-                        <option key={unit} value={unit} disabled className="text-red-600">
-                          Unit {unit} (Occupied by {name})
-                        </option>
-                      ));
+                      return [...vacantOptions, ...occupiedOptions];
                     })()}
                   </select>
                 ) : (
