@@ -54,12 +54,12 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
     if (req.file) {
       try {
         // Use Cloudinary in production, local storage in development
-        if (process.env.NODE_ENV === 'production' && process.env.CLOUDINARY_CLOUD_NAME) {
+        if (process.env.CLOUDINARY_CLOUD_NAME) {
           const { uploadToCloudinary } = await import('../utils/cloudinary');
           imageUrl = await uploadToCloudinary(req.file);
           console.log('Image uploaded to Cloudinary:', imageUrl);
         } else {
-          // Local storage for development
+          // Local storage fallback
           imageUrl = `/uploads/images/${req.file.filename}`;
           console.log('Image uploaded locally:', imageUrl);
         }
@@ -233,12 +233,12 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     if (req.file) {
       try {
         // Use Cloudinary in production, local storage in development
-        if (process.env.NODE_ENV === 'production' && process.env.CLOUDINARY_CLOUD_NAME) {
+        if (process.env.CLOUDINARY_CLOUD_NAME) {
           const { uploadToCloudinary } = await import('../utils/cloudinary');
           updates.imageUrl = await uploadToCloudinary(req.file);
           console.log('Image uploaded to Cloudinary:', updates.imageUrl);
         } else {
-          // Local storage for development
+          // Local storage fallback
           updates.imageUrl = `/uploads/images/${req.file.filename}`;
           console.log('Image updated locally:', updates.imageUrl);
         }
