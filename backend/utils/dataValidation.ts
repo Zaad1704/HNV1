@@ -84,11 +84,10 @@ export const fixDataInconsistencies = async (organizationId: string) => {
     
     for (const issue of validation.issues) {
       switch (issue.type) {
-        case 'missing_unit':
-          // Auto-assign next available unit
-          const property = await Property.findById(issue.propertyId);
-          if (!property) continue;
-          const occupiedUnits = await Tenant.find({ 
+        case 'missing_unit': {
+          const prop = await Property.findById(issue.propertyId);
+          if (!prop) continue;
+          const occupied = await Tenant.find({ 
             propertyId: issue.propertyId, 
             organizationId,
             status: 'Active',
@@ -96,8 +95,8 @@ export const fixDataInconsistencies = async (organizationId: string) => {
           }).distinct('unit');
           
           let nextUnit = '1';
-          for (let i = 1; i <= property.numberOfUnits; i++) {
-            if (!occupiedUnits.includes(i.toString())) {
+          for (let i = 1; i <= prop.numberOfUnits; i++) {
+            if (!occupied.includes(i.toString())) {
               nextUnit = i.toString();
               break;
             }
@@ -110,12 +109,12 @@ export const fixDataInconsistencies = async (organizationId: string) => {
             assignedUnit: nextUnit
           });
           break;
+        }
           
-        case 'invalid_unit':
-          // Move to next available valid unit
-          const validProperty = await Property.findById(issue.propertyId);
-          if (!validProperty) continue;
-          const validOccupiedUnits = await Tenant.find({ 
+        case 'invalid_unit': {
+          const prop = await Property.findById(issue.propertyId);
+          if (!prop) continue;
+          const occupied = await Tenant.find({ 
             propertyId: issue.propertyId, 
             organizationId,
             status: 'Active',
@@ -123,30 +122,30 @@ export const fixDataInconsistencies = async (organizationId: string) => {
             unit: { $ne: null, $ne: '' }
           }).distinct('unit');
           
-          let validNextUnit = '1';
-          for (let i = 1; i <= validProperty.numberOfUnits; i++) {
-            if (!validOccupiedUnits.includes(i.toString())) {
-              validNextUnit = i.toString();
+          let nextUnit = '1';
+          for (let i = 1; i <= prop.numberOfUnits; i++) {
+            if (!occupied.includes(i.toString())) {
+              nextUnit = i.toString();
               break;
             }
           }
           
-          await Tenant.findByIdAndUpdate(issue.tenantId, { unit: validNextUnit });
+          await Tenant.findByIdAndUpdate(issue.tenantId, { unit: nextUnit });
           fixes.push({
             type: 'corrected_unit',
             tenantId: issue.tenantId,
             oldUnit: issue.unit,
-            newUnit: validNextUnit
+            newUnit: nextUnit
           });
           break;
+        }
           
-        case 'duplicate_unit':
-          // Keep first tenant, reassign others
-          const duplicateTenants = issue.tenants.slice(1); // Skip first tenant
+        case 'duplicate_unit': {
+          const duplicateTenants = issue.tenants.slice(1);
           for (const tenant of duplicateTenants) {
-            const dupProperty = await Property.findById(issue.propertyId);
-            if (!dupProperty) continue;
-            const dupOccupiedUnits = await Tenant.find({ 
+            const prop = await Property.findById(issue.propertyId);
+            if (!prop) continue;
+            const occupied = await Tenant.find({ 
               propertyId: issue.propertyId, 
               organizationId,
               status: 'Active',
@@ -154,23 +153,24 @@ export const fixDataInconsistencies = async (organizationId: string) => {
               unit: { $ne: null, $ne: '' }
             }).distinct('unit');
             
-            let dupNextUnit = '1';
-            for (let i = 1; i <= dupProperty.numberOfUnits; i++) {
-              if (!dupOccupiedUnits.includes(i.toString())) {
-                dupNextUnit = i.toString();
+            let nextUnit = '1';
+            for (let i = 1; i <= prop.numberOfUnits; i++) {
+              if (!occupied.includes(i.toString())) {
+                nextUnit = i.toString();
                 break;
               }
             }
             
-            await Tenant.findByIdAndUpdate(tenant.id, { unit: dupNextUnit });
+            await Tenant.findByIdAndUpdate(tenant.id, { unit: nextUnit });
             fixes.push({
               type: 'resolved_duplicate',
               tenantId: tenant.id,
               oldUnit: issue.unit,
-              newUnit: dupNextUnit
+              newUnit: nextUnit
             });
           }
           break;
+        }
       }
     }
     
