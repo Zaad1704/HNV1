@@ -391,14 +391,17 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                   value={formData.leaseDuration}
                   onChange={(e) => {
                     const duration = e.target.value;
-                    setFormData({ ...formData, leaseDuration: duration });
+                    let newFormData = { ...formData, leaseDuration: duration };
+                    
                     // Auto-calculate lease end date
                     if (formData.leaseStartDate) {
                       const startDate = new Date(formData.leaseStartDate);
                       const endDate = new Date(startDate);
                       endDate.setMonth(endDate.getMonth() + parseInt(duration));
-                      setFormData(prev => ({ ...prev, leaseEndDate: endDate.toISOString().split('T')[0] }));
+                      newFormData.leaseEndDate = endDate.toISOString().split('T')[0];
                     }
+                    
+                    setFormData(newFormData);
                   }}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
