@@ -19,17 +19,16 @@ const fetchPropertyUnits = async (propertyId: string) => {
 
 const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenants = [], onAddTenant, onDataUpdate }) => {
   const { data: units = [], isLoading } = useQuery({
-    queryKey: ['propertyUnits', propertyId, tenants],
+    queryKey: ['propertyUnits', propertyId, tenants?.length],
     queryFn: () => fetchPropertyUnits(propertyId),
     enabled: !!propertyId,
     refetchOnWindowFocus: true,
-    staleTime: 30000
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
-  // Generate units from property data if units API doesn't return data
+  // Always generate units from property and tenant data for accuracy
   const getUnitsWithTenantData = () => {
-    if (units.length > 0) return units;
-    
     if (!property?.numberOfUnits) return [];
     
     return Array.from({ length: property.numberOfUnits }, (_, i) => {

@@ -54,7 +54,8 @@ const PropertyDetailsPage = () => {
     queryFn: () => fetchPropertyTenants(propertyId!),
     enabled: !!propertyId,
     refetchOnWindowFocus: true,
-    staleTime: 30000 // 30 seconds
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 5000 // Refetch every 5 seconds
   });
 
   if (isLoading) {
@@ -240,9 +241,11 @@ const PropertyDetailsPage = () => {
               setShowAddTenant(true);
             }}
             onDataUpdate={() => {
-              // Refresh both tenants and units data when changes occur
-              queryClient.invalidateQueries({ queryKey: ['propertyTenants', propertyId] });
-              queryClient.invalidateQueries({ queryKey: ['propertyUnits', propertyId] });
+              // Force refresh of all related data
+              queryClient.invalidateQueries({ queryKey: ['propertyTenants'] });
+              queryClient.invalidateQueries({ queryKey: ['propertyUnits'] });
+              queryClient.refetchQueries({ queryKey: ['propertyTenants', propertyId] });
+              queryClient.refetchQueries({ queryKey: ['propertyUnits', propertyId] });
             }}
           />
 
