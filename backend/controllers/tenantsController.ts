@@ -41,17 +41,52 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const { propertyId } = req.body;
+    // Validate required fields
+    const { name, email, phone, propertyId, unit, rentAmount, leaseStartDate, leaseEndDate, securityDeposit } = req.body;
+    
+    if (!name || !email || !phone) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Name, email, and phone are required' 
+      });
+    }
+    
+    if (!propertyId || !unit) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Property and unit are required' 
+      });
+    }
+    
+    if (!rentAmount || !leaseStartDate || !leaseEndDate || !securityDeposit) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Rent amount, lease dates, and security deposit are required' 
+      });
+    }
 
-    // Verify property if provided
-    if (propertyId) {
-      const property = await Property.findById(propertyId);
-      if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid property' 
-        });
-      }
+    // Verify property
+    const property = await Property.findById(propertyId);
+    if (!property || property.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid property or property not found' 
+      });
+    }
+
+    // Check if unit is already occupied
+    const existingTenant = await Tenant.findOne({
+      propertyId,
+      unit,
+      status: { $in: ['Active', 'Late'] },
+      organizationId: req.user.organizationId
+    });
+    
+    if (existingTenant) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Unit ${unit} is already occupied by ${existingTenant.name}` 
+      });
     }
 
     // Handle image uploads
@@ -65,15 +100,21 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
         for (const [fieldname, fileArray] of Object.entries(files)) {
           if (fileArray && fileArray[0]) {
             const file = fileArray[0];
-            if (isCloudinaryConfigured()) {
-              imageUrls[fieldname] = await uploadToCloudinary(file, 'tenants');
-            } else {
-              imageUrls[fieldname] = `/uploads/images/${file.filename}`;
+            try {
+              if (isCloudinaryConfigured()) {
+                imageUrls[fieldname] = await uploadToCloudinary(file, 'tenants');
+              } else {
+                imageUrls[fieldname] = `/uploads/images/${file.filename}`;
+              }
+            } catch (uploadError) {
+              console.error(`Failed to upload ${fieldname}:`, uploadError);
+              // Continue without failing the entire request
             }
           }
         }
       } catch (error) {
         console.error('Image upload error:', error);
+        // Continue without failing - images are optional for basic functionality
       }
     }
 
@@ -81,39 +122,109 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
     let additionalAdults = [];
     if (req.body.additionalAdults) {
       try {
-        additionalAdults = JSON.parse(req.body.additionalAdults);
+        const parsed = JSON.parse(req.body.additionalAdults);
+        additionalAdults = Array.isArray(parsed) ? parsed : [];
       } catch (e) {
         console.error('Failed to parse additional adults:', e);
+        additionalAdults = [];
       }
     }
 
     // Handle emergency contact
     const emergencyContact = {
-      name: req.body.emergencyContactName,
-      phone: req.body.emergencyContactPhone,
-      relation: req.body.emergencyContactRelation
+      name: req.body.emergencyContactName || '',
+      phone: req.body.emergencyContactPhone || '',
+      relation: req.body.emergencyContactRelation || ''
+    };
+    
+    // Handle reference data
+    const reference = {
+      name: req.body.referenceName || '',
+      phone: req.body.referencePhone || '',
+      email: req.body.referenceEmail || '',
+      address: req.body.referenceAddress || '',
+      relation: req.body.referenceRelation || '',
+      govtIdNumber: req.body.referenceGovtId || ''
     };
 
+    // Prepare tenant data with proper type conversion
     const tenantData = { 
-      ...req.body, 
+      name,
+      email,
+      phone,
+      whatsappNumber: req.body.whatsappNumber || '',
+      propertyId,
+      unit,
+      rentAmount: Number(rentAmount) || 0,
+      leaseStartDate: new Date(leaseStartDate),
+      leaseEndDate: new Date(leaseEndDate),
+      leaseDuration: Number(req.body.leaseDuration) || 12,
+      securityDeposit: Number(securityDeposit) || 0,
+      advanceRent: Number(req.body.advanceRent) || 0,
+      status: req.body.status || 'Active',
+      fatherName: req.body.fatherName || '',
+      motherName: req.body.motherName || '',
+      presentAddress: req.body.presentAddress || '',
+      permanentAddress: req.body.permanentAddress || '',
+      govtIdNumber: req.body.govtIdNumber || '',
+      occupation: req.body.occupation || '',
+      monthlyIncome: Number(req.body.monthlyIncome) || 0,
+      previousAddress: req.body.previousAddress || '',
+      reasonForMoving: req.body.reasonForMoving || '',
+      petDetails: req.body.petDetails || '',
+      vehicleDetails: req.body.vehicleDetails || '',
+      specialInstructions: req.body.specialInstructions || '',
+      numberOfOccupants: Number(req.body.numberOfOccupants) || 1,
       ...imageUrls,
       additionalAdults,
       emergencyContact,
-      organizationId: req.user.organizationId 
+      reference,
+      organizationId: req.user.organizationId,
+      createdBy: req.user._id
     };
 
-    console.log('Creating tenant with data:', { ...tenantData, additionalAdults: additionalAdults.length });
+    console.log('Creating tenant with data:', { 
+      name: tenantData.name, 
+      propertyId: tenantData.propertyId, 
+      unit: tenantData.unit,
+      additionalAdults: additionalAdults.length 
+    });
+    
     const tenant = await Tenant.create(tenantData);
     
-    // Trigger action chain
-    await actionChainService.onTenantAdded(tenant, req.user._id, req.user.organizationId);
+    // Trigger action chain (with error handling)
+    try {
+      await actionChainService.onTenantAdded(tenant, req.user._id, req.user.organizationId);
+    } catch (actionError) {
+      console.error('Action chain error (non-critical):', actionError);
+      // Don't fail the request if action chain fails
+    }
     
     res.status(201).json({ success: true, data: tenant });
   } catch (error: any) {
     console.error('Create tenant error:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      return res.status(400).json({ 
+        success: false, 
+        message: `A tenant with this ${field} already exists` 
+      });
+    }
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+      return res.status(400).json({ 
+        success: false, 
+        message: `Validation error: ${validationErrors.join(', ')}` 
+      });
+    }
+    
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Server error',
+      message: error.message || 'Failed to create tenant',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }

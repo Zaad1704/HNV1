@@ -28,26 +28,55 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  const { data: properties = [] } = useQuery({
+  const { data: properties = [], error: propertiesError } = useQuery({
     queryKey: ['properties'],
     queryFn: async () => {
-      const { data } = await apiClient.get('/properties');
-      return data.data || [];
+      try {
+        console.log('Fetching properties...');
+        const { data } = await apiClient.get('/properties');
+        console.log('Properties response:', data);
+        return data.data || [];
+      } catch (error) {
+        console.error('Failed to fetch properties:', error);
+        throw error;
+      }
     },
-    enabled: isOpen
+    enabled: isOpen,
+    retry: 2,
+    retryDelay: 1000
   });
+  
+  // Log properties error if any
+  if (propertiesError) {
+    console.error('Properties query error:', propertiesError);
+  }
 
   // Fetch vacant units when property is selected
   useEffect(() => {
     const fetchVacantUnits = async () => {
       if (formData.propertyId) {
         try {
+          console.log('Fetching vacant units for property:', formData.propertyId);
           const { data } = await apiClient.get(`/properties/${formData.propertyId}/vacant-units`);
+          console.log('Vacant units response:', data);
           setVacantUnits(data.data || []);
           setShowUnits(true);
         } catch (error) {
           console.error('Failed to fetch vacant units:', error);
-          setVacantUnits([]);
+          // Try alternative endpoint if the first one fails
+          try {
+            const { data } = await apiClient.get(`/properties/${formData.propertyId}`);
+            const property = data.data;
+            if (property && property.units) {
+              setVacantUnits(property.units.filter((unit: any) => !unit.occupied));
+              setShowUnits(true);
+            } else {
+              setVacantUnits([]);
+            }
+          } catch (fallbackError) {
+            console.error('Fallback vacant units fetch failed:', fallbackError);
+            setVacantUnits([]);
+          }
         }
       } else {
         setVacantUnits([]);
@@ -84,45 +113,93 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     setIsSubmitting(true);
     
     try {
+      console.log('Starting tenant submission...');
+      
+      // Validate required fields
+      if (!formData.name || !formData.email || !formData.phone) {
+        throw new Error('Please fill in all required fields: Name, Email, and Phone');
+      }
+      
+      if (!formData.propertyId || !formData.unit) {
+        throw new Error('Please select a property and unit');
+      }
+      
+      if (!formData.rentAmount || !formData.leaseStartDate || !formData.leaseEndDate) {
+        throw new Error('Please fill in rent amount and lease dates');
+      }
+      
       let imageUrl = '';
       
       // Upload image if selected
       if (imageFile) {
+        console.log('Uploading tenant image...');
         const imageFormData = new FormData();
         imageFormData.append('image', imageFile);
         
         try {
           const imageResponse = await apiClient.post('/upload/image', imageFormData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 30000
           });
           imageUrl = imageResponse.data?.data?.url || imageResponse.data?.url || '';
+          console.log('Image uploaded successfully:', imageUrl);
         } catch (error) {
           console.error('Failed to upload image:', error);
+          // Continue without image - not critical
         }
       }
       
       const tenantData = {
         ...formData,
-        rentAmount: Number(formData.rentAmount),
-        securityDeposit: Number(formData.securityDeposit),
+        rentAmount: Number(formData.rentAmount) || 0,
+        securityDeposit: Number(formData.securityDeposit) || 0,
         imageUrl
       };
       
-      const response = await apiClient.post('/tenants', tenantData);
+      console.log('Submitting tenant data:', { 
+        name: tenantData.name, 
+        propertyId: tenantData.propertyId, 
+        unit: tenantData.unit 
+      });
       
-      if (response.data?.success) {
+      const response = await apiClient.post('/tenants', tenantData, {
+        timeout: 30000
+      });
+      
+      console.log('Tenant creation response:', response.data);
+      
+      if (response.data?.success && response.data?.data) {
         onTenantAdded(response.data.data);
         alert('Tenant added successfully!');
         onClose();
+        
+        // Reset form
         setFormData({
           name: '', email: '', phone: '', propertyId: '', unit: '',
           rentAmount: '', leaseStartDate: '', leaseEndDate: '', securityDeposit: '', status: 'Active'
         });
         setImageFile(null);
         setImagePreview('');
+      } else {
+        throw new Error(response.data?.message || 'Invalid response from server');
       }
     } catch (error: any) {
-      alert(`Error: ${error.response?.data?.message || 'Failed to add tenant'}`);
+      console.error('Tenant submission error:', error);
+      
+      let errorMessage = 'Failed to add tenant';
+      
+      if (error.response) {
+        // Server responded with error
+        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Network error - please check your connection';
+      } else if (error.message) {
+        // Validation or other error
+        errorMessage = error.message;
+      }
+      
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

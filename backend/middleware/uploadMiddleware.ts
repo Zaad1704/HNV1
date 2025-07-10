@@ -6,21 +6,31 @@ import s3Service from '../services/s3Service';
 
 // File filter for security
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp|svg|bmp|tiff/;
-  const allowedMimeTypes = [
-    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff',
-    'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain'
-  ];
-  
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedMimeTypes.includes(file.mimetype);
+  try {
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|webp|svg|bmp|tiff/;
+    const allowedMimeTypes = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff',
+      'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+    
+    if (!file || !file.originalname || !file.mimetype) {
+      console.log('Invalid file object:', file);
+      return cb(new Error('Invalid file upload'));
+    }
+    
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedMimeTypes.includes(file.mimetype);
 
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    console.log('File rejected:', { originalname: file.originalname, mimetype: file.mimetype, fieldname: file.fieldname });
-    cb(new Error(`Invalid file type: ${file.mimetype}. Only images and documents are allowed.`));
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      console.log('File rejected:', { originalname: file.originalname, mimetype: file.mimetype, fieldname: file.fieldname });
+      cb(new Error(`Invalid file type: ${file.mimetype}. Only images and documents are allowed.`));
+    }
+  } catch (error) {
+    console.error('File filter error:', error);
+    cb(new Error('File validation failed'));
   }
 };
 
@@ -71,8 +81,14 @@ const upload = multer({
   storage: diskStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 10, // Maximum 10 files
+    fields: 20 // Maximum 20 fields
   },
-  fileFilter: fileFilter
+  fileFilter: fileFilter,
+  onError: (err, next) => {
+    console.error('Multer error:', err);
+    next(err);
+  }
 });
 
 // S3 upload with memory storage

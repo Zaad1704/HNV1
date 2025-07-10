@@ -57,34 +57,59 @@ class ActionChainService {
   // When tenant is added
   async onTenantAdded(tenantData: any, userId: string, organizationId: string) {
     try {
-      // 1. Update property occupancy
-      await this.updatePropertyOccupancy(tenantData.propertyId);
+      // Validate input data
+      if (!tenantData || !tenantData._id || !userId || !organizationId) {
+        console.error('Invalid data for tenant added action:', { tenantData: !!tenantData, userId: !!userId, organizationId: !!organizationId });
+        return;
+      }
       
-      // 2. Create welcome notification
-      await this.createNotification({
-        userId,
-        organizationId,
-        type: 'info',
-        title: 'New Tenant Added',
-        message: `${tenantData.name} has been added to your property`,
-        link: `/dashboard/tenants/${tenantData._id}`
-      });
+      // 1. Update property occupancy (with error handling)
+      if (tenantData.propertyId) {
+        try {
+          await this.updatePropertyOccupancy(tenantData.propertyId);
+        } catch (error) {
+          console.error('Failed to update property occupancy:', error);
+        }
+      }
       
-      // 3. Create rent reminder
-      await this.createRentReminder(tenantData, organizationId);
+      // 2. Create welcome notification (with error handling)
+      try {
+        await this.createNotification({
+          userId,
+          organizationId,
+          type: 'info',
+          title: 'New Tenant Added',
+          message: `${tenantData.name || 'New tenant'} has been added to your property`,
+          link: `/dashboard/tenants/${tenantData._id}`
+        });
+      } catch (error) {
+        console.error('Failed to create welcome notification:', error);
+      }
       
-      // 4. Audit log
-      await this.createAuditLog({
-        userId,
-        organizationId,
-        action: 'tenant_added',
-        resource: 'tenant',
-        resourceId: tenantData._id,
-        details: { name: tenantData.name, unit: tenantData.unit }
-      });
+      // 3. Create rent reminder (with error handling)
+      try {
+        await this.createRentReminder(tenantData, organizationId);
+      } catch (error) {
+        console.error('Failed to create rent reminder:', error);
+      }
+      
+      // 4. Audit log (with error handling)
+      try {
+        await this.createAuditLog({
+          userId,
+          organizationId,
+          action: 'tenant_added',
+          resource: 'tenant',
+          resourceId: tenantData._id,
+          details: { name: tenantData.name || 'Unknown', unit: tenantData.unit || 'Unknown' }
+        });
+      } catch (error) {
+        console.error('Failed to create audit log:', error);
+      }
       
     } catch (error) {
       console.error('Tenant added chain action error:', error);
+      // Don't throw - this should not break the main tenant creation flow
     }
   }
 
@@ -213,6 +238,11 @@ class ActionChainService {
 
   private async createRentReminder(tenantData: any, organizationId: string) {
     try {
+      if (!tenantData._id || !organizationId) {
+        console.error('Missing required data for rent reminder:', { tenantId: !!tenantData._id, organizationId: !!organizationId });
+        return;
+      }
+      
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       nextMonth.setDate(1);
@@ -220,15 +250,17 @@ class ActionChainService {
       await Reminder.create({
         organizationId,
         tenantId: tenantData._id,
-        propertyId: tenantData.propertyId,
+        propertyId: tenantData.propertyId || null,
         type: 'rent_reminder',
-        message: `Rent payment due for Unit ${tenantData.unit}`,
+        title: 'Rent Payment Due',
+        message: `Rent payment due for Unit ${tenantData.unit || 'N/A'}`,
         nextRunDate: nextMonth,
         frequency: 'monthly',
         status: 'active'
       });
     } catch (error) {
       console.error('Create rent reminder error:', error);
+      // Don't throw - this is not critical for tenant creation
     }
   }
 
@@ -280,12 +312,24 @@ class ActionChainService {
 
   private async createNotification(data: any) {
     try {
+      if (!data.userId || !data.organizationId) {
+        console.error('Missing required data for notification:', { userId: !!data.userId, organizationId: !!data.organizationId });
+        return;
+      }
+      
       await Notification.create({
-        ...data,
-        organizationId: data.organizationId || null
+        userId: data.userId,
+        organizationId: data.organizationId,
+        type: data.type || 'info',
+        title: data.title || 'Notification',
+        message: data.message || '',
+        link: data.link || data.actionUrl || '',
+        isRead: false,
+        createdAt: new Date()
       });
     } catch (error) {
       console.error('Create notification error:', error);
+      // Don't throw - notifications are not critical
     }
   }
 }

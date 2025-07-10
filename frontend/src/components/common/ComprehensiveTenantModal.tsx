@@ -162,11 +162,43 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     setIsSubmitting(true);
     
     try {
+      // Validate required fields
+      if (!formData.name || !formData.email || !formData.phone) {
+        throw new Error('Please fill in all required fields: Name, Email, and Phone');
+      }
+      
+      if (!formData.propertyId || !formData.unit) {
+        throw new Error('Please select a property and unit');
+      }
+      
+      if (!formData.rentAmount || !formData.leaseStartDate || !formData.leaseEndDate) {
+        throw new Error('Please fill in rent amount and lease dates');
+      }
+      
+      if (!formData.securityDeposit) {
+        throw new Error('Please enter security deposit amount');
+      }
+      
+      if (!formData.fatherName || !formData.motherName || !formData.presentAddress || !formData.permanentAddress || !formData.govtIdNumber) {
+        throw new Error('Please fill in all personal details');
+      }
+      
+      if (!formData.emergencyContactName || !formData.emergencyContactPhone || !formData.emergencyContactRelation) {
+        throw new Error('Please fill in emergency contact information');
+      }
+      
+      if (!images.tenantImage || !images.govtIdFront || !images.govtIdBack) {
+        throw new Error('Please upload tenant photo and both sides of government ID');
+      }
+      
       const submitData = new FormData();
       
-      // Add basic form data
+      // Add basic form data with proper type conversion
       Object.keys(formData).forEach(key => {
-        submitData.append(key, formData[key as keyof typeof formData] as string);
+        const value = formData[key as keyof typeof formData];
+        if (value !== null && value !== undefined && value !== '') {
+          submitData.append(key, String(value));
+        }
       });
       
       // Add images
@@ -181,48 +213,58 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
       }
       
       // Add additional adults with images
-      const adultsData = additionalAdults.map((adult, index) => {
-        const adultData = { ...adult };
-        delete adultData.image;
-        delete adultData.govtIdImage;
-        return adultData;
-      });
-      submitData.append('additionalAdults', JSON.stringify(adultsData));
+      if (additionalAdults.length > 0) {
+        const adultsData = additionalAdults.map((adult, index) => {
+          const adultData = { ...adult };
+          delete adultData.image;
+          delete adultData.govtIdImage;
+          return adultData;
+        });
+        submitData.append('additionalAdults', JSON.stringify(adultsData));
+        
+        // Add additional adult images
+        additionalAdults.forEach((adult, index) => {
+          if (adult.image) {
+            submitData.append(`additionalAdultImage_${index}`, adult.image);
+          }
+          if (adult.govtIdImage) {
+            submitData.append(`additionalAdultGovtId_${index}`, adult.govtIdImage);
+          }
+        });
+      }
       
-      // Add additional adult images
-      additionalAdults.forEach((adult, index) => {
-        if (adult.image) {
-          submitData.append(`additionalAdultImage_${index}`, adult.image);
-        }
-        if (adult.govtIdImage) {
-          submitData.append(`additionalAdultGovtId_${index}`, adult.govtIdImage);
-        }
-      });
-      
+      console.log('Submitting tenant data...');
       const { data } = await apiClient.post('/tenants', submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000 // 60 second timeout for file uploads
       });
       
-      onTenantAdded(data.data);
-      alert('Tenant added successfully!');
-      onClose();
-      
-      // Reset form
-      setFormData({
-        name: '', email: '', phone: '', whatsappNumber: '',
-        propertyId: preSelectedProperty || '', unit: preSelectedUnit || '', rentAmount: '',
-        leaseStartDate: '', leaseEndDate: '', leaseDuration: '12', securityDeposit: '', advanceRent: '',
-        status: 'Active', fatherName: '', motherName: '', presentAddress: '', permanentAddress: '',
-        govtIdNumber: '', referenceName: '', referencePhone: '', referenceEmail: '',
-        referenceAddress: '', referenceRelation: '', referenceGovtId: '',
-        emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '',
-        occupation: '', monthlyIncome: '', previousAddress: '', reasonForMoving: '',
-        petDetails: '', vehicleDetails: '', specialInstructions: '', numberOfOccupants: 1
-      });
-      setImages({ tenantImage: null, govtIdFront: null, govtIdBack: null });
-      setAdditionalAdults([]);
+      if (data?.success && data?.data) {
+        onTenantAdded(data.data);
+        alert('Tenant added successfully!');
+        onClose();
+        
+        // Reset form
+        setFormData({
+          name: '', email: '', phone: '', whatsappNumber: '',
+          propertyId: preSelectedProperty || '', unit: preSelectedUnit || '', rentAmount: '',
+          leaseStartDate: '', leaseEndDate: '', leaseDuration: '12', securityDeposit: '', advanceRent: '',
+          status: 'Active', fatherName: '', motherName: '', presentAddress: '', permanentAddress: '',
+          govtIdNumber: '', referenceName: '', referencePhone: '', referenceEmail: '',
+          referenceAddress: '', referenceRelation: '', referenceGovtId: '',
+          emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '',
+          occupation: '', monthlyIncome: '', previousAddress: '', reasonForMoving: '',
+          petDetails: '', vehicleDetails: '', specialInstructions: '', numberOfOccupants: 1
+        });
+        setImages({ tenantImage: null, govtIdFront: null, govtIdBack: null });
+        setAdditionalAdults([]);
+      } else {
+        throw new Error(data?.message || 'Failed to add tenant - invalid response');
+      }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to add tenant');
+      console.error('Tenant submission error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add tenant';
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
