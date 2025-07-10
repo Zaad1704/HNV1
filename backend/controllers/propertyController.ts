@@ -586,3 +586,31 @@ export const validateDataIntegrity = async (req: AuthRequest, res: Response) => 
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+export const regenerateDescription = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const property = await Property.findById(req.params.id);
+    if (!property || property.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(404).json({ success: false, message: 'Property not found' });
+      return;
+    }
+
+    const newDescription = generatePropertyDescription(property.toObject());
+    const updatedProperty = await Property.findByIdAndUpdate(
+      req.params.id,
+      { description: newDescription },
+      { new: true }
+    );
+
+    res.status(200).json({ success: true, data: updatedProperty });
+  } catch (error) {
+    console.error('Regenerate description error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

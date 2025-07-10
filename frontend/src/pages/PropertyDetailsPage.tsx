@@ -36,8 +36,9 @@ const PropertyDetailsPage = () => {
   const queryClient = useQueryClient();
   const [showRentIncrease, setShowRentIncrease] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
+  const [showAddTenant, setShowAddTenant] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<string>('');
 
 
 
@@ -195,46 +196,37 @@ const PropertyDetailsPage = () => {
           <div className="app-surface rounded-3xl p-8 border border-app-border">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-text-primary">Property Description</h2>
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">AI Generated</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">AI Generated</span>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { data } = await apiClient.put(`/properties/${propertyId}/regenerate-description`);
+                      queryClient.setQueryData(['property', propertyId], data.data);
+                    } catch (error) {
+                      console.error('Failed to regenerate description:', error);
+                    }
+                  }}
+                  className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full hover:bg-green-200 cursor-pointer"
+                >
+                  Regenerate
+                </button>
+              </div>
             </div>
             <p className="text-text-secondary leading-relaxed">
               {property.description || 'Generating description...'}
             </p>
           </div>
 
-          {/* Property Statistics */}
-          <PropertyStatsSection propertyId={propertyId!} />
-          
-          {/* Units Section */}
-          <UnitsSection propertyId={propertyId!} />
-          
-          {/* Data Preview Sections */}
-          <DataPreviewSections 
-            propertyId={propertyId!} 
-            property={property}
-            tenants={tenants}
-          />
-
-
-
-
-          
-
-
-
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
+          {/* Property Overview */}
           <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Property Details</h3>
-            <div className="space-y-4">
+            <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-3">
                 <MapPin size={16} className="text-text-muted" />
                 <div>
                   <p className="text-sm text-text-secondary">Address</p>
-                  <p className="font-medium text-text-primary">
+                  <p className="font-medium text-text-primary text-sm">
                     {property.address?.formattedAddress || 'Address not available'}
                   </p>
                 </div>
@@ -271,6 +263,37 @@ const PropertyDetailsPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Property Statistics */}
+          <PropertyStatsSection propertyId={propertyId!} />
+          
+          {/* Units Section */}
+          <UnitsSection 
+            propertyId={propertyId!} 
+            onAddTenant={(unitNumber) => {
+              setSelectedUnit(unitNumber);
+              setShowAddTenant(true);
+            }}
+          />
+          
+          {/* Data Preview Sections */}
+          <DataPreviewSections 
+            propertyId={propertyId!} 
+            property={property}
+            tenants={tenants}
+          />
+
+
+
+
+          
+
+
+
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
 
           {/* Actions */}
           <div className="app-surface rounded-3xl p-6 border border-app-border">
@@ -333,9 +356,16 @@ const PropertyDetailsPage = () => {
       <EditPropertyModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        onPropertyUpdated={(updatedProperty) => {
+        onPropertyUpdated={async (updatedProperty) => {
           queryClient.setQueryData(['property', propertyId], updatedProperty);
           queryClient.invalidateQueries({ queryKey: ['properties'] });
+          // Regenerate description after update
+          try {
+            const { data } = await apiClient.put(`/properties/${propertyId}/regenerate-description`);
+            queryClient.setQueryData(['property', propertyId], data.data);
+          } catch (error) {
+            console.error('Failed to regenerate description after update:', error);
+          }
         }}
         property={property}
       />
@@ -347,6 +377,36 @@ const PropertyDetailsPage = () => {
         onClose={() => setShowCollectionSheet(false)}
         preSelectedProperty={propertyId}
       />
+      
+      {showAddTenant && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Add Tenant to Unit {selectedUnit}</h3>
+              <button onClick={() => setShowAddTenant(false)} className="text-gray-500 hover:text-gray-700">
+                ×
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">Redirecting to add tenant form...</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}&unit=${selectedUnit}`;
+                }}
+                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+              >
+                Continue
+              </button>
+              <button
+                onClick={() => setShowAddTenant(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

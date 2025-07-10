@@ -7,7 +7,8 @@ import {
   deleteProperty,
   getPropertyDataPreviews,
   getUnitData,
-  validateDataIntegrity
+  validateDataIntegrity,
+  regenerateDescription
 } from '../controllers/propertyController';
 import { getPropertyUnits, getVacantUnits } from '../controllers/unitController';
 import { protect } from '../middleware/authMiddleware';
@@ -54,5 +55,8 @@ router.get('/:propertyId/vacant-units', getVacantUnits);
 
 // DATA VALIDATION ROUTE
 router.get('/validate/data-integrity', validateDataIntegrity);
+
+// REGENERATE DESCRIPTION ROUTE
+router.put('/:id/regenerate-description', regenerateDescription);
 
 export default router;

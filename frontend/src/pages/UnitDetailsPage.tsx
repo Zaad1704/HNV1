@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Home, User, DollarSign, Calendar } from 'lucide-react';
+import { ArrowLeft, Home, User, DollarSign, Calendar, Receipt, Wrench, FileText, TrendingUp } from 'lucide-react';
 
 const fetchUnitDetails = async (propertyId: string, unitNumber: string) => {
   const { data } = await apiClient.get(`/properties/${propertyId}/units`);
@@ -19,6 +19,7 @@ const fetchProperty = async (propertyId: string) => {
 
 const UnitDetailsPage = () => {
   const { propertyId, unitNumber } = useParams<{ propertyId: string; unitNumber: string }>();
+  const [activeTab, setActiveTab] = useState('overview');
 
   const { data: unit, isLoading: unitLoading } = useQuery({
     queryKey: ['unit', propertyId, unitNumber],
@@ -83,60 +84,106 @@ const UnitDetailsPage = () => {
         </div>
       </div>
 
-      {/* Unit Info */}
+      {/* Tabs */}
+      <div className="border-b border-app-border">
+        <nav className="flex space-x-8">
+          {[
+            { id: 'overview', label: 'Overview', icon: Home },
+            { id: 'payments', label: 'Payments', icon: DollarSign },
+            { id: 'receipts', label: 'Receipts', icon: Receipt },
+            { id: 'maintenance', label: 'Maintenance', icon: Wrench },
+            { id: 'documents', label: 'Documents', icon: FileText }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Main Info */}
+        {/* Main Content */}
         <div className="space-y-6">
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <h2 className="text-xl font-bold text-text-primary mb-6">Unit Information</h2>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Home size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Unit Number</p>
-                  <p className="font-medium text-text-primary">{unit.unitNumber}</p>
+          {activeTab === 'overview' && (
+            <div className="app-surface rounded-3xl p-8 border border-app-border">
+              <h2 className="text-xl font-bold text-text-primary mb-6">Unit Information</h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Home size={16} className="text-text-muted" />
+                  <div>
+                    <p className="text-sm text-text-secondary">Unit Number</p>
+                    <p className="font-medium text-text-primary">{unit.unitNumber}</p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <DollarSign size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Current Rent</p>
-                  <p className="font-medium text-text-primary">
-                    ${unit.rentAmount || 0}/month
-                  </p>
+                
+                <div className="flex items-center gap-3">
+                  <DollarSign size={16} className="text-text-muted" />
+                  <div>
+                    <p className="text-sm text-text-secondary">Current Rent</p>
+                    <p className="font-medium text-text-primary">
+                      ${unit.rentAmount || 0}/month
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <User size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Status</p>
-                  <p className={`font-medium ${unit.isOccupied ? 'text-red-600' : 'text-green-600'}`}>
-                    {unit.isOccupied ? 'Occupied' : 'Vacant'}
-                  </p>
-                </div>
-              </div>
-
-              {unit.tenantName && (
                 <div className="flex items-center gap-3">
                   <User size={16} className="text-text-muted" />
                   <div>
-                    <p className="text-sm text-text-secondary">Current Tenant</p>
-                    <Link 
-                      to={`/dashboard/tenants/${unit.tenantId}`}
-                      className="font-medium text-blue-600 hover:text-blue-800"
-                    >
-                      {unit.tenantName}
-                    </Link>
+                    <p className="text-sm text-text-secondary">Status</p>
+                    <p className={`font-medium ${unit.isOccupied ? 'text-red-600' : 'text-green-600'}`}>
+                      {unit.isOccupied ? 'Occupied' : 'Vacant'}
+                    </p>
                   </div>
                 </div>
-              )}
+
+                {unit.tenantName && (
+                  <div className="flex items-center gap-3">
+                    <User size={16} className="text-text-muted" />
+                    <div>
+                      <p className="text-sm text-text-secondary">Current Tenant</p>
+                      <Link 
+                        to={`/dashboard/tenants/${unit.tenantId}`}
+                        className="font-medium text-blue-600 hover:text-blue-800"
+                      >
+                        {unit.tenantName}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+          
+          {activeTab !== 'overview' && (
+            <div className="app-surface rounded-3xl p-8 border border-app-border">
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">View {activeTab} data for this unit</p>
+                <Link
+                  to={`/dashboard/${activeTab}?propertyId=${propertyId}&unit=${unitNumber}`}
+                  className="inline-flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors"
+                >
+                  <TrendingUp size={16} />
+                  View {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Actions */}
+        {/* Actions Sidebar */}
         <div className="space-y-6">
           <div className="app-surface rounded-3xl p-6 border border-app-border">
             <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
@@ -164,12 +211,19 @@ const UnitDetailsPage = () => {
                 View Unit Payments
               </Link>
               
-              <button
-                onClick={() => alert('Maintenance request feature coming soon')}
-                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors"
+              <Link 
+                to={`/dashboard/receipts?propertyId=${propertyId}&unit=${unit.unitNumber}`}
+                className="w-full bg-indigo-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-indigo-600 transition-colors block text-center"
               >
-                Report Maintenance
-              </button>
+                View Receipts
+              </Link>
+              
+              <Link 
+                to={`/dashboard/maintenance?propertyId=${propertyId}&unit=${unit.unitNumber}`}
+                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors block text-center"
+              >
+                Unit Maintenance
+              </Link>
             </div>
           </div>
         </div>

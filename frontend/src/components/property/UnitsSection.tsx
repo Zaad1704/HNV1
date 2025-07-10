@@ -6,6 +6,7 @@ import { Home, User, DollarSign, Plus } from 'lucide-react';
 
 interface UnitsSectionProps {
   propertyId: string;
+  onAddTenant?: (unitNumber: string) => void;
 }
 
 const fetchPropertyUnits = async (propertyId: string) => {
@@ -13,7 +14,7 @@ const fetchPropertyUnits = async (propertyId: string) => {
   return data.data || [];
 };
 
-const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId }) => {
+const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) => {
   const { data: units = [], isLoading } = useQuery({
     queryKey: ['propertyUnits', propertyId],
     queryFn: () => fetchPropertyUnits(propertyId),
@@ -49,10 +50,9 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {units.map((unit: any) => (
-          <Link
+          <div
             key={unit.unitNumber}
-            to={`/dashboard/properties/${propertyId}/units/${unit.unitNumber}`}
-            className="block p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all"
+            className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -84,15 +84,28 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId }) => {
               </div>
             </div>
             
-            {!unit.isOccupied && (
+            {!unit.isOccupied ? (
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-2 text-xs text-blue-600">
+                <button
+                  onClick={() => onAddTenant?.(unit.unitNumber)}
+                  className="w-full flex items-center justify-center gap-2 text-xs text-blue-600 hover:text-blue-800 py-2 px-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                >
                   <Plus size={12} />
                   <span>Add Tenant</span>
-                </div>
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <Link
+                  to={`/dashboard/properties/${propertyId}/units/${unit.unitNumber}`}
+                  className="w-full flex items-center justify-center gap-2 text-xs text-green-600 hover:text-green-800 py-2 px-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <User size={12} />
+                  <span>View Unit Details</span>
+                </Link>
               </div>
             )}
-          </Link>
+          </div>
         ))}
       </div>
     </div>
