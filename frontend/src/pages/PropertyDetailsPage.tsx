@@ -7,7 +7,7 @@ import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wr
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 
-import UnitDataModal from '../components/property/UnitDataModal';
+
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 
 // Units & Tenants Component
@@ -576,13 +576,13 @@ const PropertyDetailsPage = () => {
   const queryClient = useQueryClient();
   const [showRentIncrease, setShowRentIncrease] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showUnitDataModal, setShowUnitDataModal] = useState(false);
+
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<string>('');
+
 
   const handleUnitDataClick = (unitNumber: string) => {
-    setSelectedUnit(unitNumber);
-    setShowUnitDataModal(true);
+    // Simple navigation instead of modal
+    window.location.href = `/dashboard/properties/${propertyId}/units/${unitNumber}`;
   };
   
   const { data: property, isLoading, error } = useQuery({
@@ -876,13 +876,7 @@ const PropertyDetailsPage = () => {
         property={property}
       />
       
-      <UnitDataModal
-        isOpen={showUnitDataModal}
-        onClose={() => setShowUnitDataModal(false)}
-        propertyId={propertyId!}
-        unitNumber={selectedUnit}
-        unitName={`Unit ${selectedUnit}`}
-      />
+
       
       <MonthlyCollectionSheet
         isOpen={showCollectionSheet}
