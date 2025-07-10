@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building, Users, CreditCard, Settings } from 'lucide-react';
+import { Home, Building, Users, CreditCard, FileText, Settings } from 'lucide-react';
 
 const MobileBottomNav = () => {
   const location = useLocation();
@@ -9,7 +9,7 @@ const MobileBottomNav = () => {
     { href: '/dashboard', icon: Home, label: 'Home' },
     { href: '/dashboard/properties', icon: Building, label: 'Properties' },
     { href: '/dashboard/tenants', icon: Users, label: 'Tenants' },
-    { href: '/dashboard/payments', icon: CreditCard, label: 'Payments' },
+    { href: '/dashboard/receipts', icon: FileText, label: 'Receipts' },
     { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
 

@@ -54,6 +54,7 @@ const DashboardLayout = () => {
     { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/payments", icon: CreditCard, label: t('dashboard.payments'), roles: ['Landlord', 'Agent'] },
+    { href: "/dashboard/receipts", icon: FileText, label: t('dashboard.receipts'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/expenses", icon: DollarSign, label: t('dashboard.expenses'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/maintenance", icon: Wrench, label: t('dashboard.maintenance'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/cashflow", icon: DollarSign, label: t('dashboard.cash_flow'), roles: ['Landlord', 'Agent'] },

@@ -184,6 +184,7 @@ function App() {
             <Route path="maintenance/:maintenanceId" element={<MaintenanceDetailsPage />} />
             <Route path="cashflow/:year/:month" element={<CashFlowDetailsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
+            <Route path="receipts" element={<ReceiptsPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="maintenance" element={<MaintenanceRequestsPage />} />
             <Route path="cashflow" element={<CashFlowPage />} />
