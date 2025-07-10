@@ -1,7 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import apiClient from '../../api/client';
 import { Home, User, DollarSign, Plus } from 'lucide-react';
 
 interface UnitsSectionProps {
@@ -12,23 +10,11 @@ interface UnitsSectionProps {
   onDataUpdate?: () => void;
 }
 
-const fetchPropertyUnits = async (propertyId: string) => {
-  const { data } = await apiClient.get(`/properties/${propertyId}/units`);
-  return data.data || [];
-};
+
 
 const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenants = [], onAddTenant, onDataUpdate }) => {
-  const { data: units = [], isLoading } = useQuery({
-    queryKey: ['propertyUnits', propertyId, tenants?.length],
-    queryFn: () => fetchPropertyUnits(propertyId),
-    enabled: !!propertyId,
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always fetch fresh data
-    refetchInterval: 5000 // Refetch every 5 seconds
-  });
-
-  // Always generate units from property and tenant data for accuracy
-  const getUnitsWithTenantData = () => {
+  // Skip API call and generate units directly from tenant data
+  const unitsData = React.useMemo(() => {
     if (!property?.numberOfUnits) return [];
     
     return Array.from({ length: property.numberOfUnits }, (_, i) => {
@@ -43,11 +29,9 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         rentAmount: tenant?.rentAmount || property.rentAmount || 0
       };
     });
-  };
+  }, [property?.numberOfUnits, tenants]);
 
-  const unitsData = getUnitsWithTenantData();
-
-  if (isLoading) {
+  if (!property || !tenants) {
     return (
       <div className="app-surface rounded-3xl p-8 border border-app-border">
         <h2 className="text-xl font-bold text-text-primary mb-4">Units</h2>
