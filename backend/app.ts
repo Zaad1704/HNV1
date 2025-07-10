@@ -197,8 +197,10 @@ app.use('/api', (req, res, next) => {
 // Test routes (no auth required)
 import testRoutes from './routes/testRoutes';
 import testImageRoutes from './routes/testImageRoutes';
+import testUploadRoutes from './routes/testUploadRoutes';
 app.use('/api/test', testRoutes);
 app.use('/api/test/image', testImageRoutes);
+app.use('/api/test/upload', testUploadRoutes);
 // Health check routes (no auth required)
 app.use('/api/health', healthRoutes);
 app.use('/health', healthRoutes);
