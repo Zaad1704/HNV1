@@ -82,6 +82,25 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     enabled: isOpen
   });
 
+  const { data: tenants = [] } = useQuery({
+    queryKey: ['tenants'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/tenants');
+      return data.data || [];
+    },
+    enabled: isOpen && formData.propertyId
+  });
+
+  const { data: propertyUnits = [] } = useQuery({
+    queryKey: ['propertyUnits', formData.propertyId],
+    queryFn: async () => {
+      if (!formData.propertyId) return [];
+      const { data } = await apiClient.get(`/properties/${formData.propertyId}/units`);
+      return data.data || [];
+    },
+    enabled: !!formData.propertyId
+  });
+
   const handleImageUpload = (field: string, file: File) => {
     setImages(prev => ({ ...prev, [field]: file }));
   };
@@ -111,6 +130,23 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
   
   const selectedProperty = properties.find(p => p._id === formData.propertyId);
   const isCommercial = selectedProperty?.propertyType === 'Commercial';
+  
+  // Get vacant units
+  const occupiedUnits = tenants
+    .filter(t => t.propertyId === formData.propertyId && t.status !== 'Archived')
+    .map(t => t.unit);
+  
+  const vacantUnits = propertyUnits.filter(unit => !occupiedUnits.includes(unit.unitNumber));
+  
+  // Auto-fill rent amount when unit is selected
+  const handleUnitChange = (unitNumber: string) => {
+    const selectedUnit = propertyUnits.find(u => u.unitNumber === unitNumber);
+    setFormData({
+      ...formData,
+      unit: unitNumber,
+      rentAmount: selectedUnit?.rentAmount?.toString() || formData.rentAmount
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,19 +222,36 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Add Tenant - Comprehensive Form</h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
-            <X size={20} />
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-gray-100">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8 pb-6 border-b border-gray-200">
+          <div>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Add New Tenant
+            </h3>
+            <p className="text-gray-600 mt-1">Complete tenant information and lease details</p>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="p-3 rounded-full hover:bg-gray-100 transition-colors group"
+          >
+            <X size={24} className="text-gray-400 group-hover:text-gray-600" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
-          <div className="border-b pb-6">
-            <h4 className="text-lg font-semibold mb-4">Basic Information</h4>
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-8 border border-blue-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                <User size={20} className="text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">Basic Information</h4>
+                <p className="text-sm text-gray-600">Personal details and contact information</p>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -274,15 +327,25 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Unit/Room *
+                  Available Units *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  onChange={(e) => handleUnitChange(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
-                />
+                  disabled={!formData.propertyId}
+                >
+                  <option value="">Select Available Unit</option>
+                  {vacantUnits.map((unit: any) => (
+                    <option key={unit.unitNumber} value={unit.unitNumber}>
+                      Unit {unit.unitNumber} {unit.rentAmount ? `- $${unit.rentAmount}/month` : ''}
+                    </option>
+                  ))}
+                </select>
+                {formData.propertyId && vacantUnits.length === 0 && (
+                  <p className="text-sm text-red-600 mt-1">No vacant units available in this property</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -800,20 +863,28 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4 pt-8 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300"
+              className="px-8 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
             >
-              {isSubmitting ? 'Adding Tenant...' : 'Add Tenant'}
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Adding Tenant...
+                </div>
+              ) : (
+                'Add Tenant'
+              )}
             </button>
           </div>
         </form>
