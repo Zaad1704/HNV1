@@ -143,26 +143,26 @@ const SmartDashboardPage: React.FC = () => {
         <div className="space-y-8">
           {/* Welcome Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 app-gradient rounded-3xl p-8 text-white relative overflow-hidden">
+            <div className="lg:col-span-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-8 text-white relative overflow-hidden">
               <div className="relative z-10">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
                     <Building2 size={32} className="text-white" />
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold">
                       {user?.organizationId?.name || `${user?.name}'s Properties`}
                     </h1>
-                    <p className="text-white/80">Welcome back, {user?.name}</p>
+                    <p className="text-white opacity-80">Welcome back, {user?.name}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="bg-white/10 rounded-2xl p-4">
-                    <p className="text-white/80 text-sm">Monthly Revenue</p>
+                  <div className="bg-white bg-opacity-10 rounded-2xl p-4">
+                    <p className="text-white opacity-80 text-sm">Monthly Revenue</p>
                     <p className="text-2xl font-bold">{currency}{overviewStats?.monthlyRevenue?.toLocaleString() || '0'}</p>
                   </div>
-                  <div className="bg-white/10 rounded-2xl p-4">
-                    <p className="text-white/80 text-sm">Active Properties</p>
+                  <div className="bg-white bg-opacity-10 rounded-2xl p-4">
+                    <p className="text-white opacity-80 text-sm">Active Properties</p>
                     <p className="text-2xl font-bold">{overviewStats?.totalProperties || 0}</p>
                   </div>
                 </div>
@@ -170,81 +170,81 @@ const SmartDashboardPage: React.FC = () => {
             </div>
             
             <div className="space-y-4">
-              <div className="app-surface rounded-2xl p-6 border border-app-border">
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-text-secondary text-sm">Occupancy Rate</span>
+                  <span className="text-gray-600 text-sm">Occupancy Rate</span>
                   <TrendingUp size={16} className="text-green-500" />
                 </div>
-                <p className="text-3xl font-bold text-text-primary">{overviewStats?.occupancyRate || '0%'}</p>
+                <p className="text-3xl font-bold text-gray-900">{overviewStats?.occupancyRate || '0%'}</p>
               </div>
-              <div className="app-surface rounded-2xl p-6 border border-app-border">
+              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-text-secondary text-sm">Active Tenants</span>
+                  <span className="text-gray-600 text-sm">Active Tenants</span>
                   <Users size={16} className="text-blue-500" />
                 </div>
-                <p className="text-3xl font-bold text-text-primary">{overviewStats?.activeTenants || 0}</p>
+                <p className="text-3xl font-bold text-gray-900">{overviewStats?.activeTenants || 0}</p>
               </div>
             </div>
           </div>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Link to="/dashboard/tenants" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+            <Link to="/dashboard/tenants" className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Users size={20} className="text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.activeTenants || 0}</p>
-                  <p className="text-sm text-text-secondary">Active Tenants</p>
+                  <p className="text-2xl font-bold text-gray-900">{overviewStats?.activeTenants || 0}</p>
+                  <p className="text-sm text-gray-600">Active Tenants</p>
                 </div>
               </div>
             </Link>
             
-            <Link to="/dashboard/properties" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+            <Link to="/dashboard/properties" className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Building2 size={20} className="text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.totalProperties || 0}</p>
-                  <p className="text-sm text-text-secondary">Properties</p>
+                  <p className="text-2xl font-bold text-gray-900">{overviewStats?.totalProperties || 0}</p>
+                  <p className="text-sm text-gray-600">Properties</p>
                 </div>
               </div>
             </Link>
             
-            <Link to="/dashboard/payments" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+            <Link to="/dashboard/payments" className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <CreditCard size={20} className="text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.totalPayments || 0}</p>
-                  <p className="text-sm text-text-secondary">Payments</p>
+                  <p className="text-2xl font-bold text-gray-900">{overviewStats?.totalPayments || 0}</p>
+                  <p className="text-sm text-gray-600">Payments</p>
                 </div>
               </div>
             </Link>
             
-            <Link to="/dashboard/receipts" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+            <Link to="/dashboard/receipts" className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <DollarSign size={20} className="text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.totalReceipts || 0}</p>
-                  <p className="text-sm text-text-secondary">Receipts</p>
+                  <p className="text-2xl font-bold text-gray-900">{overviewStats?.totalReceipts || 0}</p>
+                  <p className="text-sm text-gray-600">Receipts</p>
                 </div>
               </div>
             </Link>
             
-            <Link to="/dashboard/maintenance" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+            <Link to="/dashboard/maintenance" className="bg-white rounded-2xl p-4 border border-gray-200 hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Wrench size={20} className="text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.pendingMaintenance || 0}</p>
-                  <p className="text-sm text-text-secondary">Maintenance</p>
+                  <p className="text-2xl font-bold text-gray-900">{overviewStats?.pendingMaintenance || 0}</p>
+                  <p className="text-sm text-gray-600">Maintenance</p>
                 </div>
               </div>
             </Link>
@@ -252,12 +252,12 @@ const SmartDashboardPage: React.FC = () => {
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="app-surface rounded-3xl p-6 border border-app-border">
-              <h3 className="text-lg font-bold mb-4">Financial Overview</h3>
+            <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold mb-4 text-gray-900">Financial Overview</h3>
               <FinancialChart data={financialData || []} />
             </div>
-            <div className="app-surface rounded-3xl p-6 border border-app-border">
-              <h3 className="text-lg font-bold mb-4">Rent Status</h3>
+            <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-bold mb-4 text-gray-900">Rent Status</h3>
               <RentStatusChart data={rentStatusData || []} />
             </div>
           </div>
