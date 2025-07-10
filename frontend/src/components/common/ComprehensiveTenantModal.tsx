@@ -234,10 +234,12 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
       }
       
       console.log('Submitting tenant data...');
+      console.log('🔍 Submitting to API...');
       const { data } = await apiClient.post('/tenants', submitData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 60000 // 60 second timeout for file uploads
       });
+      console.log('✅ API response:', data);
       
       if (data?.success && data?.data) {
         onTenantAdded(data.data);

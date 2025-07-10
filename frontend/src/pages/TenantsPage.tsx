@@ -75,15 +75,18 @@ const TenantsPage = () => {
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
+    console.log('🔍 Tenant added callback called:', newTenant);
     try {
       if (newTenant) {
         queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
         queryClient.invalidateQueries({ queryKey: ['tenants'] });
         queryClient.invalidateQueries({ queryKey: ['crossData'] });
+        console.log('✅ Tenant data updated');
       }
       setShowAddModal(false);
+      console.log('✅ Modal closed after tenant added');
     } catch (error) {
-      console.error('Error handling tenant added:', error);
+      console.error('❌ Error handling tenant added:', error);
       setShowAddModal(false);
     }
   };
@@ -296,10 +299,14 @@ const TenantsPage = () => {
           </button>
           <button 
             onClick={() => {
+              console.log('🔍 Add Tenant button clicked');
               try {
+                console.log('🔍 Setting modal to true');
                 setShowAddModal(true);
+                console.log('✅ Modal state set successfully');
               } catch (error) {
-                console.error('Error opening add tenant modal:', error);
+                console.error('❌ Error opening add tenant modal:', error);
+                alert('Error opening modal: ' + error.message);
               }
             }}
             className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
@@ -457,6 +464,7 @@ const TenantsPage = () => {
         <ComprehensiveTenantModal
           isOpen={showAddModal}
           onClose={() => {
+            console.log('🔍 Modal closing');
             setShowAddModal(false);
             // Clear URL params when closing modal
             if (propertyId || unitParam) {
@@ -465,8 +473,9 @@ const TenantsPage = () => {
                 url.searchParams.delete('propertyId');
                 url.searchParams.delete('unit');
                 window.history.replaceState({}, '', url.toString());
+                console.log('✅ URL params cleared');
               } catch (error) {
-                console.error('Error clearing URL params:', error);
+                console.error('❌ Error clearing URL params:', error);
               }
             }
           }}
