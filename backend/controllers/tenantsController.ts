@@ -310,9 +310,18 @@ export const deleteTenant = async (req: AuthRequest, res: Response) => {
     
     // Log the deletion
     try {
-      await actionChainService.onTenantDeleted(tenantInfo, req.user._id, req.user.organizationId);
+      const AuditLog = await import('../models/AuditLog');
+      await AuditLog.default.create({
+        userId: req.user._id,
+        organizationId: req.user.organizationId,
+        action: 'tenant_deleted',
+        resource: 'tenant',
+        resourceId: req.params.id,
+        details: tenantInfo,
+        timestamp: new Date()
+      });
     } catch (actionError) {
-      console.error('Action chain error (non-critical):', actionError);
+      console.error('Audit log error (non-critical):', actionError);
     }
 
     res.status(200).json({ 
@@ -630,12 +639,22 @@ export const archiveTenant = async (req: AuthRequest, res: Response) => {
 
     // Log the action
     try {
-      await actionChainService.onTenantUpdated(updatedTenant, req.user._id, req.user.organizationId, {
-        action: newStatus === 'Archived' ? 'archived' : 'restored',
-        previousStatus: tenant.status
+      const AuditLog = await import('../models/AuditLog');
+      await AuditLog.default.create({
+        userId: req.user._id,
+        organizationId: req.user.organizationId,
+        action: newStatus === 'Archived' ? 'tenant_archived' : 'tenant_restored',
+        resource: 'tenant',
+        resourceId: req.params.id,
+        details: {
+          tenantName: tenant.name,
+          previousStatus: tenant.status,
+          newStatus
+        },
+        timestamp: new Date()
       });
     } catch (actionError) {
-      console.error('Action chain error (non-critical):', actionError);
+      console.error('Audit log error (non-critical):', actionError);
     }
 
     res.status(200).json({ 
@@ -833,14 +852,14 @@ export const downloadTenantPDF = async (req: AuthRequest, res: Response) => {
     }
     
     // Emergency Contact
-    if (tenant.emergencyContact?.name || tenant.emergencyContactName) {
+    if (tenant.emergencyContact?.name) {
       doc.fontSize(16).fillColor('#2563eb').text('EMERGENCY CONTACT', { underline: true });
       doc.moveDown(0.5);
       doc.fontSize(12).fillColor('#000000');
       
-      const emergencyName = tenant.emergencyContact?.name || tenant.emergencyContactName;
-      const emergencyPhone = tenant.emergencyContact?.phone || tenant.emergencyContactPhone;
-      const emergencyRelation = tenant.emergencyContact?.relation || tenant.emergencyContactRelation;
+      const emergencyName = tenant.emergencyContact?.name;
+      const emergencyPhone = tenant.emergencyContact?.phone;
+      const emergencyRelation = tenant.emergencyContact?.relation;
       
       if (emergencyName) doc.text(`Name: ${emergencyName}`);
       if (emergencyPhone) doc.text(`Phone: ${emergencyPhone}`);
@@ -1012,9 +1031,9 @@ export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response
     doc.moveDown();
     
     // Emergency Contact
-    const emergencyName = tenant.emergencyContact?.name || tenant.emergencyContactName;
-    const emergencyPhone = tenant.emergencyContact?.phone || tenant.emergencyContactPhone;
-    const emergencyRelation = tenant.emergencyContact?.relation || tenant.emergencyContactRelation;
+    const emergencyName = tenant.emergencyContact?.name;
+    const emergencyPhone = tenant.emergencyContact?.phone;
+    const emergencyRelation = tenant.emergencyContact?.relation;
     
     if (emergencyName || emergencyPhone) {
       doc.fontSize(16).fillColor('#1e40af').text('EMERGENCY CONTACT', { underline: true });
@@ -1037,16 +1056,16 @@ export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response
     }
     
     // Reference Information
-    if (tenant.reference?.name || tenant.referenceName) {
+    if (tenant.reference?.name) {
       doc.fontSize(16).fillColor('#1e40af').text('REFERENCE INFORMATION', { underline: true });
       doc.moveDown(0.5);
       doc.fontSize(12).fillColor('#000000').font('Helvetica');
       
-      const refName = tenant.reference?.name || tenant.referenceName;
-      const refPhone = tenant.reference?.phone || tenant.referencePhone;
-      const refEmail = tenant.reference?.email || tenant.referenceEmail;
-      const refRelation = tenant.reference?.relation || tenant.referenceRelation;
-      const refAddress = tenant.reference?.address || tenant.referenceAddress;
+      const refName = tenant.reference?.name;
+      const refPhone = tenant.reference?.phone;
+      const refEmail = tenant.reference?.email;
+      const refRelation = tenant.reference?.relation;
+      const refAddress = tenant.reference?.address;
       
       currentY = doc.y;
       if (refName) {
