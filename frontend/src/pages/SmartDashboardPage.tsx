@@ -76,21 +76,29 @@ const SmartDashboardPage: React.FC = () => {
   const { data: overviewStats = { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' } } = useQuery({ 
     queryKey: ['overviewStats'], 
     queryFn: fetchOverviewStats,
+    enabled: !!user && !!user.organizationId,
+    retry: false,
     staleTime: 30000
   });
   const { data: lateTenants = [] } = useQuery({ 
     queryKey: ['lateTenants'], 
     queryFn: fetchLateTenants,
+    enabled: !!user && !!user.organizationId,
+    retry: false,
     staleTime: 30000
   });
   const { data: financialData = [] } = useQuery({ 
     queryKey: ['financialSummary'], 
     queryFn: fetchFinancialSummary,
+    enabled: !!user && !!user.organizationId,
+    retry: false,
     staleTime: 30000
   });
   const { data: rentStatusData = [] } = useQuery({ 
     queryKey: ['rentStatus'], 
     queryFn: fetchRentStatus,
+    enabled: !!user && !!user.organizationId,
+    retry: false,
     staleTime: 30000
   });
 
@@ -151,9 +159,9 @@ const SmartDashboardPage: React.FC = () => {
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold">
-                      {user?.organizationId?.name || `${user?.name}'s Properties`}
+                      {(user?.organizationId && user.organizationId.name) || `${user?.name || 'User'}'s Properties`}
                     </h1>
-                    <p className="text-white opacity-80">Welcome back, {user?.name}</p>
+                    <p className="text-white opacity-80">Welcome back, {user?.name || 'User'}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-6">
