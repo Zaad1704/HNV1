@@ -165,7 +165,7 @@ function App() {
             </DashboardErrorBoundary>
           }>
             {/* General User Dashboards */}
-            <Route index element={<DashboardPage />} />
+            <Route index element={<OverviewPage />} />
             <Route path="complex" element={<DashboardPageComplex />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="settings" element={<SettingsPage />} />
