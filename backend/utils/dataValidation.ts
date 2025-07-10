@@ -91,7 +91,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
             propertyId: issue.propertyId, 
             organizationId,
             status: 'Active',
-            unit: { $ne: null, $ne: '' }
+            unit: { $nin: [null, ''] }
           }).distinct('unit');
           
           let nextUnit1 = '1';
@@ -119,7 +119,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
             organizationId,
             status: 'Active',
             _id: { $ne: issue.tenantId },
-            unit: { $ne: null, $ne: '' }
+            unit: { $nin: [null, ''] }
           }).distinct('unit');
           
           let nextUnit2 = '1';
@@ -150,7 +150,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
               organizationId,
               status: 'Active',
               _id: { $ne: tenant.id },
-              unit: { $ne: null, $ne: '' }
+              unit: { $nin: [null, ''] }
             }).distinct('unit');
             
             let nextUnit3 = '1';
