@@ -9,7 +9,7 @@ import {
   getUnitData,
   validateDataIntegrity
 } from '../controllers/propertyController';
-import { getPropertyUnits } from '../controllers/unitController';
+import { getPropertyUnits, getVacantUnits } from '../controllers/unitController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
 import upload from '../middleware/uploadMiddleware';
@@ -50,6 +50,7 @@ router.patch('/:id/archive', async (req: any, res) => {
 router.get('/:propertyId/data-previews', getPropertyDataPreviews);
 router.get('/:propertyId/units/:unitNumber/data', getUnitData);
 router.get('/:propertyId/units', getPropertyUnits);
+router.get('/:propertyId/vacant-units', getVacantUnits);
 
 // DATA VALIDATION ROUTE
 router.get('/validate/data-integrity', validateDataIntegrity);

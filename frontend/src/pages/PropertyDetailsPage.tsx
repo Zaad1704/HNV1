@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, Trash2, Share2, FileText } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
-
-
+import UnitsSection from '../components/property/UnitsSection';
+import PropertyStatsSection from '../components/property/PropertyStatsSection';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 
 
@@ -200,6 +200,12 @@ const PropertyDetailsPage = () => {
               {property.description || 'Generating description...'}
             </p>
           </div>
+
+          {/* Property Statistics */}
+          <PropertyStatsSection propertyId={propertyId!} />
+          
+          {/* Units Section */}
+          <UnitsSection propertyId={propertyId!} />
 
 
 

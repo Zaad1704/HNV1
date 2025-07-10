@@ -89,7 +89,7 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Handle image uploads
+    // Handle image uploads with Cloudinary
     const imageUrls: any = {};
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
@@ -97,18 +97,30 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       try {
         const { uploadToCloudinary, isCloudinaryConfigured } = await import('../utils/cloudinary');
         
-        for (const [fieldname, fileArray] of Object.entries(files)) {
-          if (fileArray && fileArray[0]) {
-            const file = fileArray[0];
-            try {
-              if (isCloudinaryConfigured()) {
-                imageUrls[fieldname] = await uploadToCloudinary(file, 'tenants');
-              } else {
-                imageUrls[fieldname] = `/uploads/images/${file.filename}`;
+        if (isCloudinaryConfigured()) {
+          console.log('Uploading images to Cloudinary...');
+          
+          for (const [fieldname, fileArray] of Object.entries(files)) {
+            if (fileArray && fileArray[0]) {
+              const file = fileArray[0];
+              try {
+                console.log(`Uploading ${fieldname} to Cloudinary...`);
+                const cloudinaryUrl = await uploadToCloudinary(file, 'tenants');
+                imageUrls[fieldname] = cloudinaryUrl;
+                console.log(`✅ ${fieldname} uploaded successfully:`, cloudinaryUrl);
+              } catch (uploadError) {
+                console.error(`❌ Failed to upload ${fieldname}:`, uploadError);
+                // Continue without failing the entire request
               }
-            } catch (uploadError) {
-              console.error(`Failed to upload ${fieldname}:`, uploadError);
-              // Continue without failing the entire request
+            }
+          }
+        } else {
+          console.log('Cloudinary not configured, using local storage...');
+          // Fallback to local storage
+          for (const [fieldname, fileArray] of Object.entries(files)) {
+            if (fileArray && fileArray[0]) {
+              const file = fileArray[0];
+              imageUrls[fieldname] = `/uploads/images/${file.filename}`;
             }
           }
         }
@@ -187,7 +199,8 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       name: tenantData.name, 
       propertyId: tenantData.propertyId, 
       unit: tenantData.unit,
-      additionalAdults: additionalAdults.length 
+      additionalAdults: additionalAdults.length,
+      imageUrls: Object.keys(imageUrls)
     });
     
     const tenant = await Tenant.create(tenantData);

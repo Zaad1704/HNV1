@@ -22,7 +22,13 @@ router.route('/')
   .post(upload.fields([
     { name: 'tenantImage', maxCount: 1 },
     { name: 'govtIdFront', maxCount: 1 },
-    { name: 'govtIdBack', maxCount: 1 }
+    { name: 'govtIdBack', maxCount: 1 },
+    { name: 'additionalAdultImage_0', maxCount: 1 },
+    { name: 'additionalAdultImage_1', maxCount: 1 },
+    { name: 'additionalAdultImage_2', maxCount: 1 },
+    { name: 'additionalAdultGovtId_0', maxCount: 1 },
+    { name: 'additionalAdultGovtId_1', maxCount: 1 },
+    { name: 'additionalAdultGovtId_2', maxCount: 1 }
   ]), createTenant);
 
 router.route('/:id')

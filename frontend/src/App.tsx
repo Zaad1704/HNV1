@@ -69,6 +69,7 @@ const BillingPage = React.lazy(() => import('./pages/BillingPage'));
 const AuditLogPage = React.lazy(() => import('./pages/AuditLogPage'));
 const PropertyDetailsPage = React.lazy(() => import('./pages/PropertyDetailsPage'));
 const EditPropertyPage = React.lazy(() => import('./pages/EditPropertyPage'));
+const UnitDetailsPage = React.lazy(() => import('./pages/UnitDetailsPage'));
 
 const ReceiptsPage = React.lazy(() => import('./pages/ReceiptsPage'));
 const TenantProfilePage = React.lazy(() => import('./pages/TenantProfilePage'));
@@ -176,6 +177,7 @@ function App() {
             <Route path="properties" element={<PropertiesPage />} />
             <Route path="properties/:propertyId" element={<PropertyDetailsPage />} />
             <Route path="properties/:propertyId/edit" element={<EditPropertyPage />} />
+            <Route path="properties/:propertyId/units/:unitNumber" element={<UnitDetailsPage />} />
 
             <Route path="receipts" element={<ReceiptsPage />} />
             <Route path="tenants" element={<TenantsPage />} />

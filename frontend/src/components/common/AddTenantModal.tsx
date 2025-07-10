@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, User, Search, Image } from 'lucide-react';
 import apiClient from '../../api/client';
 import { useQuery } from '@tanstack/react-query';
@@ -25,6 +25,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vacantUnits, setVacantUnits] = useState([]);
   const [showUnits, setShowUnits] = useState(false);
+  const [loadingUnits, setLoadingUnits] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
@@ -55,28 +57,17 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
   useEffect(() => {
     const fetchVacantUnits = async () => {
       if (formData.propertyId) {
+        setLoadingUnits(true);
         try {
           console.log('Fetching vacant units for property:', formData.propertyId);
           const { data } = await apiClient.get(`/properties/${formData.propertyId}/vacant-units`);
           console.log('Vacant units response:', data);
           setVacantUnits(data.data || []);
-          setShowUnits(true);
         } catch (error) {
           console.error('Failed to fetch vacant units:', error);
-          // Try alternative endpoint if the first one fails
-          try {
-            const { data } = await apiClient.get(`/properties/${formData.propertyId}`);
-            const property = data.data;
-            if (property && property.units) {
-              setVacantUnits(property.units.filter((unit: any) => !unit.occupied));
-              setShowUnits(true);
-            } else {
-              setVacantUnits([]);
-            }
-          } catch (fallbackError) {
-            console.error('Fallback vacant units fetch failed:', fallbackError);
-            setVacantUnits([]);
-          }
+          setVacantUnits([]);
+        } finally {
+          setLoadingUnits(false);
         }
       } else {
         setVacantUnits([]);
@@ -102,6 +93,26 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
       setShowUnits(false);
     }
   };
+
+  const handleUnitInputClick = () => {
+    if (formData.propertyId && vacantUnits.length > 0) {
+      setShowUnits(true);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowUnits(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -276,20 +287,69 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
 
           <div className="grid grid-cols-3 gap-4">
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Unit</label>
-              <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Unit
+                {loadingUnits && <span className="text-xs text-blue-600 ml-2">Loading units...</span>}
+                {vacantUnits.length > 0 && <span className="text-xs text-green-600 ml-2">{vacantUnits.length} vacant units</span>}
+              </label>
+              <div className="relative" ref={dropdownRef}>
                 <input
                   type="text"
                   value={formData.unit}
                   onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder="Enter unit number"
+                  onClick={handleUnitInputClick}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer"
+                  placeholder={formData.propertyId ? "Click to select unit or type manually" : "Select property first"}
                   required
                 />
-
+                {formData.propertyId && vacantUnits.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleUnitInputClick}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700"
+                  >
+                    <Search size={16} />
+                  </button>
+                )}
               </div>
               
-
+              {/* Vacant Units Dropdown */}
+              {showUnits && vacantUnits.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  {vacantUnits.map((unit: any) => (
+                    <button
+                      key={unit.unitNumber}
+                      type="button"
+                      onClick={() => handleUnitSelect(unit)}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Unit {unit.unitNumber}</span>
+                        {unit.lastRentAmount > 0 && (
+                          <span className="text-sm text-green-600 font-medium">
+                            ${unit.lastRentAmount}/month
+                          </span>
+                        )}
+                      </div>
+                      {unit.lastRentAmount > 0 ? (
+                        <div className="text-xs text-green-600 mt-1">
+                          ✓ Previous rent available
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-500 mt-1">
+                          No previous rent data
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {formData.propertyId && vacantUnits.length === 0 && !loadingUnits && (
+                <p className="text-xs text-amber-600 mt-1">
+                  No vacant units available. All units may be occupied.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
