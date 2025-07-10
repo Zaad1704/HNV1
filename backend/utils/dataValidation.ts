@@ -104,7 +104,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
           
           await Tenant.findByIdAndUpdate(issue.tenantId, { unit: nextUnit });
           fixes.push({
-            type: 'assigned_unit',
+            fixType: 'assigned_unit',
             tenantId: issue.tenantId,
             assignedUnit: nextUnit
           });
@@ -132,7 +132,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
           
           await Tenant.findByIdAndUpdate(issue.tenantId, { unit: nextUnit });
           fixes.push({
-            type: 'corrected_unit',
+            fixType: 'corrected_unit',
             tenantId: issue.tenantId,
             oldUnit: issue.unit,
             newUnit: nextUnit
@@ -163,7 +163,7 @@ export const fixDataInconsistencies = async (organizationId: string) => {
             
             await Tenant.findByIdAndUpdate(tenant.id, { unit: nextUnit });
             fixes.push({
-              type: 'resolved_duplicate',
+              fixType: 'resolved_duplicate',
               tenantId: tenant.id,
               oldUnit: issue.unit,
               newUnit: nextUnit
