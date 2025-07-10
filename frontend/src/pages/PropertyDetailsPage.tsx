@@ -52,7 +52,9 @@ const PropertyDetailsPage = () => {
   const { data: tenants = [] } = useQuery({
     queryKey: ['propertyTenants', propertyId],
     queryFn: () => fetchPropertyTenants(propertyId!),
-    enabled: !!propertyId
+    enabled: !!propertyId,
+    refetchOnWindowFocus: true,
+    staleTime: 30000 // 30 seconds
   });
 
   if (isLoading) {
@@ -218,10 +220,47 @@ const PropertyDetailsPage = () => {
             </p>
           </div>
 
-          {/* Property Overview */}
+          {/* Data Preview Sections - Moved from bottom */}
+          <DataPreviewSections 
+            propertyId={propertyId!} 
+            property={property}
+            tenants={tenants}
+          />
+
+          {/* Property Statistics */}
+          <PropertyStatsSection propertyId={propertyId!} />
+          
+          {/* Units Section */}
+          <UnitsSection 
+            propertyId={propertyId!} 
+            property={property}
+            tenants={tenants}
+            onAddTenant={(unitNumber) => {
+              setSelectedUnit(unitNumber);
+              setShowAddTenant(true);
+            }}
+            onDataUpdate={() => {
+              // Refresh both tenants and units data when changes occur
+              queryClient.invalidateQueries({ queryKey: ['propertyTenants', propertyId] });
+              queryClient.invalidateQueries({ queryKey: ['propertyUnits', propertyId] });
+            }}
+          />
+
+
+
+
+          
+
+
+
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Property Overview - Moved from main content */}
           <div className="app-surface rounded-3xl p-6 border border-app-border">
             <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <MapPin size={16} className="text-text-muted" />
                 <div>
@@ -263,37 +302,6 @@ const PropertyDetailsPage = () => {
               </div>
             </div>
           </div>
-
-          {/* Property Statistics */}
-          <PropertyStatsSection propertyId={propertyId!} />
-          
-          {/* Units Section */}
-          <UnitsSection 
-            propertyId={propertyId!} 
-            onAddTenant={(unitNumber) => {
-              setSelectedUnit(unitNumber);
-              setShowAddTenant(true);
-            }}
-          />
-          
-          {/* Data Preview Sections */}
-          <DataPreviewSections 
-            propertyId={propertyId!} 
-            property={property}
-            tenants={tenants}
-          />
-
-
-
-
-          
-
-
-
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
 
           {/* Actions */}
           <div className="app-surface rounded-3xl p-6 border border-app-border">

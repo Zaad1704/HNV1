@@ -614,3 +614,50 @@ export const regenerateDescription = async (req: AuthRequest, res: Response) => 
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { propertyId } = req.params;
+    const property = await Property.findById(propertyId);
+    
+    if (!property || property.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(404).json({ success: false, message: 'Property not found' });
+      return;
+    }
+
+    const Tenant = (await import('../models/Tenant')).default;
+    const tenants = await Tenant.find({ 
+      propertyId: propertyId,
+      organizationId: user.organizationId,
+      status: 'Active'
+    });
+    
+    const units = [];
+    const numberOfUnits = property.numberOfUnits || 1;
+    
+    for (let i = 1; i <= numberOfUnits; i++) {
+      const unitNumber = i.toString();
+      const tenant = tenants.find(t => t.unit === unitNumber);
+      
+      units.push({
+        unitNumber,
+        rentAmount: tenant?.rentAmount || 0,
+        isOccupied: !!tenant,
+        propertyId: property._id,
+        tenantId: tenant?._id,
+        tenantName: tenant?.name
+      });
+    }
+
+    res.status(200).json({ success: true, data: units });
+  } catch (error) {
+    console.error('Get property units error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

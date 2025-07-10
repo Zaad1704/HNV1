@@ -8,9 +8,10 @@ import {
   getPropertyDataPreviews,
   getUnitData,
   validateDataIntegrity,
-  regenerateDescription
+  regenerateDescription,
+  getPropertyUnits
 } from '../controllers/propertyController';
-import { getPropertyUnits, getVacantUnits } from '../controllers/unitController';
+import { getVacantUnits } from '../controllers/unitController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
 import upload from '../middleware/uploadMiddleware';

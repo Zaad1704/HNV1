@@ -3,61 +3,66 @@ import Tenant from '../models/Tenant';
 
 export const validatePropertyTenantConnection = async (organizationId: string) => {
   try {
-    // Find all properties and tenants for the organization
-    const [properties, tenants] = await Promise.all([
-      Property.find({ organizationId }).lean(),
-      Tenant.find({ organizationId }).lean()
-    ]);
-
+    const properties = await Property.find({ organizationId });
+    const tenants = await Tenant.find({ organizationId, status: 'Active' });
+    
     const issues = [];
-
-    // Check for tenants without valid properties
-    for (const tenant of tenants) {
-      if (tenant.propertyId) {
-        const property = properties.find(p => p._id.toString() === tenant.propertyId.toString());
-        if (!property) {
+    const fixes = [];
+    
+    for (const property of properties) {
+      const propertyTenants = tenants.filter(t => t.propertyId?.toString() === property._id.toString());
+      
+      // Check for unit number consistency
+      for (const tenant of propertyTenants) {
+        if (!tenant.unit || tenant.unit === '') {
           issues.push({
-            type: 'orphaned_tenant',
+            type: 'missing_unit',
             tenantId: tenant._id,
             tenantName: tenant.name,
-            invalidPropertyId: tenant.propertyId
+            propertyId: property._id,
+            propertyName: property.name
+          });
+        }
+        
+        const unitNumber = parseInt(tenant.unit);
+        if (unitNumber > property.numberOfUnits) {
+          issues.push({
+            type: 'invalid_unit',
+            tenantId: tenant._id,
+            tenantName: tenant.name,
+            unit: tenant.unit,
+            propertyId: property._id,
+            propertyName: property.name,
+            maxUnits: property.numberOfUnits
           });
         }
       }
-    }
-
-    // Check for properties with unit count mismatches
-    for (const property of properties) {
-      const propertyTenants = tenants.filter(t => 
-        t.propertyId && t.propertyId.toString() === property._id.toString()
-      );
       
-      if (propertyTenants.length > property.numberOfUnits) {
-        issues.push({
-          type: 'unit_overflow',
-          propertyId: property._id,
-          propertyName: property.name,
-          maxUnits: property.numberOfUnits,
-          currentTenants: propertyTenants.length
-        });
-      }
-
-      // Check for duplicate unit assignments
-      const unitAssignments = propertyTenants.map(t => t.unit).filter(Boolean);
-      const duplicateUnits = unitAssignments.filter((unit, index) => 
-        unitAssignments.indexOf(unit) !== index
-      );
+      // Check for duplicate units
+      const unitCounts = {};
+      propertyTenants.forEach(tenant => {
+        if (tenant.unit) {
+          unitCounts[tenant.unit] = (unitCounts[tenant.unit] || 0) + 1;
+        }
+      });
       
-      if (duplicateUnits.length > 0) {
-        issues.push({
-          type: 'duplicate_units',
-          propertyId: property._id,
-          propertyName: property.name,
-          duplicateUnits: [...new Set(duplicateUnits)]
-        });
-      }
+      Object.entries(unitCounts).forEach(([unit, count]) => {
+        if (count > 1) {
+          issues.push({
+            type: 'duplicate_unit',
+            unit,
+            count,
+            propertyId: property._id,
+            propertyName: property.name,
+            tenants: propertyTenants.filter(t => t.unit === unit).map(t => ({
+              id: t._id,
+              name: t.name
+            }))
+          });
+        }
+      });
     }
-
+    
     return {
       valid: issues.length === 0,
       issues,
@@ -69,11 +74,7 @@ export const validatePropertyTenantConnection = async (organizationId: string) =
     };
   } catch (error) {
     console.error('Data validation error:', error);
-    return {
-      valid: false,
-      error: error.message,
-      issues: []
-    };
+    throw error;
   }
 };
 
@@ -81,60 +82,103 @@ export const fixDataInconsistencies = async (organizationId: string) => {
   try {
     const validation = await validatePropertyTenantConnection(organizationId);
     const fixes = [];
-
+    
     for (const issue of validation.issues) {
       switch (issue.type) {
-        case 'orphaned_tenant':
-          // Set propertyId to null for orphaned tenants
-          await Tenant.findByIdAndUpdate(issue.tenantId, { propertyId: null });
-          fixes.push(`Fixed orphaned tenant: ${issue.tenantName}`);
+        case 'missing_unit':
+          // Auto-assign next available unit
+          const property = await Property.findById(issue.propertyId);
+          const occupiedUnits = await Tenant.find({ 
+            propertyId: issue.propertyId, 
+            organizationId,
+            status: 'Active',
+            unit: { $ne: null, $ne: '' }
+          }).distinct('unit');
+          
+          let nextUnit = '1';
+          for (let i = 1; i <= property.numberOfUnits; i++) {
+            if (!occupiedUnits.includes(i.toString())) {
+              nextUnit = i.toString();
+              break;
+            }
+          }
+          
+          await Tenant.findByIdAndUpdate(issue.tenantId, { unit: nextUnit });
+          fixes.push({
+            type: 'assigned_unit',
+            tenantId: issue.tenantId,
+            assignedUnit: nextUnit
+          });
           break;
           
-        case 'duplicate_units':
-          // Reassign duplicate units
-          const duplicateTenants = await Tenant.find({
-            propertyId: issue.propertyId,
-            unit: { $in: issue.duplicateUnits }
-          });
+        case 'invalid_unit':
+          // Move to next available valid unit
+          const validProperty = await Property.findById(issue.propertyId);
+          const validOccupiedUnits = await Tenant.find({ 
+            propertyId: issue.propertyId, 
+            organizationId,
+            status: 'Active',
+            _id: { $ne: issue.tenantId },
+            unit: { $ne: null, $ne: '' }
+          }).distinct('unit');
           
-          for (let i = 1; i < duplicateTenants.length; i++) {
-            const newUnit = await findNextAvailableUnit(issue.propertyId, organizationId);
-            if (newUnit) {
-              await Tenant.findByIdAndUpdate(duplicateTenants[i]._id, { unit: newUnit });
-              fixes.push(`Reassigned tenant ${duplicateTenants[i].name} to unit ${newUnit}`);
+          let validNextUnit = '1';
+          for (let i = 1; i <= validProperty.numberOfUnits; i++) {
+            if (!validOccupiedUnits.includes(i.toString())) {
+              validNextUnit = i.toString();
+              break;
             }
+          }
+          
+          await Tenant.findByIdAndUpdate(issue.tenantId, { unit: validNextUnit });
+          fixes.push({
+            type: 'corrected_unit',
+            tenantId: issue.tenantId,
+            oldUnit: issue.unit,
+            newUnit: validNextUnit
+          });
+          break;
+          
+        case 'duplicate_unit':
+          // Keep first tenant, reassign others
+          const duplicateTenants = issue.tenants.slice(1); // Skip first tenant
+          for (const tenant of duplicateTenants) {
+            const dupProperty = await Property.findById(issue.propertyId);
+            const dupOccupiedUnits = await Tenant.find({ 
+              propertyId: issue.propertyId, 
+              organizationId,
+              status: 'Active',
+              _id: { $ne: tenant.id },
+              unit: { $ne: null, $ne: '' }
+            }).distinct('unit');
+            
+            let dupNextUnit = '1';
+            for (let i = 1; i <= dupProperty.numberOfUnits; i++) {
+              if (!dupOccupiedUnits.includes(i.toString())) {
+                dupNextUnit = i.toString();
+                break;
+              }
+            }
+            
+            await Tenant.findByIdAndUpdate(tenant.id, { unit: dupNextUnit });
+            fixes.push({
+              type: 'resolved_duplicate',
+              tenantId: tenant.id,
+              oldUnit: issue.unit,
+              newUnit: dupNextUnit
+            });
           }
           break;
       }
     }
-
+    
     return {
-      success: true,
+      fixesApplied: fixes.length,
       fixes,
-      fixedIssues: fixes.length
+      validation: await validatePropertyTenantConnection(organizationId)
     };
   } catch (error) {
-    return {
-      success: false,
-      error: error.message,
-      fixes: []
-    };
+    console.error('Data fix error:', error);
+    throw error;
   }
-};
-
-const findNextAvailableUnit = async (propertyId: string, organizationId: string) => {
-  const property = await Property.findById(propertyId);
-  if (!property) return null;
-
-  const occupiedUnits = await Tenant.find({ propertyId, organizationId })
-    .distinct('unit')
-    .lean();
-
-  for (let i = 1; i <= property.numberOfUnits; i++) {
-    if (!occupiedUnits.includes(i.toString())) {
-      return i.toString();
-    }
-  }
-  
-  return null;
 };

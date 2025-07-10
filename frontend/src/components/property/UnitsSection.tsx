@@ -6,7 +6,10 @@ import { Home, User, DollarSign, Plus } from 'lucide-react';
 
 interface UnitsSectionProps {
   propertyId: string;
+  property?: any;
+  tenants?: any[];
   onAddTenant?: (unitNumber: string) => void;
+  onDataUpdate?: () => void;
 }
 
 const fetchPropertyUnits = async (propertyId: string) => {
@@ -14,12 +17,36 @@ const fetchPropertyUnits = async (propertyId: string) => {
   return data.data || [];
 };
 
-const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) => {
+const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenants = [], onAddTenant, onDataUpdate }) => {
   const { data: units = [], isLoading } = useQuery({
-    queryKey: ['propertyUnits', propertyId],
+    queryKey: ['propertyUnits', propertyId, tenants],
     queryFn: () => fetchPropertyUnits(propertyId),
-    enabled: !!propertyId
+    enabled: !!propertyId,
+    refetchOnWindowFocus: true,
+    staleTime: 30000
   });
+
+  // Generate units from property data if units API doesn't return data
+  const getUnitsWithTenantData = () => {
+    if (units.length > 0) return units;
+    
+    if (!property?.numberOfUnits) return [];
+    
+    return Array.from({ length: property.numberOfUnits }, (_, i) => {
+      const unitNumber = (i + 1).toString();
+      const tenant = tenants.find(t => t.unit === unitNumber && t.status === 'Active');
+      
+      return {
+        unitNumber,
+        isOccupied: !!tenant,
+        tenantName: tenant?.name || null,
+        tenantId: tenant?._id || null,
+        rentAmount: tenant?.rentAmount || property.rentAmount || 0
+      };
+    });
+  };
+
+  const unitsData = getUnitsWithTenantData();
 
   if (isLoading) {
     return (
@@ -40,16 +67,16 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) 
   return (
     <div className="app-surface rounded-3xl p-8 border border-app-border">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-text-primary">Units ({units.length})</h2>
+        <h2 className="text-xl font-bold text-text-primary">Units ({unitsData.length})</h2>
         <div className="flex items-center gap-2 text-sm text-text-secondary">
-          <span className="text-green-600">{units.filter((u: any) => !u.isOccupied).length} vacant</span>
+          <span className="text-green-600">{unitsData.filter((u: any) => !u.isOccupied).length} vacant</span>
           <span>•</span>
-          <span className="text-red-600">{units.filter((u: any) => u.isOccupied).length} occupied</span>
+          <span className="text-red-600">{unitsData.filter((u: any) => u.isOccupied).length} occupied</span>
         </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {units.map((unit: any) => (
+        {unitsData.map((unit: any) => (
           <div
             key={unit.unitNumber}
             className="p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all"
@@ -72,7 +99,16 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) 
               {unit.isOccupied && unit.tenantName && (
                 <div className="flex items-center gap-2 text-sm">
                   <User size={14} className="text-text-muted" />
-                  <span className="text-text-secondary">{unit.tenantName}</span>
+                  {unit.tenantId ? (
+                    <Link 
+                      to={`/dashboard/tenants/${unit.tenantId}`}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      {unit.tenantName}
+                    </Link>
+                  ) : (
+                    <span className="text-text-secondary">{unit.tenantName}</span>
+                  )}
                 </div>
               )}
               
@@ -87,7 +123,10 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) 
             {!unit.isOccupied ? (
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <button
-                  onClick={() => onAddTenant?.(unit.unitNumber)}
+                  onClick={() => {
+                    onAddTenant?.(unit.unitNumber);
+                    setTimeout(() => onDataUpdate?.(), 1000);
+                  }}
                   className="w-full flex items-center justify-center gap-2 text-xs text-blue-600 hover:text-blue-800 py-2 px-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                 >
                   <Plus size={12} />
@@ -96,13 +135,23 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, onAddTenant }) 
               </div>
             ) : (
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <Link
-                  to={`/dashboard/properties/${propertyId}/units/${unit.unitNumber}`}
-                  className="w-full flex items-center justify-center gap-2 text-xs text-green-600 hover:text-green-800 py-2 px-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                >
-                  <User size={12} />
-                  <span>View Unit Details</span>
-                </Link>
+                {unit.tenantId ? (
+                  <Link
+                    to={`/dashboard/tenants/${unit.tenantId}`}
+                    className="w-full flex items-center justify-center gap-2 text-xs text-green-600 hover:text-green-800 py-2 px-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                  >
+                    <User size={12} />
+                    <span>View Tenant</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to={`/dashboard/properties/${propertyId}/units/${unit.unitNumber}`}
+                    className="w-full flex items-center justify-center gap-2 text-xs text-green-600 hover:text-green-800 py-2 px-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                  >
+                    <User size={12} />
+                    <span>View Unit Details</span>
+                  </Link>
+                )}
               </div>
             )}
           </div>
