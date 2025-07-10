@@ -53,7 +53,7 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
     let imageUrl = req.body.imageUrl || '';
     if (req.file) {
       // If file was uploaded, construct the URL
-      imageUrl = `/uploads/${req.file.filename}`;
+      imageUrl = `/uploads/images/${req.file.filename}`;
       console.log('Image uploaded:', imageUrl);
     }
     
@@ -215,7 +215,7 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     // Handle image URL
     if (req.file) {
       // If file was uploaded, construct the URL
-      updates.imageUrl = `/uploads/${req.file.filename}`;
+      updates.imageUrl = `/uploads/images/${req.file.filename}`;
       console.log('Image updated:', updates.imageUrl);
     } else if (req.body.imageUrl !== undefined) {
       // Keep existing or set new URL
