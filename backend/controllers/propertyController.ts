@@ -78,6 +78,8 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       description: ''
     };
     
+    console.log('Property data being created:', propertyData);
+    
     // Generate AI description
     propertyData.description = generatePropertyDescription(propertyData);
     
@@ -192,9 +194,11 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     const updates: any = {
       name: req.body.name,
       numberOfUnits: parseInt(req.body.numberOfUnits) || property.numberOfUnits,
-      propertyType: req.body.propertyType || property.propertyType,
+      propertyType: req.body.propertyType || property.propertyType || 'Apartment',
       status: req.body.status || property.status
     };
+    
+    console.log('Property updates:', updates);
     
     // Regenerate description if key fields changed
     const propertyObj = property.toObject();

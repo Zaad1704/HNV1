@@ -147,8 +147,16 @@ const SmartSuggestions: React.FC = () => {
                   <p className="text-sm text-gray-600 mt-1">{suggestion.description}</p>
                   {suggestion.action && (
                     <button 
-                      onClick={() => suggestion.actionUrl && navigate(suggestion.actionUrl)}
-                      className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium"
+                      onClick={() => {
+                        if (suggestion.actionUrl) {
+                          if (suggestion.actionUrl.startsWith('/dashboard/')) {
+                            navigate(suggestion.actionUrl);
+                          } else {
+                            window.location.href = suggestion.actionUrl;
+                          }
+                        }
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800 mt-2 font-medium cursor-pointer"
                     >
                       {suggestion.action} →
                     </button>

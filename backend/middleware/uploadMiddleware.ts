@@ -38,7 +38,12 @@ function getUploadFolder(fieldname: string): string {
 // Disk storage for local file uploads
 const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
+    const fs = require('fs');
     const uploadDir = path.join(__dirname, '../uploads/images');
+    // Ensure directory exists
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {

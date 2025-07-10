@@ -72,7 +72,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-text-secondary">Type</span>
-            <span className="font-semibold text-text-primary">{property.propertyType || 'N/A'}</span>
+            <span className="font-semibold text-text-primary">{property.propertyType || 'Apartment'}</span>
           </div>
         </div>
 
