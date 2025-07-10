@@ -27,6 +27,7 @@ import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
 import { deleteTenant, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
+import AddTenantDebug from '../components/debug/AddTenantDebug';
 
 const fetchTenants = async (propertyId?: string) => {
   try {
@@ -494,6 +495,9 @@ const TenantsPage = () => {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-blue/5 to-brand-orange/5 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-brand-orange/5 to-brand-blue/5 rounded-full blur-3xl"></div>
       </div>
+      
+      {/* Debug Component - Remove in production */}
+      {process.env.NODE_ENV === 'development' && <AddTenantDebug />}
     </div>
   );
 };
