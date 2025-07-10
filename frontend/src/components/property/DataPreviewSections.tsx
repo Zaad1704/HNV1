@@ -2,24 +2,42 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import apiClient from '../../api/client';
-import { DollarSign, Receipt, Wrench, Bell, CheckCircle, Activity, Filter } from 'lucide-react';
+import { DollarSign, Receipt, Wrench, Bell, CheckCircle, Activity, Filter, Users, Home, Calendar } from 'lucide-react';
 
 interface DataPreviewProps {
   propertyId: string;
   selectedUnit?: string;
+  property?: any;
+  tenants?: any[];
 }
 
-const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedUnit }) => {
+const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedUnit, property, tenants }) => {
   const [unitFilter, setUnitFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<string>('');
 
   const { data: previews, isLoading } = useQuery({
-    queryKey: ['propertyDataPreviews', propertyId, unitFilter],
+    queryKey: ['propertyDataPreviews', propertyId, unitFilter, statusFilter, dateFilter],
     queryFn: async () => {
-      const params = unitFilter ? `?unit=${unitFilter}` : '';
-      const { data } = await apiClient.get(`/properties/${propertyId}/data-previews${params}`);
+      const params = new URLSearchParams();
+      if (unitFilter) params.append('unit', unitFilter);
+      if (statusFilter) params.append('status', statusFilter);
+      if (dateFilter) params.append('date', dateFilter);
+      const queryString = params.toString();
+      const { data } = await apiClient.get(`/properties/${propertyId}/data-previews${queryString ? `?${queryString}` : ''}`);
       return data.data;
     }
   });
+
+  // Generate unit options from property data
+  const getUnitOptions = () => {
+    if (!property?.numberOfUnits) return [];
+    return Array.from({ length: property.numberOfUnits }, (_, i) => (i + 1).toString());
+  };
+
+  // Get occupied/vacant units
+  const occupiedUnits = tenants?.filter(t => t.status === 'Active').map(t => t.unit) || [];
+  const vacantUnits = getUnitOptions().filter(unit => !occupiedUnits.includes(unit));
 
   if (isLoading) {
     return (
@@ -42,30 +60,130 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
 
   return (
     <div className="space-y-8">
-      {/* Unit Filter */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-text-muted" />
-          <span className="text-sm font-medium text-text-secondary">Filter by Unit:</span>
+      {/* Enhanced Filter Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+            <Filter size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-text-primary">Smart Filters</h3>
+            <p className="text-sm text-text-secondary">Filter data by unit, status, and time period</p>
+          </div>
         </div>
-        <select
-          value={unitFilter}
-          onChange={(e) => setUnitFilter(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-        >
-          <option value="">All Units</option>
-          <option value="1">Unit 1</option>
-          <option value="2">Unit 2</option>
-          <option value="3">Unit 3</option>
-          <option value="4">Unit 4</option>
-          <option value="5">Unit 5</option>
-        </select>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Unit Filter */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              <Home size={14} className="inline mr-1" />
+              Filter by Unit
+            </label>
+            <select
+              value={unitFilter}
+              onChange={(e) => setUnitFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+            >
+              <option value="">All Units ({property?.numberOfUnits || 0})</option>
+              {getUnitOptions().map(unit => {
+                const tenant = tenants?.find(t => t.unit === unit);
+                const isOccupied = !!tenant;
+                return (
+                  <option key={unit} value={unit}>
+                    Unit {unit} {isOccupied ? `(${tenant.name})` : '(Vacant)'}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          
+          {/* Status Filter */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              <Users size={14} className="inline mr-1" />
+              Filter by Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+            >
+              <option value="">All Status</option>
+              <option value="occupied">Occupied Units ({occupiedUnits.length})</option>
+              <option value="vacant">Vacant Units ({vacantUnits.length})</option>
+              <option value="active">Active Tenants</option>
+              <option value="late">Late Payments</option>
+              <option value="pending">Pending Items</option>
+            </select>
+          </div>
+          
+          {/* Date Filter */}
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              <Calendar size={14} className="inline mr-1" />
+              Time Period
+            </label>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+            >
+              <option value="">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+        </div>
+        
+        {/* Active Filters Display */}
+        {(unitFilter || statusFilter || dateFilter) && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="text-sm text-text-secondary">Active filters:</span>
+            {unitFilter && (
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1">
+                Unit {unitFilter}
+                <button onClick={() => setUnitFilter('')} className="ml-1 hover:bg-blue-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            {statusFilter && (
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center gap-1">
+                {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                <button onClick={() => setStatusFilter('')} className="ml-1 hover:bg-green-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            {dateFilter && (
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium flex items-center gap-1">
+                {dateFilter.charAt(0).toUpperCase() + dateFilter.slice(1)}
+                <button onClick={() => setDateFilter('')} className="ml-1 hover:bg-purple-200 rounded-full p-0.5">
+                  ×
+                </button>
+              </span>
+            )}
+            <button
+              onClick={() => {
+                setUnitFilter('');
+                setStatusFilter('');
+                setDateFilter('');
+              }}
+              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200"
+            >
+              Clear All
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Data Preview Grid */}
+      {/* Enhanced Data Preview Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Payments Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-6 border border-green-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
@@ -107,7 +225,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Receipts Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
@@ -149,7 +267,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Expenses Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-3xl p-6 border border-red-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
@@ -188,7 +306,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Maintenance Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-6 border border-orange-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
@@ -236,7 +354,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Reminders Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-3xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
@@ -281,7 +399,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Approvals Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-6 border border-yellow-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center">
@@ -329,7 +447,7 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
         </div>
 
         {/* Audit Logs Preview */}
-        <div className="app-surface rounded-3xl p-6 border border-app-border">
+        <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-3xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gray-500 rounded-xl flex items-center justify-center">

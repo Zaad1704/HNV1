@@ -741,7 +741,7 @@ const PropertyDetailsPage = () => {
                 </p>
               </div>
             </div>
-            <DataPreviewSections propertyId={propertyId!} />
+            <DataPreviewSections propertyId={propertyId!} property={property} tenants={tenants} />
           </div>
 
           {/* Property Statistics */}
