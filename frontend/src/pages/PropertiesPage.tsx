@@ -479,13 +479,23 @@ const PropertiesPage = () => {
                   onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
                 >
                   <UniversalCard delay={index * 0.1} gradient="blue">
-                    <EnhancedPropertyCard property={property} index={index} />
+                    <EnhancedPropertyCard 
+                      property={property} 
+                      index={index}
+                      onEdit={handleEditProperty}
+                      onDelete={handleDeleteProperty}
+                    />
                   </UniversalCard>
                 </SwipeableCard>
               </div>
               <div className="hidden md:block">
                 <UniversalCard delay={index * 0.1} gradient="blue">
-                  <EnhancedPropertyCard property={property} index={index} />
+                  <EnhancedPropertyCard 
+                    property={property} 
+                    index={index}
+                    onEdit={handleEditProperty}
+                    onDelete={handleDeleteProperty}
+                  />
                 </UniversalCard>
               </div>
             </LazyLoader>

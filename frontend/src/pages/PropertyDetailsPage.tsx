@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wrench, Trash2, Share2 } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 
@@ -112,6 +112,223 @@ const UnitsTenantsSection = ({ propertyId, property, tenants }: { propertyId: st
           <p className="text-text-secondary mb-4">No units configured</p>
         </div>
       )}
+    </div>
+  );
+};
+
+// Property Stats Component
+const PropertyStatsSection = ({ propertyId }: { propertyId: string }) => {
+  const { data: propertyStats } = useQuery({
+    queryKey: ['propertyStats', propertyId],
+    queryFn: async () => {
+      const [tenantsRes, paymentsRes, expensesRes, maintenanceRes] = await Promise.all([
+        apiClient.get(`/tenants?propertyId=${propertyId}`),
+        apiClient.get(`/payments?propertyId=${propertyId}`),
+        apiClient.get(`/expenses?propertyId=${propertyId}`),
+        apiClient.get(`/maintenance?propertyId=${propertyId}`)
+      ]);
+      
+      const tenants = tenantsRes.data.data || [];
+      const payments = paymentsRes.data.data || [];
+      const expenses = expensesRes.data.data || [];
+      const maintenance = maintenanceRes.data.data || [];
+      
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      const monthlyPayments = payments.filter((p: any) => {
+        const paymentDate = new Date(p.paymentDate);
+        return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+      });
+      
+      const monthlyExpenses = expenses.filter((e: any) => {
+        const expenseDate = new Date(e.date);
+        return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
+      });
+      
+      const monthlyIncome = monthlyPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+      const monthlyExpenseTotal = monthlyExpenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+      const netCashFlow = monthlyIncome - monthlyExpenseTotal;
+      
+      const activeTenants = tenants.filter((t: any) => t.status === 'Active').length;
+      const openMaintenance = maintenance.filter((m: any) => m.status === 'Open').length;
+      const totalPayments = payments.length;
+      const totalExpenses = expenses.length;
+      
+      return {
+        tenants: {
+          total: tenants.length,
+          active: activeTenants,
+          inactive: tenants.length - activeTenants
+        },
+        payments: {
+          total: totalPayments,
+          monthlyIncome,
+          totalIncome: payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
+        },
+        expenses: {
+          total: totalExpenses,
+          monthlyTotal: monthlyExpenseTotal,
+          totalExpenses: expenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0)
+        },
+        maintenance: {
+          total: maintenance.length,
+          open: openMaintenance,
+          closed: maintenance.length - openMaintenance
+        },
+        cashFlow: {
+          monthly: netCashFlow,
+          yearly: payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) - expenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0)
+        }
+      };
+    }
+  });
+
+  if (!propertyStats) {
+    return (
+      <div className="app-surface rounded-3xl p-8 border border-app-border">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded mb-4 w-1/3"></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-20 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-surface rounded-3xl p-8 border border-app-border">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-text-primary">Property Statistics</h2>
+        <div className="text-sm text-text-secondary">
+          Updated: {new Date().toLocaleDateString()}
+        </div>
+      </div>
+      
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        {/* Tenants */}
+        <Link 
+          to={`/dashboard/tenants?propertyId=${propertyId}`}
+          className="bg-blue-50 p-6 rounded-2xl border border-blue-200 hover:bg-blue-100 transition-colors group"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Users size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-blue-600 font-medium">Tenants</p>
+              <p className="text-2xl font-bold text-blue-800">{propertyStats.tenants.total}</p>
+            </div>
+          </div>
+          <div className="text-xs text-blue-600">
+            {propertyStats.tenants.active} Active • {propertyStats.tenants.inactive} Inactive
+          </div>
+        </Link>
+        
+        {/* Payments */}
+        <Link 
+          to={`/dashboard/payments?propertyId=${propertyId}`}
+          className="bg-green-50 p-6 rounded-2xl border border-green-200 hover:bg-green-100 transition-colors group"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <DollarSign size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-green-600 font-medium">Payments</p>
+              <p className="text-2xl font-bold text-green-800">{propertyStats.payments.total}</p>
+            </div>
+          </div>
+          <div className="text-xs text-green-600">
+            ${propertyStats.payments.monthlyIncome.toFixed(0)} This Month
+          </div>
+        </Link>
+        
+        {/* Expenses */}
+        <Link 
+          to={`/dashboard/expenses?propertyId=${propertyId}`}
+          className="bg-red-50 p-6 rounded-2xl border border-red-200 hover:bg-red-100 transition-colors group"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <DollarSign size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-red-600 font-medium">Expenses</p>
+              <p className="text-2xl font-bold text-red-800">{propertyStats.expenses.total}</p>
+            </div>
+          </div>
+          <div className="text-xs text-red-600">
+            ${propertyStats.expenses.monthlyTotal.toFixed(0)} This Month
+          </div>
+        </Link>
+        
+        {/* Maintenance */}
+        <Link 
+          to={`/dashboard/maintenance?propertyId=${propertyId}`}
+          className="bg-orange-50 p-6 rounded-2xl border border-orange-200 hover:bg-orange-100 transition-colors group"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Wrench size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm text-orange-600 font-medium">Maintenance</p>
+              <p className="text-2xl font-bold text-orange-800">{propertyStats.maintenance.total}</p>
+            </div>
+          </div>
+          <div className="text-xs text-orange-600">
+            {propertyStats.maintenance.open} Open • {propertyStats.maintenance.closed} Closed
+          </div>
+        </Link>
+      </div>
+      
+      {/* Cash Flow Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`p-6 rounded-2xl border-2 ${
+          propertyStats.cashFlow.monthly >= 0 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <h3 className={`font-semibold mb-2 ${
+            propertyStats.cashFlow.monthly >= 0 ? 'text-green-800' : 'text-red-800'
+          }`}>
+            Monthly Cash Flow
+          </h3>
+          <p className={`text-3xl font-bold ${
+            propertyStats.cashFlow.monthly >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            ${propertyStats.cashFlow.monthly.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            Income: ${propertyStats.payments.monthlyIncome.toFixed(2)} - Expenses: ${propertyStats.expenses.monthlyTotal.toFixed(2)}
+          </p>
+        </div>
+        
+        <div className={`p-6 rounded-2xl border-2 ${
+          propertyStats.cashFlow.yearly >= 0 
+            ? 'bg-blue-50 border-blue-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <h3 className={`font-semibold mb-2 ${
+            propertyStats.cashFlow.yearly >= 0 ? 'text-blue-800' : 'text-red-800'
+          }`}>
+            Total Cash Flow
+          </h3>
+          <p className={`text-3xl font-bold ${
+            propertyStats.cashFlow.yearly >= 0 ? 'text-blue-600' : 'text-red-600'
+          }`}>
+            ${propertyStats.cashFlow.yearly.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            Total Income: ${propertyStats.payments.totalIncome.toFixed(2)} - Total Expenses: ${propertyStats.expenses.totalExpenses.toFixed(2)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
@@ -405,13 +622,45 @@ const PropertyDetailsPage = () => {
             <p className="text-text-secondary">Property Details</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowEditModal(true)}
-          className="btn-gradient px-6 py-3 rounded-2xl flex items-center gap-2 font-semibold"
-        >
-          <Edit size={20} />
-          Edit Property
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="bg-blue-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-blue-600 transition-colors"
+          >
+            <Edit size={16} />
+            Edit
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`Are you sure you want to delete ${property.name}? This action cannot be undone.`)) {
+                // Handle delete
+                window.location.href = '/dashboard/properties';
+              }
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-red-600 transition-colors"
+          >
+            <Trash2 size={16} />
+            Delete
+          </button>
+          <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: property.name,
+                  text: `Property: ${property.name}\nAddress: ${property.address?.formattedAddress || 'N/A'}\nUnits: ${property.numberOfUnits || 1}`,
+                  url: window.location.href
+                });
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Property link copied to clipboard!');
+              }
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-green-600 transition-colors"
+          >
+            <Share2 size={16} />
+            Share
+          </button>
+        </div>
       </div>
 
       {/* Property Info */}
@@ -463,6 +712,9 @@ const PropertyDetailsPage = () => {
             </p>
           </div>
 
+          {/* Property Statistics */}
+          <PropertyStatsSection propertyId={propertyId!} />
+          
           {/* Rent Status Overview */}
           <RentStatusSection propertyId={propertyId!} />
 
