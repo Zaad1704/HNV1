@@ -55,7 +55,6 @@ const VerifyEmailPage = React.lazy(() => import('./pages/VerifyEmailPage'));
 // Dashboard pages - ensure these are correctly imported and accessible
 const DashboardPage = React.lazy(() => import('./pages/DashboardPageSimple'));
 const DashboardPageComplex = React.lazy(() => import('./pages/DashboardPage'));
-const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const PropertiesPage = React.lazy(() => import('./pages/PropertiesPage'));
 const TenantsPage = React.lazy(() => import('./pages/TenantsPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
@@ -166,6 +165,7 @@ function App() {
           }>
             {/* Smart Dashboard - Main Entry Point */}
             <Route index element={<SmartDashboardPage />} />
+            <Route path="overview" element={<SmartDashboardPage />} />
             <Route path="smart-dashboard" element={<SmartDashboardPage />} />
             <Route path="complex" element={<DashboardPageComplex />} />
             <Route path="settings" element={<SettingsPage />} />

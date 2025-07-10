@@ -49,7 +49,7 @@ const DashboardLayout = () => {
   };
 
   const mainNavLinks = [
-    { href: "/dashboard/overview", icon: Home, label: t('dashboard.overview'), roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
+    { href: "/dashboard/overview", icon: Brain, label: 'Smart Dashboard', roles: ['Landlord', 'Agent', 'Super Admin', 'Super Moderator'] },
     { href: "/dashboard/tenant", icon: Home, label: t('dashboard.tenant_portal'), roles: ['Tenant'] },
     { href: "/dashboard/properties", icon: Building, label: t('dashboard.properties'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/tenants", icon: Users, label: t('dashboard.tenants'), roles: ['Landlord', 'Agent'] },
@@ -62,7 +62,6 @@ const DashboardLayout = () => {
     { href: "/dashboard/users", icon: Users, label: t('dashboard.users_invites'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/billing", icon: CreditCard, label: t('dashboard.billing'), roles: ['Landlord', 'Agent'] },
     { href: "/dashboard/audit-log", icon: FileText, label: t('dashboard.audit_log'), roles: ['Landlord', 'Agent'] },
-    { href: "/dashboard/smart-dashboard", icon: Brain, label: 'Smart Dashboard', roles: ['Landlord', 'Agent'] },
   ];
   
   const adminLink = { href: "/admin", icon: Shield, label: t('dashboard.admin_panel'), roles: ['Super Admin', 'Super Moderator'] };
