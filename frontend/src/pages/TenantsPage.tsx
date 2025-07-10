@@ -8,7 +8,7 @@ import SwipeableCard from '../components/mobile/SwipeableCard';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff } from 'lucide-react';
+import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
@@ -70,6 +70,9 @@ const TenantsPage = () => {
     sortOrder: 'desc'
   });
   const [showArchived, setShowArchived] = useState(false);
+  const [showLateOnly, setShowLateOnly] = useState(false);
+  const [showExpiringLeases, setShowExpiringLeases] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<string>('');
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
@@ -128,6 +131,19 @@ const TenantsPage = () => {
     }
   });
 
+  // Fetch properties for filtering
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/properties');
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
+    }
+  });
+
   const filteredTenants = useMemo(() => {
     if (!tenants) return [];
     
@@ -139,17 +155,38 @@ const TenantsPage = () => {
       if (showArchived && !isArchived) return false;
       if (!showArchived && isArchived) return false;
       
+      // Late payment filter
+      if (showLateOnly && tenant.status !== 'Late') return false;
+      
+      // Expiring lease filter
+      if (showExpiringLeases) {
+        if (!tenant.leaseEndDate) return false;
+        const daysUntilExpiry = Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+        if (daysUntilExpiry > 30) return false;
+      }
+      
+      // Property filter
+      if (selectedProperty && tenant.propertyId?._id !== selectedProperty) return false;
+      
+      // Universal search
+      const matchesUniversalSearch = !searchFilters.query || 
+        (tenant.name && tenant.name.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
+        (tenant.email && tenant.email.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
+        (tenant.unit && tenant.unit.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
+        (tenant.propertyId?.name && tenant.propertyId.name.toLowerCase().includes(searchFilters.query.toLowerCase()));
+      
       const matchesSearch = !searchQuery || 
         (tenant.name && tenant.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (tenant.email && tenant.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (tenant.unit && tenant.unit.toLowerCase().includes(searchQuery.toLowerCase()));
       
-      const matchesStatus = !filters.status || tenant.status === filters.status;
+      const matchesStatus = (!filters.status || tenant.status === filters.status) &&
+                           (!searchFilters.status || tenant.status === searchFilters.status);
       const matchesProperty = !filters.property || tenant.propertyId?._id === filters.property;
       
-      return matchesSearch && matchesStatus && matchesProperty;
+      return matchesUniversalSearch && matchesSearch && matchesStatus && matchesProperty;
     });
-  }, [tenants, searchQuery, filters, showArchived]);
+  }, [tenants, searchQuery, filters, searchFilters, showArchived, showLateOnly, showExpiringLeases, selectedProperty]);
 
   const filterOptions = [
     {
@@ -161,6 +198,12 @@ const TenantsPage = () => {
         { value: 'Inactive', label: 'Inactive' },
         { value: 'Late', label: 'Late' }
       ]
+    },
+    {
+      key: 'property',
+      label: 'Property',
+      type: 'select' as const,
+      options: properties.map((p: any) => ({ value: p._id, label: p.name }))
     }
   ];
 
@@ -258,10 +301,62 @@ const TenantsPage = () => {
         }
       />
 
+      {/* Advanced Filter Buttons */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <button
+          onClick={() => setShowLateOnly(!showLateOnly)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showLateOnly 
+              ? 'bg-red-500 text-white' 
+              : 'bg-red-50 text-red-600 hover:bg-red-100'
+          }`}
+        >
+          <AlertTriangle size={16} />
+          {showLateOnly ? 'Show All' : 'Late Payments Only'}
+        </button>
+        
+        <button
+          onClick={() => setShowExpiringLeases(!showExpiringLeases)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showExpiringLeases 
+              ? 'bg-orange-500 text-white' 
+              : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+          }`}
+        >
+          <Calendar size={16} />
+          {showExpiringLeases ? 'Show All' : 'Expiring Leases'}
+        </button>
+        
+        <button
+          onClick={() => setShowArchived(!showArchived)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showArchived 
+              ? 'bg-gray-500 text-white' 
+              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+          {showArchived ? 'Show Active' : 'Show Archived'}
+        </button>
+        
+        <select
+          value={selectedProperty}
+          onChange={(e) => setSelectedProperty(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white"
+        >
+          <option value="">All Properties ({properties.length})</option>
+          {properties.map((property: any) => (
+            <option key={property._id} value={property._id}>
+              {property.name} ({tenants.filter((t: any) => t.propertyId?._id === property._id).length} tenants)
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Universal Search */}
       <UniversalSearch
         onSearch={setSearchFilters}
-        placeholder="Search tenants by name, email, or property..."
+        placeholder="Search tenants by name, email, unit, or property..."
         showStatusFilter={true}
         statusOptions={[
           { value: 'Active', label: 'Active' },

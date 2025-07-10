@@ -342,3 +342,88 @@ export const getTenantStats = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+export const getTenantAnalytics = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { tenantId } = req.params;
+    const { range = '12months' } = req.query;
+
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant || tenant.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const [Payment, MaintenanceRequest] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/MaintenanceRequest')
+    ]);
+
+    const endDate = new Date();
+    const startDate = new Date();
+    switch (range) {
+      case '3months':
+        startDate.setMonth(endDate.getMonth() - 3);
+        break;
+      case '6months':
+        startDate.setMonth(endDate.getMonth() - 6);
+        break;
+      case '12months':
+        startDate.setFullYear(endDate.getFullYear() - 1);
+        break;
+      default:
+        startDate.setFullYear(2020);
+    }
+
+    const [payments, maintenance] = await Promise.all([
+      Payment.default.find({ 
+        tenantId, 
+        organizationId: user.organizationId,
+        paymentDate: { $gte: startDate, $lte: endDate }
+      }).lean(),
+      MaintenanceRequest.default.find({ 
+        tenantId, 
+        organizationId: user.organizationId,
+        createdAt: { $gte: startDate, $lte: endDate }
+      }).lean()
+    ]);
+
+    const monthlyData = [];
+    const months = range === '3months' ? 3 : range === '6months' ? 6 : 12;
+    
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      
+      const monthPayments = payments.filter((p: any) => {
+        const paymentDate = new Date(p.paymentDate);
+        return paymentDate.getMonth() === date.getMonth() && 
+               paymentDate.getFullYear() === date.getFullYear();
+      });
+      
+      monthlyData.push({
+        month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        payments: monthPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
+        count: monthPayments.length
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        monthlyPayments: monthlyData,
+        totalRevenue: payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
+        paymentCount: payments.length
+      }
+    });
+  } catch (error) {
+    console.error('Tenant analytics error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

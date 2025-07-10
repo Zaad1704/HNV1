@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, DollarSign, Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Users, DollarSign, Calendar, AlertTriangle, CheckCircle, Clock, Wrench, TrendingUp, TrendingDown } from 'lucide-react';
 import UniversalCard from './UniversalCard';
 import UniversalStatusBadge from './UniversalStatusBadge';
 import { useCrossData } from '../../hooks/useCrossData';
@@ -38,6 +38,28 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
 
   const paymentStatus = getPaymentStatus();
 
+  // Lease expiration warning
+  const getLeaseWarning = () => {
+    if (!tenant.leaseEndDate) return null;
+    const daysUntilExpiry = Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) return { days: daysUntilExpiry, urgent: daysUntilExpiry <= 7 };
+    if (daysUntilExpiry <= 0) return { days: Math.abs(daysUntilExpiry), expired: true };
+    return null;
+  };
+
+  const leaseWarning = getLeaseWarning();
+
+  // Payment trend (last 3 months)
+  const getPaymentTrend = () => {
+    const last3Months = tenantPayments.slice(-3);
+    if (last3Months.length < 2) return null;
+    const recent = last3Months[last3Months.length - 1]?.amount || 0;
+    const previous = last3Months[last3Months.length - 2]?.amount || 0;
+    return recent > previous ? 'up' : recent < previous ? 'down' : 'stable';
+  };
+
+  const paymentTrend = getPaymentTrend();
+
   return (
     <UniversalCard delay={index * 0.1} gradient="green">
       {/* Header */}
@@ -65,6 +87,27 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
         </p>
       </div>
 
+      {/* Lease Expiration Warning */}
+      {leaseWarning && (
+        <div className={`p-3 rounded-xl mb-4 border-2 ${
+          leaseWarning.expired 
+            ? 'bg-red-50 border-red-200 text-red-800'
+            : leaseWarning.urgent 
+            ? 'bg-orange-50 border-orange-200 text-orange-800'
+            : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+        }`}>
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} />
+            <span className="text-sm font-medium">
+              {leaseWarning.expired 
+                ? `Lease expired ${leaseWarning.days} days ago`
+                : `Lease expires in ${leaseWarning.days} days`
+              }
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Payment Status */}
       <div className="space-y-3 mb-4">
         <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl">
@@ -86,7 +129,18 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
           <div className="bg-gradient-to-r from-brand-blue via-purple-600 to-brand-orange p-4 rounded-2xl text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm opacity-90">Monthly Rent</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm opacity-90">Monthly Rent</p>
+                  {paymentTrend && (
+                    <div className={`flex items-center gap-1 ${
+                      paymentTrend === 'up' ? 'text-green-300' : 
+                      paymentTrend === 'down' ? 'text-red-300' : 'text-gray-300'
+                    }`}>
+                      {paymentTrend === 'up' ? <TrendingUp size={12} /> : 
+                       paymentTrend === 'down' ? <TrendingDown size={12} /> : null}
+                    </div>
+                  )}
+                </div>
                 <p className="text-2xl font-bold">${tenant.rentAmount}</p>
               </div>
               {outstandingAmount > 0 && (
@@ -100,22 +154,54 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
         )}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      {/* Enhanced Stats */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
         <div className="bg-app-bg/50 rounded-xl p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <DollarSign size={14} className="text-green-600" />
-            <span className="text-xs text-text-secondary">Total Paid</span>
+          <div className="flex items-center gap-1 mb-1">
+            <DollarSign size={12} className="text-green-600" />
+            <span className="text-xs text-text-secondary">Paid</span>
           </div>
-          <p className="font-bold text-green-600">${totalPaid}</p>
+          <p className="font-bold text-green-600 text-sm">${totalPaid}</p>
         </div>
         
-        <div className="bg-app-bg/50 rounded-xl p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle size={14} className="text-orange-600" />
-            <span className="text-xs text-text-secondary">Maintenance</span>
+        <div className={`bg-app-bg/50 rounded-xl p-3 ${
+          openMaintenanceRequests > 0 ? 'ring-2 ring-orange-200' : ''
+        }`}>
+          <div className="flex items-center gap-1 mb-1">
+            <Wrench size={12} className="text-orange-600" />
+            <span className="text-xs text-text-secondary">Issues</span>
           </div>
-          <p className="font-bold text-orange-600">{openMaintenanceRequests}</p>
+          <p className={`font-bold text-sm ${
+            openMaintenanceRequests > 0 ? 'text-orange-600' : 'text-gray-600'
+          }`}>{openMaintenanceRequests}</p>
+        </div>
+
+        <div className="bg-app-bg/50 rounded-xl p-3">
+          <div className="flex items-center gap-1 mb-1">
+            <Calendar size={12} className="text-blue-600" />
+            <span className="text-xs text-text-secondary">Months</span>
+          </div>
+          <p className="font-bold text-blue-600 text-sm">{tenantPayments.length}</p>
+        </div>
+      </div>
+
+      {/* Payment Performance Indicator */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs text-text-secondary">Payment Rate</span>
+          <span className="text-xs font-medium">{Math.round((tenantPayments.length / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30)))) * 100)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full ${
+              (tenantPayments.length / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30)))) >= 0.8 
+                ? 'bg-green-500' 
+                : (tenantPayments.length / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30)))) >= 0.6 
+                ? 'bg-yellow-500' 
+                : 'bg-red-500'
+            }`}
+            style={{ width: `${Math.min(100, (tenantPayments.length / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30)))) * 100)}%` }}
+          ></div>
         </div>
       </div>
 
@@ -140,15 +226,25 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({ tenant, index }
         <div className="grid grid-cols-2 gap-2">
           <Link
             to={`/dashboard/payments?tenantId=${tenant._id}`}
-            className="bg-green-100 text-green-800 py-2 px-3 rounded-xl text-xs font-medium text-center hover:bg-green-200 transition-colors"
+            className={`py-2 px-3 rounded-xl text-xs font-medium text-center transition-colors ${
+              currentMonthPayment 
+                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                : 'bg-red-100 text-red-800 hover:bg-red-200 ring-2 ring-red-200'
+            }`}
           >
             Payments ({tenantPayments.length})
+            {!currentMonthPayment && <span className="block text-xs">Due Now</span>}
           </Link>
           <Link
             to={`/dashboard/maintenance?tenantId=${tenant._id}`}
-            className="bg-orange-100 text-orange-800 py-2 px-3 rounded-xl text-xs font-medium text-center hover:bg-orange-200 transition-colors"
+            className={`py-2 px-3 rounded-xl text-xs font-medium text-center transition-colors ${
+              openMaintenanceRequests > 0
+                ? 'bg-orange-100 text-orange-800 hover:bg-orange-200 ring-2 ring-orange-200'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
           >
-            Requests ({tenantMaintenance.length})
+            Issues ({openMaintenanceRequests})
+            {openMaintenanceRequests > 0 && <span className="block text-xs">Open</span>}
           </Link>
         </div>
       </div>

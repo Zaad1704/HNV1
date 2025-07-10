@@ -9,7 +9,8 @@ import {
   updateTenant,
   deleteTenant,
   getTenantDataPreviews,
-  getTenantStats
+  getTenantStats,
+  getTenantAnalytics
 } from '../controllers/tenantsController';
 
 const router = Router();
@@ -51,5 +52,6 @@ router.patch('/:id/archive', async (req: any, res) => {
 // NEW DATA PREVIEW ROUTES
 router.get('/:tenantId/data-previews', getTenantDataPreviews);
 router.get('/:tenantId/stats', getTenantStats);
+router.get('/:tenantId/analytics', getTenantAnalytics);
 
 export default router;

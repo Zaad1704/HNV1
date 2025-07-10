@@ -9,6 +9,7 @@ import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
 import TenantDataPreviewSections from '../components/tenant/TenantDataPreviewSections';
+import TenantAnalyticsDashboard from '../components/tenant/TenantAnalyticsDashboard';
 
 const TenantDetailsPage = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
@@ -67,6 +68,7 @@ const TenantDetailsPage = () => {
     { id: 'overview', label: 'Overview', icon: Users },
     { id: 'payments', label: 'Payment History', icon: DollarSign },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
+    { id: 'analytics', label: 'Analytics', icon: Calendar },
     { id: 'documents', label: 'Documents', icon: FileText }
   ];
 
@@ -248,6 +250,12 @@ const TenantDetailsPage = () => {
                   </div>
                 ))}
               </div>
+            </UniversalCard>
+          )}
+
+          {activeTab === 'analytics' && (
+            <UniversalCard gradient="purple">
+              <TenantAnalyticsDashboard tenantId={tenantId!} tenant={tenant} />
             </UniversalCard>
           )}
         </div>
