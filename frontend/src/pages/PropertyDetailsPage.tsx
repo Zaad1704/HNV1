@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wrench, Trash2, Share2, BarChart3 } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
-import DataPreviewSections from '../components/property/DataPreviewSections';
+
 import UnitDataModal from '../components/property/UnitDataModal';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
 
@@ -741,18 +741,7 @@ const PropertyDetailsPage = () => {
             </p>
           </div>
 
-          {/* NEW: Data Preview Sections */}
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-text-primary">Property Data Overview</h2>
-                <p className="text-sm text-text-secondary">
-                  Recent activity and data across all property operations
-                </p>
-              </div>
-            </div>
-            <DataPreviewSections propertyId={propertyId!} property={property} tenants={tenants} />
-          </div>
+
 
           {/* Property Statistics */}
           <PropertyStatsSection propertyId={propertyId!} />
