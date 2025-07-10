@@ -371,7 +371,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                       const vacantUnits = allUnits.filter(unit => !occupiedUnits.includes(unit));
                       
                       const vacantOptions = vacantUnits.map(unit => (
-                        <option key={`vacant-${unit}`} value={unit} className="text-green-600">
+                        <option key={`vacant-${unit}`} value={unit} style={{color: 'green'}}>
                           Unit {unit} (Vacant)
                         </option>
                       ));
@@ -379,7 +379,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                       const occupiedOptions = tenants
                         .filter(t => t.propertyId === formData.propertyId && t.status === 'Active' && t.unit)
                         .map(t => (
-                          <option key={`occupied-${t.unit}`} value={t.unit} disabled className="text-red-600">
+                          <option key={`occupied-${t.unit}`} value={t.unit} disabled style={{color: 'red'}}>
                             Unit {t.unit} (Occupied by {t.name})
                           </option>
                         ));
