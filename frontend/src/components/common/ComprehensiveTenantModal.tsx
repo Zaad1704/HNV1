@@ -362,10 +362,12 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                       const selectedProperty = properties.find(p => p._id === formData.propertyId);
                       if (!selectedProperty || !tenants) return null;
                       
-                      const occupiedUnits = tenants
-                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
-                        .map(t => t.unit)
-                        .filter(Boolean);
+                      console.log('All tenants:', tenants);
+                      console.log('Selected property ID:', formData.propertyId);
+                      const propertyTenants = tenants.filter(t => t.propertyId === formData.propertyId && t.status === 'Active');
+                      console.log('Property tenants:', propertyTenants);
+                      const occupiedUnits = propertyTenants.map(t => t.unit).filter(Boolean);
+                      console.log('Occupied units:', occupiedUnits);
                       
                       const allUnits = Array.from({ length: selectedProperty.numberOfUnits || 1 }, (_, i) => (i + 1).toString());
                       const vacantUnits = allUnits.filter(unit => !occupiedUnits.includes(unit));
