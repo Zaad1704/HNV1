@@ -3,17 +3,19 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, DollarSign, Calendar, MapPin, Phone, Mail, FileText, Wrench, AlertTriangle, Download, Edit } from 'lucide-react';
+import { ArrowLeft, Users, DollarSign, Calendar, MapPin, Phone, Mail, FileText, Wrench, AlertTriangle, Download, Edit, Trash2, Archive, User } from 'lucide-react';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
 import UniversalActionButton from '../components/common/UniversalActionButton';
 
 import TenantAnalyticsDashboard from '../components/tenant/TenantAnalyticsDashboard';
+import EditTenantModal from '../components/common/EditTenantModal';
 
 const TenantDetailsPage = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['tenant', tenantId],
@@ -69,7 +71,8 @@ const TenantDetailsPage = () => {
     { id: 'payments', label: 'Payment History', icon: DollarSign },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'analytics', label: 'Analytics', icon: Calendar },
-    { id: 'documents', label: 'Documents', icon: FileText }
+    { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'personal', label: 'Personal Details', icon: User }
   ];
 
   const currentMonth = new Date().getMonth();
@@ -100,12 +103,62 @@ const TenantDetailsPage = () => {
           </div>
         </div>
         <div className="flex gap-3">
-          <UniversalActionButton variant="success" size="sm" icon={Download}>
+          <button
+            onClick={async () => {
+              try {
+                const response = await apiClient.post(`/tenants/${tenantId}/download-pdf`, {}, { responseType: 'blob' });
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${tenant.name}-details.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+              } catch (error) {
+                alert('Failed to download PDF');
+              }
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-green-600 transition-colors"
+          >
+            <Download size={16} />
             Download PDF
-          </UniversalActionButton>
-          <UniversalActionButton variant="primary" icon={Edit}>
-            Edit Tenant
-          </UniversalActionButton>
+          </button>
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="bg-blue-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-blue-600 transition-colors"
+          >
+            <Edit size={16} />
+            Edit
+          </button>
+          <button
+            onClick={async () => {
+              if (confirm(`Archive ${tenant.name}? This will hide them from active listings.`)) {
+                try {
+                  await apiClient.patch(`/tenants/${tenantId}/archive`);
+                  alert('Tenant archived successfully');
+                  window.location.href = '/dashboard/tenants';
+                } catch (error) {
+                  alert('Failed to archive tenant');
+                }
+              }
+            }}
+            className="bg-yellow-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-yellow-600 transition-colors"
+          >
+            <Archive size={16} />
+            Archive
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`Delete ${tenant.name}? This action cannot be undone.`)) {
+                // Handle delete
+                window.location.href = '/dashboard/tenants';
+              }
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-red-600 transition-colors"
+          >
+            <Trash2 size={16} />
+            Delete
+          </button>
         </div>
       </div>
 
@@ -144,7 +197,7 @@ const TenantDetailsPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-text-secondary">Property</p>
-                    <p className="font-medium">{tenant.propertyId?.name || 'N/A'}</p>
+                    <p className="font-medium">{tenant.propertyId?.name || tenant.property?.name || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-text-secondary">Unit</p>
@@ -247,6 +300,132 @@ const TenantDetailsPage = () => {
               <TenantAnalyticsDashboard tenantId={tenantId!} tenant={tenant} />
             </UniversalCard>
           )}
+
+          {activeTab === 'documents' && (
+            <UniversalCard gradient="blue">
+              <h3 className="text-lg font-bold mb-4">Documents & Images</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {tenant.tenantImage && (
+                  <div className="border rounded-lg p-3">
+                    <img src={tenant.tenantImage} alt="Tenant Photo" className="w-full h-32 object-cover rounded mb-2" />
+                    <p className="text-sm font-medium">Tenant Photo</p>
+                    <button 
+                      onClick={() => window.open(tenant.tenantImage, '_blank')}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      Download
+                    </button>
+                  </div>
+                )}
+                {tenant.govtIdFront && (
+                  <div className="border rounded-lg p-3">
+                    <img src={tenant.govtIdFront} alt="ID Front" className="w-full h-32 object-cover rounded mb-2" />
+                    <p className="text-sm font-medium">ID Front</p>
+                    <button 
+                      onClick={() => window.open(tenant.govtIdFront, '_blank')}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      Download
+                    </button>
+                  </div>
+                )}
+                {tenant.govtIdBack && (
+                  <div className="border rounded-lg p-3">
+                    <img src={tenant.govtIdBack} alt="ID Back" className="w-full h-32 object-cover rounded mb-2" />
+                    <p className="text-sm font-medium">ID Back</p>
+                    <button 
+                      onClick={() => window.open(tenant.govtIdBack, '_blank')}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      Download
+                    </button>
+                  </div>
+                )}
+              </div>
+            </UniversalCard>
+          )}
+
+          {activeTab === 'personal' && (
+            <UniversalCard gradient="green">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold">Personal Details</h3>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await apiClient.post(`/tenants/${tenantId}/personal-details-pdf`, {}, { responseType: 'blob' });
+                      const blob = new Blob([response.data], { type: 'application/pdf' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${tenant.name}-personal-details.pdf`;
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    } catch (error) {
+                      alert('Failed to download personal details PDF');
+                    }
+                  }}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+                >
+                  <Download size={16} />
+                  Download PDF
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-3">Basic Information</h4>
+                    <div className="space-y-2">
+                      <div><span className="text-sm text-gray-600">Name:</span> <span className="font-medium">{tenant.name}</span></div>
+                      <div><span className="text-sm text-gray-600">Email:</span> <span className="font-medium">{tenant.email}</span></div>
+                      <div><span className="text-sm text-gray-600">Phone:</span> <span className="font-medium">{tenant.phone}</span></div>
+                      {tenant.whatsappNumber && <div><span className="text-sm text-gray-600">WhatsApp:</span> <span className="font-medium">{tenant.whatsappNumber}</span></div>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Family Details</h4>
+                    <div className="space-y-2">
+                      {tenant.fatherName && <div><span className="text-sm text-gray-600">Father's Name:</span> <span className="font-medium">{tenant.fatherName}</span></div>}
+                      {tenant.motherName && <div><span className="text-sm text-gray-600">Mother's Name:</span> <span className="font-medium">{tenant.motherName}</span></div>}
+                      {tenant.govtIdNumber && <div><span className="text-sm text-gray-600">ID Number:</span> <span className="font-medium">{tenant.govtIdNumber}</span></div>}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-3">Addresses</h4>
+                    <div className="space-y-2">
+                      {tenant.presentAddress && <div><span className="text-sm text-gray-600">Present:</span> <span className="font-medium">{tenant.presentAddress}</span></div>}
+                      {tenant.permanentAddress && <div><span className="text-sm text-gray-600">Permanent:</span> <span className="font-medium">{tenant.permanentAddress}</span></div>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-3">Emergency Contact</h4>
+                    <div className="space-y-2">
+                      {tenant.emergencyContactName && <div><span className="text-sm text-gray-600">Name:</span> <span className="font-medium">{tenant.emergencyContactName}</span></div>}
+                      {tenant.emergencyContactPhone && <div><span className="text-sm text-gray-600">Phone:</span> <span className="font-medium">{tenant.emergencyContactPhone}</span></div>}
+                      {tenant.emergencyContactRelation && <div><span className="text-sm text-gray-600">Relation:</span> <span className="font-medium">{tenant.emergencyContactRelation}</span></div>}
+                    </div>
+                  </div>
+                </div>
+                
+                {(tenant.occupation || tenant.monthlyIncome || tenant.vehicleDetails) && (
+                  <div>
+                    <h4 className="font-semibold mb-3">Additional Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {tenant.occupation && <div><span className="text-sm text-gray-600">Occupation:</span> <span className="font-medium">{tenant.occupation}</span></div>}
+                      {tenant.monthlyIncome && <div><span className="text-sm text-gray-600">Monthly Income:</span> <span className="font-medium">${tenant.monthlyIncome}</span></div>}
+                      {tenant.vehicleDetails && <div><span className="text-sm text-gray-600">Vehicle:</span> <span className="font-medium">{tenant.vehicleDetails}</span></div>}
+                      {tenant.petDetails && <div><span className="text-sm text-gray-600">Pets:</span> <span className="font-medium">{tenant.petDetails}</span></div>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </UniversalCard>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -257,10 +436,11 @@ const TenantDetailsPage = () => {
               <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                 {tenant.imageUrl || tenant.tenantImage ? (
                   <img 
-                    src={tenant.imageUrl || tenant.tenantImage} 
+                    src={tenant.imageUrl?.startsWith('/') ? `${window.location.origin}${tenant.imageUrl}` : (tenant.imageUrl || tenant.tenantImage)}
                     alt={tenant.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      console.error('Tenant image failed to load:', tenant.imageUrl || tenant.tenantImage);
                       e.currentTarget.style.display = 'none';
                       const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
                       if (fallback) fallback.classList.remove('hidden');
@@ -271,6 +451,7 @@ const TenantDetailsPage = () => {
                   {tenant.name?.charAt(0).toUpperCase() || 'T'}
                 </div>
               </div>
+              <h3 className="text-lg font-bold">{tenant.name}</h3>
               <h3 className="text-lg font-bold">{tenant.name}</h3>
               <UniversalStatusBadge 
                 status={tenant.status} 
@@ -301,24 +482,44 @@ const TenantDetailsPage = () => {
             <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Link 
-                to={`/dashboard/payments?tenantId=${tenant._id}`}
+                to={`/dashboard/payments/add?tenantId=${tenant._id}`}
                 className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors block text-center"
+              >
+                Add Payment
+              </Link>
+              <Link 
+                to={`/dashboard/payments?tenantId=${tenant._id}`}
+                className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors block text-center"
               >
                 View Payments ({payments.length})
               </Link>
               <Link 
-                to={`/dashboard/maintenance?tenantId=${tenant._id}`}
+                to={`/dashboard/maintenance/add?tenantId=${tenant._id}`}
                 className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors block text-center"
               >
-                Maintenance ({relatedData?.maintenance?.length || 0})
+                Report Issue
               </Link>
-              <button className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors">
-                Send Message
-              </button>
+              <Link 
+                to={`/dashboard/maintenance?tenantId=${tenant._id}`}
+                className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
+              >
+                View Issues ({relatedData?.maintenance?.length || 0})
+              </Link>
             </div>
           </UniversalCard>
         </div>
       </div>
+      
+      {/* Edit Modal */}
+      <EditTenantModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        tenant={tenant}
+        onTenantUpdated={(updatedTenant) => {
+          // Refresh tenant data
+          window.location.reload();
+        }}
+      />
     </motion.div>
   );
 };

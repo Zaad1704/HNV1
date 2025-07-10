@@ -10,7 +10,10 @@ import {
   deleteTenant,
   getTenantDataPreviews,
   getTenantStats,
-  getTenantAnalytics
+  getTenantAnalytics,
+  archiveTenant,
+  downloadTenantPDF,
+  downloadPersonalDetailsPDF
 } from '../controllers/tenantsController';
 
 const router = Router();
@@ -44,16 +47,11 @@ router.route('/:id')
   });
 
 // Archive tenant
-router.patch('/:id/archive', async (req: any, res) => {
-  try {
-    await cascadeTenantChanges(req.params.id, 'archive', req.user.organizationId);
-    const Tenant = require('../models/Tenant').default;
-    await Tenant.findByIdAndUpdate(req.params.id, { status: 'Archived' });
-    res.status(200).json({ success: true, message: 'Tenant and related data archived' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to archive tenant' });
-  }
-});
+router.patch('/:id/archive', archiveTenant);
+
+// PDF Downloads
+router.post('/:id/download-pdf', downloadTenantPDF);
+router.post('/:id/personal-details-pdf', downloadPersonalDetailsPDF);
 
 // NEW DATA PREVIEW ROUTES
 router.get('/:tenantId/data-previews', getTenantDataPreviews);
