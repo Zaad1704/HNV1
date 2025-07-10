@@ -298,10 +298,35 @@ export const deleteTenant = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
 
+    // Store tenant info for logging before deletion
+    const tenantInfo = {
+      name: tenant.name,
+      email: tenant.email,
+      unit: tenant.unit,
+      propertyId: tenant.propertyId
+    };
+
     await tenant.deleteOne();
-    res.status(200).json({ success: true, data: {} });
+    
+    // Log the deletion
+    try {
+      await actionChainService.onTenantDeleted(tenantInfo, req.user._id, req.user.organizationId);
+    } catch (actionError) {
+      console.error('Action chain error (non-critical):', actionError);
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: {},
+      message: 'Tenant deleted successfully'
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Delete tenant error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to delete tenant',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -595,14 +620,31 @@ export const archiveTenant = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
 
+    // Toggle archive status
+    const newStatus = tenant.status === 'Archived' ? 'Active' : 'Archived';
     const updatedTenant = await Tenant.findByIdAndUpdate(
       req.params.id,
-      { status: 'Archived' },
+      { status: newStatus },
       { new: true }
     );
 
-    res.status(200).json({ success: true, data: updatedTenant });
+    // Log the action
+    try {
+      await actionChainService.onTenantUpdated(updatedTenant, req.user._id, req.user.organizationId, {
+        action: newStatus === 'Archived' ? 'archived' : 'restored',
+        previousStatus: tenant.status
+      });
+    } catch (actionError) {
+      console.error('Action chain error (non-critical):', actionError);
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: updatedTenant,
+      message: `Tenant ${newStatus === 'Archived' ? 'archived' : 'restored'} successfully`
+    });
   } catch (error) {
+    console.error('Archive tenant error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -618,42 +660,216 @@ export const downloadTenantPDF = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
 
+    // Fetch related data
+    const [Payment, Receipt, Expense, MaintenanceRequest] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/Receipt'), 
+      import('../models/Expense'),
+      import('../models/MaintenanceRequest')
+    ]);
+
+    const [payments, receipts, expenses, maintenance] = await Promise.all([
+      Payment.default.find({ tenantId: req.params.id, organizationId: req.user.organizationId }).sort({ paymentDate: -1 }).lean(),
+      Receipt.default.find({ tenantId: req.params.id, organizationId: req.user.organizationId }).sort({ createdAt: -1 }).lean(),
+      Expense.default.find({ propertyId: tenant.propertyId, organizationId: req.user.organizationId }).sort({ date: -1 }).limit(10).lean(),
+      MaintenanceRequest.default.find({ tenantId: req.params.id, organizationId: req.user.organizationId }).sort({ createdAt: -1 }).lean()
+    ]);
+
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
     
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${tenant.name}-details.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${tenant.name.replace(/[^a-zA-Z0-9]/g, '_')}-comprehensive-report.pdf"`);
     
     doc.pipe(res);
     
-    // Header
-    doc.fontSize(20).text('Tenant Details Report', { align: 'center' });
+    // Professional Header with Colors
+    doc.rect(0, 0, doc.page.width, 80).fill('#2563eb');
+    doc.fontSize(28).fillColor('#ffffff').text('TENANT COMPREHENSIVE REPORT', 40, 25, { align: 'center' });
+    doc.fontSize(12).text('Property Management System', 40, 55, { align: 'center' });
+    
+    // Reset position and color
+    doc.y = 100;
+    doc.fillColor('#000000');
+    
+    // Tenant Overview Section
+    doc.fontSize(18).fillColor('#2563eb').text('TENANT OVERVIEW', { underline: true });
+    doc.moveDown(0.5);
+    
+    // Two-column layout for basic info
+    const leftColumn = 60;
+    const rightColumn = 320;
+    let currentY = doc.y;
+    
+    doc.fontSize(12).fillColor('#000000');
+    doc.text('Full Name:', leftColumn, currentY, { continued: true }).font('Helvetica-Bold').text(` ${tenant.name}`);
+    doc.font('Helvetica').text('Email:', leftColumn, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${tenant.email}`);
+    doc.font('Helvetica').text('Phone:', leftColumn, currentY + 40, { continued: true }).font('Helvetica-Bold').text(` ${tenant.phone}`);
+    doc.font('Helvetica').text('Status:', leftColumn, currentY + 60, { continued: true }).font('Helvetica-Bold').fillColor(tenant.status === 'Active' ? '#16a34a' : '#dc2626').text(` ${tenant.status}`);
+    
+    doc.fillColor('#000000').font('Helvetica');
+    doc.text('Property:', rightColumn, currentY, { continued: true }).font('Helvetica-Bold').text(` ${(tenant.propertyId as any)?.name || 'N/A'}`);
+    doc.font('Helvetica').text('Unit Number:', rightColumn, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${tenant.unit}`);
+    doc.font('Helvetica').text('Monthly Rent:', rightColumn, currentY + 40, { continued: true }).font('Helvetica-Bold').fillColor('#16a34a').text(` $${tenant.rentAmount || 0}`);
+    doc.fillColor('#000000').font('Helvetica').text('Security Deposit:', rightColumn, currentY + 60, { continued: true }).font('Helvetica-Bold').text(` $${tenant.securityDeposit || 0}`);
+    
+    doc.y = currentY + 100;
     doc.moveDown();
     
-    // Basic Info
-    doc.fontSize(16).text('Basic Information', { underline: true });
+    // Lease Information
+    doc.fontSize(16).fillColor('#2563eb').text('LEASE INFORMATION', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(12).fillColor('#000000');
+    
+    if (tenant.leaseStartDate) {
+      doc.text(`Lease Start: ${new Date(tenant.leaseStartDate).toLocaleDateString()}`);
+    }
+    if (tenant.leaseEndDate) {
+      const daysRemaining = Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      doc.text(`Lease End: ${new Date(tenant.leaseEndDate).toLocaleDateString()}`);
+      doc.text(`Days Remaining: ${daysRemaining > 0 ? daysRemaining : 'Expired'} days`, { fillColor: daysRemaining < 30 ? '#dc2626' : '#000000' });
+    }
+    doc.text(`Lease Duration: ${tenant.leaseDuration || 12} months`);
+    doc.moveDown();
+    
+    // Payment Analysis
+    doc.fontSize(16).fillColor('#2563eb').text('PAYMENT ANALYSIS', { underline: true });
+    doc.moveDown(0.5);
+    
+    const totalPaid = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonthPayments = payments.filter((p: any) => {
+      const paymentDate = new Date(p.paymentDate);
+      return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+    });
+    const currentMonthPaid = currentMonthPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    const outstandingAmount = (tenant.rentAmount || 0) - currentMonthPaid;
+    
     doc.fontSize(12);
-    doc.text(`Name: ${tenant.name}`);
-    doc.text(`Email: ${tenant.email}`);
-    doc.text(`Phone: ${tenant.phone}`);
-    doc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}`);
-    doc.text(`Unit: ${tenant.unit}`);
-    doc.text(`Rent: $${tenant.rentAmount}`);
+    doc.text(`Total Payments Made: ${payments.length}`);
+    doc.text(`Total Amount Paid: $${totalPaid}`, { fillColor: '#16a34a' });
+    doc.text(`Current Month Paid: $${currentMonthPaid}`);
+    doc.text(`Outstanding Amount: $${Math.max(0, outstandingAmount)}`, { fillColor: outstandingAmount > 0 ? '#dc2626' : '#16a34a' });
+    doc.text(`Average Monthly Payment: $${payments.length > 0 ? Math.round(totalPaid / payments.length) : 0}`);
     doc.moveDown();
     
-    // Personal Details
-    if (tenant.fatherName || tenant.motherName) {
-      doc.fontSize(16).text('Personal Details', { underline: true });
+    // Recent Payments (Last 5)
+    if (payments.length > 0) {
+      doc.fontSize(14).fillColor('#2563eb').text('RECENT PAYMENTS', { underline: true });
+      doc.moveDown(0.3);
+      doc.fontSize(10);
+      
+      // Table header
+      doc.rect(40, doc.y, 515, 20).fill('#f3f4f6');
+      doc.fillColor('#000000').text('Date', 50, doc.y + 5);
+      doc.text('Amount', 150, doc.y + 5);
+      doc.text('Method', 250, doc.y + 5);
+      doc.text('Status', 350, doc.y + 5);
+      doc.text('Month', 450, doc.y + 5);
+      doc.y += 25;
+      
+      payments.slice(0, 5).forEach((payment: any, index: number) => {
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+        doc.rect(40, doc.y - 2, 515, 18).fill(bgColor);
+        doc.fillColor('#000000');
+        doc.text(new Date(payment.paymentDate).toLocaleDateString(), 50, doc.y + 2);
+        doc.text(`$${payment.amount}`, 150, doc.y + 2);
+        doc.text(payment.paymentMethod || 'N/A', 250, doc.y + 2);
+        doc.fillColor(payment.status === 'Paid' ? '#16a34a' : '#dc2626').text(payment.status, 350, doc.y + 2);
+        doc.fillColor('#000000').text(payment.rentMonth || 'N/A', 450, doc.y + 2);
+        doc.y += 18;
+      });
+      doc.moveDown();
+    }
+    
+    // Maintenance Analysis
+    if (maintenance.length > 0) {
+      doc.fontSize(16).fillColor('#2563eb').text('MAINTENANCE ANALYSIS', { underline: true });
+      doc.moveDown(0.5);
+      
+      const openRequests = maintenance.filter((m: any) => m.status === 'Open').length;
+      const closedRequests = maintenance.filter((m: any) => m.status === 'Closed').length;
+      const totalCost = maintenance.reduce((sum: number, m: any) => sum + (m.cost || 0), 0);
+      
       doc.fontSize(12);
+      doc.text(`Total Maintenance Requests: ${maintenance.length}`);
+      doc.text(`Open Requests: ${openRequests}`, { fillColor: openRequests > 0 ? '#dc2626' : '#16a34a' });
+      doc.text(`Closed Requests: ${closedRequests}`, { fillColor: '#16a34a' });
+      doc.text(`Total Maintenance Cost: $${totalCost}`);
+      doc.moveDown();
+      
+      // Recent maintenance requests
+      doc.fontSize(14).fillColor('#2563eb').text('RECENT MAINTENANCE REQUESTS', { underline: true });
+      doc.moveDown(0.3);
+      doc.fontSize(10);
+      
+      maintenance.slice(0, 5).forEach((request: any, index: number) => {
+        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+        doc.rect(40, doc.y - 2, 515, 25).fill(bgColor);
+        doc.fillColor('#000000');
+        doc.text(`${new Date(request.createdAt).toLocaleDateString()} - `, 50, doc.y + 2, { continued: true });
+        doc.fillColor(request.status === 'Open' ? '#dc2626' : '#16a34a').text(request.status, { continued: true });
+        doc.fillColor('#000000').text(` - ${request.description?.substring(0, 60)}${request.description?.length > 60 ? '...' : ''}`, 50, doc.y + 12);
+        doc.y += 25;
+      });
+      doc.moveDown();
+    }
+    
+    // Personal Details (if available)
+    if (tenant.fatherName || tenant.motherName || tenant.presentAddress) {
+      doc.fontSize(16).fillColor('#2563eb').text('PERSONAL DETAILS', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000');
+      
       if (tenant.fatherName) doc.text(`Father's Name: ${tenant.fatherName}`);
       if (tenant.motherName) doc.text(`Mother's Name: ${tenant.motherName}`);
-      if (tenant.govtIdNumber) doc.text(`ID Number: ${tenant.govtIdNumber}`);
+      if (tenant.govtIdNumber) doc.text(`Government ID: ${tenant.govtIdNumber}`);
+      if (tenant.presentAddress) doc.text(`Present Address: ${tenant.presentAddress}`);
+      if (tenant.permanentAddress) doc.text(`Permanent Address: ${tenant.permanentAddress}`);
+      if (tenant.occupation) doc.text(`Occupation: ${tenant.occupation}`);
+      if (tenant.monthlyIncome) doc.text(`Monthly Income: $${tenant.monthlyIncome}`);
+      doc.moveDown();
+    }
+    
+    // Emergency Contact
+    if (tenant.emergencyContact?.name || tenant.emergencyContactName) {
+      doc.fontSize(16).fillColor('#2563eb').text('EMERGENCY CONTACT', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000');
+      
+      const emergencyName = tenant.emergencyContact?.name || tenant.emergencyContactName;
+      const emergencyPhone = tenant.emergencyContact?.phone || tenant.emergencyContactPhone;
+      const emergencyRelation = tenant.emergencyContact?.relation || tenant.emergencyContactRelation;
+      
+      if (emergencyName) doc.text(`Name: ${emergencyName}`);
+      if (emergencyPhone) doc.text(`Phone: ${emergencyPhone}`);
+      if (emergencyRelation) doc.text(`Relationship: ${emergencyRelation}`);
+      doc.moveDown();
+    }
+    
+    // Additional Information
+    if (tenant.vehicleDetails || tenant.petDetails || tenant.specialInstructions) {
+      doc.fontSize(16).fillColor('#2563eb').text('ADDITIONAL INFORMATION', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000');
+      
+      if (tenant.vehicleDetails) doc.text(`Vehicle Details: ${tenant.vehicleDetails}`);
+      if (tenant.petDetails) doc.text(`Pet Details: ${tenant.petDetails}`);
+      if (tenant.numberOfOccupants) doc.text(`Number of Occupants: ${tenant.numberOfOccupants}`);
+      if (tenant.specialInstructions) {
+        doc.text('Special Instructions:', { continued: false });
+        doc.text(tenant.specialInstructions, { width: 500 });
+      }
       doc.moveDown();
     }
     
     // Footer
-    doc.fontSize(10).text('Generated by Property Management System', { align: 'center' });
-    doc.text('All rights reserved', { align: 'center' });
+    doc.fontSize(8).fillColor('#6b7280');
+    const footerY = doc.page.height - 60;
+    doc.text('This document contains confidential tenant information. Unauthorized distribution is prohibited.', 40, footerY, { align: 'center' });
+    doc.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 40, footerY + 15, { align: 'center' });
+    doc.text('Property Management System - Professional Tenant Management Solution', 40, footerY + 30, { align: 'center' });
     
     doc.end();
   } catch (error) {
@@ -674,73 +890,245 @@ export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response
     }
 
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
     
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${tenant.name}-personal-details.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${tenant.name.replace(/[^a-zA-Z0-9]/g, '_')}-personal-details.pdf"`);
     
     doc.pipe(res);
     
-    // Professional Header with Watermark
-    doc.fontSize(24).fillColor('#2563eb').text('PERSONAL DETAILS REPORT', { align: 'center' });
-    doc.fontSize(12).fillColor('#6b7280').text('Confidential Document', { align: 'center' });
-    doc.moveDown(2);
+    // Professional Header with Gradient Background
+    doc.rect(0, 0, doc.page.width, 100).fill('#1e40af');
+    doc.fontSize(32).fillColor('#ffffff').text('PERSONAL DETAILS', 40, 20, { align: 'center' });
+    doc.fontSize(16).text('CONFIDENTIAL TENANT INFORMATION', 40, 55, { align: 'center' });
+    doc.fontSize(10).text('Authorized Personnel Only', 40, 75, { align: 'center' });
     
-    // Tenant Photo placeholder
-    doc.fontSize(14).fillColor('#000000').text('TENANT INFORMATION', { underline: true });
-    doc.moveDown();
+    // Watermark
+    doc.fontSize(60).fillColor('#f3f4f6').text('CONFIDENTIAL', 0, 300, {
+      align: 'center',
+      angle: -45,
+      opacity: 0.1
+    });
     
-    // Basic Information
-    doc.fontSize(12);
-    doc.text(`Full Name: ${tenant.name}`, { continued: false });
-    doc.text(`Email Address: ${tenant.email}`);
-    doc.text(`Phone Number: ${tenant.phone}`);
-    if (tenant.whatsappNumber) doc.text(`WhatsApp: ${tenant.whatsappNumber}`);
+    // Reset position and color
+    doc.y = 120;
+    doc.fillColor('#000000');
+    
+    // Tenant Photo Section (placeholder)
+    doc.fontSize(18).fillColor('#1e40af').text('TENANT IDENTIFICATION', { underline: true });
+    doc.moveDown(0.5);
+    
+    // Photo placeholder box
+    doc.rect(40, doc.y, 120, 150).stroke('#d1d5db');
+    doc.fontSize(10).fillColor('#6b7280').text('TENANT PHOTO', 70, doc.y + 70, { align: 'center' });
+    doc.text('(Upload Required)', 70, doc.y + 85, { align: 'center' });
+    
+    // Basic Information beside photo
+    const photoRightX = 180;
+    const basicInfoY = doc.y - 150;
+    
+    doc.fontSize(14).fillColor('#1e40af').text('BASIC INFORMATION', photoRightX, basicInfoY, { underline: true });
+    doc.fontSize(12).fillColor('#000000');
+    doc.text(`Full Name: ${tenant.name}`, photoRightX, basicInfoY + 25);
+    doc.text(`Email: ${tenant.email}`, photoRightX, basicInfoY + 45);
+    doc.text(`Phone: ${tenant.phone}`, photoRightX, basicInfoY + 65);
+    if (tenant.whatsappNumber) {
+      doc.text(`WhatsApp: ${tenant.whatsappNumber}`, photoRightX, basicInfoY + 85);
+    }
+    doc.text(`Status: ${tenant.status}`, photoRightX, basicInfoY + 105, {
+      fillColor: tenant.status === 'Active' ? '#16a34a' : '#dc2626'
+    });
+    
+    doc.y = basicInfoY + 170;
     doc.moveDown();
     
     // Property Information
-    doc.fontSize(14).text('PROPERTY INFORMATION', { underline: true });
-    doc.fontSize(12);
-    doc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}`);
-    doc.text(`Unit Number: ${tenant.unit}`);
-    doc.text(`Monthly Rent: $${tenant.rentAmount}`);
-    doc.text(`Security Deposit: $${tenant.securityDeposit || 0}`);
+    doc.fontSize(16).fillColor('#1e40af').text('PROPERTY INFORMATION', { underline: true });
+    doc.moveDown(0.5);
+    
+    // Property info in two columns
+    const leftCol = 60;
+    const rightCol = 320;
+    let currentY = doc.y;
+    
+    doc.fontSize(12).fillColor('#000000');
+    doc.text('Property:', leftCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${(tenant.propertyId as any)?.name || 'N/A'}`);
+    doc.font('Helvetica').text('Unit Number:', leftCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${tenant.unit}`);
+    doc.font('Helvetica').text('Monthly Rent:', rightCol, currentY, { continued: true }).font('Helvetica-Bold').fillColor('#16a34a').text(` $${tenant.rentAmount || 0}`);
+    doc.fillColor('#000000').font('Helvetica').text('Security Deposit:', rightCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` $${tenant.securityDeposit || 0}`);
+    
+    if (tenant.leaseStartDate) {
+      doc.text('Lease Start:', leftCol, currentY + 40, { continued: true }).font('Helvetica-Bold').text(` ${new Date(tenant.leaseStartDate).toLocaleDateString()}`);
+    }
+    if (tenant.leaseEndDate) {
+      doc.font('Helvetica').text('Lease End:', rightCol, currentY + 40, { continued: true }).font('Helvetica-Bold').text(` ${new Date(tenant.leaseEndDate).toLocaleDateString()}`);
+    }
+    
+    doc.y = currentY + 80;
     doc.moveDown();
     
     // Family Details
-    if (tenant.fatherName || tenant.motherName) {
-      doc.fontSize(14).text('FAMILY DETAILS', { underline: true });
-      doc.fontSize(12);
-      if (tenant.fatherName) doc.text(`Father's Name: ${tenant.fatherName}`);
-      if (tenant.motherName) doc.text(`Mother's Name: ${tenant.motherName}`);
-      if (tenant.govtIdNumber) doc.text(`Government ID: ${tenant.govtIdNumber}`);
-      doc.moveDown();
+    doc.fontSize(16).fillColor('#1e40af').text('FAMILY DETAILS', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(12).fillColor('#000000').font('Helvetica');
+    
+    currentY = doc.y;
+    if (tenant.fatherName) {
+      doc.text('Father\'s Name:', leftCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${tenant.fatherName}`);
+    }
+    if (tenant.motherName) {
+      doc.font('Helvetica').text('Mother\'s Name:', rightCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${tenant.motherName}`);
+    }
+    if (tenant.govtIdNumber) {
+      doc.font('Helvetica').text('Government ID:', leftCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${tenant.govtIdNumber}`);
+    }
+    if (tenant.occupation) {
+      doc.font('Helvetica').text('Occupation:', rightCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${tenant.occupation}`);
+    }
+    if (tenant.monthlyIncome) {
+      doc.font('Helvetica').text('Monthly Income:', leftCol, currentY + 40, { continued: true }).font('Helvetica-Bold').fillColor('#16a34a').text(` $${tenant.monthlyIncome}`);
     }
     
-    // Addresses
-    if (tenant.presentAddress || tenant.permanentAddress) {
-      doc.fontSize(14).text('ADDRESS INFORMATION', { underline: true });
-      doc.fontSize(12);
-      if (tenant.presentAddress) doc.text(`Present Address: ${tenant.presentAddress}`);
-      if (tenant.permanentAddress) doc.text(`Permanent Address: ${tenant.permanentAddress}`);
-      doc.moveDown();
+    doc.y = currentY + 80;
+    doc.moveDown();
+    
+    // Address Information
+    doc.fontSize(16).fillColor('#1e40af').text('ADDRESS INFORMATION', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(12).fillColor('#000000').font('Helvetica');
+    
+    if (tenant.presentAddress) {
+      doc.text('Present Address:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.presentAddress}`, { width: 500 });
+      doc.moveDown(0.3);
     }
+    if (tenant.permanentAddress) {
+      doc.font('Helvetica').text('Permanent Address:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.permanentAddress}`, { width: 500 });
+      doc.moveDown(0.3);
+    }
+    if (tenant.previousAddress) {
+      doc.font('Helvetica').text('Previous Address:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.previousAddress}`, { width: 500 });
+      doc.moveDown(0.3);
+    }
+    doc.moveDown();
     
     // Emergency Contact
-    if (tenant.emergencyContact?.name) {
-      doc.fontSize(14).text('EMERGENCY CONTACT', { underline: true });
-      doc.fontSize(12);
-      doc.text(`Name: ${tenant.emergencyContact.name}`);
-      doc.text(`Phone: ${tenant.emergencyContact.phone}`);
-      doc.text(`Relation: ${tenant.emergencyContact.relation}`);
+    const emergencyName = tenant.emergencyContact?.name || tenant.emergencyContactName;
+    const emergencyPhone = tenant.emergencyContact?.phone || tenant.emergencyContactPhone;
+    const emergencyRelation = tenant.emergencyContact?.relation || tenant.emergencyContactRelation;
+    
+    if (emergencyName || emergencyPhone) {
+      doc.fontSize(16).fillColor('#1e40af').text('EMERGENCY CONTACT', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000').font('Helvetica');
+      
+      currentY = doc.y;
+      if (emergencyName) {
+        doc.text('Contact Name:', leftCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${emergencyName}`);
+      }
+      if (emergencyPhone) {
+        doc.font('Helvetica').text('Phone Number:', rightCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${emergencyPhone}`);
+      }
+      if (emergencyRelation) {
+        doc.font('Helvetica').text('Relationship:', leftCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${emergencyRelation}`);
+      }
+      
+      doc.y = currentY + 60;
       doc.moveDown();
     }
+    
+    // Reference Information
+    if (tenant.reference?.name || tenant.referenceName) {
+      doc.fontSize(16).fillColor('#1e40af').text('REFERENCE INFORMATION', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000').font('Helvetica');
+      
+      const refName = tenant.reference?.name || tenant.referenceName;
+      const refPhone = tenant.reference?.phone || tenant.referencePhone;
+      const refEmail = tenant.reference?.email || tenant.referenceEmail;
+      const refRelation = tenant.reference?.relation || tenant.referenceRelation;
+      const refAddress = tenant.reference?.address || tenant.referenceAddress;
+      
+      currentY = doc.y;
+      if (refName) {
+        doc.text('Reference Name:', leftCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${refName}`);
+      }
+      if (refPhone) {
+        doc.font('Helvetica').text('Phone:', rightCol, currentY, { continued: true }).font('Helvetica-Bold').text(` ${refPhone}`);
+      }
+      if (refEmail) {
+        doc.font('Helvetica').text('Email:', leftCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${refEmail}`);
+      }
+      if (refRelation) {
+        doc.font('Helvetica').text('Relation:', rightCol, currentY + 20, { continued: true }).font('Helvetica-Bold').text(` ${refRelation}`);
+      }
+      if (refAddress) {
+        doc.font('Helvetica').text('Address:', leftCol, currentY + 40, { continued: true }).font('Helvetica-Bold').text(` ${refAddress}`, { width: 400 });
+      }
+      
+      doc.y = currentY + 80;
+      doc.moveDown();
+    }
+    
+    // Additional Information
+    if (tenant.vehicleDetails || tenant.petDetails || tenant.specialInstructions || tenant.numberOfOccupants) {
+      doc.fontSize(16).fillColor('#1e40af').text('ADDITIONAL INFORMATION', { underline: true });
+      doc.moveDown(0.5);
+      doc.fontSize(12).fillColor('#000000').font('Helvetica');
+      
+      if (tenant.numberOfOccupants) {
+        doc.text('Number of Occupants:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.numberOfOccupants}`);
+      }
+      if (tenant.vehicleDetails) {
+        doc.font('Helvetica').text('Vehicle Details:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.vehicleDetails}`);
+      }
+      if (tenant.petDetails) {
+        doc.font('Helvetica').text('Pet Details:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.petDetails}`);
+      }
+      if (tenant.reasonForMoving) {
+        doc.font('Helvetica').text('Reason for Moving:', { continued: true }).font('Helvetica-Bold').text(` ${tenant.reasonForMoving}`, { width: 500 });
+      }
+      if (tenant.specialInstructions) {
+        doc.font('Helvetica').text('Special Instructions:', { continued: false });
+        doc.font('Helvetica-Bold').text(tenant.specialInstructions, { width: 500 });
+      }
+      doc.moveDown();
+    }
+    
+    // Additional Adults Information
+    if (tenant.additionalAdults && tenant.additionalAdults.length > 0) {
+      doc.fontSize(16).fillColor('#1e40af').text('ADDITIONAL OCCUPANTS', { underline: true });
+      doc.moveDown(0.5);
+      
+      tenant.additionalAdults.forEach((adult: any, index: number) => {
+        doc.fontSize(14).fillColor('#374151').text(`Adult ${index + 1}:`, { underline: true });
+        doc.fontSize(12).fillColor('#000000').font('Helvetica');
+        
+        if (adult.name) doc.text(`Name: ${adult.name}`);
+        if (adult.phone) doc.text(`Phone: ${adult.phone}`);
+        if (adult.govtIdNumber) doc.text(`Government ID: ${adult.govtIdNumber}`);
+        if (adult.relation) doc.text(`Relation to Main Tenant: ${adult.relation}`);
+        doc.moveDown(0.5);
+      });
+    }
+    
+    // Security Notice
+    doc.rect(40, doc.y, 515, 60).fill('#fef3c7').stroke('#f59e0b');
+    doc.fontSize(12).fillColor('#92400e').text('SECURITY NOTICE', 50, doc.y + 10, { align: 'center' });
+    doc.fontSize(10).text('This document contains sensitive personal information.', 50, doc.y + 25, { align: 'center' });
+    doc.text('Handle with care and dispose of securely when no longer needed.', 50, doc.y + 40, { align: 'center' });
+    
+    doc.y += 80;
+    doc.moveDown();
     
     // Professional Footer
     doc.fontSize(8).fillColor('#6b7280');
-    doc.text('This document contains confidential information. Unauthorized distribution is prohibited.', { align: 'center' });
-    doc.text('Generated by Property Management System - All Rights Reserved', { align: 'center' });
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, { align: 'center' });
+    const footerY = doc.page.height - 80;
+    doc.rect(0, footerY - 10, doc.page.width, 90).fill('#f9fafb');
+    doc.text('CONFIDENTIAL DOCUMENT - AUTHORIZED PERSONNEL ONLY', 40, footerY, { align: 'center' });
+    doc.text('This document contains confidential tenant information protected by privacy laws.', 40, footerY + 15, { align: 'center' });
+    doc.text('Unauthorized access, distribution, or disclosure is strictly prohibited.', 40, footerY + 30, { align: 'center' });
+    doc.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 40, footerY + 50, { align: 'center' });
+    doc.text('Property Management System - Professional Tenant Management Solution', 40, footerY + 65, { align: 'center' });
     
     doc.end();
   } catch (error) {

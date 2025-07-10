@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, DollarSign, Calendar, MapPin, Phone, Mail, FileText, Wrench, AlertTriangle, Download, Edit, Trash2, Archive, User } from 'lucide-react';
+import { ArrowLeft, Users, DollarSign, Calendar, MapPin, Phone, Mail, FileText, Wrench, AlertTriangle, Download, Edit, Trash2, Archive, ArchiveRestore, User } from 'lucide-react';
 import UniversalCard from '../components/common/UniversalCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalStatusBadge from '../components/common/UniversalStatusBadge';
@@ -132,26 +132,45 @@ const TenantDetailsPage = () => {
           </button>
           <button
             onClick={async () => {
-              if (confirm(`Archive ${tenant.name}? This will hide them from active listings.`)) {
+              const isCurrentlyArchived = tenant.status === 'Archived';
+              const action = isCurrentlyArchived ? 'restore' : 'archive';
+              const confirmMessage = isCurrentlyArchived 
+                ? `Restore ${tenant.name}? This will make them active again.`
+                : `Archive ${tenant.name}? This will hide them from active listings.`;
+              
+              if (confirm(confirmMessage)) {
                 try {
-                  await apiClient.patch(`/tenants/${tenantId}/archive`);
-                  alert('Tenant archived successfully');
-                  window.location.href = '/dashboard/tenants';
-                } catch (error) {
-                  alert('Failed to archive tenant');
+                  await apiClient.put(`/tenants/${tenantId}`, {
+                    status: isCurrentlyArchived ? 'Active' : 'Archived'
+                  });
+                  alert(`Tenant ${action}d successfully!`);
+                  // Refresh the page to show updated status
+                  window.location.reload();
+                } catch (error: any) {
+                  alert(`Failed to ${action} tenant: ${error.response?.data?.message || 'Unknown error'}`);
                 }
               }
             }}
-            className="bg-yellow-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-yellow-600 transition-colors"
+            className={`px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-colors ${
+              tenant.status === 'Archived' 
+                ? 'bg-green-500 text-white hover:bg-green-600' 
+                : 'bg-yellow-500 text-white hover:bg-yellow-600'
+            }`}
           >
-            <Archive size={16} />
-            Archive
+            {tenant.status === 'Archived' ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+            {tenant.status === 'Archived' ? 'Restore' : 'Archive'}
           </button>
           <button
-            onClick={() => {
-              if (confirm(`Delete ${tenant.name}? This action cannot be undone.`)) {
-                // Handle delete
-                window.location.href = '/dashboard/tenants';
+            onClick={async () => {
+              if (confirm(`Delete ${tenant.name}? This action cannot be undone and will remove all associated data.`)) {
+                try {
+                  await apiClient.delete(`/tenants/${tenantId}`);
+                  alert('Tenant deleted successfully!');
+                  // Navigate back to tenants page
+                  window.location.href = '/dashboard/tenants';
+                } catch (error: any) {
+                  alert(`Failed to delete tenant: ${error.response?.data?.message || 'Unknown error'}`);
+                }
               }
             }}
             className="bg-red-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-red-600 transition-colors"
@@ -304,44 +323,187 @@ const TenantDetailsPage = () => {
           {activeTab === 'documents' && (
             <UniversalCard gradient="blue">
               <h3 className="text-lg font-bold mb-4">Documents & Images</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {tenant.tenantImage && (
-                  <div className="border rounded-lg p-3">
-                    <img src={tenant.tenantImage} alt="Tenant Photo" className="w-full h-32 object-cover rounded mb-2" />
-                    <p className="text-sm font-medium">Tenant Photo</p>
-                    <button 
-                      onClick={() => window.open(tenant.tenantImage, '_blank')}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Download
-                    </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Tenant Photo */}
+                {(tenant.tenantImage || tenant.imageUrl) && (
+                  <div className="border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
+                    <div className="aspect-square mb-3 rounded-lg overflow-hidden bg-gray-100">
+                      <img 
+                        src={tenant.tenantImage || tenant.imageUrl} 
+                        alt="Tenant Photo" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg></div>';
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 mb-2">Tenant Photo</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => window.open(tenant.tenantImage || tenant.imageUrl, '_blank')}
+                        className="flex-1 text-xs bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        View Full Size
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = tenant.tenantImage || tenant.imageUrl;
+                          link.download = `${tenant.name}-photo.jpg`;
+                          link.click();
+                        }}
+                        className="flex-1 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        Download
+                      </button>
+                    </div>
                   </div>
                 )}
+                
+                {/* Government ID Front */}
                 {tenant.govtIdFront && (
-                  <div className="border rounded-lg p-3">
-                    <img src={tenant.govtIdFront} alt="ID Front" className="w-full h-32 object-cover rounded mb-2" />
-                    <p className="text-sm font-medium">ID Front</p>
-                    <button 
-                      onClick={() => window.open(tenant.govtIdFront, '_blank')}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Download
-                    </button>
+                  <div className="border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
+                    <div className="aspect-[3/2] mb-3 rounded-lg overflow-hidden bg-gray-100">
+                      <img 
+                        src={tenant.govtIdFront} 
+                        alt="Government ID Front" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg></div>';
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 mb-2">Government ID (Front)</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => window.open(tenant.govtIdFront, '_blank')}
+                        className="flex-1 text-xs bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        View Full Size
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = tenant.govtIdFront;
+                          link.download = `${tenant.name}-id-front.jpg`;
+                          link.click();
+                        }}
+                        className="flex-1 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        Download
+                      </button>
+                    </div>
                   </div>
                 )}
+                
+                {/* Government ID Back */}
                 {tenant.govtIdBack && (
-                  <div className="border rounded-lg p-3">
-                    <img src={tenant.govtIdBack} alt="ID Back" className="w-full h-32 object-cover rounded mb-2" />
-                    <p className="text-sm font-medium">ID Back</p>
-                    <button 
-                      onClick={() => window.open(tenant.govtIdBack, '_blank')}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Download
-                    </button>
+                  <div className="border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
+                    <div className="aspect-[3/2] mb-3 rounded-lg overflow-hidden bg-gray-100">
+                      <img 
+                        src={tenant.govtIdBack} 
+                        alt="Government ID Back" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg></div>';
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 mb-2">Government ID (Back)</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => window.open(tenant.govtIdBack, '_blank')}
+                        className="flex-1 text-xs bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        View Full Size
+                      </button>
+                      <button 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = tenant.govtIdBack;
+                          link.download = `${tenant.name}-id-back.jpg`;
+                          link.click();
+                        }}
+                        className="flex-1 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                      >
+                        Download
+                      </button>
+                    </div>
                   </div>
                 )}
+                
+                {/* Additional Adult Images */}
+                {tenant.additionalAdults && tenant.additionalAdults.length > 0 && tenant.additionalAdults.map((adult: any, index: number) => (
+                  adult.image && (
+                    <div key={`adult-${index}`} className="border-2 border-gray-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
+                      <div className="aspect-square mb-3 rounded-lg overflow-hidden bg-gray-100">
+                        <img 
+                          src={adult.image} 
+                          alt={`${adult.name || `Adult ${index + 1}`} Photo`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-12 h-12" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg></div>';
+                            }
+                          }}
+                        />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 mb-2">{adult.name || `Adult ${index + 1}`} Photo</p>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => window.open(adult.image, '_blank')}
+                          className="flex-1 text-xs bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          View Full Size
+                        </button>
+                        <button 
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = adult.image;
+                            link.download = `${adult.name || `adult-${index + 1}`}-photo.jpg`;
+                            link.click();
+                          }}
+                          className="flex-1 text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  )
+                ))}
               </div>
+              
+              {/* No Documents Message */}
+              {!tenant.tenantImage && !tenant.imageUrl && !tenant.govtIdFront && !tenant.govtIdBack && 
+               (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText size={32} className="text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Documents Available</h3>
+                  <p className="text-gray-500 mb-4">No images or documents have been uploaded for this tenant yet.</p>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Upload Documents
+                  </button>
+                </div>
+              )}
             </UniversalCard>
           )}
 
@@ -433,21 +595,21 @@ const TenantDetailsPage = () => {
           {/* Tenant Info */}
           <UniversalCard gradient="blue">
             <div className="text-center mb-4">
-              <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                {tenant.imageUrl || tenant.tenantImage ? (
+              <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center relative">
+                {(tenant.imageUrl || tenant.tenantImage) ? (
                   <img 
-                    src={tenant.imageUrl?.startsWith('/') ? `${window.location.origin}${tenant.imageUrl}` : (tenant.imageUrl || tenant.tenantImage)}
+                    src={tenant.tenantImage || tenant.imageUrl}
                     alt={tenant.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.error('Tenant image failed to load:', tenant.imageUrl || tenant.tenantImage);
+                      console.error('Tenant image failed to load:', tenant.tenantImage || tenant.imageUrl);
                       e.currentTarget.style.display = 'none';
                       const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
                       if (fallback) fallback.classList.remove('hidden');
                     }}
                   />
                 ) : null}
-                <div className={`fallback-text text-white font-bold text-2xl ${tenant.imageUrl || tenant.tenantImage ? 'hidden' : ''}`}>
+                <div className={`fallback-text text-white font-bold text-2xl absolute inset-0 flex items-center justify-center ${(tenant.imageUrl || tenant.tenantImage) ? 'hidden' : ''}`}>
                   {tenant.name?.charAt(0).toUpperCase() || 'T'}
                 </div>
               </div>
