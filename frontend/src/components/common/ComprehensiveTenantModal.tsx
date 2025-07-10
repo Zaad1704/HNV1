@@ -103,7 +103,10 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
         return [];
       }
     },
-    enabled: !!formData.propertyId
+    enabled: !!formData.propertyId,
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: 30000
   });
 
   const handleImageUpload = (field: string, file: File) => {
@@ -146,12 +149,14 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
   // Auto-fill rent amount when unit is selected
   const handleUnitChange = (unitNumber: string) => {
     try {
-      const selectedUnit = propertyUnits.find(u => u.unitNumber === unitNumber);
-      setFormData({
-        ...formData,
+      if (!unitNumber) return;
+      
+      const selectedUnit = propertyUnits?.find(u => u.unitNumber === unitNumber);
+      setFormData(prev => ({
+        ...prev,
         unit: unitNumber,
-        rentAmount: selectedUnit?.rentAmount?.toString() || formData.rentAmount
-      });
+        rentAmount: selectedUnit?.rentAmount?.toString() || prev.rentAmount || ''
+      }));
     } catch (error) {
       console.error('Error handling unit change:', error);
     }

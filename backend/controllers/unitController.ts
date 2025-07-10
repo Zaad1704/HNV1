@@ -6,27 +6,34 @@ interface AuthRequest extends Request {
 }
 
 export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
-  const user = req.user;
-  if (!user || !user.organizationId) {
-    res.status(401).json({ success: false, message: 'Not authorized' });
-    return;
-  }
-
   try {
-    const { propertyId } = req.params;
-
-    const property = await Property.findById(propertyId);
-    if (!property || property.organizationId.toString() !== user.organizationId.toString()) {
-      res.status(403).json({ success: false, message: 'Not authorized' });
-      return;
+    const user = req.user;
+    if (!user || !user.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    // Generate units based on numberOfUnits
+    const { propertyId } = req.params;
+    if (!propertyId) {
+      return res.status(400).json({ success: false, message: 'Property ID required' });
+    }
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+    
+    if (property.organizationId.toString() !== user.organizationId.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    // Generate units based on numberOfUnits with safety check
     const units = [];
-    for (let i = 1; i <= property.numberOfUnits; i++) {
+    const numberOfUnits = property.numberOfUnits || 1;
+    
+    for (let i = 1; i <= numberOfUnits; i++) {
       units.push({
         unitNumber: i.toString(),
-        rentAmount: 0, // Default rent amount, can be customized per unit later
+        rentAmount: property.baseRentAmount || 0,
         propertyId: property._id
       });
     }
@@ -35,8 +42,12 @@ export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
       success: true,
       data: units
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get property units error:', error);
-    res.status(500).json({ success: false, message: 'Server Error' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server Error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
