@@ -55,14 +55,10 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, o
                 : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
             }`}
             onClick={() => {
-              try {
-                if (unit.isOccupied) {
-                  window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
-                } else {
-                  onAddTenant(unit.unitNumber);
-                }
-              } catch (error) {
-                console.error('Error handling unit click:', error);
+              if (unit.isOccupied) {
+                window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
+              } else {
+                onAddTenant(unit.unitNumber);
               }
             }}
           >
@@ -122,12 +118,8 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, o
                 <p className="text-sm text-gray-500 mb-2">Unit Available</p>
                 <button
                   onClick={(e) => {
-                    try {
-                      e.stopPropagation();
-                      onAddTenant(unit.unitNumber);
-                    } catch (error) {
-                      console.error('Error adding tenant to unit:', error);
-                    }
+                    e.stopPropagation();
+                    onAddTenant(unit.unitNumber);
                   }}
                   className="w-full bg-green-500 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors"
                 >
@@ -783,14 +775,10 @@ const PropertyDetailsPage = () => {
 
           {/* Units & Tenants List */}
           <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} onAddTenant={(unitNumber?: string) => {
-            try {
-              const url = unitNumber 
-                ? `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unitNumber}`
-                : `/dashboard/tenants/add?propertyId=${propertyId}`;
-              window.location.href = url;
-            } catch (error) {
-              console.error('Error navigating to add tenant:', error);
-            }
+            const url = unitNumber 
+              ? `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unitNumber}`
+              : `/dashboard/tenants/add?propertyId=${propertyId}`;
+            window.location.href = url;
           }} />
         </div>
 
@@ -853,13 +841,7 @@ const PropertyDetailsPage = () => {
                 View Tenants ({tenants.length})
               </Link>
               <button 
-                onClick={() => {
-                  try {
-                    window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}`;
-                  } catch (error) {
-                    console.error('Error navigating to add tenant:', error);
-                  }
-                }}
+                onClick={() => window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}`}
                 className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors"
               >
                 Add Tenant
