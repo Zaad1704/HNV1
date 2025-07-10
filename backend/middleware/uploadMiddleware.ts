@@ -84,11 +84,7 @@ const upload = multer({
     files: 10, // Maximum 10 files
     fields: 20 // Maximum 20 fields
   },
-  fileFilter: fileFilter,
-  onError: (err, next) => {
-    console.error('Multer error:', err);
-    next(err);
-  }
+  fileFilter: fileFilter
 });
 
 // S3 upload with memory storage
