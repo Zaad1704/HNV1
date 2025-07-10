@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
 import { cascadeTenantChanges } from '../middleware/cascadeMiddleware';
+import upload from '../middleware/uploadMiddleware';
 import {
   getTenants,
   createTenant,
@@ -15,7 +16,11 @@ router.use(protect);
 
 router.route('/')
   .get(getTenants)
-  .post(createTenant);
+  .post(upload.fields([
+    { name: 'tenantImage', maxCount: 1 },
+    { name: 'govtIdFront', maxCount: 1 },
+    { name: 'govtIdBack', maxCount: 1 }
+  ]), createTenant);
 
 router.route('/:id')
   .get(getTenantById)

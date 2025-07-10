@@ -54,8 +54,32 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Handle image uploads
+    const imageUrls: any = {};
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    if (files) {
+      try {
+        const { uploadToCloudinary, isCloudinaryConfigured } = await import('../utils/cloudinary');
+        
+        for (const [fieldname, fileArray] of Object.entries(files)) {
+          if (fileArray && fileArray[0]) {
+            const file = fileArray[0];
+            if (isCloudinaryConfigured()) {
+              imageUrls[fieldname] = await uploadToCloudinary(file, 'tenants');
+            } else {
+              imageUrls[fieldname] = `/uploads/images/${file.filename}`;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+      }
+    }
+
     const tenantData = { 
       ...req.body, 
+      ...imageUrls,
       organizationId: req.user.organizationId 
     };
 
@@ -66,6 +90,7 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
     
     res.status(201).json({ success: true, data: tenant });
   } catch (error) {
+    console.error('Create tenant error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

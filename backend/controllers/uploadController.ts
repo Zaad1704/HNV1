@@ -48,7 +48,19 @@ export const handleImageUpload = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    let imageUrl;
+    
+    try {
+      const { uploadToCloudinary, isCloudinaryConfigured } = await import('../utils/cloudinary');
+      if (isCloudinaryConfigured()) {
+        imageUrl = await uploadToCloudinary(req.file, 'uploads');
+      } else {
+        imageUrl = `/uploads/${req.file.filename}`;
+      }
+    } catch (error) {
+      console.error('Cloudinary upload failed, using local:', error);
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
     
     res.json({
       success: true,
