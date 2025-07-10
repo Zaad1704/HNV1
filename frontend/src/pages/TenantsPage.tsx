@@ -75,11 +75,15 @@ const TenantsPage = () => {
 
   const handleTenantAdded = async (newTenant: any) => {
     try {
-      queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      queryClient.invalidateQueries({ queryKey: ['crossData'] });
+      if (newTenant) {
+        queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
+        queryClient.invalidateQueries({ queryKey: ['tenants'] });
+        queryClient.invalidateQueries({ queryKey: ['crossData'] });
+      }
+      setShowAddModal(false);
     } catch (error) {
       console.error('Error handling tenant added:', error);
+      setShowAddModal(false);
     }
   };
 
@@ -290,7 +294,13 @@ const TenantsPage = () => {
             Export
           </button>
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              try {
+                setShowAddModal(true);
+              } catch (error) {
+                console.error('Error opening add tenant modal:', error);
+              }
+            }}
             className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
             <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
@@ -446,18 +456,17 @@ const TenantsPage = () => {
         <ComprehensiveTenantModal
           isOpen={showAddModal}
           onClose={() => {
-            try {
-              setShowAddModal(false);
-              // Clear URL params when closing modal
-              if (propertyId || unitParam) {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete('propertyId');
-                newUrl.searchParams.delete('unit');
-                window.history.replaceState({}, '', newUrl.toString());
+            setShowAddModal(false);
+            // Clear URL params when closing modal
+            if (propertyId || unitParam) {
+              try {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('propertyId');
+                url.searchParams.delete('unit');
+                window.history.replaceState({}, '', url.toString());
+              } catch (error) {
+                console.error('Error clearing URL params:', error);
               }
-            } catch (error) {
-              console.error('Error closing modal:', error);
-              setShowAddModal(false);
             }
           }}
           onTenantAdded={handleTenantAdded}
@@ -467,7 +476,13 @@ const TenantsPage = () => {
       {/* Floating Action Button for Mobile */}
       <div className="fixed bottom-6 right-6 z-40 md:hidden">
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            try {
+              setShowAddModal(true);
+            } catch (error) {
+              console.error('Error opening add tenant modal:', error);
+            }
+          }}
           className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
         >
           <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
