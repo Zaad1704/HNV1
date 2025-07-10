@@ -52,9 +52,22 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
     // Handle image URL from uploaded file or direct URL
     let imageUrl = req.body.imageUrl || '';
     if (req.file) {
-      // If file was uploaded, construct the URL
-      imageUrl = `/uploads/images/${req.file.filename}`;
-      console.log('Image uploaded:', imageUrl);
+      try {
+        // Use Cloudinary in production, local storage in development
+        if (process.env.NODE_ENV === 'production' && process.env.CLOUDINARY_CLOUD_NAME) {
+          const { uploadToCloudinary } = await import('../utils/cloudinary');
+          imageUrl = await uploadToCloudinary(req.file);
+          console.log('Image uploaded to Cloudinary:', imageUrl);
+        } else {
+          // Local storage for development
+          imageUrl = `/uploads/images/${req.file.filename}`;
+          console.log('Image uploaded locally:', imageUrl);
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+        // Fallback to local path
+        imageUrl = `/uploads/images/${req.file.filename}`;
+      }
     }
     
     // Handle nested address object from FormData
@@ -218,21 +231,23 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     
     // Handle image URL
     if (req.file) {
-      // If file was uploaded, construct the URL
-      updates.imageUrl = `/uploads/images/${req.file.filename}`;
-      console.log('Image updated:', updates.imageUrl);
-      console.log('File saved to:', path.join(__dirname, '../uploads/images', req.file.filename));
-      
-      // Verify file exists
-      const fs = require('fs');
-      const filePath = path.join(__dirname, '../uploads/images', req.file.filename);
-      if (fs.existsSync(filePath)) {
-        console.log('File exists on disk');
-      } else {
-        console.error('File does not exist on disk!');
+      try {
+        // Use Cloudinary in production, local storage in development
+        if (process.env.NODE_ENV === 'production' && process.env.CLOUDINARY_CLOUD_NAME) {
+          const { uploadToCloudinary } = await import('../utils/cloudinary');
+          updates.imageUrl = await uploadToCloudinary(req.file);
+          console.log('Image uploaded to Cloudinary:', updates.imageUrl);
+        } else {
+          // Local storage for development
+          updates.imageUrl = `/uploads/images/${req.file.filename}`;
+          console.log('Image updated locally:', updates.imageUrl);
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+        // Fallback to local path
+        updates.imageUrl = `/uploads/images/${req.file.filename}`;
       }
     } else if (req.body.imageUrl !== undefined) {
-      // Keep existing or set new URL
       updates.imageUrl = req.body.imageUrl;
       console.log('Image URL set:', updates.imageUrl);
     }
