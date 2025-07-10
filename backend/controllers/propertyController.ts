@@ -221,6 +221,16 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
       // If file was uploaded, construct the URL
       updates.imageUrl = `/uploads/images/${req.file.filename}`;
       console.log('Image updated:', updates.imageUrl);
+      console.log('File saved to:', path.join(__dirname, '../uploads/images', req.file.filename));
+      
+      // Verify file exists
+      const fs = require('fs');
+      const filePath = path.join(__dirname, '../uploads/images', req.file.filename);
+      if (fs.existsSync(filePath)) {
+        console.log('File exists on disk');
+      } else {
+        console.error('File does not exist on disk!');
+      }
     } else if (req.body.imageUrl !== undefined) {
       // Keep existing or set new URL
       updates.imageUrl = req.body.imageUrl;

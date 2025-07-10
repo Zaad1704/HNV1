@@ -279,6 +279,7 @@ app.use('/api/webhooks', webhookRoutes);
 
 // Serve uploaded files with CORS headers
 app.use('/uploads', (req, res, next) => {
+  console.log('Static file request:', req.url);
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
