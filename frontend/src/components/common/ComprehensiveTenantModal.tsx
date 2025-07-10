@@ -82,32 +82,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     enabled: isOpen
   });
 
-  const { data: tenants = [] } = useQuery({
-    queryKey: ['tenants'],
-    queryFn: async () => {
-      const { data } = await apiClient.get('/tenants');
-      return data.data || [];
-    },
-    enabled: isOpen && formData.propertyId
-  });
 
-  const { data: propertyUnits = [] } = useQuery({
-    queryKey: ['propertyUnits', formData.propertyId],
-    queryFn: async () => {
-      if (!formData.propertyId) return [];
-      try {
-        const { data } = await apiClient.get(`/properties/${formData.propertyId}/units`);
-        return data.data || [];
-      } catch (error) {
-        console.error('Failed to fetch property units:', error);
-        return [];
-      }
-    },
-    enabled: !!formData.propertyId,
-    retry: 1,
-    retryDelay: 1000,
-    staleTime: 30000
-  });
 
   const handleImageUpload = (field: string, file: File) => {
     setImages(prev => ({ ...prev, [field]: file }));
@@ -139,28 +114,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
   const selectedProperty = properties.find(p => p._id === formData.propertyId);
   const isCommercial = selectedProperty?.propertyType === 'Commercial';
   
-  // Get vacant units
-  const occupiedUnits = tenants
-    .filter(t => t.propertyId === formData.propertyId && t.status !== 'Archived')
-    .map(t => t.unit);
-  
-  const vacantUnits = propertyUnits.filter(unit => !occupiedUnits.includes(unit.unitNumber));
-  
-  // Auto-fill rent amount when unit is selected
-  const handleUnitChange = (unitNumber: string) => {
-    try {
-      if (!unitNumber) return;
-      
-      const selectedUnit = propertyUnits?.find(u => u.unitNumber === unitNumber);
-      setFormData(prev => ({
-        ...prev,
-        unit: unitNumber,
-        rentAmount: selectedUnit?.rentAmount?.toString() || prev.rentAmount || ''
-      }));
-    } catch (error) {
-      console.error('Error handling unit change:', error);
-    }
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -385,25 +339,16 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Available Units *
+                  Unit Number *
                 </label>
-                <select
+                <input
+                  type="text"
                   value={formData.unit}
-                  onChange={(e) => handleUnitChange(e.target.value)}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter unit number"
                   required
-                  disabled={!formData.propertyId}
-                >
-                  <option value="">Select Available Unit</option>
-                  {vacantUnits?.map((unit: any) => (
-                    <option key={unit.unitNumber || Math.random()} value={unit.unitNumber}>
-                      Unit {unit.unitNumber} {unit.rentAmount ? `- $${unit.rentAmount}/month` : ''}
-                    </option>
-                  )) || []}
-                </select>
-                {formData.propertyId && vacantUnits?.length === 0 && (
-                  <p className="text-sm text-red-600 mt-1">No vacant units available in this property</p>
-                )}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

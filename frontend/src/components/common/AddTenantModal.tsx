@@ -282,60 +282,14 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
                   type="text"
                   value={formData.unit}
                   onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  onFocus={() => formData.propertyId && setShowUnits(true)}
-                  className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  placeholder={formData.propertyId ? "Select vacant unit" : "Select property first"}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="Enter unit number"
                   required
-                  readOnly={formData.propertyId && vacantUnits.length > 0}
                 />
-                {formData.propertyId && (
-                  <Search size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                )}
+
               </div>
               
-              {/* Vacant Units Dropdown */}
-              {showUnits && vacantUnits.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  <div className="p-2 border-b border-gray-200 bg-gray-50">
-                    <p className="text-xs text-gray-600 font-medium">Available Units ({vacantUnits.length})</p>
-                  </div>
-                  {vacantUnits.map((unit: any, index) => (
-                    <div
-                      key={index}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleUnitSelect(unit);
-                      }}
-                      className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-colors"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                            Unit {unit.unitNumber}
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Vacant</span>
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {unit.lastRentAmount ? `Previous rent: $${unit.lastRentAmount}` : unit.suggestedRent ? `Suggested: $${unit.suggestedRent}` : 'No rent history'}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-green-600">Click to select</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {showUnits && vacantUnits.length === 0 && formData.propertyId && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg p-4">
-                  <div className="text-center">
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">No vacant units available</p>
-                    <p className="text-xs text-gray-400">All units in this property are occupied</p>
-                  </div>
-                </div>
-              )}
+
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
