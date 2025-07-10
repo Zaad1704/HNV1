@@ -74,7 +74,8 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       imageUrl: imageUrl,
       organizationId: user.organizationId,
       createdBy: user._id,
-      managedByAgentId: req.body.managedByAgentId || null
+      managedByAgentId: req.body.managedByAgentId || null,
+      description: ''
     };
     
     // Generate AI description
