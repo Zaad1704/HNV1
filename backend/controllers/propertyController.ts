@@ -196,8 +196,9 @@ export const updateProperty = async (req: AuthRequest, res: Response) => {
     };
     
     // Regenerate description if key fields changed
-    if (req.body.name !== property.name || req.body.propertyType !== property.propertyType || req.body.numberOfUnits !== property.numberOfUnits) {
-      updates.description = generatePropertyDescription({ ...property.toObject(), ...updates });
+    const propertyObj = property.toObject();
+    if (req.body.name !== property.name || req.body.propertyType !== propertyObj.propertyType || req.body.numberOfUnits !== property.numberOfUnits) {
+      updates.description = generatePropertyDescription({ ...propertyObj, ...updates });
     }
     
     // Handle address if provided
