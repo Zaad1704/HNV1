@@ -87,14 +87,22 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Handle emergency contact
+    const emergencyContact = {
+      name: req.body.emergencyContactName,
+      phone: req.body.emergencyContactPhone,
+      relation: req.body.emergencyContactRelation
+    };
+
     const tenantData = { 
       ...req.body, 
       ...imageUrls,
       additionalAdults,
+      emergencyContact,
       organizationId: req.user.organizationId 
     };
 
-    console.log('Creating tenant with data:', tenantData);
+    console.log('Creating tenant with data:', { ...tenantData, additionalAdults: additionalAdults.length });
     const tenant = await Tenant.create(tenantData);
     
     // Trigger action chain

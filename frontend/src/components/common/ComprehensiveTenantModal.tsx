@@ -24,7 +24,11 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     propertyId: preSelectedProperty || '',
     unit: preSelectedUnit || '',
     rentAmount: '',
+    leaseStartDate: '',
     leaseEndDate: '',
+    leaseDuration: '12', // months
+    securityDeposit: '',
+    advanceRent: '',
     status: 'Active',
     
     // Personal Details
@@ -42,8 +46,19 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     referenceRelation: '',
     referenceGovtId: '',
     
-    // Commercial Properties
-    securityDeposit: '',
+    // Emergency Contact
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
+    
+    // Additional Details
+    occupation: '',
+    monthlyIncome: '',
+    previousAddress: '',
+    reasonForMoving: '',
+    petDetails: '',
+    vehicleDetails: '',
+    specialInstructions: '',
     
     // Residential Properties
     numberOfOccupants: 1
@@ -151,11 +166,13 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
       setFormData({
         name: '', email: '', phone: '', whatsappNumber: '',
         propertyId: preSelectedProperty || '', unit: preSelectedUnit || '', rentAmount: '',
-        leaseEndDate: '', status: 'Active', fatherName: '', motherName: '',
-        presentAddress: '', permanentAddress: '', govtIdNumber: '',
-        referenceName: '', referencePhone: '', referenceEmail: '',
-        referenceAddress: '', referenceRelation: '', referenceGovtId: '', securityDeposit: '',
-        numberOfOccupants: 1
+        leaseStartDate: '', leaseEndDate: '', leaseDuration: '12', securityDeposit: '', advanceRent: '',
+        status: 'Active', fatherName: '', motherName: '', presentAddress: '', permanentAddress: '',
+        govtIdNumber: '', referenceName: '', referencePhone: '', referenceEmail: '',
+        referenceAddress: '', referenceRelation: '', referenceGovtId: '',
+        emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '',
+        occupation: '', monthlyIncome: '', previousAddress: '', reasonForMoving: '',
+        petDetails: '', vehicleDetails: '', specialInstructions: '', numberOfOccupants: 1
       });
       setImages({ tenantImage: null, govtIdFront: null, govtIdBack: null });
       setAdditionalAdults([]);
@@ -280,6 +297,86 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                 />
               </div>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lease Start Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.leaseStartDate}
+                  onChange={(e) => setFormData({ ...formData, leaseStartDate: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lease Duration (Months) *
+                </label>
+                <select
+                  value={formData.leaseDuration}
+                  onChange={(e) => {
+                    const duration = e.target.value;
+                    setFormData({ ...formData, leaseDuration: duration });
+                    // Auto-calculate lease end date
+                    if (formData.leaseStartDate) {
+                      const startDate = new Date(formData.leaseStartDate);
+                      const endDate = new Date(startDate);
+                      endDate.setMonth(endDate.getMonth() + parseInt(duration));
+                      setFormData(prev => ({ ...prev, leaseEndDate: endDate.toISOString().split('T')[0] }));
+                    }
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="6">6 Months</option>
+                  <option value="12">12 Months</option>
+                  <option value="18">18 Months</option>
+                  <option value="24">24 Months</option>
+                  <option value="36">36 Months</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lease End Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.leaseEndDate}
+                  onChange={(e) => setFormData({ ...formData, leaseEndDate: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Security Deposit *
+                </label>
+                <input
+                  type="number"
+                  value={formData.securityDeposit}
+                  onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Advance Rent (Optional)
+                </label>
+                <input
+                  type="number"
+                  value={formData.advanceRent}
+                  onChange={(e) => setFormData({ ...formData, advanceRent: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Personal Details */}
@@ -392,24 +489,142 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
             </div>
           </div>
 
-          {/* Security Deposit (Commercial) */}
-          {isCommercial && (
-            <div className="border-b pb-6">
-              <h4 className="text-lg font-semibold mb-4">Commercial Property Details</h4>
+          {/* Emergency Contact */}
+          <div className="border-b pb-6">
+            <h4 className="text-lg font-semibold mb-4">Emergency Contact *</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Security Deposit *
+                  Contact Name *
                 </label>
                 <input
-                  type="number"
-                  value={formData.securityDeposit}
-                  onChange={(e) => setFormData({ ...formData, securityDeposit: e.target.value })}
+                  type="text"
+                  value={formData.emergencyContactName}
+                  onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contact Phone *
+                </label>
+                <input
+                  type="tel"
+                  value={formData.emergencyContactPhone}
+                  onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Relationship *
+                </label>
+                <select
+                  value={formData.emergencyContactRelation}
+                  onChange={(e) => setFormData({ ...formData, emergencyContactRelation: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select Relationship</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Spouse">Spouse</option>
+                  <option value="Friend">Friend</option>
+                  <option value="Colleague">Colleague</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Additional Details */}
+          <div className="border-b pb-6">
+            <h4 className="text-lg font-semibold mb-4">Additional Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Occupation
+                </label>
+                <input
+                  type="text"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Monthly Income
+                </label>
+                <input
+                  type="number"
+                  value={formData.monthlyIncome}
+                  onChange={(e) => setFormData({ ...formData, monthlyIncome: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Previous Address
+                </label>
+                <textarea
+                  value={formData.previousAddress}
+                  onChange={(e) => setFormData({ ...formData, previousAddress: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Moving
+                </label>
+                <textarea
+                  value={formData.reasonForMoving}
+                  onChange={(e) => setFormData({ ...formData, reasonForMoving: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pet Details (if any)
+                </label>
+                <input
+                  type="text"
+                  value={formData.petDetails}
+                  onChange={(e) => setFormData({ ...formData, petDetails: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 1 Dog, 2 Cats"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Vehicle Details
+                </label>
+                <input
+                  type="text"
+                  value={formData.vehicleDetails}
+                  onChange={(e) => setFormData({ ...formData, vehicleDetails: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Car - ABC123, Bike - XYZ789"
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Special Instructions/Notes
+              </label>
+              <textarea
+                value={formData.specialInstructions}
+                onChange={(e) => setFormData({ ...formData, specialInstructions: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                placeholder="Any special requirements, medical conditions, or important notes..."
+              />
+            </div>
+          </div>
 
           {/* Residential Occupants */}
           {!isCommercial && (
