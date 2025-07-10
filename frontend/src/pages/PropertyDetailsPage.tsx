@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wrench, Trash2, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, X, Wrench, Trash2, Share2, BarChart3 } from 'lucide-react';
 import RentIncreaseModal from '../components/common/RentIncreaseModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
+import DataPreviewSections from '../components/property/DataPreviewSections';
+import UnitDataModal from '../components/property/UnitDataModal';
 
 // Units & Tenants Component
-const UnitsTenantsSection = ({ propertyId, property, tenants }: { propertyId: string, property: any, tenants: any[] }) => {
+const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick }: { propertyId: string, property: any, tenants: any[], onUnitDataClick: (unitNumber: string) => void }) => {
   // Generate all units based on property numberOfUnits
   const allUnits = Array.from({ length: property.numberOfUnits || 1 }, (_, i) => {
     const unitNumber = (i + 1).toString();
@@ -91,10 +93,20 @@ const UnitsTenantsSection = ({ propertyId, property, tenants }: { propertyId: st
               <div>
                 <p className="font-medium text-text-primary mb-1">{unit.tenant.name}</p>
                 <p className="text-sm text-text-secondary mb-2">{unit.tenant.email}</p>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-3">
                   <span className="text-sm text-text-secondary">Monthly Rent</span>
                   <span className="font-semibold text-text-primary">${unit.tenant.rentAmount || 0}</span>
                 </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUnitDataClick(unit.unitNumber);
+                  }}
+                  className="w-full bg-blue-500 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <BarChart3 size={14} />
+                  View Unit Data
+                </button>
               </div>
             ) : (
               <div className="text-center py-2">
@@ -564,6 +576,13 @@ const PropertyDetailsPage = () => {
   const queryClient = useQueryClient();
   const [showRentIncrease, setShowRentIncrease] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showUnitDataModal, setShowUnitDataModal] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<string>('');
+
+  const handleUnitDataClick = (unitNumber: string) => {
+    setSelectedUnit(unitNumber);
+    setShowUnitDataModal(true);
+  };
   
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', propertyId],
@@ -719,7 +738,20 @@ const PropertyDetailsPage = () => {
           <RentStatusSection propertyId={propertyId!} />
 
           {/* Units & Tenants List */}
-          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} />
+          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} />
+          
+          {/* NEW: Data Preview Sections */}
+          <div className="app-surface rounded-3xl p-8 border border-app-border">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-text-primary">Property Data Overview</h2>
+                <p className="text-sm text-text-secondary">
+                  Recent activity and data across all property operations
+                </p>
+              </div>
+            </div>
+            <DataPreviewSections propertyId={propertyId!} />
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -819,6 +851,14 @@ const PropertyDetailsPage = () => {
           queryClient.invalidateQueries({ queryKey: ['properties'] });
         }}
         property={property}
+      />
+      
+      <UnitDataModal
+        isOpen={showUnitDataModal}
+        onClose={() => setShowUnitDataModal(false)}
+        propertyId={propertyId!}
+        unitNumber={selectedUnit}
+        unitName={`Unit ${selectedUnit}`}
       />
     </motion.div>
   );

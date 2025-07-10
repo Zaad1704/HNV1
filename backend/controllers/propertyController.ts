@@ -181,3 +181,271 @@ export const deleteProperty = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+// NEW DATA PREVIEW ENDPOINTS
+export const getPropertyDataPreviews = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { propertyId } = req.params;
+    const { unit } = req.query;
+
+    // Verify property access
+    const property = await Property.findById(propertyId);
+    if (!property || property.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const [Payment, Receipt, Expense, MaintenanceRequest, Reminder, ApprovalRequest, AuditLog, Tenant] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/Receipt'),
+      import('../models/Expense'),
+      import('../models/MaintenanceRequest'),
+      import('../models/Reminder'),
+      import('../models/ApprovalRequest'),
+      import('../models/AuditLog'),
+      import('../models/Tenant')
+    ]);
+
+    // Base query filters
+    let baseQuery: any = { propertyId, organizationId: user.organizationId };
+    let tenantQuery: any = { propertyId, organizationId: user.organizationId };
+    
+    if (unit) {
+      const tenant = await Tenant.default.findOne({ propertyId, unit, organizationId: user.organizationId });
+      if (tenant) {
+        baseQuery.tenantId = tenant._id;
+        tenantQuery._id = tenant._id;
+      } else {
+        baseQuery.tenantId = null; // No data for non-existent unit
+      }
+    }
+
+    const [payments, receipts, expenses, maintenance, reminders, approvals, auditLogs] = await Promise.all([
+      Payment.default.find(baseQuery)
+        .populate('tenantId', 'name unit')
+        .sort({ paymentDate: -1 })
+        .limit(5)
+        .lean(),
+      Receipt.default.find(baseQuery)
+        .populate('tenantId', 'name unit')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      Expense.default.find(unit ? {} : { propertyId, organizationId: user.organizationId })
+        .sort({ date: -1 })
+        .limit(5)
+        .lean(),
+      MaintenanceRequest.default.find(baseQuery)
+        .populate('tenantId', 'name unit')
+        .populate('assignedTo', 'name')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      Reminder.default.find(unit ? tenantQuery : { propertyId, organizationId: user.organizationId })
+        .populate('tenantId', 'name unit')
+        .sort({ nextRunDate: 1 })
+        .limit(5)
+        .lean(),
+      ApprovalRequest.default.find({ propertyId, organizationId: user.organizationId })
+        .populate('requestedBy', 'name')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      AuditLog.default.find({ 
+        organizationId: user.organizationId,
+        $or: [{ resourceId: propertyId }, { 'metadata.propertyId': propertyId }]
+      })
+        .populate('userId', 'name')
+        .sort({ timestamp: -1 })
+        .limit(10)
+        .lean()
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        payments: payments.map(p => ({
+          _id: p._id,
+          amount: p.amount,
+          status: p.status,
+          paymentDate: p.paymentDate,
+          tenant: p.tenantId,
+          paymentMethod: p.paymentMethod,
+          rentMonth: p.rentMonth
+        })),
+        receipts: receipts.map(r => ({
+          _id: r._id,
+          receiptNumber: r.receiptNumber,
+          amount: r.amount,
+          paymentDate: r.paymentDate,
+          tenant: r.tenantId,
+          paymentMethod: r.paymentMethod
+        })),
+        expenses: expenses.map(e => ({
+          _id: e._id,
+          description: e.description,
+          amount: e.amount,
+          category: e.category,
+          date: e.date
+        })),
+        maintenance: maintenance.map(m => ({
+          _id: m._id,
+          description: m.description,
+          status: m.status,
+          priority: m.priority,
+          tenant: m.tenantId,
+          assignedTo: m.assignedTo,
+          createdAt: m.createdAt
+        })),
+        reminders: reminders.map(r => ({
+          _id: r._id,
+          title: r.title,
+          type: r.type,
+          status: r.status,
+          nextRunDate: r.nextRunDate,
+          tenant: r.tenantId
+        })),
+        approvals: approvals.map(a => ({
+          _id: a._id,
+          type: a.type,
+          description: a.description,
+          status: a.status,
+          priority: a.priority,
+          requestedBy: a.requestedBy,
+          createdAt: a.createdAt
+        })),
+        auditLogs: auditLogs.map(l => ({
+          _id: l._id,
+          action: l.action,
+          resource: l.resource,
+          description: l.description,
+          user: l.userId,
+          timestamp: l.timestamp,
+          severity: l.severity
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Property data previews error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+export const getUnitData = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { propertyId, unitNumber } = req.params;
+
+    // Verify property access
+    const property = await Property.findById(propertyId);
+    if (!property || property.organizationId.toString() !== user.organizationId.toString()) {
+      res.status(403).json({ success: false, message: 'Not authorized' });
+      return;
+    }
+
+    const [Payment, Receipt, Expense, MaintenanceRequest, Reminder, Tenant] = await Promise.all([
+      import('../models/Payment'),
+      import('../models/Receipt'),
+      import('../models/Expense'),
+      import('../models/MaintenanceRequest'),
+      import('../models/Reminder'),
+      import('../models/Tenant')
+    ]);
+
+    // Find tenant for this unit
+    const tenant = await Tenant.default.findOne({ 
+      propertyId, 
+      unit: unitNumber, 
+      organizationId: user.organizationId 
+    });
+
+    if (!tenant) {
+      res.status(404).json({ success: false, message: 'Unit not found or vacant' });
+      return;
+    }
+
+    const [payments, receipts, expenses, maintenance, reminders] = await Promise.all([
+      Payment.default.find({ tenantId: tenant._id, propertyId, organizationId: user.organizationId })
+        .sort({ paymentDate: -1 })
+        .lean(),
+      Receipt.default.find({ tenantId: tenant._id, propertyId, organizationId: user.organizationId })
+        .sort({ createdAt: -1 })
+        .lean(),
+      Expense.default.find({ propertyId, organizationId: user.organizationId })
+        .sort({ date: -1 })
+        .lean(),
+      MaintenanceRequest.default.find({ tenantId: tenant._id, propertyId, organizationId: user.organizationId })
+        .populate('assignedTo', 'name')
+        .sort({ createdAt: -1 })
+        .lean(),
+      Reminder.default.find({ tenantId: tenant._id, organizationId: user.organizationId })
+        .sort({ nextRunDate: 1 })
+        .lean()
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        tenant: {
+          _id: tenant._id,
+          name: tenant.name,
+          email: tenant.email,
+          unit: tenant.unit,
+          rentAmount: tenant.rentAmount,
+          status: tenant.status
+        },
+        payments: payments.map(p => ({
+          _id: p._id,
+          amount: p.amount,
+          status: p.status,
+          paymentDate: p.paymentDate,
+          paymentMethod: p.paymentMethod,
+          rentMonth: p.rentMonth
+        })),
+        receipts: receipts.map(r => ({
+          _id: r._id,
+          receiptNumber: r.receiptNumber,
+          amount: r.amount,
+          paymentDate: r.paymentDate,
+          paymentMethod: r.paymentMethod
+        })),
+        expenses: expenses.map(e => ({
+          _id: e._id,
+          description: e.description,
+          amount: e.amount,
+          category: e.category,
+          date: e.date
+        })),
+        maintenance: maintenance.map(m => ({
+          _id: m._id,
+          description: m.description,
+          status: m.status,
+          priority: m.priority,
+          assignedTo: m.assignedTo,
+          createdAt: m.createdAt
+        })),
+        reminders: reminders.map(r => ({
+          _id: r._id,
+          title: r.title,
+          type: r.type,
+          status: r.status,
+          nextRunDate: r.nextRunDate
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Unit data error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

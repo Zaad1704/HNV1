@@ -4,7 +4,9 @@ import {
   getProperties,
   getPropertyById,
   updateProperty,
-  deleteProperty
+  deleteProperty,
+  getPropertyDataPreviews,
+  getUnitData
 } from '../controllers/propertyController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
@@ -40,5 +42,9 @@ router.patch('/:id/archive', async (req: any, res) => {
     res.status(500).json({ success: false, message: 'Failed to archive property' });
   }
 });
+
+// NEW DATA PREVIEW ROUTES
+router.get('/:propertyId/data-previews', getPropertyDataPreviews);
+router.get('/:propertyId/units/:unitNumber/data', getUnitData);
 
 export default router;
