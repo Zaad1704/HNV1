@@ -206,9 +206,18 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
             {previews.payments?.slice(0, 3).map((payment: any) => (
               <div key={payment._id} className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-sm">{payment.tenant?.name || 'Unknown'}</p>
+                  {payment.tenant ? (
+                    <Link 
+                      to={`/dashboard/tenants/${payment.tenant._id}`}
+                      className="font-medium text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      {payment.tenant.name}
+                    </Link>
+                  ) : (
+                    <p className="font-medium text-sm text-gray-500">No Tenant</p>
+                  )}
                   <p className="text-xs text-gray-600">
-                    {payment.rentMonth} • {payment.paymentMethod}
+                    {payment.tenant?.unit && `Unit ${payment.tenant.unit} • `}{payment.rentMonth} • {payment.paymentMethod}
                   </p>
                 </div>
                 <div className="text-right">
@@ -250,7 +259,14 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
                 <div>
                   <p className="font-medium text-sm">#{receipt.receiptNumber}</p>
                   <p className="text-xs text-gray-600">
-                    {receipt.tenant?.name || 'Unknown'} • {receipt.paymentMethod}
+                    {receipt.tenant ? (
+                      <Link 
+                        to={`/dashboard/tenants/${receipt.tenant._id}`}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        {receipt.tenant.name}
+                      </Link>
+                    ) : 'No Tenant'} • {receipt.paymentMethod}
                   </p>
                 </div>
                 <div className="text-right">
@@ -340,7 +356,14 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
                 </div>
                 <div className="flex justify-between items-center">
                   <p className="text-xs text-gray-600">
-                    {maintenance.tenant?.name || 'Property'} • {maintenance.priority}
+                    {maintenance.tenant ? (
+                      <Link 
+                        to={`/dashboard/tenants/${maintenance.tenant._id}`}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        {maintenance.tenant.name} (Unit {maintenance.tenant.unit})
+                      </Link>
+                    ) : 'Property'} • {maintenance.priority}
                   </p>
                   <p className="text-xs text-gray-600">
                     {new Date(maintenance.createdAt).toLocaleDateString()}

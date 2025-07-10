@@ -188,12 +188,12 @@ export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => 
     let baseQuery: any = { tenantId, organizationId: user.organizationId };
     
     const [payments, receipts, expenses, maintenance, reminders, approvals, auditLogs] = await Promise.all([
-      Payment.default.find(baseQuery).populate('propertyId', 'name').sort({ paymentDate: -1 }).limit(5).lean(),
-      Receipt.default.find(baseQuery).populate('propertyId', 'name').sort({ createdAt: -1 }).limit(5).lean(),
-      Expense.default.find({ propertyId: tenant.propertyId, organizationId: user.organizationId }).sort({ date: -1 }).limit(5).lean(),
-      MaintenanceRequest.default.find(baseQuery).populate('assignedTo', 'name').sort({ createdAt: -1 }).limit(5).lean(),
-      Reminder.default.find(baseQuery).sort({ nextRunDate: 1 }).limit(5).lean(),
-      ApprovalRequest.default.find({ tenantId, organizationId: user.organizationId }).populate('requestedBy', 'name').sort({ createdAt: -1 }).limit(5).lean(),
+      Payment.default.find(baseQuery).populate('propertyId', 'name').populate('tenantId', 'name unit').sort({ paymentDate: -1 }).limit(5).lean(),
+      Receipt.default.find(baseQuery).populate('propertyId', 'name').populate('tenantId', 'name unit').sort({ createdAt: -1 }).limit(5).lean(),
+      Expense.default.find({ propertyId: tenant.propertyId, organizationId: user.organizationId }).populate('propertyId', 'name').sort({ date: -1 }).limit(5).lean(),
+      MaintenanceRequest.default.find(baseQuery).populate('assignedTo', 'name').populate('propertyId', 'name').populate('tenantId', 'name unit').sort({ createdAt: -1 }).limit(5).lean(),
+      Reminder.default.find(baseQuery).populate('tenantId', 'name unit').populate('propertyId', 'name').sort({ nextRunDate: 1 }).limit(5).lean(),
+      ApprovalRequest.default.find({ tenantId, organizationId: user.organizationId }).populate('requestedBy', 'name').populate('propertyId', 'name').sort({ createdAt: -1 }).limit(5).lean(),
       AuditLog.default.find({ 
         organizationId: user.organizationId,
         $or: [{ resourceId: tenantId }, { 'metadata.tenantId': tenantId }]
@@ -210,7 +210,8 @@ export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => 
           paymentDate: p.paymentDate,
           paymentMethod: p.paymentMethod,
           rentMonth: p.rentMonth,
-          property: p.propertyId
+          property: p.propertyId,
+          tenant: p.tenantId
         })),
         receipts: receipts.map(r => ({
           _id: r._id,
@@ -218,14 +219,16 @@ export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => 
           amount: r.amount,
           paymentDate: r.paymentDate,
           paymentMethod: r.paymentMethod,
-          property: r.propertyId
+          property: r.propertyId,
+          tenant: r.tenantId
         })),
         expenses: expenses.map(e => ({
           _id: e._id,
           description: e.description,
           amount: e.amount,
           category: e.category,
-          date: e.date
+          date: e.date,
+          property: e.propertyId
         })),
         maintenance: maintenance.map(m => ({
           _id: m._id,
@@ -233,14 +236,18 @@ export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => 
           status: m.status,
           priority: m.priority,
           assignedTo: m.assignedTo,
-          createdAt: m.createdAt
+          createdAt: m.createdAt,
+          property: m.propertyId,
+          tenant: m.tenantId
         })),
         reminders: reminders.map(r => ({
           _id: r._id,
           title: r.title,
           type: r.type,
           status: r.status,
-          nextRunDate: r.nextRunDate
+          nextRunDate: r.nextRunDate,
+          tenant: r.tenantId,
+          property: r.propertyId
         })),
         approvals: approvals.map(a => ({
           _id: a._id,
@@ -249,7 +256,8 @@ export const getTenantDataPreviews = async (req: AuthRequest, res: Response) => 
           status: a.status,
           priority: a.priority,
           requestedBy: a.requestedBy,
-          createdAt: a.createdAt
+          createdAt: a.createdAt,
+          property: a.propertyId
         })),
         auditLogs: auditLogs.map(l => ({
           _id: l._id,

@@ -554,3 +554,35 @@ export const getUnitData = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+export const validateDataIntegrity = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { validatePropertyTenantConnection, fixDataInconsistencies } = await import('../utils/dataValidation');
+    const { fix = false } = req.query;
+
+    if (fix === 'true') {
+      const fixResult = await fixDataInconsistencies(user.organizationId);
+      res.status(200).json({
+        success: true,
+        action: 'fix',
+        data: fixResult
+      });
+    } else {
+      const validation = await validatePropertyTenantConnection(user.organizationId);
+      res.status(200).json({
+        success: true,
+        action: 'validate',
+        data: validation
+      });
+    }
+  } catch (error) {
+    console.error('Data validation error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

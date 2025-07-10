@@ -207,6 +207,14 @@ const TenantDataPreviewSections: React.FC<TenantDataPreviewProps> = ({ tenantId,
                   <p className="text-xs text-gray-600">
                     {payment.rentMonth} • {payment.paymentMethod}
                   </p>
+                  {payment.property && (
+                    <Link 
+                      to={`/dashboard/properties/${payment.property._id}`}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      {payment.property.name}
+                    </Link>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className={`text-xs ${payment.status === 'Paid' ? 'text-green-600' : 'text-yellow-600'}`}>
@@ -257,7 +265,17 @@ const TenantDataPreviewSections: React.FC<TenantDataPreviewProps> = ({ tenantId,
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-xs text-gray-600">{maintenance.priority} priority</p>
+                  <div>
+                    <p className="text-xs text-gray-600">{maintenance.priority} priority</p>
+                    {maintenance.property && (
+                      <Link 
+                        to={`/dashboard/properties/${maintenance.property._id}`}
+                        className="text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        {maintenance.property.name}
+                      </Link>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-600">
                     {new Date(maintenance.createdAt).toLocaleDateString()}
                   </p>
@@ -295,6 +313,14 @@ const TenantDataPreviewSections: React.FC<TenantDataPreviewProps> = ({ tenantId,
                 <div>
                   <p className="font-medium text-sm">#{receipt.receiptNumber}</p>
                   <p className="text-xs text-gray-600">{receipt.paymentMethod}</p>
+                  {receipt.property && (
+                    <Link 
+                      to={`/dashboard/properties/${receipt.property._id}`}
+                      className="text-xs text-blue-600 hover:text-blue-800"
+                    >
+                      {receipt.property.name}
+                    </Link>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-blue-600">${receipt.amount}</p>

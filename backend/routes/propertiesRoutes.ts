@@ -6,7 +6,8 @@ import {
   updateProperty,
   deleteProperty,
   getPropertyDataPreviews,
-  getUnitData
+  getUnitData,
+  validateDataIntegrity
 } from '../controllers/propertyController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
@@ -47,5 +48,8 @@ router.patch('/:id/archive', async (req: any, res) => {
 // NEW DATA PREVIEW ROUTES
 router.get('/:propertyId/data-previews', getPropertyDataPreviews);
 router.get('/:propertyId/units/:unitNumber/data', getUnitData);
+
+// DATA VALIDATION ROUTE
+router.get('/validate/data-integrity', validateDataIntegrity);
 
 export default router;
