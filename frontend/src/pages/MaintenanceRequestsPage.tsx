@@ -1,7 +1,7 @@
 // frontend/src/pages/MaintenanceRequestsPage.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import LazyLoader from '../components/common/LazyLoader';
 import SkeletonLoader from '../components/common/SkeletonLoader';
@@ -24,9 +24,16 @@ import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
-const fetchRequests = async () => {
+const fetchRequests = async (propertyId?: string, status?: string, tenantId?: string) => {
     try {
-        const { data } = await apiClient.get('/maintenance'); 
+        let url = '/maintenance';
+        const params = new URLSearchParams();
+        if (propertyId) params.append('propertyId', propertyId);
+        if (status) params.append('status', status);
+        if (tenantId) params.append('tenantId', tenantId);
+        if (params.toString()) url += `?${params.toString()}`;
+        
+        const { data } = await apiClient.get(url); 
         return data.data || [];
     } catch (error) {
         console.error('Failed to fetch maintenance requests:', error);
@@ -41,6 +48,10 @@ const updateRequestStatus = async ({ id, status }: { id: string, status: string 
 
 const MaintenanceRequestsPage = () => {
     const queryClient = useQueryClient();
+    const [searchParams] = useSearchParams();
+    const propertyId = searchParams.get('propertyId');
+    const statusFilter = searchParams.get('status');
+    const tenantId = searchParams.get('tenantId');
     const { stats } = useCrossData();
     const { triggerMaintenanceWorkflow } = useWorkflowTriggers();
     const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
@@ -59,8 +70,8 @@ const MaintenanceRequestsPage = () => {
     });
     const { exportData } = useDataExport() || { exportData: () => {} };
     const { data: requests = [], isLoading, isError } = useQuery({ 
-        queryKey: ['maintenanceRequests'], 
-        queryFn: fetchRequests,
+        queryKey: ['maintenanceRequests', propertyId, statusFilter, tenantId], 
+        queryFn: () => fetchRequests(propertyId || undefined, statusFilter || undefined, tenantId || undefined),
         retry: 1,
         onError: (error) => console.error('Maintenance requests error:', error)
     });
@@ -295,7 +306,11 @@ const MaintenanceRequestsPage = () => {
         <div className="text-dark-text dark:text-dark-text-dark space-y-8">
             <UniversalHeader
                 title="Maintenance Requests"
-                subtitle={`Manage property maintenance requests (${requests.length} total)`}
+                subtitle={
+                    propertyId ? `Requests for selected property (${requests.length} requests)` :
+                    tenantId ? `Requests for selected tenant (${requests.length} requests)` :
+                    `Manage property maintenance requests (${requests.length} total)`
+                }
                 icon={Wrench}
                 stats={[
                     { label: 'Total', value: requests.length, color: 'blue' },

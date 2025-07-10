@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { DollarSign, Plus, Calendar, Tag, Building, Download, Eye } from 'lucide-react';
 import LazyLoader from '../components/common/LazyLoader';
 import SkeletonLoader from '../components/common/SkeletonLoader';
@@ -21,9 +21,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { deleteExpense, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
-const fetchExpenses = async () => {
+const fetchExpenses = async (propertyId?: string) => {
   try {
-    const { data } = await apiClient.get('/expenses');
+    const url = propertyId ? `/expenses?propertyId=${propertyId}` : '/expenses';
+    const { data } = await apiClient.get(url);
     return data.data || [];
   } catch (error) {
     console.error('Failed to fetch expenses:', error);
@@ -33,6 +34,8 @@ const fetchExpenses = async () => {
 
 const ExpensesPage = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const propertyId = searchParams.get('propertyId');
   const { currency } = useCurrency();
   const { stats } = useCrossData();
   const { triggerExpenseWorkflow } = useWorkflowTriggers();
@@ -48,8 +51,8 @@ const ExpensesPage = () => {
   });
   
   const { data: expenses = [], isLoading } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: fetchExpenses,
+    queryKey: ['expenses', propertyId],
+    queryFn: () => fetchExpenses(propertyId || undefined),
     retry: 0
   });
 
@@ -123,7 +126,7 @@ const ExpensesPage = () => {
     <div className="space-y-8">
       <UniversalHeader
         title="Expenses"
-        subtitle={`Track property expenses and costs (${filteredExpenses.length} expenses)`}
+        subtitle={propertyId ? `Expenses for selected property (${filteredExpenses.length} expenses)` : `Track property expenses and costs (${filteredExpenses.length} expenses)`}
         icon={DollarSign}
         stats={[
           { label: 'Total', value: expenses.length, color: 'blue' },

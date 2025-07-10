@@ -26,9 +26,14 @@ import { useAuthStore } from '../store/authStore';
 import { deletePayment, confirmDelete, handleDeleteError, handleDeleteSuccess } from '../utils/deleteHelpers';
 import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 
-const fetchPayments = async (propertyId?: string) => {
+const fetchPayments = async (propertyId?: string, tenantId?: string) => {
   try {
-    const url = propertyId ? `/payments?propertyId=${propertyId}` : '/payments';
+    let url = '/payments';
+    const params = new URLSearchParams();
+    if (propertyId) params.append('propertyId', propertyId);
+    if (tenantId) params.append('tenantId', tenantId);
+    if (params.toString()) url += `?${params.toString()}`;
+    
     const { data } = await apiClient.get(url);
     return data.data || [];
   } catch (error) {
@@ -45,6 +50,7 @@ const PaymentsPage = () => {
   const { triggerPaymentWorkflow } = useWorkflowTriggers();
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
+  const tenantId = searchParams.get('tenantId');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkPayment, setShowBulkPayment] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
@@ -61,8 +67,8 @@ const PaymentsPage = () => {
   });
   
   const { data: payments = [], isLoading } = useQuery({
-    queryKey: ['payments', propertyId],
-    queryFn: () => fetchPayments(propertyId || undefined),
+    queryKey: ['payments', propertyId, tenantId],
+    queryFn: () => fetchPayments(propertyId || undefined, tenantId || undefined),
     retry: 1
   });
 
@@ -98,7 +104,11 @@ const PaymentsPage = () => {
     <div className="space-y-8">
       <UniversalHeader
         title="Payments"
-        subtitle={propertyId ? `Payments for selected property (${payments.length} payments)` : `Track and manage rent payments (${payments.length} payments)`}
+        subtitle={
+          propertyId ? `Payments for selected property (${payments.length} payments)` :
+          tenantId ? `Payments for selected tenant (${payments.length} payments)` :
+          `Track and manage rent payments (${payments.length} payments)`
+        }
         icon={CreditCard}
         stats={[
           { label: 'Total', value: payments.length, color: 'blue' },

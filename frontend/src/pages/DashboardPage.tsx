@@ -424,9 +424,9 @@ const DashboardPage = () => {
             <p className="text-white/70 text-xs mb-4">
               {dashboardStats.pendingMaintenance === 0 ? 'All caught up!' : 'Requires attention'}
             </p>
-            <Link to="/dashboard/maintenance" className="bg-white text-brand-orange px-4 py-2 rounded-2xl text-sm font-bold inline-flex items-center gap-2 hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Link to="/dashboard/maintenance?status=Open" className="bg-white text-brand-orange px-4 py-2 rounded-2xl text-sm font-bold inline-flex items-center gap-2 hover:shadow-xl transition-all duration-300 hover:scale-105">
               <Activity size={14} />
-              View All
+              View Pending
             </Link>
           </div>
         </UniversalCard>
