@@ -45,8 +45,8 @@ const TenantsPage = () => {
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
   const unitParam = searchParams.get('unit');
-  const { stats } = useCrossData();
-  const { triggerTenantWorkflow } = useWorkflowTriggers();
+  const { stats } = useCrossData() || {};
+  const { triggerTenantWorkflow } = useWorkflowTriggers() || { triggerTenantWorkflow: () => {} };
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
@@ -76,10 +76,16 @@ const TenantsPage = () => {
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
-    queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
-    
-    // Trigger smart workflow
-    await triggerTenantWorkflow(newTenant);
+    try {
+      queryClient.setQueryData(['tenants'], (old: any) => [...(old || []), newTenant]);
+      
+      // Trigger smart workflow safely
+      if (triggerTenantWorkflow) {
+        await triggerTenantWorkflow(newTenant);
+      }
+    } catch (error) {
+      console.error('Error handling tenant added:', error);
+    }
   };
 
   const handleDeleteTenant = async (tenantId: string, tenantName: string) => {
@@ -441,20 +447,27 @@ const TenantsPage = () => {
         title="Export Tenants"
       />
 
-      <ComprehensiveTenantModal
-        isOpen={showAddModal}
-        onClose={() => {
-          setShowAddModal(false);
-          // Clear URL params when closing modal
-          if (propertyId || unitParam) {
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.delete('propertyId');
-            newUrl.searchParams.delete('unit');
-            window.history.replaceState({}, '', newUrl.toString());
-          }
-        }}
-        onTenantAdded={handleTenantAdded}
-      />
+      {showAddModal && (
+        <ComprehensiveTenantModal
+          isOpen={showAddModal}
+          onClose={() => {
+            try {
+              setShowAddModal(false);
+              // Clear URL params when closing modal
+              if (propertyId || unitParam) {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete('propertyId');
+                newUrl.searchParams.delete('unit');
+                window.history.replaceState({}, '', newUrl.toString());
+              }
+            } catch (error) {
+              console.error('Error closing modal:', error);
+              setShowAddModal(false);
+            }
+          }}
+          onTenantAdded={handleTenantAdded}
+        />
+      )}
       
       {/* Floating Action Button for Mobile */}
       <div className="fixed bottom-6 right-6 z-40 md:hidden">

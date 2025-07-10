@@ -95,8 +95,13 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     queryKey: ['propertyUnits', formData.propertyId],
     queryFn: async () => {
       if (!formData.propertyId) return [];
-      const { data } = await apiClient.get(`/properties/${formData.propertyId}/units`);
-      return data.data || [];
+      try {
+        const { data } = await apiClient.get(`/properties/${formData.propertyId}/units`);
+        return data.data || [];
+      } catch (error) {
+        console.error('Failed to fetch property units:', error);
+        return [];
+      }
     },
     enabled: !!formData.propertyId
   });
@@ -140,12 +145,16 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
   
   // Auto-fill rent amount when unit is selected
   const handleUnitChange = (unitNumber: string) => {
-    const selectedUnit = propertyUnits.find(u => u.unitNumber === unitNumber);
-    setFormData({
-      ...formData,
-      unit: unitNumber,
-      rentAmount: selectedUnit?.rentAmount?.toString() || formData.rentAmount
-    });
+    try {
+      const selectedUnit = propertyUnits.find(u => u.unitNumber === unitNumber);
+      setFormData({
+        ...formData,
+        unit: unitNumber,
+        rentAmount: selectedUnit?.rentAmount?.toString() || formData.rentAmount
+      });
+    } catch (error) {
+      console.error('Error handling unit change:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -337,13 +346,13 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
                   disabled={!formData.propertyId}
                 >
                   <option value="">Select Available Unit</option>
-                  {vacantUnits.map((unit: any) => (
-                    <option key={unit.unitNumber} value={unit.unitNumber}>
+                  {vacantUnits?.map((unit: any) => (
+                    <option key={unit.unitNumber || Math.random()} value={unit.unitNumber}>
                       Unit {unit.unitNumber} {unit.rentAmount ? `- $${unit.rentAmount}/month` : ''}
                     </option>
-                  ))}
+                  )) || []}
                 </select>
-                {formData.propertyId && vacantUnits.length === 0 && (
+                {formData.propertyId && vacantUnits?.length === 0 && (
                   <p className="text-sm text-red-600 mt-1">No vacant units available in this property</p>
                 )}
               </div>
