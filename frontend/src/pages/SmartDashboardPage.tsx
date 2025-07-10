@@ -59,9 +59,19 @@ const SmartDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'insights' | 'predictions' | 'automation' | 'optimizer'>('overview');
   const { stats } = useCrossData();
   const { currency } = useCurrency();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  // Prevent crashes if user is not loaded yet
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 bg-blue-500 rounded-full animate-pulse"></div>
+        <span className="ml-3 text-gray-600">Loading dashboard...</span>
+      </div>
+    );
+  }
   
   const { data: overviewStats = { totalProperties: 0, activeTenants: 0, monthlyRevenue: 0, occupancyRate: '0%' } } = useQuery({ 
     queryKey: ['overviewStats'], 
@@ -85,8 +95,8 @@ const SmartDashboardPage: React.FC = () => {
   });
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3, component: null },
-    { id: 'insights', label: 'Smart Insights', icon: Brain, component: SmartDashboard },
+    { id: 'overview', label: 'Smart Dashboard', icon: Brain, component: null },
+    { id: 'insights', label: 'AI Insights', icon: BarChart3, component: SmartDashboard },
     { id: 'predictions', label: 'Predictive Analytics', icon: TrendingUp, component: PredictiveAnalytics },
     { id: 'automation', label: 'Automation Center', icon: Bot, component: AutomationCenter },
     { id: 'optimizer', label: 'Performance Optimizer', icon: BarChart3, component: PerformanceOptimizer }
@@ -178,7 +188,7 @@ const SmartDashboardPage: React.FC = () => {
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Link to="/dashboard/tenants" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -211,6 +221,18 @@ const SmartDashboardPage: React.FC = () => {
                 <div>
                   <p className="text-2xl font-bold text-text-primary">{overviewStats?.totalPayments || 0}</p>
                   <p className="text-sm text-text-secondary">Payments</p>
+                </div>
+              </div>
+            </Link>
+            
+            <Link to="/dashboard/receipts" className="app-surface rounded-2xl p-4 border border-app-border hover:shadow-lg transition-all group">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <DollarSign size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-text-primary">{overviewStats?.totalReceipts || 0}</p>
+                  <p className="text-sm text-text-secondary">Receipts</p>
                 </div>
               </div>
             </Link>
