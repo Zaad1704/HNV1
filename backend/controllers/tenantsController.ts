@@ -636,7 +636,7 @@ export const downloadTenantPDF = async (req: AuthRequest, res: Response) => {
     doc.text(`Name: ${tenant.name}`);
     doc.text(`Email: ${tenant.email}`);
     doc.text(`Phone: ${tenant.phone}`);
-    doc.text(`Property: ${tenant.propertyId?.name || 'N/A'}`);
+    doc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}`);
     doc.text(`Unit: ${tenant.unit}`);
     doc.text(`Rent: $${tenant.rentAmount}`);
     doc.moveDown();
@@ -701,7 +701,7 @@ export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response
     // Property Information
     doc.fontSize(14).text('PROPERTY INFORMATION', { underline: true });
     doc.fontSize(12);
-    doc.text(`Property: ${tenant.propertyId?.name || 'N/A'}`);
+    doc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}`);
     doc.text(`Unit Number: ${tenant.unit}`);
     doc.text(`Monthly Rent: $${tenant.rentAmount}`);
     doc.text(`Security Deposit: $${tenant.securityDeposit || 0}`);
