@@ -33,7 +33,7 @@ export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
     for (let i = 1; i <= numberOfUnits; i++) {
       units.push({
         unitNumber: i.toString(),
-        rentAmount: property.baseRentAmount || 0,
+        rentAmount: 0,
         propertyId: property._id
       });
     }
