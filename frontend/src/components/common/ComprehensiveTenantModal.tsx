@@ -348,57 +348,64 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Unit Number *
+                  Select Unit *
                 </label>
                 {formData.propertyId ? (
-                  <select
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    required
-                  >
-                    <option value="">Select Available Unit</option>
+                  <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2">
                     {(() => {
                       const selectedProperty = properties.find(p => p._id === formData.propertyId);
-                      if (!selectedProperty || !tenants) return null;
+                      if (!selectedProperty) return <p className="text-gray-500">Property not found</p>;
                       
-                      console.log('All tenants:', tenants);
-                      console.log('Selected property ID:', formData.propertyId);
-                      const propertyTenants = tenants.filter(t => t.propertyId === formData.propertyId && t.status === 'Active');
-                      console.log('Property tenants:', propertyTenants);
-                      const occupiedUnits = propertyTenants.map(t => t.unit).filter(Boolean);
-                      console.log('Occupied units:', occupiedUnits);
+                      const occupiedUnits = tenants
+                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active')
+                        .map(t => t.unit)
+                        .filter(Boolean);
                       
                       const allUnits = Array.from({ length: selectedProperty.numberOfUnits || 1 }, (_, i) => (i + 1).toString());
-                      const vacantUnits = allUnits.filter(unit => !occupiedUnits.includes(unit));
                       
-                      const vacantOptions = vacantUnits.map(unit => (
-                        <option key={`vacant-${unit}`} value={unit} style={{color: 'green'}}>
-                          Unit {unit} (Vacant)
-                        </option>
-                      ));
-                      
-                      const occupiedOptions = tenants
-                        .filter(t => t.propertyId === formData.propertyId && t.status === 'Active' && t.unit)
-                        .map(t => (
-                          <option key={`occupied-${t.unit}`} value={t.unit} disabled style={{color: 'red'}}>
-                            Unit {t.unit} (Occupied by {t.name})
-                          </option>
-                        ));
-                      
-                      return [...vacantOptions, ...occupiedOptions];
+                      return allUnits.map(unit => {
+                        const isOccupied = occupiedUnits.includes(unit);
+                        const tenant = tenants.find(t => t.propertyId === formData.propertyId && t.unit === unit && t.status === 'Active');
+                        
+                        return (
+                          <div key={unit} className={`flex items-center justify-between p-2 rounded ${
+                            isOccupied ? 'bg-red-50 opacity-60' : 'hover:bg-green-50'
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="unit"
+                                value={unit}
+                                checked={formData.unit === unit}
+                                disabled={isOccupied}
+                                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                                className="w-4 h-4 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                              />
+                              <div>
+                                <p className={`font-medium ${
+                                  isOccupied ? 'text-red-600' : 'text-green-600'
+                                }`}>
+                                  Unit {unit}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {isOccupied ? `Occupied by ${tenant?.name}` : 'Available'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              isOccupied ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                              {isOccupied ? 'Occupied' : 'Vacant'}
+                            </div>
+                          </div>
+                        );
+                      });
                     })()}
-                  </select>
+                  </div>
                 ) : (
-                  <input
-                    type="text"
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Select property first"
-                    disabled
-                    required
-                  />
+                  <div className="p-4 border border-gray-300 rounded-lg bg-gray-50">
+                    <p className="text-gray-500 text-center">Select a property first to see available units</p>
+                  </div>
                 )}
               </div>
               <div>
