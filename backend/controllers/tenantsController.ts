@@ -77,21 +77,37 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Handle additional adults data
+    let additionalAdults = [];
+    if (req.body.additionalAdults) {
+      try {
+        additionalAdults = JSON.parse(req.body.additionalAdults);
+      } catch (e) {
+        console.error('Failed to parse additional adults:', e);
+      }
+    }
+
     const tenantData = { 
       ...req.body, 
       ...imageUrls,
+      additionalAdults,
       organizationId: req.user.organizationId 
     };
 
+    console.log('Creating tenant with data:', tenantData);
     const tenant = await Tenant.create(tenantData);
     
     // Trigger action chain
     await actionChainService.onTenantAdded(tenant, req.user._id, req.user.organizationId);
     
     res.status(201).json({ success: true, data: tenant });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create tenant error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Server error',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
