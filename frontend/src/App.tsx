@@ -74,6 +74,7 @@ const ReceiptsPage = React.lazy(() => import('./pages/ReceiptsPage'));
 const TenantProfilePage = React.lazy(() => import('./pages/TenantProfilePage'));
 const TenantDetailsPage = React.lazy(() => import('./pages/TenantDetailsPage'));
 const TenantDashboardPage = React.lazy(() => import('./pages/TenantDashboardPage'));
+const AddTenantPage = React.lazy(() => import('./pages/AddTenantPage'));
 const ExpenseDetailsPage = React.lazy(() => import('./pages/ExpenseDetailsPage'));
 const MaintenanceDetailsPage = React.lazy(() => import('./pages/MaintenanceDetailsPage'));
 const CashFlowDetailsPage = React.lazy(() => import('./pages/CashFlowDetailsPage'));
@@ -178,6 +179,7 @@ function App() {
             <Route path="properties/:propertyId/units/:unitNumber" element={<UnitDetailsPage />} />
             <Route path="receipts" element={<ReceiptsPage />} />
             <Route path="tenants" element={<TenantsPage />} />
+            <Route path="tenants/add" element={<AddTenantPage />} />
             <Route path="tenants/:tenantId" element={<TenantDetailsPage />} />
             <Route path="tenants/:tenantId/profile" element={<TenantProfilePage />} />
             <Route path="expenses/:expenseId" element={<ExpenseDetailsPage />} />

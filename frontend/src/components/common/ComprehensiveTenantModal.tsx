@@ -13,6 +13,7 @@ interface ComprehensiveTenantModalProps {
 const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isOpen, onClose, onTenantAdded }) => {
   const [searchParams] = useSearchParams();
   const preSelectedProperty = searchParams.get('propertyId');
+  const preSelectedUnit = searchParams.get('unit');
   
   const [formData, setFormData] = useState({
     // Basic Info
@@ -21,7 +22,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
     phone: '',
     whatsappNumber: '',
     propertyId: preSelectedProperty || '',
-    unit: '',
+    unit: preSelectedUnit || '',
     rentAmount: '',
     leaseEndDate: '',
     status: 'Active',
@@ -133,7 +134,7 @@ const ComprehensiveTenantModal: React.FC<ComprehensiveTenantModalProps> = ({ isO
       // Reset form
       setFormData({
         name: '', email: '', phone: '', whatsappNumber: '',
-        propertyId: preSelectedProperty || '', unit: '', rentAmount: '',
+        propertyId: preSelectedProperty || '', unit: preSelectedUnit || '', rentAmount: '',
         leaseEndDate: '', status: 'Active', fatherName: '', motherName: '',
         presentAddress: '', permanentAddress: '', govtIdNumber: '',
         referenceName: '', referencePhone: '', referenceEmail: '',

@@ -44,6 +44,7 @@ const TenantsPage = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const propertyId = searchParams.get('propertyId');
+  const unitParam = searchParams.get('unit');
   const { stats } = useCrossData();
   const { triggerTenantWorkflow } = useWorkflowTriggers();
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
@@ -54,6 +55,13 @@ const TenantsPage = () => {
   const [showQuickPayment, setShowQuickPayment] = useState(false);
   const [showUniversalExport, setShowUniversalExport] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  
+  // Auto-open modal if propertyId or unit is in URL
+  React.useEffect(() => {
+    if (propertyId || unitParam) {
+      setShowAddModal(true);
+    }
+  }, [propertyId, unitParam]);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     query: '',
     dateRange: 'all',
@@ -340,7 +348,16 @@ const TenantsPage = () => {
 
       <ComprehensiveTenantModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          // Clear URL params when closing modal
+          if (propertyId || unitParam) {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('propertyId');
+            newUrl.searchParams.delete('unit');
+            window.history.replaceState({}, '', newUrl.toString());
+          }
+        }}
         onTenantAdded={handleTenantAdded}
       />
       

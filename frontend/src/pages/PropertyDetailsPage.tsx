@@ -10,7 +10,7 @@ import DataPreviewSections from '../components/property/DataPreviewSections';
 import UnitDataModal from '../components/property/UnitDataModal';
 
 // Units & Tenants Component
-const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick }: { propertyId: string, property: any, tenants: any[], onUnitDataClick: (unitNumber: string) => void }) => {
+const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick, onAddTenant }: { propertyId: string, property: any, tenants: any[], onUnitDataClick: (unitNumber: string) => void, onAddTenant: (unitNumber?: string) => void }) => {
   // Generate all units based on property numberOfUnits
   const allUnits = Array.from({ length: property.numberOfUnits || 1 }, (_, i) => {
     const unitNumber = (i + 1).toString();
@@ -36,12 +36,12 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick }:
             {occupiedUnits} Occupied • {vacantUnits} Vacant • {property.numberOfUnits} Total
           </p>
         </div>
-        <Link 
-          to={`/dashboard/tenants/add?propertyId=${propertyId}`}
+        <button 
+          onClick={() => onAddTenant()}
           className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
         >
           Add Tenant
-        </Link>
+        </button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -54,7 +54,11 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick }:
                 : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
             }`}
             onClick={() => {
-              window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
+              if (unit.isOccupied) {
+                window.location.href = `/dashboard/properties/${propertyId}/units/${unit.unitNumber}`;
+              } else {
+                onAddTenant(unit.unitNumber);
+              }
             }}
           >
             <div className="flex items-center justify-between mb-3">
@@ -111,7 +115,15 @@ const UnitsTenantsSection = ({ propertyId, property, tenants, onUnitDataClick }:
             ) : (
               <div className="text-center py-2">
                 <p className="text-sm text-gray-500 mb-2">Unit Available</p>
-                <p className="text-xs text-blue-600 font-medium">Click to add tenant</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddTenant(unit.unitNumber);
+                  }}
+                  className="w-full bg-green-500 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-green-600 transition-colors"
+                >
+                  Add Tenant
+                </button>
               </div>
             )}
           </div>
@@ -760,7 +772,12 @@ const PropertyDetailsPage = () => {
           <RentStatusSection propertyId={propertyId!} />
 
           {/* Units & Tenants List */}
-          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} />
+          <UnitsTenantsSection propertyId={propertyId!} property={property} tenants={tenants} onUnitDataClick={handleUnitDataClick} onAddTenant={(unitNumber?: string) => {
+            const url = unitNumber 
+              ? `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unitNumber}`
+              : `/dashboard/tenants/add?propertyId=${propertyId}`;
+            window.location.href = url;
+          }} />
         </div>
 
         {/* Sidebar */}
@@ -821,12 +838,12 @@ const PropertyDetailsPage = () => {
               >
                 View Tenants ({tenants.length})
               </Link>
-              <Link 
-                to={`/dashboard/tenants/add?propertyId=${propertyId}`}
-                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors block text-center"
+              <button 
+                onClick={() => window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}`}
+                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors"
               >
                 Add Tenant
-              </Link>
+              </button>
               <Link 
                 to={`/dashboard/payments?propertyId=${propertyId}`}
                 className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
