@@ -1,390 +1,299 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { 
+  ArrowLeft, 
+  Edit, 
+  MapPin, 
+  Home, 
+  Users, 
+  DollarSign, 
+  Calendar,
+  FileText,
+  TrendingUp,
+  Plus
+} from 'lucide-react';
 import apiClient from '../api/client';
-import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Users, DollarSign, Calendar, Edit, TrendingUp, Trash2, Share2, FileText } from 'lucide-react';
-import RentIncreaseModal from '../components/common/RentIncreaseModal';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import UnitsSection from '../components/property/UnitsSection';
 import PropertyStatsSection from '../components/property/PropertyStatsSection';
 import DataPreviewSections from '../components/property/DataPreviewSections';
-import PropertyQuickActions from '../components/property/PropertyQuickActions';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
-
-
-
-
-
-
-
-const fetchPropertyDetails = async (propertyId: string) => {
-  const { data } = await apiClient.get(`/properties/${propertyId}`);
-  return data.data;
-};
-
-const fetchPropertyTenants = async (propertyId: string) => {
-  try {
-    const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
-    return data.data || [];
-  } catch (error) {
-    return [];
-  }
-};
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [showRentIncrease, setShowRentIncrease] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCollectionSheet, setShowCollectionSheet] = useState(false);
-  const [showAddTenant, setShowAddTenant] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<string>('');
+  const [showRentIncrease, setShowRentIncrease] = useState(false);
 
-
-
-  
-  const { data: property, isLoading, error } = useQuery({
+  // Fetch property details
+  const { data: property, isLoading: propertyLoading, error: propertyError } = useQuery({
     queryKey: ['property', propertyId],
-    queryFn: () => fetchPropertyDetails(propertyId!),
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/properties/${propertyId}`);
+      return data.data;
+    },
     enabled: !!propertyId
   });
 
-  const { data: tenants = [] } = useQuery({
+  // Fetch tenants for this property
+  const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
     queryKey: ['propertyTenants', propertyId],
-    queryFn: () => fetchPropertyTenants(propertyId!),
-    enabled: !!propertyId,
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always fetch fresh data
-    refetchInterval: 5000 // Refetch every 5 seconds
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+      return data.data || [];
+    },
+    enabled: !!propertyId
   });
 
-  if (isLoading) {
+  // Fetch payments for this property
+  const { data: payments = [] } = useQuery({
+    queryKey: ['propertyPayments', propertyId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/payments?propertyId=${propertyId}`);
+      return data.data || [];
+    },
+    enabled: !!propertyId
+  });
+
+  // Fetch expenses for this property
+  const { data: expenses = [] } = useQuery({
+    queryKey: ['propertyExpenses', propertyId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/expenses?propertyId=${propertyId}`);
+      return data.data || [];
+    },
+    enabled: !!propertyId
+  });
+
+  // Fetch maintenance requests for this property
+  const { data: maintenanceRequests = [] } = useQuery({
+    queryKey: ['propertyMaintenance', propertyId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/maintenance?propertyId=${propertyId}`);
+      return data.data || [];
+    },
+    enabled: !!propertyId
+  });
+
+  const handleDataUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['property', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['propertyTenants', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['propertyPayments', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['propertyExpenses', propertyId] });
+    queryClient.invalidateQueries({ queryKey: ['propertyMaintenance', propertyId] });
+  };
+
+  const handleAddTenant = (unitNumber?: string) => {
+    const url = unitNumber 
+      ? `/dashboard/tenants/add?propertyId=${propertyId}&unit=${unitNumber}`
+      : `/dashboard/tenants/add?propertyId=${propertyId}`;
+    navigate(url);
+  };
+
+  if (propertyLoading || tenantsLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (propertyError || !property) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 app-gradient rounded-full animate-pulse"></div>
-        <span className="ml-3 text-text-secondary">Loading property details...</span>
+      <div className="min-h-screen bg-app-bg flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-text-primary mb-2">Property not found</h2>
+          <p className="text-text-secondary mb-4">The property you're looking for doesn't exist or you don't have access to it.</p>
+          <Link to="/dashboard/properties" className="text-blue-600 hover:text-blue-800">
+            ← Back to Properties
+          </Link>
+        </div>
       </div>
     );
   }
 
-  if (error || !property) {
-    return (
-      <div className="text-center py-16">
-        <h3 className="text-xl font-bold text-text-primary mb-2">Property Not Found</h3>
-        <p className="text-text-secondary mb-4">The property you're looking for doesn't exist.</p>
-        <Link
-          to="/dashboard/properties"
-          className="btn-gradient px-6 py-3 rounded-2xl font-semibold inline-flex items-center gap-2"
-        >
-          <ArrowLeft size={20} />
-          Back to Properties
-        </Link>
-      </div>
-    );
-  }
+  const activeTenants = tenants.filter((t: any) => t.status === 'Active');
+  const totalRent = activeTenants.reduce((sum: number, tenant: any) => sum + (tenant.rentAmount || 0), 0);
+  const occupancyRate = property.numberOfUnits > 0 ? (activeTenants.length / property.numberOfUnits) * 100 : 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard/properties"
-            className="p-2 rounded-xl hover:bg-app-bg transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-text-primary">{property.name}</h1>
-            <p className="text-text-secondary">Property Details</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-blue-600 transition-colors"
-          >
-            <Edit size={16} />
-            Edit
-          </button>
-          <button
-            onClick={() => {
-              if (confirm(`Are you sure you want to delete ${property.name}? This action cannot be undone.`)) {
-                // Handle delete
-                window.location.href = '/dashboard/properties';
-              }
-            }}
-            className="bg-red-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-red-600 transition-colors"
-          >
-            <Trash2 size={16} />
-            Delete
-          </button>
-          <button
-            onClick={() => {
-              try {
-                if (navigator.share) {
-                  navigator.share({
-                    title: property.name,
-                    text: `Property: ${property.name}\nAddress: ${property.address?.formattedAddress || 'N/A'}\nUnits: ${property.numberOfUnits || 1}`,
-                    url: window.location.href
-                  });
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('Property link copied to clipboard!');
-                }
-              } catch (error) {
-                alert('Sharing not supported');
-              }
-            }}
-            className="bg-green-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-green-600 transition-colors"
-          >
-            <Share2 size={16} />
-            Share
-          </button>
-        </div>
-      </div>
-
-      {/* Property Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Property Image */}
-          <div className="app-surface rounded-3xl overflow-hidden border border-app-border">
-            <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-orange relative">
-              {property.imageUrl && property.imageUrl.trim() !== '' ? (
-                <>
-                  <img
-                    src={property.imageUrl.startsWith('/') ? `${window.location.origin}${property.imageUrl}` : property.imageUrl}
-                    alt={property.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('Property image failed to load:', property.imageUrl);
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon');
-                      if (fallback) fallback.classList.remove('hidden');
-                    }}
-                  />
-                  <div className="fallback-icon hidden w-full h-full flex items-center justify-center absolute inset-0">
-                    <Users size={48} className="text-white/80" />
-                  </div>
-                  {/* Debug info - remove in production */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
-                      {property.imageUrl}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Users size={48} className="text-white/80" />
-                </div>
-              )}
-              <div className="absolute top-4 right-4">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  property.status === 'Active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {property.status}
-                </span>
+    <div className="min-h-screen bg-app-bg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/dashboard/properties"
+              className="p-2 hover:bg-white rounded-xl transition-colors"
+            >
+              <ArrowLeft size={20} className="text-text-muted" />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-text-primary">{property.name}</h1>
+              <div className="flex items-center gap-2 text-text-secondary mt-1">
+                <MapPin size={16} />
+                <span>{property.address}</span>
               </div>
             </div>
           </div>
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            <Edit size={16} />
+            Edit Property
+          </button>
+        </div>
 
-          {/* Description */}
-          <div className="app-surface rounded-3xl p-8 border border-app-border">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-text-primary">Property Description</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">AI Generated</span>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Property Stats */}
+            <PropertyStatsSection 
+              property={property}
+              tenants={tenants}
+              payments={payments}
+              expenses={expenses}
+              maintenanceRequests={maintenanceRequests}
+            />
+
+            {/* Units Section */}
+            <UnitsSection
+              propertyId={propertyId!}
+              property={property}
+              tenants={tenants}
+              onAddTenant={handleAddTenant}
+              onDataUpdate={handleDataUpdate}
+            />
+
+            {/* Data Preview Sections */}
+            <DataPreviewSections
+              propertyId={propertyId!}
+              tenants={tenants}
+              payments={payments}
+              expenses={expenses}
+              maintenanceRequests={maintenanceRequests}
+            />
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Property Info */}
+            <div className="app-surface rounded-3xl p-6 border border-app-border">
+              <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-text-secondary">Type</span>
+                  <span className="font-medium text-text-primary">{property.type}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-secondary">Units</span>
+                  <span className="font-medium text-text-primary">{property.numberOfUnits}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-secondary">Occupancy</span>
+                  <span className="font-medium text-text-primary">{occupancyRate.toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-secondary">Monthly Rent</span>
+                  <span className="font-medium text-text-primary">${totalRent.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="app-surface rounded-3xl p-6 border border-app-border">
+              <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <Link 
+                  to={`/dashboard/tenants?propertyId=${propertyId}`}
+                  className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors block text-center"
+                >
+                  View Tenants ({tenants.length})
+                </Link>
+                <button 
+                  onClick={() => window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}`}
+                  className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors"
+                >
+                  Add Tenant
+                </button>
+                <Link 
+                  to={`/dashboard/payments?propertyId=${propertyId}`}
+                  className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
+                >
+                  View Payments
+                </Link>
                 <button
-                  onClick={async () => {
-                    try {
-                      const { data } = await apiClient.put(`/properties/${propertyId}/regenerate-description`);
-                      queryClient.setQueryData(['property', propertyId], data.data);
-                    } catch (error) {
-                      console.error('Failed to regenerate description:', error);
+                  onClick={() => {
+                    if (confirm(`Archive ${property.name}? This will hide it from active listings.`)) {
+                      alert('Archive functionality coming soon');
                     }
                   }}
-                  className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full hover:bg-green-200 cursor-pointer"
+                  className="w-full bg-gray-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-600 transition-colors"
                 >
-                  Regenerate
+                  Archive Property
+                </button>
+                <button
+                  onClick={() => setShowCollectionSheet(true)}
+                  className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FileText size={16} />
+                  Collection Sheet
+                </button>
+                <button
+                  onClick={() => setShowRentIncrease(true)}
+                  className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <TrendingUp size={16} />
+                  Increase Rent
                 </button>
               </div>
             </div>
-            <p className="text-text-secondary leading-relaxed">
-              {property.description || 'Generating description...'}
-            </p>
           </div>
-
-          {/* Data Preview Sections - Moved from bottom */}
-          <DataPreviewSections 
-            propertyId={propertyId!} 
-            property={property}
-            tenants={tenants}
-          />
-
-          {/* Property Statistics */}
-          <PropertyStatsSection propertyId={propertyId!} />
-          
-          {/* Units Section */}
-          <UnitsSection 
-            propertyId={propertyId!} 
-            property={property}
-            tenants={tenants}
-            onAddTenant={(unitNumber) => {
-              setSelectedUnit(unitNumber);
-              setShowAddTenant(true);
-            }}
-            onDataUpdate={() => {
-              // Force refresh of all related data
-              queryClient.invalidateQueries({ queryKey: ['propertyTenants'] });
-              queryClient.invalidateQueries({ queryKey: ['propertyUnits'] });
-              queryClient.refetchQueries({ queryKey: ['propertyTenants', propertyId] });
-              queryClient.refetchQueries({ queryKey: ['propertyUnits', propertyId] });
-            }}
-          />
-
-
-
-
-          
-
-
-
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Property Overview - Moved from main content */}
-          <div className="app-surface rounded-3xl p-6 border border-app-border">
-            <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <MapPin size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Address</p>
-                  <p className="font-medium text-text-primary text-sm">
-                    {property.address?.formattedAddress || 'Address not available'}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <Users size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Units</p>
-                  <p className="font-medium text-text-primary">
-                    {property.numberOfUnits} {property.numberOfUnits === 1 ? 'Unit' : 'Units'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <DollarSign size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Property Type</p>
-                  <p className="font-medium text-text-primary">
-                    {property.propertyType || 'Not specified'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Calendar size={16} className="text-text-muted" />
-                <div>
-                  <p className="text-sm text-text-secondary">Created</p>
-                  <p className="font-medium text-text-primary">
-                    {new Date(property.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Quick Actions */}
-          <PropertyQuickActions
-            propertyId={propertyId!}
-            property={property}
-            tenants={tenants}
-            onRentIncrease={() => setShowRentIncrease(true)}
-            onCollectionSheet={() => setShowCollectionSheet(true)}
-            onArchive={() => {
-              if (confirm(`Archive ${property.name}? This will hide it from active listings.`)) {
-                alert('Archive functionality coming soon');
-              }
-            }}
-          />
         </div>
       </div>
-      
-      <RentIncreaseModal
-        isOpen={showRentIncrease}
-        onClose={() => setShowRentIncrease(false)}
-        property={property}
-        type="property"
-      />
-      
+
+      {/* Modals */}
       <EditPropertyModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        onPropertyUpdated={async (updatedProperty) => {
-          queryClient.setQueryData(['property', propertyId], updatedProperty);
-          queryClient.invalidateQueries({ queryKey: ['properties'] });
-          // Regenerate description after update
-          try {
-            const { data } = await apiClient.put(`/properties/${propertyId}/regenerate-description`);
-            queryClient.setQueryData(['property', propertyId], data.data);
-          } catch (error) {
-            console.error('Failed to regenerate description after update:', error);
-          }
-        }}
         property={property}
+        onUpdate={handleDataUpdate}
       />
-      
 
-      
       <MonthlyCollectionSheet
         isOpen={showCollectionSheet}
         onClose={() => setShowCollectionSheet(false)}
-        preSelectedProperty={propertyId}
+        propertyId={propertyId!}
+        propertyName={property.name}
+        tenants={activeTenants}
       />
-      
-      {showAddTenant && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Add Tenant to Unit {selectedUnit}</h3>
-              <button onClick={() => setShowAddTenant(false)} className="text-gray-500 hover:text-gray-700">
-                ×
-              </button>
-            </div>
-            <p className="text-gray-600 mb-4">Redirecting to add tenant form...</p>
+
+      {showRentIncrease && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold mb-4">Rent Increase</h3>
+            <p className="text-gray-600 mb-4">
+              Rent increase functionality is coming soon. This will allow you to:
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 mb-6 space-y-1">
+              <li>Set new rent amounts for all units</li>
+              <li>Schedule increases for future dates</li>
+              <li>Generate tenant notifications</li>
+              <li>Track increase history</li>
+            </ul>
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}&unit=${selectedUnit}`;
-                }}
-                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+                onClick={() => setShowRentIncrease(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                Continue
-              </button>
-              <button
-                onClick={() => setShowAddTenant(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
