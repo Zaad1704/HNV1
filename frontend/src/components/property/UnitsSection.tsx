@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, User, DollarSign, Plus } from 'lucide-react';
+import { Home, User, DollarSign, Plus, Edit3, Grid3X3, List } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../../api/client';
+import UnitNicknameModal from './UnitNicknameModal';
 
 interface UnitsSectionProps {
   propertyId: string;
@@ -11,8 +14,40 @@ interface UnitsSectionProps {
 }
 
 const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenants = [], onAddTenant, onDataUpdate }) => {
-  // Skip API call and generate units directly from tenant data
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showUnitModal, setShowUnitModal] = useState(false);
+  
+  // Fetch units with nicknames
+  const { data: units = [] } = useQuery({
+    queryKey: ['propertyUnits', propertyId],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get(`/units/property/${propertyId}`);
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
+    },
+    enabled: !!propertyId
+  });
+  
+  // Combine units data with tenant information
   const unitsData = React.useMemo(() => {
+    if (units.length > 0) {
+      return units.map((unit: any) => {
+        const tenant = tenants.find(t => t.unit === unit.unitNumber && t.status === 'Active');
+        return {
+          ...unit,
+          isOccupied: !!tenant,
+          tenantName: tenant?.name || null,
+          tenantId: tenant?._id || null,
+          rentAmount: tenant?.rentAmount || unit.rentAmount || 0,
+          displayName: unit.nickname ? `${unit.unitNumber} (${unit.nickname})` : unit.unitNumber
+        };
+      });
+    }
+    
+    // Fallback to property numberOfUnits if no units found
     if (!property?.numberOfUnits) return [];
     
     return Array.from({ length: property.numberOfUnits }, (_, i) => {
@@ -24,10 +59,11 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         isOccupied: !!tenant,
         tenantName: tenant?.name || null,
         tenantId: tenant?._id || null,
-        rentAmount: tenant?.rentAmount || property.rentAmount || 0
+        rentAmount: tenant?.rentAmount || property.rentAmount || 0,
+        displayName: unitNumber
       };
     });
-  }, [property?.numberOfUnits, tenants]);
+  }, [units, tenants, property?.numberOfUnits]);
 
   if (!property || !tenants) {
     return (
@@ -48,11 +84,41 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
   return (
     <div className="app-surface rounded-3xl p-8 border border-app-border">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-text-primary">Units ({unitsData.length})</h2>
-        <div className="flex items-center gap-2 text-sm text-text-secondary">
-          <span className="text-green-600">{unitsData.filter((u: any) => !u.isOccupied).length} vacant</span>
-          <span>•</span>
-          <span className="text-red-600">{unitsData.filter((u: any) => u.isOccupied).length} occupied</span>
+        <div>
+          <h2 className="text-xl font-bold text-text-primary">Unit-Wise Breakdown ({unitsData.length})</h2>
+          <div className="flex items-center gap-4 text-sm text-text-secondary mt-1">
+            <span className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              {unitsData.filter((u: any) => !u.isOccupied).length} Available
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              {unitsData.filter((u: any) => u.isOccupied).length} Occupied
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowUnitModal(true)}
+            className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2 text-sm"
+          >
+            <Edit3 size={14} />
+            Edit Nicknames
+          </button>
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <Grid3X3 size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded ${viewMode === 'list' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <List size={16} />
+            </button>
+          </div>
         </div>
       </div>
       
@@ -65,7 +131,7 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Home size={16} className="text-text-muted" />
-                <span className="font-medium text-text-primary">Unit {unit.unitNumber}</span>
+                <span className="font-medium text-text-primary">Unit {unit.displayName}</span>
               </div>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 unit.isOccupied 
@@ -138,6 +204,13 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
           </div>
         ))}
       </div>
+      
+      <UnitNicknameModal
+        isOpen={showUnitModal}
+        onClose={() => setShowUnitModal(false)}
+        propertyId={propertyId}
+        propertyName={property?.name || 'Property'}
+      />
     </div>
   );
 };
