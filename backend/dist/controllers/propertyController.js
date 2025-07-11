@@ -28,6 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPropertyUnits = exports.regenerateDescription = exports.validateDataIntegrity = exports.getUnitData = exports.getPropertyDataPreviews = exports.deleteProperty = exports.updateProperty = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const Property_1 = __importDefault(require("../models/Property"));
+const Unit_1 = __importDefault(require("../models/Unit"));
 const actionChainService_1 = __importDefault(require("../services/actionChainService"));
 const generatePropertyDescription = (property) => {
     const templates = [
@@ -101,6 +102,16 @@ const createProperty = async (req, res) => {
         console.log('Property data being created:', propertyData);
         propertyData.description = generatePropertyDescription(propertyData);
         const property = await Property_1.default.create(propertyData);
+        const units = [];
+        for (let i = 1; i <= propertyData.numberOfUnits; i++) {
+            units.push({
+                propertyId: property._id,
+                organizationId: user.organizationId,
+                unitNumber: i.toString(),
+                status: 'Available'
+            });
+        }
+        await Unit_1.default.insertMany(units);
         await actionChainService_1.default.onPropertyAdded(property, user._id, user.organizationId);
         await subscriptionService.updateUsage(user.organizationId, 'properties', 1);
         res.status(201).json({
