@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Edit, Trash2, Share2, Eye, Users, DollarSign, AlertTriangle, Wrench } from 'lucide-react';
+import { Building2, Edit, Trash2, Share2, Eye, Users, DollarSign, AlertTriangle, Wrench, Check } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 import UniversalCard from './UniversalCard';
@@ -13,6 +13,9 @@ interface EnhancedPropertyCardProps {
   onEdit?: (property: any) => void;
   onDelete?: (propertyId: string) => void;
   onShare?: (property: any) => void;
+  isSelected?: boolean;
+  onSelect?: (propertyId: string, selected: boolean) => void;
+  showCheckbox?: boolean;
 }
 
 const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({ 
@@ -20,7 +23,10 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   index, 
   onEdit, 
   onDelete, 
-  onShare 
+  onShare,
+  isSelected = false,
+  onSelect,
+  showCheckbox = false
 }) => {
   // Fetch tenants for this property to calculate occupancy
   const { data: tenants = [] } = useQuery({
@@ -46,7 +52,26 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   const hasIssues = maintenanceIssues > 0;
 
   return (
-    <UniversalCard delay={index * 0.1} gradient="blue">
+    <UniversalCard delay={index * 0.1} gradient="blue" className={`relative ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+      {/* Selection Checkbox */}
+      {showCheckbox && (
+        <div className="absolute top-3 left-3 z-10">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSelect?.(property._id, !isSelected);
+            }}
+            className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+              isSelected 
+                ? 'bg-blue-500 border-blue-500 text-white' 
+                : 'bg-white/90 border-gray-300 hover:border-blue-400'
+            }`}
+          >
+            {isSelected && <Check size={14} />}
+          </button>
+        </div>
+      )}
       {/* Property Image */}
       <div className="h-48 bg-gradient-to-br from-brand-blue via-purple-600 to-brand-orange relative overflow-hidden rounded-2xl mb-4">
         {property.imageUrl && property.imageUrl.trim() !== '' ? (

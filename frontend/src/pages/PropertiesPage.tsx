@@ -11,7 +11,7 @@ import SwipeableCard from '../components/mobile/SwipeableCard';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles, Search } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles, Search, CheckSquare, Square, Calendar } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
@@ -51,6 +51,7 @@ const PropertiesPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any>(null);
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
+  const [showBulkMode, setShowBulkMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<any>({});
   const [showExportModal, setShowExportModal] = useState(false);
@@ -226,6 +227,43 @@ const PropertiesPage = () => {
 
   const bulkActions = [
     {
+      key: 'bulkPayment',
+      label: 'Bulk Payment',
+      icon: DollarSign,
+      color: 'bg-green-500 hover:bg-green-600 text-white',
+      action: async (ids: string[]) => {
+        setShowBulkPayment(true);
+      }
+    },
+    {
+      key: 'bulkLeaseRenewal',
+      label: 'Renew Leases',
+      icon: Calendar,
+      color: 'bg-purple-500 hover:bg-purple-600 text-white',
+      action: async (ids: string[]) => {
+        const months = prompt('Enter lease extension months:', '12');
+        if (months && !isNaN(Number(months))) {
+          try {
+            await Promise.all(ids.map(async (propertyId) => {
+              const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+              const tenants = data.data || [];
+              return Promise.all(tenants.map((tenant: any) => {
+                const currentEndDate = tenant.leaseEndDate ? new Date(tenant.leaseEndDate) : new Date();
+                const newEndDate = new Date(currentEndDate);
+                newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
+                return apiClient.put(`/tenants/${tenant._id}`, {
+                  leaseEndDate: newEndDate.toISOString().split('T')[0]
+                });
+              }));
+            }));
+            alert(`Leases renewed for ${ids.length} properties!`);
+          } catch (error) {
+            alert('Failed to renew some leases');
+          }
+        }
+      }
+    },
+    {
       key: 'export',
       label: 'Export Selected',
       icon: Download,
@@ -365,6 +403,14 @@ const PropertiesPage = () => {
     }
   };
   
+  const handlePropertySelect = (propertyId: string, selected: boolean) => {
+    if (selected) {
+      setSelectedProperties(prev => [...prev, propertyId]);
+    } else {
+      setSelectedProperties(prev => prev.filter(id => id !== propertyId));
+    }
+  };
+  
   const handleArchiveProperty = async (propertyId: string, propertyName: string, currentStatus: string) => {
     const isArchiving = currentStatus !== 'Archived';
     const action = isArchiving ? 'archive' : 'restore';
@@ -463,6 +509,22 @@ const PropertiesPage = () => {
       {/* Filter Buttons */}
       <div className="flex items-center gap-4 flex-wrap">
         <button
+          onClick={() => {
+            setShowBulkMode(!showBulkMode);
+            if (showBulkMode) {
+              setSelectedProperties([]);
+            }
+          }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showBulkMode 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+          }`}
+        >
+          {showBulkMode ? <CheckSquare size={16} /> : <Square size={16} />}
+          {showBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
+        </button>
+        <button
           onClick={() => setShowGlobalSearch(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
         >
@@ -535,6 +597,9 @@ const PropertiesPage = () => {
                       index={index}
                       onEdit={handleEditProperty}
                       onDelete={handleDeleteProperty}
+                      showCheckbox={showBulkMode}
+                      isSelected={selectedProperties.includes(property._id)}
+                      onSelect={handlePropertySelect}
                     />
                   </UniversalCard>
                 </SwipeableCard>
@@ -546,6 +611,9 @@ const PropertiesPage = () => {
                     index={index}
                     onEdit={handleEditProperty}
                     onDelete={handleDeleteProperty}
+                    showCheckbox={showBulkMode}
+                    isSelected={selectedProperties.includes(property._id)}
+                    onSelect={handlePropertySelect}
                   />
                 </UniversalCard>
               </div>
