@@ -303,14 +303,77 @@ export const updateTenant = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
 
+    // Handle image uploads
+    const imageUrls: any = {};
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    if (files) {
+      try {
+        const { uploadToCloudinary, isCloudinaryConfigured } = await import('../utils/cloudinary');
+        
+        if (isCloudinaryConfigured()) {
+          for (const [fieldname, fileArray] of Object.entries(files)) {
+            if (fileArray && fileArray[0]) {
+              const file = fileArray[0];
+              try {
+                const cloudinaryUrl = await uploadToCloudinary(file, 'tenants');
+                imageUrls[fieldname] = cloudinaryUrl;
+                if (fieldname === 'tenantImage') {
+                  imageUrls.imageUrl = cloudinaryUrl;
+                }
+              } catch (uploadError) {
+                console.error(`Failed to upload ${fieldname}:`, uploadError);
+              }
+            }
+          }
+        } else {
+          for (const [fieldname, fileArray] of Object.entries(files)) {
+            if (fileArray && fileArray[0]) {
+              const file = fileArray[0];
+              const localUrl = `/uploads/images/${file.filename}`;
+              imageUrls[fieldname] = localUrl;
+              if (fieldname === 'tenantImage') {
+                imageUrls.imageUrl = localUrl;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+      }
+    }
+
+    // Handle additional adults with images
+    let additionalAdults = [];
+    if (req.body.additionalAdults) {
+      try {
+        const parsed = JSON.parse(req.body.additionalAdults);
+        additionalAdults = Array.isArray(parsed) ? parsed.map((adult, index) => ({
+          ...adult,
+          imageUrl: imageUrls[`additionalAdultImage_${index}`] || adult.imageUrl || '',
+          govtIdImageUrl: imageUrls[`additionalAdultGovtId_${index}`] || adult.govtIdImageUrl || ''
+        })) : [];
+      } catch (e) {
+        console.error('Failed to parse additional adults:', e);
+        additionalAdults = tenant.additionalAdults || [];
+      }
+    }
+
+    const updateData = {
+      ...req.body,
+      ...imageUrls,
+      additionalAdults
+    };
+
     const updatedTenant = await Tenant.findByIdAndUpdate(
       req.params.id, 
-      req.body, 
+      updateData, 
       { new: true, runValidators: true }
-    );
+    ).populate('propertyId', 'name');
 
     res.status(200).json({ success: true, data: updatedTenant });
   } catch (error) {
+    console.error('Update tenant error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

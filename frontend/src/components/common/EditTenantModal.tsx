@@ -576,9 +576,91 @@ const EditTenantModal: React.FC<EditTenantModalProps> = ({ isOpen, onClose, tena
             </div>
           </div>
 
+          {/* Additional Adults */}
+          <div className="border-b pb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-semibold">Additional Adults</h4>
+              <button
+                type="button"
+                onClick={addAdditionalAdult}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <Plus size={16} />
+                Add Adult
+              </button>
+            </div>
+            
+            {additionalAdults.map((adult, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h5 className="font-medium">Adult {index + 1}</h5>
+                  <button
+                    type="button"
+                    onClick={() => removeAdditionalAdult(index)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={adult.name || ''}
+                    onChange={(e) => updateAdditionalAdult(index, 'name', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone"
+                    value={adult.phone || ''}
+                    onChange={(e) => updateAdditionalAdult(index, 'phone', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Government ID"
+                    value={adult.govtIdNumber || ''}
+                    onChange={(e) => updateAdditionalAdult(index, 'govtIdNumber', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Relation to Main Tenant"
+                    value={adult.relation || ''}
+                    onChange={(e) => updateAdditionalAdult(index, 'relation', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Photo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && updateAdditionalAdult(index, 'image', e.target.files[0])}
+                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Government ID Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && updateAdditionalAdult(index, 'govtIdImage', e.target.files[0])}
+                      className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Images Update */}
           <div className="border-b pb-6">
-            <h4 className="text-lg font-semibold mb-4">Update Images (Optional)</h4>
+            <h4 className="text-lg font-semibold mb-4">Update Main Tenant Images (Optional)</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">New Tenant Photo</label>
