@@ -219,8 +219,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
         throw new Error('Please select a property and unit');
       }
       
-      if (!formData.rentAmount || !formData.leaseStartDate || !formData.leaseEndDate) {
-        throw new Error('Please fill in rent amount and lease dates');
+      if (!formData.rentAmount) {
+        throw new Error('Please fill in rent amount');
       }
       
       const tenantData = {
@@ -450,22 +450,20 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease Start *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Lease Start</label>
               <input
                 type="date"
                 value={formData.leaseStartDate}
                 onChange={(e) => setFormData({ ...formData, leaseStartDate: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration (Months) *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration (Months)</label>
               <select
                 value={formData.leaseDuration}
                 onChange={(e) => setFormData({ ...formData, leaseDuration: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
               >
                 <option value="6">6 Months</option>
                 <option value="12">12 Months</option>

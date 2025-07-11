@@ -58,10 +58,10 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    if (!rentAmount || !leaseStartDate || !leaseEndDate || !securityDeposit) {
+    if (!rentAmount) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Rent amount, lease dates, and security deposit are required' 
+        message: 'Rent amount is required' 
       });
     }
 
