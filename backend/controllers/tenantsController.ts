@@ -106,7 +106,12 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
               try {
                 console.log(`Uploading ${fieldname} to Cloudinary...`);
                 const cloudinaryUrl = await uploadToCloudinary(file, 'tenants');
+                
                 imageUrls[fieldname] = cloudinaryUrl;
+                if (fieldname === 'tenantImage') {
+                  imageUrls.imageUrl = cloudinaryUrl;
+                }
+                
                 console.log(`✅ ${fieldname} uploaded successfully:`, cloudinaryUrl);
               } catch (uploadError) {
                 console.error(`❌ Failed to upload ${fieldname}:`, uploadError);
@@ -120,7 +125,12 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
           for (const [fieldname, fileArray] of Object.entries(files)) {
             if (fileArray && fileArray[0]) {
               const file = fileArray[0];
-              imageUrls[fieldname] = `/uploads/images/${file.filename}`;
+              const localUrl = `/uploads/images/${file.filename}`;
+              
+              imageUrls[fieldname] = localUrl;
+              if (fieldname === 'tenantImage') {
+                imageUrls.imageUrl = localUrl;
+              }
             }
           }
         }
@@ -129,6 +139,7 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
         // Continue without failing - images are optional for basic functionality
       }
     }
+
 
     // Handle additional adults data
     let additionalAdults = [];
@@ -200,7 +211,8 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
       propertyId: tenantData.propertyId, 
       unit: tenantData.unit,
       additionalAdults: additionalAdults.length,
-      imageUrls: Object.keys(imageUrls)
+      imageUrls: Object.keys(imageUrls),
+      hasImage: !!(imageUrls.imageUrl || imageUrls.tenantImage)
     });
     
     const tenant = await Tenant.create(tenantData);

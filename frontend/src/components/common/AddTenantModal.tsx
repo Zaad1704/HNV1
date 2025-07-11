@@ -161,41 +161,28 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
         throw new Error('Please fill in rent amount and lease dates');
       }
       
-      let imageUrl = '';
-      
-      // Upload image if selected
-      if (imageFile) {
-        console.log('Uploading tenant image...');
-        const imageFormData = new FormData();
-        imageFormData.append('image', imageFile);
-        
-        try {
-          const imageResponse = await apiClient.post('/upload/image', imageFormData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            timeout: 30000
-          });
-          imageUrl = imageResponse.data?.data?.url || imageResponse.data?.url || '';
-          console.log('Image uploaded successfully:', imageUrl);
-        } catch (error) {
-          console.error('Failed to upload image:', error);
-          // Continue without image - not critical
-        }
-      }
-      
       const tenantData = {
         ...formData,
         rentAmount: Number(formData.rentAmount) || 0,
-        securityDeposit: Number(formData.securityDeposit) || 0,
-        imageUrl
+        securityDeposit: Number(formData.securityDeposit) || 0
       };
       
-      console.log('Submitting tenant data:', { 
-        name: tenantData.name, 
-        propertyId: tenantData.propertyId, 
-        unit: tenantData.unit 
+      const submitFormData = new FormData();
+      
+      // Add all tenant data to FormData
+      Object.keys(tenantData).forEach(key => {
+        if (tenantData[key] !== undefined && tenantData[key] !== '') {
+          submitFormData.append(key, tenantData[key].toString());
+        }
       });
       
-      const response = await apiClient.post('/tenants', tenantData, {
+      // Add image file if selected
+      if (imageFile) {
+        submitFormData.append('tenantImage', imageFile);
+      }
+      
+      const response = await apiClient.post('/tenants', submitFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 30000
       });
       

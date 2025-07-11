@@ -488,8 +488,7 @@ const TenantDetailsPage = () => {
               </div>
               
               {/* No Documents Message */}
-              {!tenant.tenantImage && !tenant.imageUrl && !tenant.govtIdFront && !tenant.govtIdBack && 
-               (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
+              {!tenant.tenantImage && !tenant.imageUrl && (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText size={32} className="text-gray-400" />
@@ -596,20 +595,19 @@ const TenantDetailsPage = () => {
           <UniversalCard gradient="blue">
             <div className="text-center mb-4">
               <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center relative">
-                {(tenant.imageUrl || tenant.tenantImage) ? (
+                {(tenant.tenantImage || tenant.imageUrl) ? (
                   <img 
                     src={tenant.tenantImage || tenant.imageUrl}
                     alt={tenant.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      console.error('Tenant image failed to load:', tenant.tenantImage || tenant.imageUrl);
                       e.currentTarget.style.display = 'none';
                       const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
                       if (fallback) fallback.classList.remove('hidden');
                     }}
                   />
                 ) : null}
-                <div className={`fallback-text text-white font-bold text-2xl absolute inset-0 flex items-center justify-center ${(tenant.imageUrl || tenant.tenantImage) ? 'hidden' : ''}`}>
+                <div className={`fallback-text text-white font-bold text-2xl absolute inset-0 flex items-center justify-center ${(tenant.tenantImage || tenant.imageUrl) ? 'hidden' : ''}`}>
                   {tenant.name?.charAt(0).toUpperCase() || 'T'}
                 </div>
               </div>

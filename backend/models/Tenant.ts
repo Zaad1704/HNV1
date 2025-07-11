@@ -17,9 +17,8 @@ export interface ITenant extends Document {
   securityDeposit?: number;
   advanceRent?: number;
   imageUrl?: string;
+  tenantImage?: string;
   govtIdNumber?: string;
-  govtIdImageUrlFront?: string;
-  govtIdImageUrlBack?: string;
   fatherName?: string;
   motherName?: string;
   presentAddress?: string;
@@ -86,9 +85,8 @@ const TenantSchema = new Schema<ITenant>({
   securityDeposit: { type: Number, default: 0 },
   advanceRent: { type: Number, default: 0 },
   imageUrl: { type: String },
+  tenantImage: { type: String },
   govtIdNumber: { type: String },
-  govtIdImageUrlFront: { type: String },
-  govtIdImageUrlBack: { type: String },
   fatherName: { type: String },
   motherName: { type: String },
   presentAddress: { type: String },
