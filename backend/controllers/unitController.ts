@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Unit from '../models/Unit';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
+import { IUser } from '../models/User';
 
 // Get units for a property
 export const getUnits = async (req: Request, res: Response) => {
@@ -9,7 +10,7 @@ export const getUnits = async (req: Request, res: Response) => {
     const { propertyId } = req.params;
     const units = await Unit.find({ 
       propertyId, 
-      organizationId: req.user?.organizationId 
+      organizationId: (req.user as IUser)?.organizationId 
     }).populate('tenantId', 'name email status');
     
     res.json({ success: true, data: units });
@@ -25,7 +26,7 @@ export const updateUnitNickname = async (req: Request, res: Response) => {
     const { nickname, alternativeName } = req.body;
     
     const unit = await Unit.findOneAndUpdate(
-      { _id: unitId, organizationId: req.user?.organizationId },
+      { _id: unitId, organizationId: (req.user as IUser)?.organizationId },
       { nickname, alternativeName },
       { new: true }
     );
@@ -48,7 +49,7 @@ export const createUnitsForProperty = async (req: Request, res: Response) => {
     
     const property = await Property.findOne({ 
       _id: propertyId, 
-      organizationId: req.user?.organizationId 
+      organizationId: (req.user as IUser)?.organizationId 
     });
     
     if (!property) {
@@ -58,7 +59,7 @@ export const createUnitsForProperty = async (req: Request, res: Response) => {
     const unitDocs = units.map((unit: any) => ({
       ...unit,
       propertyId,
-      organizationId: req.user?.organizationId
+      organizationId: (req.user as IUser)?.organizationId
     }));
     
     const createdUnits = await Unit.insertMany(unitDocs);
@@ -75,7 +76,7 @@ export const bulkUpdateUnitNicknames = async (req: Request, res: Response) => {
     
     const bulkOps = updates.map((update: any) => ({
       updateOne: {
-        filter: { _id: update.unitId, organizationId: req.user?.organizationId },
+        filter: { _id: update.unitId, organizationId: (req.user as IUser)?.organizationId },
         update: { 
           nickname: update.nickname, 
           alternativeName: update.alternativeName 
@@ -96,7 +97,7 @@ export const getVacantUnits = async (req: Request, res: Response) => {
     const { propertyId } = req.params;
     const units = await Unit.find({ 
       propertyId, 
-      organizationId: req.user?.organizationId,
+      organizationId: (req.user as IUser)?.organizationId,
       tenantId: { $exists: false }
     });
     
