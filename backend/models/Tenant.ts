@@ -58,6 +58,17 @@ export interface ITenant extends Document {
   }>;
   discountAmount: number;
   discountExpiresAt?: Date;
+  documents?: Array<{
+    url: string;
+    filename: string;
+    description: string;
+    uploadedAt: Date;
+  }>;
+  uploadedImages?: Array<{
+    url: string;
+    description: string;
+    uploadedAt: Date;
+  }>;
   lastRentIncrease?: {
     date: Date;
     oldAmount: number;
@@ -129,6 +140,17 @@ const TenantSchema = new Schema<ITenant>({
   }],
   discountAmount: { type: Number, default: 0 },
   discountExpiresAt: { type: Date },
+  documents: [{
+    url: { type: String },
+    filename: { type: String },
+    description: { type: String },
+    uploadedAt: { type: Date, default: Date.now }
+  }],
+  uploadedImages: [{
+    url: { type: String },
+    description: { type: String },
+    uploadedAt: { type: Date, default: Date.now }
+  }],
   lastRentIncrease: {
     date: { type: Date },
     oldAmount: { type: Number },

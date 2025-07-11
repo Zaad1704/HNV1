@@ -76,3 +76,102 @@ export const handleImageUpload = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ success: false, message: 'Upload failed' });
   }
 };
+
+export const handleDocumentUpload = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const { tenantId, description } = req.body;
+    if (!tenantId) {
+      return res.status(400).json({ success: false, message: 'Tenant ID required' });
+    }
+
+    // Upload to S3
+    let documentUrl;
+    try {
+      const s3Service = await import('../services/s3Service');
+      const filename = `documents/${Date.now()}-${req.file.originalname}`;
+      documentUrl = await s3Service.default.uploadFile(filename, req.file.buffer, req.file.mimetype);
+    } catch (error) {
+      console.error('S3 upload failed, using local:', error);
+      documentUrl = `/uploads/${req.file.filename}`;
+    }
+
+    // Update tenant with document
+    const Tenant = await import('../models/Tenant');
+    await Tenant.default.findByIdAndUpdate(tenantId, {
+      $push: {
+        documents: {
+          url: documentUrl,
+          filename: req.file.originalname,
+          description: description || 'Document',
+          uploadedAt: new Date()
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        url: documentUrl,
+        filename: req.file.originalname,
+        description
+      }
+    });
+  } catch (error) {
+    console.error('Document upload error:', error);
+    res.status(500).json({ success: false, message: 'Upload failed' });
+  }
+};
+
+export const handleTenantImageUpload = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const { tenantId, description } = req.body;
+    if (!tenantId) {
+      return res.status(400).json({ success: false, message: 'Tenant ID required' });
+    }
+
+    // Upload to Cloudinary
+    let imageUrl;
+    try {
+      const { uploadToCloudinary, isCloudinaryConfigured } = await import('../utils/cloudinary');
+      if (isCloudinaryConfigured()) {
+        imageUrl = await uploadToCloudinary(req.file, 'tenant-uploads');
+      } else {
+        imageUrl = `/uploads/${req.file.filename}`;
+      }
+    } catch (error) {
+      console.error('Cloudinary upload failed, using local:', error);
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    // Update tenant with image
+    const Tenant = await import('../models/Tenant');
+    await Tenant.default.findByIdAndUpdate(tenantId, {
+      $push: {
+        uploadedImages: {
+          url: imageUrl,
+          description: description || 'Image',
+          uploadedAt: new Date()
+        }
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        url: imageUrl,
+        description
+      }
+    });
+  } catch (error) {
+    console.error('Image upload error:', error);
+    res.status(500).json({ success: false, message: 'Upload failed' });
+  }
+};

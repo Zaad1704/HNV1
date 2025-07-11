@@ -330,7 +330,80 @@ const TenantDetailsPage = () => {
 
           {activeTab === 'documents' && (
             <UniversalCard gradient="blue">
-              <h3 className="text-lg font-bold mb-4">Documents & Images</h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold">Documents & Images</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const description = prompt('Enter document description:');
+                        if (description) {
+                          try {
+                            const formData = new FormData();
+                            formData.append('document', file);
+                            formData.append('description', description);
+                            formData.append('tenantId', tenant._id);
+                            
+                            await apiClient.post('/upload/document', formData, {
+                              headers: { 'Content-Type': 'multipart/form-data' }
+                            });
+                            alert('Document uploaded successfully!');
+                            window.location.reload();
+                          } catch (error: any) {
+                            alert(`Failed to upload document: ${error.response?.data?.message || 'Unknown error'}`);
+                          }
+                        }
+                      }
+                    }}
+                    className="hidden"
+                    id="document-upload"
+                  />
+                  <label
+                    htmlFor="document-upload"
+                    className="px-3 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 text-sm"
+                  >
+                    Upload Document
+                  </label>
+                  
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const description = prompt('Enter image description:');
+                        if (description) {
+                          try {
+                            const formData = new FormData();
+                            formData.append('image', file);
+                            formData.append('description', description);
+                            formData.append('tenantId', tenant._id);
+                            
+                            await apiClient.post('/upload/tenant-image', formData, {
+                              headers: { 'Content-Type': 'multipart/form-data' }
+                            });
+                            alert('Image uploaded successfully!');
+                            window.location.reload();
+                          } catch (error: any) {
+                            alert(`Failed to upload image: ${error.response?.data?.message || 'Unknown error'}`);
+                          }
+                        }
+                      }
+                    }}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="px-3 py-2 bg-green-500 text-white rounded-lg cursor-pointer hover:bg-green-600 text-sm"
+                  >
+                    Upload Image
+                  </label>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Tenant Photo */}
                 {(tenant.tenantImage || tenant.imageUrl) && (
@@ -495,20 +568,63 @@ const TenantDetailsPage = () => {
                 ))}
               </div>
               
+              {/* Uploaded Documents Section */}
+              {tenant.documents && tenant.documents.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3">Uploaded Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {tenant.documents.map((doc: any, index: number) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <FileText size={24} className="text-blue-500" />
+                          <div className="flex-1">
+                            <p className="font-medium">{doc.description}</p>
+                            <p className="text-sm text-gray-500">{doc.filename}</p>
+                          </div>
+                          <button
+                            onClick={() => window.open(doc.url, '_blank')}
+                            className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Uploaded Images Section */}
+              {tenant.uploadedImages && tenant.uploadedImages.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3">Uploaded Images</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {tenant.uploadedImages.map((img: any, index: number) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <img src={img.url} alt={img.description} className="w-full h-32 object-cover rounded mb-2" />
+                        <p className="text-sm font-medium">{img.description}</p>
+                        <button
+                          onClick={() => window.open(img.url, '_blank')}
+                          className="mt-2 px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                        >
+                          View Full Size
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* No Documents Message */}
-              {!tenant.tenantImage && !tenant.imageUrl && !tenant.govtIdFront && !tenant.govtIdBack && (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
+              {!tenant.tenantImage && !tenant.imageUrl && !tenant.govtIdFront && !tenant.govtIdBack && 
+               (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) &&
+               (!tenant.documents || tenant.documents.length === 0) && (!tenant.uploadedImages || tenant.uploadedImages.length === 0) && (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText size={32} className="text-gray-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No Documents Available</h3>
-                  <p className="text-gray-500 mb-4">No images or documents have been uploaded for this tenant yet.</p>
-                  <button
-                    onClick={() => setShowEditModal(true)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Upload Documents
-                  </button>
+                  <p className="text-gray-500 mb-4">Use the upload buttons above to add documents and images.</p>
                 </div>
               )}
             </UniversalCard>

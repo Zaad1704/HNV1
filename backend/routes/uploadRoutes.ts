@@ -13,6 +13,10 @@ router.use(protect);
 router.post('/image', upload.single('image'), handleImageUpload);
 router.post('/file', upload.single('file'), handleImageUpload);
 
+// Tenant document uploads
+router.post('/document', upload.single('document'), handleDocumentUpload);
+router.post('/tenant-image', upload.single('image'), handleTenantImageUpload);
+
 // Test upload routes
 router.post('/test', upload.single('image'), testUpload);
 router.get('/files', getUploadedFiles);
