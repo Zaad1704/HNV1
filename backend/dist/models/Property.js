@@ -69,6 +69,12 @@ const PropertySchema = new mongoose_1.Schema({
         default: 'normal'
     },
     imageUrl: { type: String },
+    propertyType: {
+        type: String,
+        enum: ['Apartment', 'House', 'Commercial', 'Other'],
+        default: 'Apartment'
+    },
+    description: { type: String },
     createdAt: {
         type: Date,
         default: Date.now,

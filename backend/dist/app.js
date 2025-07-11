@@ -67,6 +67,7 @@ const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
 const testEmailRoutes_1 = __importDefault(require("./routes/testEmailRoutes"));
 const propertyVacantUnitsRoutes_1 = __importDefault(require("./routes/propertyVacantUnitsRoutes"));
 const rentIncreaseRoutes_1 = __importDefault(require("./routes/rentIncreaseRoutes"));
+const unitRoutes_1 = __importDefault(require("./routes/unitRoutes"));
 const subscriptionMiddleware_1 = require("./middleware/subscriptionMiddleware");
 const cacheMiddleware_1 = require("./middleware/cacheMiddleware");
 const swagger_1 = require("./config/swagger");
@@ -89,27 +90,12 @@ const allowedOrigins = [
     process.env.FRONTEND_URL
 ].filter(Boolean);
 app.use((0, cors_1.default)({
-    origin: (origin, callback) => {
-        console.log('CORS origin check:', origin);
-        if (!origin)
-            return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            return callback(null, true);
-        }
-        if (origin.includes('.onrender.com') || origin.includes('hnvpm.com')) {
-            return callback(null, true);
-        }
-        console.warn('CORS blocked origin:', origin);
-        callback(null, true);
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-Version', 'X-Request-Time'],
     preflightContinue: false,
-    optionsSuccessStatus: 204
+    optionsSuccessStatus: 200
 }));
 app.use('/api/auth', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 10));
 app.use('/api', (0, securityMiddleware_1.createRateLimit)(15 * 60 * 1000, 100));
@@ -161,18 +147,22 @@ app.get('/api/debug', (req, res) => {
     });
 });
 app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+    res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Client-Version, X-Request-Time');
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.sendStatus(204);
+    res.sendStatus(200);
 });
 app.use('/api', (req, res, next) => {
     console.log(`API Request: ${req.method} ${req.originalUrl}`);
     next();
 });
 const testRoutes_1 = __importDefault(require("./routes/testRoutes"));
+const testImageRoutes_1 = __importDefault(require("./routes/testImageRoutes"));
+const testUploadRoutes_1 = __importDefault(require("./routes/testUploadRoutes"));
 app.use('/api/test', testRoutes_1.default);
+app.use('/api/test/image', testImageRoutes_1.default);
+app.use('/api/test/upload', testUploadRoutes_1.default);
 app.use('/api/health', healthRoutes_1.default);
 app.use('/health', healthRoutes_1.default);
 const routeErrorHandler = (err, req, res, next) => {
@@ -189,6 +179,11 @@ app.use('/api/password-reset', passwordResetRoutes_1.default);
 app.use('/api/dashboard', authMiddleware_1.protect, dashboardRoutes_1.default);
 app.use('/api/properties', authMiddleware_1.protect, propertiesRoutes_1.default);
 app.use('/api/properties', authMiddleware_1.protect, propertyVacantUnitsRoutes_1.default);
+const propertyRentStatusRoutes_1 = __importDefault(require("./routes/propertyRentStatusRoutes"));
+app.use('/api/properties', authMiddleware_1.protect, propertyRentStatusRoutes_1.default);
+const unitDetailsRoutes_1 = __importDefault(require("./routes/unitDetailsRoutes"));
+app.use('/api/properties', authMiddleware_1.protect, unitDetailsRoutes_1.default);
+app.use('/api/units', authMiddleware_1.protect, unitRoutes_1.default);
 app.use('/api/tenants', authMiddleware_1.protect, tenantsRoutes_1.default);
 app.use('/api/payments', authMiddleware_1.protect, paymentsRoutes_1.default);
 app.use('/api/expenses', authMiddleware_1.protect, expenseRoutes_1.default);
@@ -242,7 +237,13 @@ app.use('/api/settings', authMiddleware_1.protect, settingsRoutes_1.default);
 app.use('/api/agent-handovers', authMiddleware_1.protect, agentHandoverRoutes_1.default);
 app.use('/api/test-email', testEmailRoutes_1.default);
 app.use('/api/webhooks', webhookRoutes_1.default);
-app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, 'uploads')));
+app.use('/uploads', (req, res, next) => {
+    console.log('Static file request:', req.url);
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+}, express_1.default.static(path_1.default.join(__dirname, 'uploads')));
 app.use('/api/error', errorRoutes_1.default);
 app.use(routeErrorHandler);
 app.use(errorHandler_1.errorHandler);

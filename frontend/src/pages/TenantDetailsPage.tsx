@@ -633,7 +633,7 @@ const TenantDetailsPage = () => {
           {activeTab === 'personal' && (
             <UniversalCard gradient="green">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold">Personal Details</h3>
+                <h3 className="text-lg font-bold">Complete Personal Details</h3>
                 <button
                   onClick={async () => {
                     try {
@@ -642,7 +642,7 @@ const TenantDetailsPage = () => {
                       const url = window.URL.createObjectURL(blob);
                       const a = document.createElement('a');
                       a.href = url;
-                      a.download = `${tenant.name}-personal-details.pdf`;
+                      a.download = `${tenant.name}-complete-personal-details.pdf`;
                       a.click();
                       window.URL.revokeObjectURL(url);
                     } catch (error) {
@@ -652,59 +652,198 @@ const TenantDetailsPage = () => {
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
                 >
                   <Download size={16} />
-                  Download PDF
+                  Download Complete PDF
                 </button>
               </div>
               
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-8">
+                {/* Photos Section */}
+                <div>
+                  <h4 className="font-semibold mb-4 text-lg border-b pb-2">Photos & Documents</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Main Tenant Photo */}
+                    {(tenant.tenantImage || tenant.imageUrl) && (
+                      <div className="text-center">
+                        <img 
+                          src={tenant.tenantImage || tenant.imageUrl} 
+                          alt="Tenant Photo" 
+                          className="w-32 h-32 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
+                        />
+                        <p className="text-sm font-medium">Main Tenant Photo</p>
+                      </div>
+                    )}
+                    
+                    {/* Government IDs */}
+                    {tenant.govtIdFront && (
+                      <div className="text-center">
+                        <img 
+                          src={tenant.govtIdFront} 
+                          alt="ID Front" 
+                          className="w-32 h-20 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
+                        />
+                        <p className="text-sm font-medium">Government ID (Front)</p>
+                      </div>
+                    )}
+                    
+                    {tenant.govtIdBack && (
+                      <div className="text-center">
+                        <img 
+                          src={tenant.govtIdBack} 
+                          alt="ID Back" 
+                          className="w-32 h-20 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
+                        />
+                        <p className="text-sm font-medium">Government ID (Back)</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold mb-3">Basic Information</h4>
-                    <div className="space-y-2">
-                      <div><span className="text-sm text-gray-600">Name:</span> <span className="font-medium">{tenant.name}</span></div>
-                      <div><span className="text-sm text-gray-600">Email:</span> <span className="font-medium">{tenant.email}</span></div>
-                      <div><span className="text-sm text-gray-600">Phone:</span> <span className="font-medium">{tenant.phone}</span></div>
-                      {tenant.whatsappNumber && <div><span className="text-sm text-gray-600">WhatsApp:</span> <span className="font-medium">{tenant.whatsappNumber}</span></div>}
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Basic Information</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between"><span className="text-gray-600">Full Name:</span> <span className="font-medium">{tenant.name}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Email:</span> <span className="font-medium">{tenant.email}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Phone:</span> <span className="font-medium">{tenant.phone}</span></div>
+                      {tenant.whatsappNumber && <div className="flex justify-between"><span className="text-gray-600">WhatsApp:</span> <span className="font-medium">{tenant.whatsappNumber}</span></div>}
+                      <div className="flex justify-between"><span className="text-gray-600">Status:</span> <span className={`font-medium ${tenant.status === 'Active' ? 'text-green-600' : 'text-red-600'}`}>{tenant.status}</span></div>
+                      {tenant.numberOfOccupants && <div className="flex justify-between"><span className="text-gray-600">Occupants:</span> <span className="font-medium">{tenant.numberOfOccupants}</span></div>}
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold mb-3">Family Details</h4>
-                    <div className="space-y-2">
-                      {tenant.fatherName && <div><span className="text-sm text-gray-600">Father's Name:</span> <span className="font-medium">{tenant.fatherName}</span></div>}
-                      {tenant.motherName && <div><span className="text-sm text-gray-600">Mother's Name:</span> <span className="font-medium">{tenant.motherName}</span></div>}
-                      {tenant.govtIdNumber && <div><span className="text-sm text-gray-600">ID Number:</span> <span className="font-medium">{tenant.govtIdNumber}</span></div>}
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Property Information</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between"><span className="text-gray-600">Property:</span> <span className="font-medium">{tenant.propertyId?.name || 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Unit:</span> <span className="font-medium">{tenant.unit}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Monthly Rent:</span> <span className="font-medium text-green-600">${tenant.rentAmount || 0}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Security Deposit:</span> <span className="font-medium">${tenant.securityDeposit || 0}</span></div>
+                      {tenant.leaseStartDate && <div className="flex justify-between"><span className="text-gray-600">Lease Start:</span> <span className="font-medium">{new Date(tenant.leaseStartDate).toLocaleDateString()}</span></div>}
+                      {tenant.leaseEndDate && <div className="flex justify-between"><span className="text-gray-600">Lease End:</span> <span className="font-medium">{new Date(tenant.leaseEndDate).toLocaleDateString()}</span></div>}
                     </div>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Family & Personal Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold mb-3">Addresses</h4>
-                    <div className="space-y-2">
-                      {tenant.presentAddress && <div><span className="text-sm text-gray-600">Present:</span> <span className="font-medium">{tenant.presentAddress}</span></div>}
-                      {tenant.permanentAddress && <div><span className="text-sm text-gray-600">Permanent:</span> <span className="font-medium">{tenant.permanentAddress}</span></div>}
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Family Details</h4>
+                    <div className="space-y-3">
+                      {tenant.fatherName && <div className="flex justify-between"><span className="text-gray-600">Father's Name:</span> <span className="font-medium">{tenant.fatherName}</span></div>}
+                      {tenant.motherName && <div className="flex justify-between"><span className="text-gray-600">Mother's Name:</span> <span className="font-medium">{tenant.motherName}</span></div>}
+                      {tenant.govtIdNumber && <div className="flex justify-between"><span className="text-gray-600">Government ID:</span> <span className="font-medium">{tenant.govtIdNumber}</span></div>}
+                      {tenant.occupation && <div className="flex justify-between"><span className="text-gray-600">Occupation:</span> <span className="font-medium">{tenant.occupation}</span></div>}
+                      {tenant.monthlyIncome && <div className="flex justify-between"><span className="text-gray-600">Monthly Income:</span> <span className="font-medium text-green-600">${tenant.monthlyIncome}</span></div>}
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold mb-3">Emergency Contact</h4>
-                    <div className="space-y-2">
-                      {tenant.emergencyContactName && <div><span className="text-sm text-gray-600">Name:</span> <span className="font-medium">{tenant.emergencyContactName}</span></div>}
-                      {tenant.emergencyContactPhone && <div><span className="text-sm text-gray-600">Phone:</span> <span className="font-medium">{tenant.emergencyContactPhone}</span></div>}
-                      {tenant.emergencyContactRelation && <div><span className="text-sm text-gray-600">Relation:</span> <span className="font-medium">{tenant.emergencyContactRelation}</span></div>}
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Contact & Emergency</h4>
+                    <div className="space-y-3">
+                      {tenant.emergencyContact?.name && <div className="flex justify-between"><span className="text-gray-600">Emergency Contact:</span> <span className="font-medium">{tenant.emergencyContact.name}</span></div>}
+                      {tenant.emergencyContact?.phone && <div className="flex justify-between"><span className="text-gray-600">Emergency Phone:</span> <span className="font-medium">{tenant.emergencyContact.phone}</span></div>}
+                      {tenant.emergencyContact?.relation && <div className="flex justify-between"><span className="text-gray-600">Relation:</span> <span className="font-medium">{tenant.emergencyContact.relation}</span></div>}
+                      {tenant.reference?.name && <div className="flex justify-between"><span className="text-gray-600">Reference:</span> <span className="font-medium">{tenant.reference.name}</span></div>}
+                      {tenant.reference?.phone && <div className="flex justify-between"><span className="text-gray-600">Reference Phone:</span> <span className="font-medium">{tenant.reference.phone}</span></div>}
                     </div>
                   </div>
                 </div>
                 
-                {(tenant.occupation || tenant.monthlyIncome || tenant.vehicleDetails) && (
+                {/* Addresses */}
+                <div>
+                  <h4 className="font-semibold mb-3 text-lg border-b pb-2">Address Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {tenant.presentAddress && (
+                      <div>
+                        <span className="text-gray-600 font-medium">Present Address:</span>
+                        <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.presentAddress}</p>
+                      </div>
+                    )}
+                    {tenant.permanentAddress && (
+                      <div>
+                        <span className="text-gray-600 font-medium">Permanent Address:</span>
+                        <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.permanentAddress}</p>
+                      </div>
+                    )}
+                    {tenant.previousAddress && (
+                      <div>
+                        <span className="text-gray-600 font-medium">Previous Address:</span>
+                        <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.previousAddress}</p>
+                      </div>
+                    )}
+                    {tenant.reasonForMoving && (
+                      <div>
+                        <span className="text-gray-600 font-medium">Reason for Moving:</span>
+                        <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.reasonForMoving}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Additional Information */}
+                {(tenant.vehicleDetails || tenant.petDetails || tenant.specialInstructions) && (
                   <div>
-                    <h4 className="font-semibold mb-3">Additional Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {tenant.occupation && <div><span className="text-sm text-gray-600">Occupation:</span> <span className="font-medium">{tenant.occupation}</span></div>}
-                      {tenant.monthlyIncome && <div><span className="text-sm text-gray-600">Monthly Income:</span> <span className="font-medium">${tenant.monthlyIncome}</span></div>}
-                      {tenant.vehicleDetails && <div><span className="text-sm text-gray-600">Vehicle:</span> <span className="font-medium">{tenant.vehicleDetails}</span></div>}
-                      {tenant.petDetails && <div><span className="text-sm text-gray-600">Pets:</span> <span className="font-medium">{tenant.petDetails}</span></div>}
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Additional Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {tenant.vehicleDetails && (
+                        <div>
+                          <span className="text-gray-600 font-medium">Vehicle Details:</span>
+                          <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.vehicleDetails}</p>
+                        </div>
+                      )}
+                      {tenant.petDetails && (
+                        <div>
+                          <span className="text-gray-600 font-medium">Pet Details:</span>
+                          <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.petDetails}</p>
+                        </div>
+                      )}
+                    </div>
+                    {tenant.specialInstructions && (
+                      <div className="mt-4">
+                        <span className="text-gray-600 font-medium">Special Instructions:</span>
+                        <p className="mt-1 p-3 bg-gray-50 rounded-lg">{tenant.specialInstructions}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Additional Adults */}
+                {tenant.additionalAdults && tenant.additionalAdults.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3 text-lg border-b pb-2">Additional Adults ({tenant.additionalAdults.length})</h4>
+                    <div className="space-y-4">
+                      {tenant.additionalAdults.map((adult: any, index: number) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-start gap-4">
+                            {(adult.imageUrl || adult.image) && (
+                              <img 
+                                src={adult.imageUrl || adult.image} 
+                                alt={`${adult.name || `Adult ${index + 1}`}`} 
+                                className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
+                              />
+                            )}
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="space-y-2">
+                                {adult.name && <div className="flex justify-between"><span className="text-gray-600">Name:</span> <span className="font-medium">{adult.name}</span></div>}
+                                {adult.phone && <div className="flex justify-between"><span className="text-gray-600">Phone:</span> <span className="font-medium">{adult.phone}</span></div>}
+                                {adult.relation && <div className="flex justify-between"><span className="text-gray-600">Relation:</span> <span className="font-medium">{adult.relation}</span></div>}
+                              </div>
+                              <div className="space-y-2">
+                                {adult.govtIdNumber && <div className="flex justify-between"><span className="text-gray-600">ID Number:</span> <span className="font-medium">{adult.govtIdNumber}</span></div>}
+                                {adult.fatherName && <div className="flex justify-between"><span className="text-gray-600">Father's Name:</span> <span className="font-medium">{adult.fatherName}</span></div>}
+                                {adult.motherName && <div className="flex justify-between"><span className="text-gray-600">Mother's Name:</span> <span className="font-medium">{adult.motherName}</span></div>}
+                              </div>
+                            </div>
+                          </div>
+                          {adult.permanentAddress && (
+                            <div className="mt-3">
+                              <span className="text-gray-600 font-medium">Address:</span>
+                              <p className="mt-1 p-2 bg-gray-50 rounded text-sm">{adult.permanentAddress}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

@@ -7,6 +7,9 @@ const express_1 = require("express");
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const Receipt_1 = __importDefault(require("../models/Receipt"));
 const pdfkit_1 = __importDefault(require("pdfkit"));
+const t = (key, language = 'en') => {
+    return key;
+};
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.protect);
 router.post('/bulk-pdf', async (req, res) => {
@@ -20,30 +23,70 @@ router.post('/bulk-pdf', async (req, res) => {
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=bulk-receipts.pdf');
         doc.pipe(res);
+        doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+        const addWatermark = (y) => {
+            doc.save();
+            doc.opacity(0.15);
+            doc.fontSize(40).font('Helvetica-Bold').fillColor('#2563eb')
+                .text('HNV', 250, y, { align: 'center' });
+            doc.fontSize(12).text('Property Management', 250, y + 45, { align: 'center' });
+            doc.restore();
+        };
+        let currentY = 20;
+        const pageHeight = 792;
+        const receiptHeight = 180;
         receipts.forEach((receipt, index) => {
-            if (index > 0)
+            if (currentY + receiptHeight > pageHeight - 100) {
                 doc.addPage();
-            const orgName = receipt.organizationId?.name || 'Property Management';
-            doc.fontSize(24).font('Helvetica-Bold').text(orgName, 50, 50, { align: 'center' });
-            doc.fontSize(18).font('Helvetica-Bold').text('PAYMENT RECEIPT', 50, 90, { align: 'center' });
-            doc.rect(50, 130, 500, 200).stroke();
-            doc.fontSize(12).font('Helvetica');
-            doc.text(`Receipt Number: ${receipt.receiptNumber}`, 70, 150);
-            if (receipt.handwrittenReceiptNumber) {
-                doc.text(`Handwritten Receipt #: ${receipt.handwrittenReceiptNumber}`, 70, 170);
+                doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+                currentY = 20;
             }
-            doc.text(`Date: ${receipt.paymentDate.toLocaleDateString()}`, 70, receipt.handwrittenReceiptNumber ? 190 : 170);
-            const detailsY = receipt.handwrittenReceiptNumber ? 220 : 200;
-            doc.text(`Tenant Name: ${receipt.tenantName}`, 70, detailsY);
-            doc.text(`Property: ${receipt.propertyName}`, 70, detailsY + 20);
-            doc.text(`Unit Number: ${receipt.unitNumber}`, 70, detailsY + 40);
-            doc.text(`Rent Month: ${receipt.rentMonth || 'N/A'}`, 70, detailsY + 60);
-            doc.text(`Payment Method: ${receipt.paymentMethod}`, 70, detailsY + 80);
-            doc.fontSize(16).font('Helvetica-Bold');
-            doc.text(`Amount Paid: $${receipt.amount.toFixed(2)}`, 70, detailsY + 110);
-            doc.fontSize(10).font('Helvetica').text('Thank you for your payment!', 50, 400, { align: 'center' });
-            doc.text('Powered by HNV Property Management Solutions', 50, 420, { align: 'center' });
+            const orgName = receipt.organizationId?.name || 'Property Management';
+            const userLang = req.user?.language || 'en';
+            addWatermark(currentY + 60);
+            doc.rect(30, currentY, 552, receiptHeight).fill('white').strokeColor('#2563eb').lineWidth(2).stroke();
+            const headerHeight = Math.min(50, receiptHeight * 0.3);
+            doc.rect(30, currentY, 552, headerHeight).fill('#2563eb');
+            const maxOrgWidth = 500;
+            doc.font('Helvetica-Bold').fontSize(18).fillColor('white')
+                .text(orgName, 50, currentY + 10, { width: maxOrgWidth, align: 'center' });
+            doc.fontSize(12).text(t('receipt.paymentReceipt', userLang), 50, currentY + 30, { width: maxOrgWidth, align: 'center' });
+            const contentY = currentY + headerHeight + 10;
+            doc.fillColor('black').font('Helvetica');
+            doc.fontSize(10).font('Helvetica-Bold')
+                .text(t('receipt.information', userLang), 50, contentY);
+            doc.fontSize(9).font('Helvetica')
+                .text(`${t('receipt.number', userLang)}: ${receipt.receiptNumber}`, 50, contentY + 15)
+                .text(`${t('common.date', userLang)}: ${receipt.paymentDate.toLocaleDateString()}`, 50, contentY + 28);
+            if (receipt.handwrittenReceiptNumber) {
+                doc.text(`${t('receipt.manualNumber', userLang)}: ${receipt.handwrittenReceiptNumber}`, 50, contentY + 41);
+            }
+            doc.fontSize(10).font('Helvetica-Bold')
+                .text(t('tenant.details', userLang), 200, contentY);
+            doc.fontSize(9).font('Helvetica')
+                .text(`${t('common.name', userLang)}: ${receipt.tenantName}`, 200, contentY + 15)
+                .text(`${t('property.property', userLang)}: ${receipt.propertyName}`, 200, contentY + 28)
+                .text(`${t('property.unit', userLang)}: ${receipt.unitNumber}`, 200, contentY + 41)
+                .text(`${t('payment.month', userLang)}: ${receipt.rentMonth || 'N/A'}`, 200, contentY + 54)
+                .text(`${t('payment.method', userLang)}: ${receipt.paymentMethod}`, 200, contentY + 67);
+            doc.rect(400, contentY, 150, 80).fill('#dcfce7').stroke('#16a34a');
+            doc.fontSize(10).font('Helvetica-Bold').fillColor('#15803d')
+                .text(t('payment.amountPaid', userLang), 420, contentY + 10);
+            doc.fontSize(18).font('Helvetica-Bold')
+                .text(`$${receipt.amount.toFixed(2)}`, 420, contentY + 30);
+            doc.fontSize(8).font('Helvetica').fillColor('#166534')
+                .text(`${t('common.status', userLang)}: ${t('payment.paid', userLang)}`, 420, contentY + 55)
+                .text(t('common.verified', userLang), 420, contentY + 65);
+            const currentYear = new Date().getFullYear();
+            doc.fillColor('#2563eb').fontSize(8)
+                .text(t('common.poweredBy', userLang), 50, currentY + receiptHeight - 25, { width: 500, align: 'center' })
+                .text(`© ${currentYear} HNV Property Management Solutions. ${t('common.allRightsReserved', userLang)}.`, 50, currentY + receiptHeight - 15, { width: 500, align: 'center' });
+            currentY += receiptHeight + 20;
         });
+        addWatermark(pageHeight - 200);
+        const userLang = req.user?.language || 'en';
+        doc.fontSize(8).fillColor('#64748b')
+            .text(t('receipt.confidentialNotice', userLang), 50, pageHeight - 40, { width: 500, align: 'center' });
         doc.end();
     }
     catch (error) {
@@ -58,6 +101,7 @@ router.post('/thermal-print', async (req, res) => {
             _id: { $in: receiptIds },
             organizationId: req.user.organizationId
         }).populate('organizationId', 'name');
+        const userLang = req.user?.language || 'en';
         const thermalHTML = receipts.map(receipt => {
             const orgName = receipt.organizationId?.name || 'Property Management';
             return `
@@ -66,28 +110,28 @@ router.post('/thermal-print', async (req, res) => {
             ${orgName}
           </div>
           <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">
-            PAYMENT RECEIPT
+            ${t('receipt.paymentReceipt', userLang)}
           </div>
           <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
-          <div>Receipt #: ${receipt.receiptNumber}</div>
-          ${receipt.handwrittenReceiptNumber ? `<div>Manual #: ${receipt.handwrittenReceiptNumber}</div>` : ''}
-          <div>Date: ${receipt.paymentDate.toLocaleDateString()}</div>
+          <div>${t('receipt.number', userLang)}: ${receipt.receiptNumber}</div>
+          ${receipt.handwrittenReceiptNumber ? `<div>${t('receipt.manualNumber', userLang)}: ${receipt.handwrittenReceiptNumber}</div>` : ''}
+          <div>${t('common.date', userLang)}: ${receipt.paymentDate.toLocaleDateString()}</div>
           <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
-          <div>Tenant: ${receipt.tenantName}</div>
-          <div>Property: ${receipt.propertyName}</div>
-          <div>Unit: ${receipt.unitNumber}</div>
+          <div>${t('tenant.tenant', userLang)}: ${receipt.tenantName}</div>
+          <div>${t('property.property', userLang)}: ${receipt.propertyName}</div>
+          <div>${t('property.unit', userLang)}: ${receipt.unitNumber}</div>
           <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
-          <div>Rent Month: ${receipt.rentMonth || 'N/A'}</div>
-          <div>Payment Method: ${receipt.paymentMethod}</div>
+          <div>${t('payment.month', userLang)}: ${receipt.rentMonth || 'N/A'}</div>
+          <div>${t('payment.method', userLang)}: ${receipt.paymentMethod}</div>
           <div style="font-weight: bold; font-size: 14px; margin-top: 10px;">
-            Amount: $${receipt.amount.toFixed(2)}
+            ${t('payment.amount', userLang)}: $${receipt.amount.toFixed(2)}
           </div>
           <div style="border-bottom: 1px dashed #000; margin: 10px 0;"></div>
           <div style="text-align: center; font-size: 10px;">
-            Thank you for your payment!
+            ${t('receipt.thankYou', userLang)}
           </div>
           <div style="text-align: center; font-size: 8px; margin-top: 5px;">
-            Powered by HNV Property Management Solutions
+            ${t('common.poweredBy', userLang)}
           </div>
         </div>
       `;
@@ -113,6 +157,84 @@ router.post('/thermal-print', async (req, res) => {
     catch (error) {
         console.error('Thermal print error:', error);
         res.status(500).json({ success: false, message: 'Failed to generate print format' });
+    }
+});
+router.get('/', async (req, res) => {
+    try {
+        const { search, date, status } = req.query;
+        const filter = { organizationId: req.user.organizationId };
+        if (search) {
+            filter.$or = [
+                { receiptNumber: { $regex: search, $options: 'i' } },
+                { tenantName: { $regex: search, $options: 'i' } },
+                { propertyName: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (date && date !== 'all') {
+            const now = new Date();
+            let startDate = new Date();
+            switch (date) {
+                case 'today':
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case 'week':
+                    startDate.setDate(now.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(now.getMonth() - 1);
+                    break;
+                case 'year':
+                    startDate.setFullYear(now.getFullYear() - 1);
+                    break;
+            }
+            filter.paymentDate = { $gte: startDate };
+        }
+        const receipts = await Receipt_1.default.find(filter)
+            .sort({ paymentDate: -1 })
+            .limit(100);
+        res.status(200).json({ success: true, data: receipts });
+    }
+    catch (error) {
+        console.error('Get receipts error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+router.get('/:id/pdf', async (req, res) => {
+    try {
+        const receipt = await Receipt_1.default.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId
+        }).populate('organizationId', 'name');
+        if (!receipt) {
+            return res.status(404).json({ success: false, message: 'Receipt not found' });
+        }
+        const doc = new pdfkit_1.default({ margin: 50 });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=receipt-${receipt.receiptNumber}.pdf`);
+        doc.pipe(res);
+        doc.rect(0, 0, 612, 792).fill('#f0f8ff');
+        const orgName = receipt.organizationId?.name || 'Property Management';
+        const userLang = req.user?.language || 'en';
+        doc.rect(30, 30, 552, 60).fill('#2563eb');
+        doc.fontSize(18).font('Helvetica-Bold').fillColor('white')
+            .text(orgName, 50, 50, { width: 500, align: 'center' });
+        doc.fontSize(14).text(t('receipt.paymentReceipt', userLang), 50, 70, { width: 500, align: 'center' });
+        doc.fillColor('black').fontSize(12).font('Helvetica')
+            .text(`${t('receipt.number', userLang)}: ${receipt.receiptNumber}`, 50, 120)
+            .text(`${t('common.date', userLang)}: ${receipt.paymentDate.toLocaleDateString()}`, 50, 140)
+            .text(`${t('common.name', userLang)}: ${receipt.tenantName}`, 50, 180)
+            .text(`${t('property.property', userLang)}: ${receipt.propertyName}`, 50, 200)
+            .text(`${t('property.unit', userLang)}: ${receipt.unitNumber}`, 50, 220)
+            .text(`${t('payment.amount', userLang)}: $${receipt.amount.toFixed(2)}`, 50, 260);
+        const currentYear = new Date().getFullYear();
+        doc.fontSize(10).fillColor('#64748b')
+            .text(t('common.poweredBy', userLang), 50, 700, { width: 500, align: 'center' })
+            .text(`© ${currentYear} HNV Property Management Solutions. ${t('common.allRightsReserved', userLang)}.`, 50, 720, { width: 500, align: 'center' });
+        doc.end();
+    }
+    catch (error) {
+        console.error('Single receipt PDF error:', error);
+        res.status(500).json({ success: false, message: 'Failed to generate PDF' });
     }
 });
 exports.default = router;

@@ -1,7 +1,7 @@
 
 import { Router } from 'express';
 import { protect } from '../middleware/authMiddleware';
-import { uploadImage, handleImageUpload } from '../controllers/uploadController';
+import { uploadImage, handleImageUpload, handleDocumentUpload, handleTenantImageUpload } from '../controllers/uploadController';
 import { testUpload, getUploadedFiles } from '../controllers/testUploadController';
 import upload from '../middleware/uploadMiddleware';
 
