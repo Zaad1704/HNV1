@@ -93,9 +93,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
       endDate.setMonth(endDate.getMonth() + parseInt(formData.leaseDuration));
       const calculatedEndDate = endDate.toISOString().split('T')[0];
       
-      if (calculatedEndDate !== formData.leaseEndDate) {
-        setFormData(prev => ({ ...prev, leaseEndDate: calculatedEndDate }));
-      }
+      setFormData(prev => ({ ...prev, leaseEndDate: calculatedEndDate }));
     }
   }, [formData.leaseStartDate, formData.leaseDuration]);
 
@@ -481,8 +479,8 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
               <input
                 type="date"
                 value={formData.leaseEndDate}
-                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-                readOnly
+                onChange={(e) => setFormData({ ...formData, leaseEndDate: e.target.value })}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
               {formData.leaseStartDate && formData.leaseDuration && (
                 <p className="text-xs text-green-600 mt-1">✓ {formData.leaseDuration} months from start</p>
