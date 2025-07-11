@@ -97,6 +97,32 @@ export const updateExpense = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getExpenseById = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const expense = await Expense.findById(req.params.id)
+      .populate('propertyId', 'name address')
+      .populate('organizationId', 'name');
+
+    if (!expense) {
+      return res.status(404).json({ success: false, message: 'Expense not found' });
+    }
+
+    // Check authorization
+    if (req.user.role !== 'Super Admin' && expense.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to view this expense' });
+    }
+
+    res.status(200).json({ success: true, data: expense });
+  } catch (error) {
+    console.error('Get expense by ID error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 export const deleteExpense = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {

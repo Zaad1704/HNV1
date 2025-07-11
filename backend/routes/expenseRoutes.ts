@@ -3,6 +3,7 @@ import { protect } from '../middleware/authMiddleware';
 import { requireApproval } from '../middleware/approvalMiddleware';
 import {
   getExpenses,
+  getExpenseById,
   createExpense,
   updateExpense,
   deleteExpense
@@ -17,6 +18,7 @@ router.route('/')
   .post(requireApproval('expense'), createExpense);
 
 router.route('/:id')
+  .get(getExpenseById)
   .put(requireApproval('expense'), updateExpense)
   .delete(requireApproval('expense'), deleteExpense);
 

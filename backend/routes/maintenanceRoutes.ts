@@ -3,6 +3,7 @@ import { protect } from '../middleware/authMiddleware';
 import {
   createMaintenanceRequest,
   getMaintenanceRequests,
+  getMaintenanceRequestById,
   updateMaintenanceRequest,
   deleteMaintenanceRequest
 } from '../controllers/maintenanceController';
@@ -16,6 +17,7 @@ router.route('/')
   .post(createMaintenanceRequest);
 
 router.route('/:id')
+  .get(getMaintenanceRequestById)
   .put(updateMaintenanceRequest)
   .delete(deleteMaintenanceRequest);
 

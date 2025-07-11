@@ -93,6 +93,34 @@ export const updateMaintenanceRequest = async (req: AuthRequest, res: Response) 
   }
 };
 
+export const getMaintenanceRequestById = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const request = await MaintenanceRequest.findById(req.params.id)
+      .populate('propertyId', 'name address')
+      .populate('tenantId', 'name email phone unit')
+      .populate('requestedBy', 'name email')
+      .populate('organizationId', 'name');
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Maintenance request not found' });
+    }
+
+    // Check authorization
+    if (request.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to view this request' });
+    }
+
+    res.status(200).json({ success: true, data: request });
+  } catch (error) {
+    console.error('Get maintenance request by ID error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 export const deleteMaintenanceRequest = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
