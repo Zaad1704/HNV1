@@ -47,7 +47,7 @@
     "utils/imageOptimizer.ts",
     "utils/dbOptimizer.ts",
     "validators/userValidator.ts",
-    "src/types/express.d.ts",
+
     "tests/setup.ts"
   ]
 }
