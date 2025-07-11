@@ -32,18 +32,26 @@ const TenantDetailsPage = () => {
   const { data: relatedData } = useQuery({
     queryKey: ['tenantRelatedData', tenantId],
     queryFn: async () => {
-      const [payments, expenses, maintenance, approvals] = await Promise.all([
+      const [payments, expenses, maintenance, approvals, receipts, cashFlow, reminders, auditLogs] = await Promise.all([
         apiClient.get(`/payments?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
         apiClient.get(`/expenses?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
         apiClient.get(`/maintenance?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
-        apiClient.get(`/approvals?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } }))
+        apiClient.get(`/approvals?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/receipts?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/cashflow?tenantId=${tenantId}`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/reminders?tenantId=${tenantId}&status=active`).catch(() => ({ data: { data: [] } })),
+        apiClient.get(`/audit?resourceId=${tenantId}&limit=10`).catch(() => ({ data: { data: [] } }))
       ]);
 
       return {
         payments: payments.data.data || [],
         expenses: expenses.data.data || [],
         maintenance: maintenance.data.data || [],
-        approvals: approvals.data.data || []
+        approvals: approvals.data.data || [],
+        receipts: receipts.data.data || [],
+        cashFlow: cashFlow.data.data || [],
+        reminders: reminders.data.data || [],
+        auditLogs: auditLogs.data.data || []
       };
     },
     enabled: !!tenantId
@@ -278,6 +286,179 @@ const TenantDetailsPage = () => {
                 </div>
               </UniversalCard>
 
+              {/* Recent Receipts */}
+              <UniversalCard gradient="blue">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Recent Receipts</h3>
+                  <Link to={`/dashboard/receipts?tenantId=${tenantId}`} className="text-blue-500 text-sm hover:underline">View All</Link>
+                </div>
+                <div className="space-y-3">
+                  {relatedData?.receipts?.slice(0, 3).map((receipt: any) => (
+                    <div key={receipt._id} className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                      <div>
+                        <p className="font-medium">${receipt.amount}</p>
+                        <p className="text-sm text-gray-600">{new Date(receipt.date).toLocaleDateString()}</p>
+                      </div>
+                      <button
+                        onClick={() => window.open(`/api/receipts/${receipt._id}/download`, '_blank')}
+                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                      >
+                        <Download size={14} className="inline mr-1" />Download
+                      </button>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">No receipts available</p>
+                  )}
+                </div>
+              </UniversalCard>
+
+              {/* Cash Flow Analysis */}
+              <UniversalCard gradient="purple">
+                <h3 className="text-lg font-bold mb-4">Cash Flow Analysis</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <p className="text-xl font-bold text-green-600">
+                      ${relatedData?.cashFlow?.filter((cf: any) => cf.type === 'income').reduce((sum: number, cf: any) => sum + cf.amount, 0) || 0}
+                    </p>
+                    <p className="text-sm text-green-800">Total Income</p>
+                  </div>
+                  <div className="text-center p-3 bg-red-50 rounded-lg">
+                    <p className="text-xl font-bold text-red-600">
+                      ${relatedData?.cashFlow?.filter((cf: any) => cf.type === 'expense').reduce((sum: number, cf: any) => sum + cf.amount, 0) || 0}
+                    </p>
+                    <p className="text-sm text-red-800">Total Expenses</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {relatedData?.cashFlow?.slice(0, 3).map((flow: any) => (
+                    <div key={flow._id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div>
+                        <p className="font-medium">{flow.description}</p>
+                        <p className="text-sm text-gray-600">{new Date(flow.transactionDate).toLocaleDateString()}</p>
+                      </div>
+                      <span className={`font-bold ${flow.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {flow.type === 'income' ? '+' : '-'}${flow.amount}
+                      </span>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">No cash flow data</p>
+                  )}
+                </div>
+              </UniversalCard>
+
+              {/* Active Reminders */}
+              <UniversalCard gradient="orange">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Active Reminders</h3>
+                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm font-medium">
+                    {relatedData?.reminders?.length || 0}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {relatedData?.reminders?.slice(0, 3).map((reminder: any) => (
+                    <div key={reminder._id} className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">{reminder.message}</p>
+                          <p className="text-sm text-gray-600">Next: {new Date(reminder.nextRunDate).toLocaleDateString()}</p>
+                          <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded">{reminder.frequency}</span>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await apiClient.put(`/reminders/${reminder._id}`, { status: 'completed' });
+                              window.location.reload();
+                            } catch (error) {
+                              alert('Failed to complete reminder');
+                            }
+                          }}
+                          className="text-orange-600 hover:text-orange-800 text-sm"
+                        >
+                          Complete
+                        </button>
+                      </div>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">No active reminders</p>
+                  )}
+                </div>
+              </UniversalCard>
+
+              {/* Pending Approvals */}
+              <UniversalCard gradient="yellow">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Pending Approvals</h3>
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
+                    {relatedData?.approvals?.filter((a: any) => a.status === 'pending').length || 0}
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {relatedData?.approvals?.filter((a: any) => a.status === 'pending').slice(0, 3).map((approval: any) => (
+                    <div key={approval._id} className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">{approval.description}</p>
+                          <p className="text-sm text-gray-600">Requested: {new Date(approval.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                await apiClient.put(`/approvals/${approval._id}`, { status: 'approved' });
+                                window.location.reload();
+                              } catch (error) {
+                                alert('Failed to approve request');
+                              }
+                            }}
+                            className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await apiClient.put(`/approvals/${approval._id}`, { status: 'rejected' });
+                                window.location.reload();
+                              } catch (error) {
+                                alert('Failed to reject request');
+                              }
+                            }}
+                            className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">No pending approvals</p>
+                  )}
+                </div>
+              </UniversalCard>
+
+              {/* Recent Audit Logs */}
+              <UniversalCard gradient="gray">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold">Recent Activity</h3>
+                  <Link to={`/dashboard/audit?tenantId=${tenantId}`} className="text-gray-500 text-sm hover:underline">View All</Link>
+                </div>
+                <div className="space-y-2">
+                  {relatedData?.auditLogs?.slice(0, 5).map((log: any) => (
+                    <div key={log._id} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                      <div className={`w-2 h-2 rounded-full ${
+                        log.severity === 'high' ? 'bg-red-500' :
+                        log.severity === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{log.description}</p>
+                        <p className="text-xs text-gray-500">{new Date(log.createdAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )) || (
+                    <p className="text-gray-500 text-center py-4">No recent activity</p>
+                  )}
+                </div>
+              </UniversalCard>
 
             </div>
           )}

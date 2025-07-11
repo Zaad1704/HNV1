@@ -13,7 +13,14 @@ export const getReminders = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const reminders = await Reminder.find({ organizationId: req.user.organizationId })
+    const { tenantId, propertyId, status } = req.query;
+    const filter: any = { organizationId: req.user.organizationId };
+    
+    if (tenantId) filter.tenantId = tenantId;
+    if (propertyId) filter.propertyId = propertyId;
+    if (status) filter.status = status;
+
+    const reminders = await Reminder.find(filter)
       .populate('tenantId', 'name email unit')
       .populate('propertyId', 'name address')
       .sort({ nextRunDate: 1 });

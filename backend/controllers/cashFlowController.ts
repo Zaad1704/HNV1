@@ -51,11 +51,24 @@ export const getCashFlowRecords = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const query = req.user.role === 'Super Admin' && !req.user.organizationId 
+    const { tenantId, propertyId, type, startDate, endDate } = req.query;
+    
+    const query: any = req.user.role === 'Super Admin' && !req.user.organizationId 
       ? {} 
       : { organizationId: req.user.organizationId };
 
+    if (tenantId) query.tenantId = tenantId;
+    if (propertyId) query.propertyId = propertyId;
+    if (type) query.type = type;
+    if (startDate || endDate) {
+      query.transactionDate = {};
+      if (startDate) query.transactionDate.$gte = new Date(startDate as string);
+      if (endDate) query.transactionDate.$lte = new Date(endDate as string);
+    }
+
     const records = await CashFlow.find(query)
+      .populate('tenantId', 'name unit')
+      .populate('propertyId', 'name address')
       .sort({ transactionDate: -1 });
 
     res.status(200).json({ success: true, data: records });

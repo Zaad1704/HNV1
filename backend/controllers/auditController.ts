@@ -27,6 +27,8 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
       severity,
       startDate,
       endDate,
+      tenantId,
+      resourceId,
       limit = 100,
       skip = 0
     } = req.query;
@@ -36,6 +38,8 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
     if (severity) filters.severity = severity;
     if (startDate) filters.startDate = new Date(startDate as string);
     if (endDate) filters.endDate = new Date(endDate as string);
+    if (tenantId) filters.tenantId = tenantId;
+    if (resourceId) filters.resourceId = resourceId;
     if (limit) filters.limit = parseInt(limit as string);
     if (skip) filters.skip = parseInt(skip as string);
 
