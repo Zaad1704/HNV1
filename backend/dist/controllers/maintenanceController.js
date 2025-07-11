@@ -11,7 +11,7 @@ const createMaintenanceRequest = async (req, res) => {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const { propertyId, description, priority, category } = req.body;
+        const { propertyId, tenantId, description, priority, category } = req.body;
         if (!propertyId || !description) {
             return res.status(400).json({
                 success: false,
@@ -28,6 +28,7 @@ const createMaintenanceRequest = async (req, res) => {
         const newRequest = await MaintenanceRequest_1.default.create({
             organizationId: req.user.organizationId,
             propertyId,
+            tenantId,
             description,
             status: 'Open',
             priority: priority || 'Medium',
@@ -46,9 +47,18 @@ const getMaintenanceRequests = async (req, res) => {
         if (!req.user?.organizationId) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
-        const requests = await MaintenanceRequest_1.default.find({
-            organizationId: req.user.organizationId
-        }).populate('propertyId', 'name address').sort({ createdAt: -1 });
+        const { tenantId, propertyId, status } = req.query;
+        const filter = { organizationId: req.user.organizationId };
+        if (tenantId)
+            filter.tenantId = tenantId;
+        if (propertyId)
+            filter.propertyId = propertyId;
+        if (status)
+            filter.status = status;
+        const requests = await MaintenanceRequest_1.default.find(filter)
+            .populate('propertyId', 'name address')
+            .populate('tenantId', 'name unit')
+            .sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: requests });
     }
     catch (error) {

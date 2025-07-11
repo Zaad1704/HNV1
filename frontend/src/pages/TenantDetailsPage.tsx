@@ -304,20 +304,131 @@ const TenantDetailsPage = () => {
 
           {activeTab === 'maintenance' && (
             <UniversalCard gradient="orange">
-              <h3 className="text-lg font-bold mb-4">Maintenance Requests</h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold">Maintenance Requests ({relatedData?.maintenance?.length || 0})</h3>
+                <div className="flex gap-2">
+                  <Link 
+                    to={`/dashboard/maintenance?tenantId=${tenantId}`}
+                    className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+                  >
+                    View All Issues
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      const description = prompt('Describe the maintenance issue:');
+                      if (description) {
+                        const priority = prompt('Priority (Low/Medium/High):', 'Medium');
+                        const category = prompt('Category (optional):');
+                        try {
+                          await apiClient.post('/maintenance', {
+                            tenantId: tenant._id,
+                            propertyId: tenant.propertyId?._id || tenant.propertyId,
+                            description,
+                            priority: priority || 'Medium',
+                            category
+                          });
+                          alert('Maintenance request created successfully!');
+                          window.location.reload();
+                        } catch (error: any) {
+                          alert(`Failed to create request: ${error.response?.data?.message || 'Unknown error'}`);
+                        }
+                      }
+                    }}
+                    className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"
+                  >
+                    New Request
+                  </button>
+                </div>
+              </div>
               <div className="space-y-3">
-                {relatedData?.maintenance?.map((request: any) => (
-                  <div key={request._id} className="p-4 bg-app-bg rounded-xl">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">{request.description}</h4>
-                      <UniversalStatusBadge 
-                        status={request.status}
-                        variant={request.status === 'Open' ? 'warning' : 'success'}
-                      />
+                {relatedData?.maintenance?.length > 0 ? (
+                  relatedData.maintenance.map((request: any) => (
+                    <div key={request._id} className="p-4 bg-app-bg rounded-xl border-l-4 border-orange-500">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-lg mb-1">{request.description}</h4>
+                          <div className="flex items-center gap-4 text-sm text-text-secondary">
+                            <span>Created: {new Date(request.createdAt).toLocaleDateString()}</span>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              request.priority === 'High' ? 'bg-red-100 text-red-800' :
+                              request.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {request.priority} Priority
+                            </span>
+                            {request.category && <span>Category: {request.category}</span>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <UniversalStatusBadge 
+                            status={request.status}
+                            variant={
+                              request.status === 'Completed' ? 'success' :
+                              request.status === 'In Progress' ? 'warning' :
+                              request.status === 'Cancelled' ? 'error' : 'info'
+                            }
+                          />
+                          <button
+                            onClick={async () => {
+                              const newStatus = prompt('Update status (Open/In Progress/Completed/Cancelled):', request.status);
+                              if (newStatus && ['Open', 'In Progress', 'Completed', 'Cancelled'].includes(newStatus)) {
+                                try {
+                                  await apiClient.put(`/maintenance/${request._id}`, { status: newStatus });
+                                  alert('Status updated successfully!');
+                                  window.location.reload();
+                                } catch (error: any) {
+                                  alert(`Failed to update: ${error.response?.data?.message || 'Unknown error'}`);
+                                }
+                              }
+                            }}
+                            className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                          >
+                            Update
+                          </button>
+                        </div>
+                      </div>
+                      {request.notes && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
+                          <strong>Notes:</strong> {request.notes}
+                        </div>
+                      )}
+                      {(request.estimatedCost || request.actualCost) && (
+                        <div className="mt-2 flex gap-4 text-sm">
+                          {request.estimatedCost && <span>Estimated: ${request.estimatedCost}</span>}
+                          {request.actualCost && <span>Actual: ${request.actualCost}</span>}
+                        </div>
+                      )}
                     </div>
-                    <p className="text-sm text-text-secondary">{new Date(request.createdAt).toLocaleDateString()}</p>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Wrench size={48} className="mx-auto text-gray-400 mb-4" />
+                    <h4 className="text-lg font-medium text-gray-600 mb-2">No Maintenance Requests</h4>
+                    <p className="text-gray-500 mb-4">This tenant has no maintenance requests yet.</p>
+                    <button
+                      onClick={async () => {
+                        const description = prompt('Describe the maintenance issue:');
+                        if (description) {
+                          try {
+                            await apiClient.post('/maintenance', {
+                              tenantId: tenant._id,
+                              propertyId: tenant.propertyId?._id || tenant.propertyId,
+                              description,
+                              priority: 'Medium'
+                            });
+                            alert('Maintenance request created successfully!');
+                            window.location.reload();
+                          } catch (error: any) {
+                            alert(`Failed to create request: ${error.response?.data?.message || 'Unknown error'}`);
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                    >
+                      Create First Request
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             </UniversalCard>
           )}
@@ -941,13 +1052,13 @@ const TenantDetailsPage = () => {
                 onClick={async () => {
                   const description = prompt('Describe the maintenance issue:');
                   if (description) {
+                    const priority = prompt('Priority (Low/Medium/High):', 'Medium');
                     try {
                       await apiClient.post('/maintenance', {
                         tenantId: tenant._id,
                         propertyId: tenant.propertyId?._id || tenant.propertyId,
                         description,
-                        priority: 'Medium',
-                        status: 'Open'
+                        priority: priority || 'Medium'
                       });
                       alert('Maintenance request submitted successfully!');
                       window.location.reload();
@@ -964,7 +1075,7 @@ const TenantDetailsPage = () => {
                 to={`/dashboard/maintenance?tenantId=${tenant._id}`}
                 className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
               >
-                View Issues ({relatedData?.maintenance?.length || 0})
+                View All Issues ({relatedData?.maintenance?.length || 0})
               </Link>
               
               <button
