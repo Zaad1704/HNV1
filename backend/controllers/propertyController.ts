@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Property from '../models/Property';
+import Unit from '../models/Unit';
 import actionChainService from '../services/actionChainService';
 import { checkUsageLimit, updateUsageCount } from '../middleware/subscriptionMiddleware';
 
@@ -96,6 +97,18 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
     propertyData.description = generatePropertyDescription(propertyData);
     
     const property = await Property.create(propertyData);
+
+    // Create units for the property
+    const units = [];
+    for (let i = 1; i <= propertyData.numberOfUnits; i++) {
+      units.push({
+        propertyId: property._id,
+        organizationId: user.organizationId,
+        unitNumber: i.toString(),
+        status: 'Available'
+      });
+    }
+    await Unit.insertMany(units);
 
     // Trigger action chain
     await actionChainService.onPropertyAdded(property, user._id, user.organizationId);

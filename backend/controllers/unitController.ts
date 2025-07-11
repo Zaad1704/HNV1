@@ -1,137 +1,91 @@
 import { Request, Response } from 'express';
+import Unit from '../models/Unit';
 import Property from '../models/Property';
 import Tenant from '../models/Tenant';
 
-interface AuthRequest extends Request {
-  user?: any;
-}
-
-export const getPropertyUnits = async (req: AuthRequest, res: Response) => {
+// Get units for a property
+export const getUnits = async (req: Request, res: Response) => {
   try {
-    const user = req.user;
-    if (!user || !user.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
-    }
-
     const { propertyId } = req.params;
-    if (!propertyId) {
-      return res.status(400).json({ success: false, message: 'Property ID required' });
-    }
-
-    const property = await Property.findById(propertyId);
-    if (!property) {
-      return res.status(404).json({ success: false, message: 'Property not found' });
-    }
+    const units = await Unit.find({ 
+      propertyId, 
+      organizationId: req.user.organizationId 
+    }).populate('tenantId', 'name email status');
     
-    if (property.organizationId.toString() !== user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
-    // Get occupied units
-    const tenants = await Tenant.find({ 
-      propertyId: propertyId,
-      organizationId: user.organizationId,
-      status: { $ne: 'Archived' }
-    });
-    
-    const occupiedUnits = tenants.map(t => t.unit).filter(Boolean);
-
-    // Generate units based on numberOfUnits
-    const units = [];
-    const numberOfUnits = property.numberOfUnits || 1;
-    
-    for (let i = 1; i <= numberOfUnits; i++) {
-      const unitNumber = i.toString();
-      const isOccupied = occupiedUnits.includes(unitNumber);
-      const tenant = tenants.find(t => t.unit === unitNumber);
-      
-      units.push({
-        unitNumber,
-        rentAmount: tenant?.rentAmount || 0,
-        isOccupied,
-        propertyId: property._id,
-        tenantId: tenant?._id,
-        tenantName: tenant?.name
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: units
-    });
-  } catch (error: any) {
-    console.error('Get property units error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server Error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    res.json({ success: true, data: units });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch units' });
   }
 };
 
-export const getVacantUnits = async (req: AuthRequest, res: Response) => {
+// Update unit nickname
+export const updateUnitNickname = async (req: Request, res: Response) => {
   try {
-    const user = req.user;
-    if (!user || !user.organizationId) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+    const { unitId } = req.params;
+    const { nickname, alternativeName } = req.body;
+    
+    const unit = await Unit.findOneAndUpdate(
+      { _id: unitId, organizationId: req.user.organizationId },
+      { nickname, alternativeName },
+      { new: true }
+    );
+    
+    if (!unit) {
+      return res.status(404).json({ success: false, message: 'Unit not found' });
     }
+    
+    res.json({ success: true, data: unit });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update unit' });
+  }
+};
 
+// Create units for property
+export const createUnitsForProperty = async (req: Request, res: Response) => {
+  try {
     const { propertyId } = req.params;
-    if (!propertyId) {
-      return res.status(400).json({ success: false, message: 'Property ID required' });
-    }
-
-    const property = await Property.findById(propertyId);
+    const { units } = req.body;
+    
+    const property = await Property.findOne({ 
+      _id: propertyId, 
+      organizationId: req.user.organizationId 
+    });
+    
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
     
-    if (property.organizationId.toString() !== user.organizationId.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
-    // Get occupied units
-    const tenants = await Tenant.find({ 
-      propertyId: propertyId,
-      organizationId: user.organizationId,
-      status: { $ne: 'Archived' }
-    });
+    const unitDocs = units.map((unit: any) => ({
+      ...unit,
+      propertyId,
+      organizationId: req.user.organizationId
+    }));
     
-    const occupiedUnits = tenants.map(t => t.unit).filter(Boolean);
+    const createdUnits = await Unit.insertMany(unitDocs);
+    res.json({ success: true, data: createdUnits });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to create units' });
+  }
+};
 
-    // Generate vacant units
-    const vacantUnits = [];
-    const numberOfUnits = property.numberOfUnits || 1;
+// Bulk update unit nicknames
+export const bulkUpdateUnitNicknames = async (req: Request, res: Response) => {
+  try {
+    const { updates } = req.body; // Array of { unitId, nickname, alternativeName }
     
-    for (let i = 1; i <= numberOfUnits; i++) {
-      const unitNumber = i.toString();
-      if (!occupiedUnits.includes(unitNumber)) {
-        // Get last rent amount from previous tenant if available
-        const lastTenant = await Tenant.findOne({
-          propertyId: propertyId,
-          unit: unitNumber,
-          organizationId: user.organizationId
-        }).sort({ createdAt: -1 });
-        
-        vacantUnits.push({
-          unitNumber,
-          lastRentAmount: lastTenant?.rentAmount || 0,
-          suggestedRent: lastTenant?.rentAmount || 0,
-          propertyId: property._id
-        });
+    const bulkOps = updates.map((update: any) => ({
+      updateOne: {
+        filter: { _id: update.unitId, organizationId: req.user.organizationId },
+        update: { 
+          nickname: update.nickname, 
+          alternativeName: update.alternativeName 
+        }
       }
-    }
-
-    res.status(200).json({
-      success: true,
-      data: vacantUnits
-    });
-  } catch (error: any) {
-    console.error('Get vacant units error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server Error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    }));
+    
+    await Unit.bulkWrite(bulkOps);
+    res.json({ success: true, message: 'Units updated successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update units' });
   }
 };

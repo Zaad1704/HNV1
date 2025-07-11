@@ -1,12 +1,14 @@
-import { Router } from 'express';
-import { getPropertyUnits } from '../controllers/unitController';
-import { protect } from '../middleware/authMiddleware';
+import express from 'express';
+import { getUnits, updateUnitNickname, createUnitsForProperty, bulkUpdateUnitNicknames } from '../controllers/unitController';
+import { authenticate } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-router.use(protect);
+router.use(authenticate);
 
-// Get units for a specific property
-router.get('/properties/:propertyId/units', getPropertyUnits);
+router.get('/property/:propertyId', getUnits);
+router.put('/:unitId/nickname', updateUnitNickname);
+router.post('/property/:propertyId/bulk', createUnitsForProperty);
+router.put('/bulk-nicknames', bulkUpdateUnitNicknames);
 
 export default router;

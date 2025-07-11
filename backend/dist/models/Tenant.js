@@ -10,6 +10,7 @@ const TenantSchema = new mongoose_1.Schema({
     organizationId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Organization', required: true },
     createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     unit: { type: String },
+    unitNickname: { type: String },
     status: { type: String, enum: ['Active', 'Inactive', 'Late', 'Archived'], default: 'Active' },
     leaseStartDate: { type: Date },
     leaseEndDate: { type: Date },

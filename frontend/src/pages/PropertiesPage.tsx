@@ -264,6 +264,52 @@ const PropertiesPage = () => {
       }
     },
     {
+      key: 'bulkLeaseTermination',
+      label: 'Terminate Leases',
+      icon: Calendar,
+      color: 'bg-red-500 hover:bg-red-600 text-white',
+      action: async (ids: string[]) => {
+        if (confirm('Terminate all leases for selected properties?')) {
+          try {
+            await Promise.all(ids.map(async (propertyId) => {
+              const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+              const tenants = data.data || [];
+              return Promise.all(tenants.map((tenant: any) => 
+                apiClient.put(`/tenants/${tenant._id}`, { status: 'Inactive' })
+              ));
+            }));
+            alert(`Leases terminated for ${ids.length} properties!`);
+          } catch (error) {
+            alert('Failed to terminate some leases');
+          }
+        }
+      }
+    },
+    {
+      key: 'bulkRentIncrease',
+      label: 'Rent Increase',
+      icon: DollarSign,
+      color: 'bg-orange-500 hover:bg-orange-600 text-white',
+      action: async (ids: string[]) => {
+        const percentage = prompt('Enter rent increase percentage:', '5');
+        if (percentage && !isNaN(Number(percentage))) {
+          try {
+            await Promise.all(ids.map(async (propertyId) => {
+              const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+              const tenants = data.data || [];
+              return Promise.all(tenants.map((tenant: any) => {
+                const newRent = tenant.rentAmount * (1 + Number(percentage) / 100);
+                return apiClient.put(`/tenants/${tenant._id}`, { rentAmount: newRent });
+              }));
+            }));
+            alert(`Rent increased by ${percentage}% for ${ids.length} properties!`);
+          } catch (error) {
+            alert('Failed to increase rent for some properties');
+          }
+        }
+      }
+    },
+    {
       key: 'export',
       label: 'Export Selected',
       icon: Download,
