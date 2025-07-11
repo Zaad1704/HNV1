@@ -1,10 +1,10 @@
 import express from 'express';
 import { getUnits, updateUnitNickname, createUnitsForProperty, bulkUpdateUnitNicknames } from '../controllers/unitController';
-import { authenticate } from '../middleware/auth';
+import { protect } from '../middleware/auth';
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(protect);
 
 router.get('/property/:propertyId', getUnits);
 router.put('/:unitId/nickname', updateUnitNickname);
