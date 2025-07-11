@@ -682,18 +682,82 @@ const TenantDetailsPage = () => {
               >
                 View Payments ({payments.length})
               </Link>
-              <Link 
-                to={`/dashboard/maintenance/add?tenantId=${tenant._id}`}
-                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors block text-center"
+              <button
+                onClick={async () => {
+                  const description = prompt('Describe the maintenance issue:');
+                  if (description) {
+                    try {
+                      await apiClient.post('/maintenance', {
+                        tenantId: tenant._id,
+                        propertyId: tenant.propertyId?._id || tenant.propertyId,
+                        description,
+                        priority: 'Medium',
+                        status: 'Open'
+                      });
+                      alert('Maintenance request submitted successfully!');
+                      window.location.reload();
+                    } catch (error: any) {
+                      alert(`Failed to submit maintenance request: ${error.response?.data?.message || 'Unknown error'}`);
+                    }
+                  }
+                }}
+                className="w-full bg-orange-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-orange-600 transition-colors"
               >
                 Report Issue
-              </Link>
+              </button>
               <Link 
                 to={`/dashboard/maintenance?tenantId=${tenant._id}`}
                 className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors block text-center"
               >
                 View Issues ({relatedData?.maintenance?.length || 0})
               </Link>
+              
+              <button
+                onClick={async () => {
+                  const months = prompt('Enter additional months to extend lease:', '12');
+                  if (months && !isNaN(Number(months))) {
+                    try {
+                      const currentEndDate = tenant.leaseEndDate ? new Date(tenant.leaseEndDate) : new Date();
+                      const newEndDate = new Date(currentEndDate);
+                      newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
+                      
+                      await apiClient.put(`/tenants/${tenant._id}`, {
+                        leaseEndDate: newEndDate.toISOString().split('T')[0],
+                        leaseDuration: (tenant.leaseDuration || 12) + parseInt(months)
+                      });
+                      alert(`Lease extended by ${months} months successfully!`);
+                      window.location.reload();
+                    } catch (error: any) {
+                      alert(`Failed to renew lease: ${error.response?.data?.message || 'Unknown error'}`);
+                    }
+                  }
+                }}
+                className="w-full bg-indigo-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-indigo-600 transition-colors"
+              >
+                Renew Lease
+              </button>
+              
+              <button
+                onClick={async () => {
+                  const reason = prompt('Reason for lease termination (optional):');
+                  if (confirm(`Terminate lease for ${tenant.name}? This will archive the tenant.`)) {
+                    try {
+                      await apiClient.put(`/tenants/${tenant._id}`, {
+                        status: 'Archived',
+                        leaseEndDate: new Date().toISOString().split('T')[0],
+                        terminationReason: reason || 'Lease terminated'
+                      });
+                      alert('Lease terminated and tenant archived successfully!');
+                      window.location.reload();
+                    } catch (error: any) {
+                      alert(`Failed to terminate lease: ${error.response?.data?.message || 'Unknown error'}`);
+                    }
+                  }
+                }}
+                className="w-full bg-red-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-red-600 transition-colors"
+              >
+                Terminate Lease
+              </button>
             </div>
           </UniversalCard>
         </div>
