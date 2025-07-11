@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, Edit, Trash2, Share2, Eye, Users, DollarSign, AlertTriangle, Wrench, Check, Edit3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +6,7 @@ import apiClient from '../../api/client';
 import UniversalCard from './UniversalCard';
 import UniversalStatusBadge from './UniversalStatusBadge';
 import ShareButton from './ShareButton';
-import UnitNicknameModal from '../property/UnitNicknameModal';
+// import UnitNicknameModal from '../property/UnitNicknameModal';
 
 interface EnhancedPropertyCardProps {
   property: any;
@@ -29,7 +29,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   onSelect,
   showCheckbox = false
 }) => {
-  const [showUnitModal, setShowUnitModal] = useState(false);
+  // const [showUnitModal, setShowUnitModal] = useState(false);
   // Fetch tenants for this property to calculate occupancy
   const { data: tenants = [] } = useQuery({
     queryKey: ['propertyTenants', property._id],
@@ -225,7 +225,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setShowUnitModal(true);
+                alert('Unit management coming soon!');
               }}
               className="bg-purple-100 text-purple-800 py-2 px-3 rounded-xl text-xs font-medium hover:bg-purple-200 transition-colors flex items-center justify-center gap-1"
             >
@@ -257,12 +257,12 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
         </div>
       </div>
       
-      <UnitNicknameModal
+      {/* <UnitNicknameModal
         isOpen={showUnitModal}
         onClose={() => setShowUnitModal(false)}
         propertyId={property._id}
         propertyName={property.name}
-      />
+      /> */}
     </UniversalCard>
   );
 };
