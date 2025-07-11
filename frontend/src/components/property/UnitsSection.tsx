@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, User, DollarSign, Plus, Edit3, Grid3X3, List, Wrench, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-import UnitNicknameModal from './UnitNicknameModal';
+// import UnitNicknameModal from './UnitNicknameModal';
 
 interface UnitsSectionProps {
   propertyId: string;
@@ -19,19 +19,20 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showUnitModal, setShowUnitModal] = useState(false);
   
-  // Fetch units with nicknames
-  const { data: units = [] } = useQuery({
-    queryKey: ['propertyUnits', propertyId],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get(`/units/property/${propertyId}`);
-        return data.data || [];
-      } catch (error) {
-        return [];
-      }
-    },
-    enabled: !!propertyId
-  });
+  // Fetch units with nicknames - disabled temporarily to prevent crashes
+  const units: any[] = [];
+  // const { data: units = [] } = useQuery({
+  //   queryKey: ['propertyUnits', propertyId],
+  //   queryFn: async () => {
+  //     try {
+  //       const { data } = await apiClient.get(`/units/property/${propertyId}`);
+  //       return data.data || [];
+  //     } catch (error) {
+  //       return [];
+  //     }
+  //   },
+  //   enabled: !!propertyId
+  // });
   
   // Combine units data with tenant information
   const unitsData = React.useMemo(() => {
@@ -287,12 +288,12 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         ))}
       </div>
       
-      <UnitNicknameModal
+      {/* <UnitNicknameModal
         isOpen={showUnitModal}
         onClose={() => setShowUnitModal(false)}
         propertyId={propertyId}
         propertyName={property?.name || 'Property'}
-      />
+      /> */}
     </div>
   );
 };
