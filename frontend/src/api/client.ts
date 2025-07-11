@@ -103,7 +103,13 @@ apiClient.interceptors.response.use(
       error.userMessage = 'Server error. Please try again later.';
     } else if (error.response?.status === 404) {
       console.warn('Resource not found:', error.config?.url);
-      error.userMessage = 'Requested data not found.';
+      // Check if it's a route issue vs data issue
+      if (error.config?.url?.includes('/tenants') || error.config?.url?.includes('/properties')) {
+        console.error('API route not found - check backend deployment');
+        error.userMessage = 'Service temporarily unavailable. Please try again.';
+      } else {
+        error.userMessage = 'Requested data not found.';
+      }
     }
     
     if (import.meta.env.DEV) {

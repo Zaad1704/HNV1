@@ -30,6 +30,13 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [govtIdFront, setGovtIdFront] = useState<File | null>(null);
+  const [govtIdFrontPreview, setGovtIdFrontPreview] = useState<string>('');
+  const [govtIdBack, setGovtIdBack] = useState<File | null>(null);
+  const [govtIdBackPreview, setGovtIdBackPreview] = useState<string>('');
+  const [additionalAdults, setAdditionalAdults] = useState([{ name: '', phone: '', govtIdNumber: '', relation: '' }]);
+  const [adultImages, setAdultImages] = useState<{[key: string]: File}>({});
+  const [adultImagePreviews, setAdultImagePreviews] = useState<{[key: string]: string}>({});
 
   const { data: properties = [], error: propertiesError } = useQuery({
     queryKey: ['properties'],
@@ -141,6 +148,63 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
     }
   };
 
+  const handleGovtIdChange = (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (side === 'front') {
+        setGovtIdFront(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setGovtIdFrontPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      } else {
+        setGovtIdBack(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setGovtIdBackPreview(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const handleAdultImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number, type: 'photo' | 'govtId') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const key = `adult_${index}_${type}`;
+      setAdultImages(prev => ({ ...prev, [key]: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => setAdultImagePreviews(prev => ({ ...prev, [key]: reader.result as string }));
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addAdult = () => {
+    setAdditionalAdults(prev => [...prev, { name: '', phone: '', govtIdNumber: '', relation: '' }]);
+  };
+
+  const removeAdult = (index: number) => {
+    setAdditionalAdults(prev => prev.filter((_, i) => i !== index));
+    // Remove associated images
+    const photoKey = `adult_${index}_photo`;
+    const govtIdKey = `adult_${index}_govtId`;
+    setAdultImages(prev => {
+      const newImages = { ...prev };
+      delete newImages[photoKey];
+      delete newImages[govtIdKey];
+      return newImages;
+    });
+    setAdultImagePreviews(prev => {
+      const newPreviews = { ...prev };
+      delete newPreviews[photoKey];
+      delete newPreviews[govtIdKey];
+      return newPreviews;
+    });
+  };
+
+  const updateAdult = (index: number, field: string, value: string) => {
+    setAdditionalAdults(prev => prev.map((adult, i) => 
+      i === index ? { ...adult, [field]: value } : adult
+    ));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -176,10 +240,22 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
         }
       });
       
-      // Add image file if selected
+      // Add image files if selected
       if (imageFile) {
         submitFormData.append('tenantImage', imageFile);
       }
+      if (govtIdFront) {
+        submitFormData.append('govtIdFront', govtIdFront);
+      }
+      if (govtIdBack) {
+        submitFormData.append('govtIdBack', govtIdBack);
+      }
+      
+      // Add additional adults data and images
+      submitFormData.append('additionalAdults', JSON.stringify(additionalAdults));
+      Object.entries(adultImages).forEach(([key, file]) => {
+        submitFormData.append(key, file);
+      });
       
       const response = await apiClient.post('/tenants', submitFormData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -200,6 +276,13 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
         });
         setImageFile(null);
         setImagePreview('');
+        setGovtIdFront(null);
+        setGovtIdFrontPreview('');
+        setGovtIdBack(null);
+        setGovtIdBackPreview('');
+        setAdditionalAdults([{ name: '', phone: '', govtIdNumber: '', relation: '' }]);
+        setAdultImages({});
+        setAdultImagePreviews({});
       } else {
         throw new Error(response.data?.message || 'Invalid response from server');
       }
@@ -407,45 +490,266 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onTena
             </div>
           </div>
 
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tenant Photo</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-              {imagePreview ? (
-                <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview('');
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <Image size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500 mb-2">Upload tenant photo</p>
-                  <input
-                    type="file"
-                    accept="image/*,.heic,.HEIC,.webp,.avif"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="tenant-image"
-                  />
-                  <label
-                    htmlFor="tenant-image"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100"
-                  >
-                    <Upload size={16} />
-                    Choose Photo
-                  </label>
-                </div>
-              )}
+          {/* Image Uploads */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Tenant Photo */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tenant Photo</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview('');
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <User size={24} className="mx-auto text-gray-400 mb-2" />
+                    <p className="text-xs text-gray-500 mb-2">Tenant Photo</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="tenant-image"
+                    />
+                    <label
+                      htmlFor="tenant-image"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100 text-xs"
+                    >
+                      <Upload size={12} />
+                      Upload
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Government ID Front */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID Front</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                {govtIdFrontPreview ? (
+                  <div className="relative">
+                    <img src={govtIdFrontPreview} alt="ID Front" className="w-full h-32 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGovtIdFront(null);
+                        setGovtIdFrontPreview('');
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Image size={24} className="mx-auto text-gray-400 mb-2" />
+                    <p className="text-xs text-gray-500 mb-2">ID Front</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleGovtIdChange(e, 'front')}
+                      className="hidden"
+                      id="govt-id-front"
+                    />
+                    <label
+                      htmlFor="govt-id-front"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-600 rounded-lg cursor-pointer hover:bg-green-100 text-xs"
+                    >
+                      <Upload size={12} />
+                      Upload
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Government ID Back */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID Back</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                {govtIdBackPreview ? (
+                  <div className="relative">
+                    <img src={govtIdBackPreview} alt="ID Back" className="w-full h-32 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGovtIdBack(null);
+                        setGovtIdBackPreview('');
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Image size={24} className="mx-auto text-gray-400 mb-2" />
+                    <p className="text-xs text-gray-500 mb-2">ID Back</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleGovtIdChange(e, 'back')}
+                      className="hidden"
+                      id="govt-id-back"
+                    />
+                    <label
+                      htmlFor="govt-id-back"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-600 rounded-lg cursor-pointer hover:bg-purple-100 text-xs"
+                    >
+                      <Upload size={12} />
+                      Upload
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Adults */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-medium text-gray-900 dark:text-white">Additional Adults</h4>
+              <button
+                type="button"
+                onClick={addAdult}
+                className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+              >
+                + Add Adult
+              </button>
+            </div>
+            
+            {additionalAdults.map((adult, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h5 className="font-medium">Adult {index + 1}</h5>
+                  {additionalAdults.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeAdult(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={adult.name}
+                    onChange={(e) => updateAdult(index, 'name', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone"
+                    value={adult.phone}
+                    onChange={(e) => updateAdult(index, 'phone', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="ID Number"
+                    value={adult.govtIdNumber}
+                    onChange={(e) => updateAdult(index, 'govtIdNumber', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Relation"
+                    value={adult.relation}
+                    onChange={(e) => updateAdult(index, 'relation', e.target.value)}
+                    className="p-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Adult Photo */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Photo</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-2">
+                      {adultImagePreviews[`adult_${index}_photo`] ? (
+                        <div className="relative">
+                          <img src={adultImagePreviews[`adult_${index}_photo`]} alt="Adult" className="w-full h-20 object-cover rounded" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const key = `adult_${index}_photo`;
+                              setAdultImages(prev => { const newImages = {...prev}; delete newImages[key]; return newImages; });
+                              setAdultImagePreviews(prev => { const newPreviews = {...prev}; delete newPreviews[key]; return newPreviews; });
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleAdultImageChange(e, index, 'photo')}
+                            className="hidden"
+                            id={`adult-photo-${index}`}
+                          />
+                          <label htmlFor={`adult-photo-${index}`} className="cursor-pointer text-xs text-blue-600">
+                            Upload Photo
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Adult ID */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1">ID Document</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-2">
+                      {adultImagePreviews[`adult_${index}_govtId`] ? (
+                        <div className="relative">
+                          <img src={adultImagePreviews[`adult_${index}_govtId`]} alt="ID" className="w-full h-20 object-cover rounded" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const key = `adult_${index}_govtId`;
+                              setAdultImages(prev => { const newImages = {...prev}; delete newImages[key]; return newImages; });
+                              setAdultImagePreviews(prev => { const newPreviews = {...prev}; delete newPreviews[key]; return newPreviews; });
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleAdultImageChange(e, index, 'govtId')}
+                            className="hidden"
+                            id={`adult-id-${index}`}
+                          />
+                          <label htmlFor={`adult-id-${index}`} className="cursor-pointer text-xs text-green-600">
+                            Upload ID
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

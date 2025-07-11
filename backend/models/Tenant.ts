@@ -19,6 +19,8 @@ export interface ITenant extends Document {
   imageUrl?: string;
   tenantImage?: string;
   govtIdNumber?: string;
+  govtIdFront?: string;
+  govtIdBack?: string;
   fatherName?: string;
   motherName?: string;
   presentAddress?: string;
@@ -87,6 +89,8 @@ const TenantSchema = new Schema<ITenant>({
   imageUrl: { type: String },
   tenantImage: { type: String },
   govtIdNumber: { type: String },
+  govtIdFront: { type: String },
+  govtIdBack: { type: String },
   fatherName: { type: String },
   motherName: { type: String },
   presentAddress: { type: String },
@@ -115,6 +119,7 @@ const TenantSchema = new Schema<ITenant>({
   additionalAdults: [{
     name: { type: String },
     phone: { type: String },
+    relation: { type: String },
     fatherName: { type: String },
     motherName: { type: String },
     permanentAddress: { type: String },

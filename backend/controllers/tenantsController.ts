@@ -110,6 +110,12 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
                 imageUrls[fieldname] = cloudinaryUrl;
                 if (fieldname === 'tenantImage') {
                   imageUrls.imageUrl = cloudinaryUrl;
+                } else if (fieldname === 'govtIdFront') {
+                  imageUrls.govtIdFront = cloudinaryUrl;
+                } else if (fieldname === 'govtIdBack') {
+                  imageUrls.govtIdBack = cloudinaryUrl;
+                } else if (fieldname.startsWith('adult_')) {
+                  imageUrls[fieldname] = cloudinaryUrl;
                 }
                 
                 console.log(`✅ ${fieldname} uploaded successfully:`, cloudinaryUrl);
@@ -130,6 +136,12 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
               imageUrls[fieldname] = localUrl;
               if (fieldname === 'tenantImage') {
                 imageUrls.imageUrl = localUrl;
+              } else if (fieldname === 'govtIdFront') {
+                imageUrls.govtIdFront = localUrl;
+              } else if (fieldname === 'govtIdBack') {
+                imageUrls.govtIdBack = localUrl;
+              } else if (fieldname.startsWith('adult_')) {
+                imageUrls[fieldname] = localUrl;
               }
             }
           }
@@ -141,12 +153,16 @@ export const createTenant = async (req: AuthRequest, res: Response) => {
     }
 
 
-    // Handle additional adults data
+    // Handle additional adults data with images
     let additionalAdults = [];
     if (req.body.additionalAdults) {
       try {
         const parsed = JSON.parse(req.body.additionalAdults);
-        additionalAdults = Array.isArray(parsed) ? parsed : [];
+        additionalAdults = Array.isArray(parsed) ? parsed.map((adult, index) => ({
+          ...adult,
+          imageUrl: imageUrls[`adult_${index}_photo`] || '',
+          govtIdImageUrl: imageUrls[`adult_${index}_govtId`] || ''
+        })) : [];
       } catch (e) {
         console.error('Failed to parse additional adults:', e);
         additionalAdults = [];

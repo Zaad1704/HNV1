@@ -488,7 +488,7 @@ const TenantDetailsPage = () => {
               </div>
               
               {/* No Documents Message */}
-              {!tenant.tenantImage && !tenant.imageUrl && (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
+              {!tenant.tenantImage && !tenant.imageUrl && !tenant.govtIdFront && !tenant.govtIdBack && (!tenant.additionalAdults || tenant.additionalAdults.length === 0 || !tenant.additionalAdults.some((adult: any) => adult.image)) && (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText size={32} className="text-gray-400" />
