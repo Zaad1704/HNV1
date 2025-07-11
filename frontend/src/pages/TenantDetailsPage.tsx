@@ -11,11 +11,13 @@ import UniversalActionButton from '../components/common/UniversalActionButton';
 
 import TenantAnalyticsDashboard from '../components/tenant/TenantAnalyticsDashboard';
 import EditTenantModal from '../components/common/EditTenantModal';
+import QuickPaymentModal from '../components/common/QuickPaymentModal';
 
 const TenantDetailsPage = () => {
   const { tenantId } = useParams<{ tenantId: string }>();
   const [activeTab, setActiveTab] = useState('overview');
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showQuickPayment, setShowQuickPayment] = useState(false);
 
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['tenant', tenantId],
@@ -640,12 +642,12 @@ const TenantDetailsPage = () => {
           <UniversalCard gradient="purple">
             <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <Link 
-                to={`/dashboard/payments/add?tenantId=${tenant._id}`}
-                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors block text-center"
+              <button
+                onClick={() => setShowQuickPayment(true)}
+                className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors"
               >
-                Add Payment
-              </Link>
+                Quick Payment
+              </button>
               <Link 
                 to={`/dashboard/payments?tenantId=${tenant._id}`}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors block text-center"
@@ -676,6 +678,17 @@ const TenantDetailsPage = () => {
         tenant={tenant}
         onTenantUpdated={(updatedTenant) => {
           // Refresh tenant data
+          window.location.reload();
+        }}
+      />
+      
+      {/* Quick Payment Modal */}
+      <QuickPaymentModal
+        isOpen={showQuickPayment}
+        onClose={() => setShowQuickPayment(false)}
+        tenant={tenant}
+        onPaymentAdded={() => {
+          // Refresh page to show new payment
           window.location.reload();
         }}
       />
