@@ -18,6 +18,7 @@ const TenantDetailsPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQuickPayment, setShowQuickPayment] = useState(false);
+  const [paymentType, setPaymentType] = useState<'normal' | 'overdue'>('normal');
 
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['tenant', tenantId],
@@ -90,6 +91,11 @@ const TenantDetailsPage = () => {
   const leaseStartDate = tenant.createdAt ? new Date(tenant.createdAt) : null;
   const monthsSinceStart = leaseStartDate ? 
     (currentYear - leaseStartDate.getFullYear()) * 12 + (currentMonth - leaseStartDate.getMonth()) + 1 : 0;
+  
+  // Calculate overdue payments
+  const monthsOverdue = Math.max(0, monthsSinceStart - monthsPaid);
+  const overdueAmount = monthsOverdue * (tenant.rentAmount || 0);
+  const hasOverdue = monthsOverdue > 0;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -643,11 +649,33 @@ const TenantDetailsPage = () => {
             <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <button
-                onClick={() => setShowQuickPayment(true)}
+                onClick={() => {
+                  setPaymentType('normal');
+                  setShowQuickPayment(true);
+                }}
                 className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors"
               >
                 Quick Payment
               </button>
+              
+              {hasOverdue ? (
+                <button
+                  onClick={() => {
+                    setPaymentType('overdue');
+                    setShowQuickPayment(true);
+                  }}
+                  className="w-full bg-red-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-red-600 transition-colors"
+                >
+                  Overdue Payment
+                  <div className="text-xs mt-1">
+                    ${overdueAmount} ({monthsOverdue} months)
+                  </div>
+                </button>
+              ) : (
+                <div className="w-full bg-gray-100 text-gray-600 py-3 px-4 rounded-xl font-medium text-center">
+                  No Overdue Payments
+                </div>
+              )}
               <Link 
                 to={`/dashboard/payments?tenantId=${tenant._id}`}
                 className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors block text-center"
@@ -691,6 +719,9 @@ const TenantDetailsPage = () => {
           // Refresh page to show new payment
           window.location.reload();
         }}
+        isOverdue={paymentType === 'overdue'}
+        overdueAmount={overdueAmount}
+        monthsOverdue={monthsOverdue}
       />
     </motion.div>
   );

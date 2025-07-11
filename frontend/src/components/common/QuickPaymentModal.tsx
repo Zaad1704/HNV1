@@ -7,15 +7,26 @@ interface QuickPaymentModalProps {
   onClose: () => void;
   tenant: any;
   onPaymentAdded: () => void;
+  isOverdue?: boolean;
+  overdueAmount?: number;
+  monthsOverdue?: number;
 }
 
-const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose, tenant, onPaymentAdded }) => {
+const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  tenant, 
+  onPaymentAdded, 
+  isOverdue = false, 
+  overdueAmount = 0, 
+  monthsOverdue = 0 
+}) => {
   const [formData, setFormData] = useState({
-    amount: tenant?.rentAmount?.toString() || '',
+    amount: isOverdue ? overdueAmount.toString() : (tenant?.rentAmount?.toString() || ''),
     paymentDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'Cash',
     rentMonth: new Date().toISOString().slice(0, 7),
-    notes: ''
+    notes: isOverdue ? `Payment for ${monthsOverdue} overdue months` : ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,11 +53,11 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose, 
       
       // Reset form
       setFormData({
-        amount: tenant?.rentAmount?.toString() || '',
+        amount: isOverdue ? overdueAmount.toString() : (tenant?.rentAmount?.toString() || ''),
         paymentDate: new Date().toISOString().split('T')[0],
         paymentMethod: 'Cash',
         rentMonth: new Date().toISOString().slice(0, 7),
-        notes: ''
+        notes: isOverdue ? `Payment for ${monthsOverdue} overdue months` : ''
       });
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -63,12 +74,15 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose, 
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+            <div className={`w-10 h-10 ${isOverdue ? 'bg-red-500' : 'bg-green-500'} rounded-xl flex items-center justify-center`}>
               <DollarSign size={20} className="text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Quick Payment</h3>
-              <p className="text-sm text-gray-600">{tenant?.name}</p>
+              <h3 className="text-xl font-bold">{isOverdue ? 'Overdue Payment' : 'Quick Payment'}</h3>
+              <p className="text-sm text-gray-600">
+                {tenant?.name}
+                {isOverdue && <span className="text-red-600 ml-2">({monthsOverdue} months overdue)</span>}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
@@ -151,7 +165,7 @@ const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({ isOpen, onClose, 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
+              className={`flex-1 px-4 py-3 ${isOverdue ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white rounded-lg disabled:opacity-50 transition-colors`}
             >
               {isSubmitting ? 'Recording...' : 'Record Payment'}
             </button>
