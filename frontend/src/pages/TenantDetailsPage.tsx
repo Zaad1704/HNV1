@@ -612,7 +612,6 @@ const TenantDetailsPage = () => {
                 </div>
               </div>
               <h3 className="text-lg font-bold">{tenant.name}</h3>
-              <h3 className="text-lg font-bold">{tenant.name}</h3>
               <UniversalStatusBadge 
                 status={tenant.status} 
                 variant={tenant.status === 'Active' ? 'success' : 'warning'}

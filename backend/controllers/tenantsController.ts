@@ -277,7 +277,7 @@ export const getTenantById = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 
-    const tenant = await Tenant.findById(req.params.id);
+    const tenant = await Tenant.findById(req.params.id).populate('propertyId', 'name');
     if (!tenant) {
       return res.status(404).json({ success: false, message: 'Tenant not found' });
     }
