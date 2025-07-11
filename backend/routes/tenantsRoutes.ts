@@ -13,6 +13,7 @@ import {
   getTenantAnalytics,
   archiveTenant,
   downloadTenantPDF,
+  downloadTenantDataZip,
   downloadPersonalDetailsPDF
 } from '../controllers/tenantsController';
 
@@ -52,6 +53,7 @@ router.patch('/:id/archive', archiveTenant);
 // PDF Downloads
 router.post('/:id/download-pdf', downloadTenantPDF);
 router.post('/:id/personal-details-pdf', downloadPersonalDetailsPDF);
+router.post('/:id/download-zip', downloadTenantDataZip);
 
 // NEW DATA PREVIEW ROUTES
 router.get('/:tenantId/data-previews', getTenantDataPreviews);

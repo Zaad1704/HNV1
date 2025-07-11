@@ -38,6 +38,7 @@ router.route('/:id')
 router.patch('/:id/archive', tenantsController_1.archiveTenant);
 router.post('/:id/download-pdf', tenantsController_1.downloadTenantPDF);
 router.post('/:id/personal-details-pdf', tenantsController_1.downloadPersonalDetailsPDF);
+router.post('/:id/download-zip', tenantsController_1.downloadTenantDataZip);
 router.get('/:tenantId/data-previews', tenantsController_1.getTenantDataPreviews);
 router.get('/:tenantId/stats', tenantsController_1.getTenantStats);
 router.get('/:tenantId/analytics', tenantsController_1.getTenantAnalytics);

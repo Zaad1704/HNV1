@@ -988,6 +988,129 @@ export const downloadTenantPDF = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const downloadTenantDataZip = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.organizationId) {
+      return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+
+    const tenant = await Tenant.findById(req.params.id).populate('propertyId', 'name');
+    if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
+      return res.status(404).json({ success: false, message: 'Tenant not found' });
+    }
+
+    const archiver = require('archiver');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${tenant.name.replace(/[^a-zA-Z0-9]/g, '_')}-complete-data.zip"`);
+    
+    archive.pipe(res);
+    
+    // Add tenant images if they exist
+    const imageUrls = [
+      { url: tenant.tenantImage || tenant.imageUrl, name: 'tenant-photo.jpg' },
+      { url: tenant.govtIdFront, name: 'government-id-front.jpg' },
+      { url: tenant.govtIdBack, name: 'government-id-back.jpg' }
+    ];
+    
+    // Add additional adult images
+    if (tenant.additionalAdults) {
+      tenant.additionalAdults.forEach((adult: any, index: number) => {
+        if (adult.imageUrl || adult.image) {
+          imageUrls.push({ url: adult.imageUrl || adult.image, name: `adult-${index + 1}-photo.jpg` });
+        }
+      });
+    }
+    
+    // Download and add images to zip
+    for (const img of imageUrls) {
+      if (img.url) {
+        try {
+          const axios = require('axios');
+          const response = await axios.get(img.url, { responseType: 'stream' });
+          archive.append(response.data, { name: `images/${img.name}` });
+        } catch (error) {
+          console.error(`Failed to download image ${img.url}:`, error);
+        }
+      }
+    }
+    
+    // Add uploaded documents
+    if (tenant.documents && tenant.documents.length > 0) {
+      for (const doc of tenant.documents) {
+        try {
+          const axios = require('axios');
+          const response = await axios.get(doc.url, { responseType: 'stream' });
+          archive.append(response.data, { name: `documents/${doc.filename || 'document.pdf'}` });
+        } catch (error) {
+          console.error(`Failed to download document ${doc.url}:`, error);
+        }
+      }
+    }
+    
+    // Add uploaded images
+    if (tenant.uploadedImages && tenant.uploadedImages.length > 0) {
+      for (const img of tenant.uploadedImages) {
+        try {
+          const axios = require('axios');
+          const response = await axios.get(img.url, { responseType: 'stream' });
+          archive.append(response.data, { name: `uploaded-images/${img.description || 'image'}.jpg` });
+        } catch (error) {
+          console.error(`Failed to download uploaded image ${img.url}:`, error);
+        }
+      }
+    }
+    
+    // Generate and add comprehensive PDF
+    const PDFDocument = require('pdfkit');
+    const pdfDoc = new PDFDocument({ margin: 40, size: 'A4' });
+    
+    // Create PDF content (simplified version)
+    pdfDoc.fontSize(20).text('COMPLETE TENANT INFORMATION', { align: 'center' });
+    pdfDoc.moveDown();
+    pdfDoc.fontSize(14).text(`Name: ${tenant.name}`);
+    pdfDoc.text(`Email: ${tenant.email}`);
+    pdfDoc.text(`Phone: ${tenant.phone}`);
+    pdfDoc.text(`Property: ${(tenant.propertyId as any)?.name || 'N/A'}`);
+    pdfDoc.text(`Unit: ${tenant.unit}`);
+    pdfDoc.text(`Monthly Rent: $${tenant.rentAmount || 0}`);
+    
+    if (tenant.fatherName) pdfDoc.text(`Father's Name: ${tenant.fatherName}`);
+    if (tenant.motherName) pdfDoc.text(`Mother's Name: ${tenant.motherName}`);
+    if (tenant.presentAddress) pdfDoc.text(`Present Address: ${tenant.presentAddress}`);
+    if (tenant.permanentAddress) pdfDoc.text(`Permanent Address: ${tenant.permanentAddress}`);
+    
+    pdfDoc.end();
+    archive.append(pdfDoc, { name: 'tenant-complete-info.pdf' });
+    
+    // Create a summary text file
+    const summaryText = `
+TENANT SUMMARY
+==============
+Name: ${tenant.name}
+Email: ${tenant.email}
+Phone: ${tenant.phone}
+Property: ${(tenant.propertyId as any)?.name || 'N/A'}
+Unit: ${tenant.unit}
+Status: ${tenant.status}
+Monthly Rent: $${tenant.rentAmount || 0}
+Security Deposit: $${tenant.securityDeposit || 0}
+Lease Start: ${tenant.leaseStartDate ? new Date(tenant.leaseStartDate).toLocaleDateString() : 'N/A'}
+Lease End: ${tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toLocaleDateString() : 'N/A'}
+
+Generated on: ${new Date().toLocaleString()}
+`;
+    
+    archive.append(summaryText, { name: 'tenant-summary.txt' });
+    
+    archive.finalize();
+  } catch (error) {
+    console.error('Zip generation error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate zip file' });
+  }
+};
+
 export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {

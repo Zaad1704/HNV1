@@ -926,26 +926,48 @@ const TenantDetailsPage = () => {
             <UniversalCard gradient="green">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold">Complete Personal Details</h3>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await apiClient.post(`/tenants/${tenantId}/personal-details-pdf`, {}, { responseType: 'blob' });
-                      const blob = new Blob([response.data], { type: 'application/pdf' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${tenant.name}-complete-personal-details.pdf`;
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                    } catch (error) {
-                      alert('Failed to download personal details PDF');
-                    }
-                  }}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
-                >
-                  <Download size={16} />
-                  Download Complete PDF
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await apiClient.post(`/tenants/${tenantId}/download-zip`, {}, { responseType: 'blob' });
+                        const blob = new Blob([response.data], { type: 'application/zip' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${tenant.name}-complete-data.zip`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        alert('Failed to download complete data');
+                      }
+                    }}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm hover:bg-green-600"
+                  >
+                    <Download size={16} />
+                    Download All Data
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await apiClient.post(`/tenants/${tenantId}/personal-details-pdf`, {}, { responseType: 'blob' });
+                        const blob = new Blob([response.data], { type: 'application/pdf' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${tenant.name}-personal-details.pdf`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                      } catch (error) {
+                        alert('Failed to download personal details PDF');
+                      }
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm hover:bg-blue-600"
+                  >
+                    <Download size={16} />
+                    Download PDF
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-8">
@@ -961,7 +983,18 @@ const TenantDetailsPage = () => {
                           alt="Tenant Photo" 
                           className="w-32 h-32 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
                         />
-                        <p className="text-sm font-medium">Main Tenant Photo</p>
+                        <p className="text-sm font-medium mb-2">Main Tenant Photo</p>
+                        <button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = tenant.tenantImage || tenant.imageUrl;
+                            link.download = `${tenant.name}-photo.jpg`;
+                            link.click();
+                          }}
+                          className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                        >
+                          <Download size={12} className="inline mr-1" />Download
+                        </button>
                       </div>
                     )}
                     
@@ -973,7 +1006,18 @@ const TenantDetailsPage = () => {
                           alt="ID Front" 
                           className="w-32 h-20 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
                         />
-                        <p className="text-sm font-medium">Government ID (Front)</p>
+                        <p className="text-sm font-medium mb-2">Government ID (Front)</p>
+                        <button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = tenant.govtIdFront;
+                            link.download = `${tenant.name}-id-front.jpg`;
+                            link.click();
+                          }}
+                          className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                        >
+                          <Download size={12} className="inline mr-1" />Download
+                        </button>
                       </div>
                     )}
                     
@@ -984,7 +1028,18 @@ const TenantDetailsPage = () => {
                           alt="ID Back" 
                           className="w-32 h-20 object-cover rounded-lg mx-auto mb-2 border-2 border-gray-200"
                         />
-                        <p className="text-sm font-medium">Government ID (Back)</p>
+                        <p className="text-sm font-medium mb-2">Government ID (Back)</p>
+                        <button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = tenant.govtIdBack;
+                            link.download = `${tenant.name}-id-back.jpg`;
+                            link.click();
+                          }}
+                          className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                        >
+                          <Download size={12} className="inline mr-1" />Download
+                        </button>
                       </div>
                     )}
                   </div>

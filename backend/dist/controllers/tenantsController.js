@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadPersonalDetailsPDF = exports.downloadTenantPDF = exports.archiveTenant = exports.getTenantAnalytics = exports.getTenantStats = exports.getTenantDataPreviews = exports.deleteTenant = exports.updateTenant = exports.getTenantById = exports.createTenant = exports.getTenants = void 0;
+exports.downloadPersonalDetailsPDF = exports.downloadTenantDataZip = exports.downloadTenantPDF = exports.archiveTenant = exports.getTenantAnalytics = exports.getTenantStats = exports.getTenantDataPreviews = exports.deleteTenant = exports.updateTenant = exports.getTenantById = exports.createTenant = exports.getTenants = void 0;
 const Tenant_1 = __importDefault(require("../models/Tenant"));
 const Property_1 = __importDefault(require("../models/Property"));
 const actionChainService_1 = __importDefault(require("../services/actionChainService"));
@@ -895,6 +895,113 @@ const downloadTenantPDF = async (req, res) => {
     }
 };
 exports.downloadTenantPDF = downloadTenantPDF;
+const downloadTenantDataZip = async (req, res) => {
+    try {
+        if (!req.user?.organizationId) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const tenant = await Tenant_1.default.findById(req.params.id).populate('propertyId', 'name');
+        if (!tenant || tenant.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(404).json({ success: false, message: 'Tenant not found' });
+        }
+        const archiver = require('archiver');
+        const archive = archiver('zip', { zlib: { level: 9 } });
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${tenant.name.replace(/[^a-zA-Z0-9]/g, '_')}-complete-data.zip"`);
+        archive.pipe(res);
+        const imageUrls = [
+            { url: tenant.tenantImage || tenant.imageUrl, name: 'tenant-photo.jpg' },
+            { url: tenant.govtIdFront, name: 'government-id-front.jpg' },
+            { url: tenant.govtIdBack, name: 'government-id-back.jpg' }
+        ];
+        if (tenant.additionalAdults) {
+            tenant.additionalAdults.forEach((adult, index) => {
+                if (adult.imageUrl || adult.image) {
+                    imageUrls.push({ url: adult.imageUrl || adult.image, name: `adult-${index + 1}-photo.jpg` });
+                }
+            });
+        }
+        for (const img of imageUrls) {
+            if (img.url) {
+                try {
+                    const axios = require('axios');
+                    const response = await axios.get(img.url, { responseType: 'stream' });
+                    archive.append(response.data, { name: `images/${img.name}` });
+                }
+                catch (error) {
+                    console.error(`Failed to download image ${img.url}:`, error);
+                }
+            }
+        }
+        if (tenant.documents && tenant.documents.length > 0) {
+            for (const doc of tenant.documents) {
+                try {
+                    const axios = require('axios');
+                    const response = await axios.get(doc.url, { responseType: 'stream' });
+                    archive.append(response.data, { name: `documents/${doc.filename || 'document.pdf'}` });
+                }
+                catch (error) {
+                    console.error(`Failed to download document ${doc.url}:`, error);
+                }
+            }
+        }
+        if (tenant.uploadedImages && tenant.uploadedImages.length > 0) {
+            for (const img of tenant.uploadedImages) {
+                try {
+                    const axios = require('axios');
+                    const response = await axios.get(img.url, { responseType: 'stream' });
+                    archive.append(response.data, { name: `uploaded-images/${img.description || 'image'}.jpg` });
+                }
+                catch (error) {
+                    console.error(`Failed to download uploaded image ${img.url}:`, error);
+                }
+            }
+        }
+        const PDFDocument = require('pdfkit');
+        const pdfDoc = new PDFDocument({ margin: 40, size: 'A4' });
+        pdfDoc.fontSize(20).text('COMPLETE TENANT INFORMATION', { align: 'center' });
+        pdfDoc.moveDown();
+        pdfDoc.fontSize(14).text(`Name: ${tenant.name}`);
+        pdfDoc.text(`Email: ${tenant.email}`);
+        pdfDoc.text(`Phone: ${tenant.phone}`);
+        pdfDoc.text(`Property: ${tenant.propertyId?.name || 'N/A'}`);
+        pdfDoc.text(`Unit: ${tenant.unit}`);
+        pdfDoc.text(`Monthly Rent: $${tenant.rentAmount || 0}`);
+        if (tenant.fatherName)
+            pdfDoc.text(`Father's Name: ${tenant.fatherName}`);
+        if (tenant.motherName)
+            pdfDoc.text(`Mother's Name: ${tenant.motherName}`);
+        if (tenant.presentAddress)
+            pdfDoc.text(`Present Address: ${tenant.presentAddress}`);
+        if (tenant.permanentAddress)
+            pdfDoc.text(`Permanent Address: ${tenant.permanentAddress}`);
+        pdfDoc.end();
+        archive.append(pdfDoc, { name: 'tenant-complete-info.pdf' });
+        const summaryText = `
+TENANT SUMMARY
+==============
+Name: ${tenant.name}
+Email: ${tenant.email}
+Phone: ${tenant.phone}
+Property: ${tenant.propertyId?.name || 'N/A'}
+Unit: ${tenant.unit}
+Status: ${tenant.status}
+Monthly Rent: $${tenant.rentAmount || 0}
+Security Deposit: $${tenant.securityDeposit || 0}
+Lease Start: ${tenant.leaseStartDate ? new Date(tenant.leaseStartDate).toLocaleDateString() : 'N/A'}
+Lease End: ${tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toLocaleDateString() : 'N/A'}
+
+Generated on: ${new Date().toLocaleString()}
+`;
+        archive.append(summaryText, { name: 'tenant-summary.txt' });
+        archive.finalize();
+    }
+    catch (error) {
+        console.error('Zip generation error:', error);
+        res.status(500).json({ success: false, message: 'Failed to generate zip file' });
+    }
+};
+exports.downloadTenantDataZip = downloadTenantDataZip;
 const downloadPersonalDetailsPDF = async (req, res) => {
     try {
         if (!req.user?.organizationId) {
