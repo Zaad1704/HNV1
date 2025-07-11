@@ -15,6 +15,7 @@ import { getVacantUnits } from '../controllers/unitController';
 import { protect } from '../middleware/authMiddleware';
 import { cascadePropertyChanges } from '../middleware/cascadeMiddleware';
 import upload from '../middleware/uploadMiddleware';
+import { IUser } from '../models/User';
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.route('/:id')
   .put(upload.single('image'), updateProperty)
   .delete(async (req: any, res) => {
     try {
-      await cascadePropertyChanges(req.params.id, 'delete', req.user.organizationId);
+      await cascadePropertyChanges(req.params.id, 'delete', (req.user as IUser)?.organizationId);
       deleteProperty(req, res);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to cascade property deletion' });
@@ -39,7 +40,7 @@ router.route('/:id')
 // Archive property
 router.patch('/:id/archive', async (req: any, res) => {
   try {
-    await cascadePropertyChanges(req.params.id, 'archive', req.user.organizationId);
+    await cascadePropertyChanges(req.params.id, 'archive', (req.user as IUser)?.organizationId);
     const Property = require('../models/Property').default;
     await Property.findByIdAndUpdate(req.params.id, { status: 'Archived' });
     res.status(200).json({ success: true, message: 'Property and related data archived' });
