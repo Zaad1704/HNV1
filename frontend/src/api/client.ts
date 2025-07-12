@@ -12,7 +12,7 @@ const getApiUrl = () => {
   
   // Use backend URL for production on Render.com
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://hnv.onrender.com/api';
+    return 'https://hnv-backend.onrender.com/api';
   }
   
   // Development fallback

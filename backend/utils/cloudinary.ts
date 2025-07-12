@@ -1,12 +1,16 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configure Cloudinary only if credentials are available
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+} else {
+  console.warn('Cloudinary credentials not configured - image uploads will use local storage');
+}
 
 export const uploadToCloudinary = async (file: any, folder: string = 'hnv-property-management'): Promise<string> => {
   try {

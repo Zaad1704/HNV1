@@ -31,6 +31,20 @@ services:
         value: HNV Property Management <noreply@hnvpm.com>
       - key: CONTACT_EMAIL
         value: contact@hnvpm.com
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      - key: AWS_S3_BUCKET
+        sync: false
 
   - type: web
     name: hnv-frontend

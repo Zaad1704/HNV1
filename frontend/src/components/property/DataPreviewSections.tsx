@@ -16,17 +16,31 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('');
 
-  const { data: previews, isLoading } = useQuery({
+  const { data: previews, isLoading, error } = useQuery({
     queryKey: ['propertyDataPreviews', propertyId, unitFilter, statusFilter, dateFilter],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (unitFilter) params.append('unit', unitFilter);
-      if (statusFilter) params.append('status', statusFilter);
-      if (dateFilter) params.append('date', dateFilter);
-      const queryString = params.toString();
-      const { data } = await apiClient.get(`/properties/${propertyId}/data-previews${queryString ? `?${queryString}` : ''}`);
-      return data.data;
-    }
+      try {
+        const params = new URLSearchParams();
+        if (unitFilter) params.append('unit', unitFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        if (dateFilter) params.append('date', dateFilter);
+        const queryString = params.toString();
+        const { data } = await apiClient.get(`/properties/${propertyId}/data-previews${queryString ? `?${queryString}` : ''}`);
+        return data.data;
+      } catch (error) {
+        console.error('Failed to fetch data previews:', error);
+        return {
+          payments: [],
+          receipts: [],
+          expenses: [],
+          maintenance: [],
+          reminders: [],
+          approvals: [],
+          auditLogs: []
+        };
+      }
+    },
+    retry: false
   });
 
   // Generate unit options from property data
@@ -56,7 +70,25 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
     );
   }
 
-  if (!previews) return null;
+  if (!previews) {
+    // Fallback data structure
+    const fallbackPreviews = {
+      payments: [],
+      receipts: [],
+      expenses: [],
+      maintenance: [],
+      reminders: [],
+      approvals: [],
+      auditLogs: []
+    };
+    return (
+      <div className="space-y-8">
+        <div className="text-center py-8 bg-gray-50 rounded-2xl">
+          <p className="text-gray-500">Unable to load data previews. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

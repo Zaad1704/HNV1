@@ -8,10 +8,15 @@ interface EmailOptions {
 }
 
 class EmailService {
-  private resend: Resend;
+  private resend: Resend | null;
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
+    if (process.env.RESEND_API_KEY) {
+      this.resend = new Resend(process.env.RESEND_API_KEY);
+    } else {
+      this.resend = null;
+      console.warn('Resend API key not configured - email service disabled');
+    }
   }
 
   async sendEmail(options: EmailOptions) {
