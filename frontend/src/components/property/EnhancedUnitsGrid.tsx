@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Home, User, DollarSign, Plus, Edit3, Grid3X3, List, Wrench, Calendar, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import UnitDataModal from './UnitDataModal';
+import EnhancedUnitNicknameModal from './EnhancedUnitNicknameModal';
+import UnitQuickActions from './UnitQuickActions';
 
 interface EnhancedUnitsGridProps {
   propertyId: string;
@@ -23,6 +25,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [showUnitModal, setShowUnitModal] = useState(false);
+  const [showEnhancedNicknameModal, setShowEnhancedNicknameModal] = useState(false);
 
   // Combine units data with tenant information
   const unitsData = React.useMemo(() => {
@@ -102,11 +105,11 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={onEditNicknames}
+              onClick={() => setShowEnhancedNicknameModal(true)}
               className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2 text-sm"
             >
               <Edit3 size={14} />
-              Edit Nicknames
+              Manage Units
             </button>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -321,6 +324,13 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
         propertyId={propertyId}
         unitNumber={selectedUnit || ''}
         unitName={unitsData.find(u => u.unitNumber === selectedUnit)?.displayName}
+      />
+      
+      <EnhancedUnitNicknameModal
+        isOpen={showEnhancedNicknameModal}
+        onClose={() => setShowEnhancedNicknameModal(false)}
+        propertyId={propertyId}
+        propertyName={property?.name || 'Property'}
       />
     </div>
   );

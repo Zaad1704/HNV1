@@ -13,7 +13,13 @@ export const getUnits = async (req: Request, res: Response) => {
       organizationId: (req.user as IUser)?.organizationId 
     }).populate('tenantId', 'name email status');
     
-    res.json({ success: true, data: units });
+    // Add display name to each unit
+    const unitsWithDisplayName = units.map(unit => ({
+      ...unit.toObject(),
+      displayName: unit.nickname ? `${unit.unitNumber} (${unit.nickname})` : unit.unitNumber
+    }));
+    
+    res.json({ success: true, data: unitsWithDisplayName });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch units' });
   }
@@ -104,5 +110,65 @@ export const getVacantUnits = async (req: Request, res: Response) => {
     res.json({ success: true, data: units });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch vacant units' });
+  }
+};
+
+// Search units by number or nickname
+export const searchUnits = async (req: Request, res: Response) => {
+  try {
+    const { query, propertyId } = req.query;
+    const filter: any = {
+      organizationId: (req.user as IUser)?.organizationId
+    };
+    
+    if (propertyId) {
+      filter.propertyId = propertyId;
+    }
+    
+    if (query) {
+      filter.$or = [
+        { unitNumber: { $regex: query, $options: 'i' } },
+        { nickname: { $regex: query, $options: 'i' } },
+        { alternativeName: { $regex: query, $options: 'i' } }
+      ];
+    }
+    
+    const units = await Unit.find(filter)
+      .populate('tenantId', 'name email')
+      .populate('propertyId', 'name address')
+      .limit(20);
+    
+    res.json({ success: true, data: units });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to search units' });
+  }
+};
+
+// Bulk update unit details (enhanced)
+export const bulkUpdateUnits = async (req: Request, res: Response) => {
+  try {
+    const { updates } = req.body;
+    const results = [];
+    
+    for (const update of updates) {
+      const unit = await Unit.findOneAndUpdate(
+        { _id: update.unitId, organizationId: (req.user as IUser)?.organizationId },
+        {
+          nickname: update.nickname || '',
+          alternativeName: update.alternativeName || '',
+          floor: update.floor || '',
+          description: update.description || ''
+        },
+        { new: true }
+      );
+      
+      if (unit) {
+        results.push(unit);
+      }
+    }
+    
+    res.json({ success: true, data: results, message: `${results.length} units updated successfully` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update units' });
   }
 };
