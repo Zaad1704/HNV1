@@ -43,18 +43,18 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
   const hasExpiringLeases = expiringLeases.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Property Overview Card */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
+      <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border">
+        <h3 className="text-base lg:text-lg font-bold text-text-primary mb-3 lg:mb-4">Property Overview</h3>
         
         {/* Property Image */}
         {property.imageUrl && (
-          <div className="mb-4">
+          <div className="mb-3 lg:mb-4">
             <img
               src={property.imageUrl.startsWith('/') ? `${window.location.origin}${property.imageUrl}` : property.imageUrl}
               alt={property.name}
-              className="w-full h-48 object-cover rounded-xl"
+              className="w-full h-32 lg:h-48 object-cover rounded-lg lg:rounded-xl"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -62,25 +62,25 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
           </div>
         )}
         
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary">Type</span>
-            <span className="font-medium text-text-primary">{property.propertyType || 'N/A'}</span>
+        <div className="grid grid-cols-2 gap-3 lg:space-y-3 lg:block">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <span className="text-xs lg:text-sm text-text-secondary">Type</span>
+            <span className="font-medium text-sm lg:text-base text-text-primary">{property.propertyType || 'N/A'}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary">Units</span>
-            <span className="font-medium text-text-primary">{property.numberOfUnits}</span>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <span className="text-xs lg:text-sm text-text-secondary">Units</span>
+            <span className="font-medium text-sm lg:text-base text-text-primary">{property.numberOfUnits}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary">Occupancy</span>
-            <span className="font-medium text-text-primary">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <span className="text-xs lg:text-sm text-text-secondary">Occupancy</span>
+            <span className="font-medium text-sm lg:text-base text-text-primary">
               {activeTenants.length}/{property.numberOfUnits} 
               ({Math.round((activeTenants.length / (property.numberOfUnits || 1)) * 100)}%)
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-text-secondary">Monthly Revenue</span>
-            <span className="font-medium text-green-600">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between col-span-2 lg:col-span-1">
+            <span className="text-xs lg:text-sm text-text-secondary">Monthly Revenue</span>
+            <span className="font-medium text-sm lg:text-base text-green-600">
               ${activeTenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0).toLocaleString()}
             </span>
           </div>
@@ -110,16 +110,16 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
       )}
 
       {/* Primary Actions */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h3 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h3>
-        <div className="space-y-3">
+      <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border">
+        <h3 className="text-base lg:text-lg font-bold text-text-primary mb-3 lg:mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 gap-2 lg:space-y-3 lg:block">
           <Link 
             to={`/dashboard/tenants?propertyId=${propertyId}`}
-            className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-between"
+            className="w-full bg-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-between touch-manipulation"
           >
             <div className="flex items-center gap-2">
               <Users size={16} />
-              <span>View All Tenants</span>
+              <span className="text-sm lg:text-base">View All Tenants</span>
             </div>
             <span className="bg-blue-400 px-2 py-1 rounded-full text-xs">
               {activeTenants.length}
@@ -128,26 +128,26 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
 
           <button 
             onClick={() => window.location.href = `/dashboard/tenants/add?propertyId=${propertyId}`}
-            className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center gap-2"
+            className="w-full bg-green-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center gap-2 touch-manipulation"
           >
             <Plus size={16} />
-            Add New Tenant
+            <span className="text-sm lg:text-base">Add New Tenant</span>
           </button>
 
           <Link 
             to={`/dashboard/payments?propertyId=${propertyId}`}
-            className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors flex items-center gap-2"
+            className="w-full bg-purple-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-purple-600 transition-colors flex items-center gap-2 touch-manipulation"
           >
             <DollarSign size={16} />
-            View Payments
+            <span className="text-sm lg:text-base">View Payments</span>
           </Link>
         </div>
       </div>
 
       {/* Property Management Actions */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h3 className="text-lg font-bold text-text-primary mb-4">Property Management</h3>
-        <div className="space-y-3">
+      <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border">
+        <h3 className="text-base lg:text-lg font-bold text-text-primary mb-3 lg:mb-4">Property Management</h3>
+        <div className="grid grid-cols-1 gap-2 lg:space-y-3 lg:block">
           <button
             onClick={onCollectionSheet}
             className="w-full bg-indigo-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-indigo-600 transition-colors flex items-center gap-2"
@@ -185,12 +185,12 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
       </div>
 
       {/* Communication & Reports */}
-      <div className="app-surface rounded-3xl p-6 border border-app-border">
-        <h3 className="text-lg font-bold text-text-primary mb-4">Communication & Reports</h3>
-        <div className="space-y-3">
+      <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-6 border border-app-border">
+        <h3 className="text-base lg:text-lg font-bold text-text-primary mb-3 lg:mb-4">Communication & Reports</h3>
+        <div className="grid grid-cols-1 gap-2 lg:space-y-3 lg:block">
           <button
             onClick={() => setShowCommunicationModal(true)}
-            className="w-full bg-teal-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-teal-600 transition-colors flex items-center gap-2"
+            className="w-full bg-teal-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-teal-600 transition-colors flex items-center gap-2 touch-manipulation"
           >
             <Mail size={16} />
             Message All Tenants
@@ -198,7 +198,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
 
           <button
             onClick={() => setShowReportModal(true)}
-            className="w-full bg-cyan-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-cyan-600 transition-colors flex items-center gap-2"
+            className="w-full bg-cyan-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-cyan-600 transition-colors flex items-center gap-2 touch-manipulation"
           >
             <Download size={16} />
             Generate Property Report
@@ -206,7 +206,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
 
           <Link
             to={`/dashboard/properties/${propertyId}/settings`}
-            className="w-full bg-gray-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-600 transition-colors flex items-center gap-2"
+            className="w-full bg-gray-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-gray-600 transition-colors flex items-center gap-2 touch-manipulation"
           >
             <Settings size={16} />
             Property Settings

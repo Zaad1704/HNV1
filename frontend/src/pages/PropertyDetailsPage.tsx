@@ -138,9 +138,30 @@ const PropertyDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-app-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+      {/* Mobile Header */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 lg:hidden">
+        <div className="flex items-center justify-between p-4">
+          <Link 
+            to="/dashboard/properties"
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+          >
+            <ArrowLeft size={20} className="text-gray-600" />
+          </Link>
+          <div className="flex-1 mx-4">
+            <h1 className="text-lg font-bold text-gray-900 truncate">{property.name}</h1>
+          </div>
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            <Edit size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+        {/* Desktop Header */}
+        <div className="hidden lg:flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link 
               to="/dashboard/properties"
@@ -165,9 +186,17 @@ const PropertyDetailsPage = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Mobile Address */}
+        <div className="lg:hidden mb-4 px-4">
+          <div className="flex items-center gap-2 text-gray-600">
+            <MapPin size={14} />
+            <span className="text-sm">{property.address?.street || property.address?.formattedAddress || 'No address'}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-4 lg:space-y-8 order-2 lg:order-1">
             {/* Property Analytics Dashboard */}
             <PropertyAnalyticsDashboard
               propertyId={propertyId!}
@@ -212,7 +241,7 @@ const PropertyDetailsPage = () => {
           </div>
 
           {/* Enhanced Sidebar */}
-          <div>
+          <div className="order-1 lg:order-2">
             <EnhancedPropertyQuickActions
               propertyId={propertyId!}
               property={property}

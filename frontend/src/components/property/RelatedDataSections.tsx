@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, DollarSign, Wrench, TrendingUp, Filter, Eye, Calendar } from 'lucide-react';
+import TenantAvatar from '../common/TenantAvatar';
 
 interface RelatedDataSectionsProps {
   propertyId: string;
@@ -58,9 +59,9 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
   const filteredData = getFilteredData();
 
   return (
-    <div className="app-surface rounded-3xl p-8 border border-app-border">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-text-primary">Related Data</h2>
+    <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-8 border border-app-border">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-3 lg:gap-0">
+        <h2 className="text-lg lg:text-xl font-bold text-text-primary">Related Data</h2>
         
         {/* Unit Filter */}
         <div className="flex items-center gap-4">
@@ -83,10 +84,10 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex overflow-x-auto border-b border-gray-200 mb-4 lg:mb-6 -mx-4 lg:mx-0 px-4 lg:px-0">
         <button
           onClick={() => setActiveTab('tenants')}
-          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+          className={`px-3 lg:px-4 py-2 font-medium text-xs lg:text-sm flex items-center gap-2 whitespace-nowrap touch-manipulation ${
             activeTab === 'tenants' 
               ? 'border-b-2 border-blue-500 text-blue-600' 
               : 'text-gray-600 hover:text-gray-900'
@@ -97,7 +98,7 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('payments')}
-          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+          className={`px-3 lg:px-4 py-2 font-medium text-xs lg:text-sm flex items-center gap-2 whitespace-nowrap touch-manipulation ${
             activeTab === 'payments' 
               ? 'border-b-2 border-blue-500 text-blue-600' 
               : 'text-gray-600 hover:text-gray-900'
@@ -108,7 +109,7 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('maintenance')}
-          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+          className={`px-3 lg:px-4 py-2 font-medium text-xs lg:text-sm flex items-center gap-2 whitespace-nowrap touch-manipulation ${
             activeTab === 'maintenance' 
               ? 'border-b-2 border-blue-500 text-blue-600' 
               : 'text-gray-600 hover:text-gray-900'
@@ -119,7 +120,7 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('cashflow')}
-          className={`px-4 py-2 font-medium text-sm flex items-center gap-2 ${
+          className={`px-3 lg:px-4 py-2 font-medium text-xs lg:text-sm flex items-center gap-2 whitespace-nowrap touch-manipulation ${
             activeTab === 'cashflow' 
               ? 'border-b-2 border-blue-500 text-blue-600' 
               : 'text-gray-600 hover:text-gray-900'
@@ -147,14 +148,15 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
             </div>
             
             {filteredData.tenants.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 lg:gap-4">
                 {filteredData.tenants.map((tenant: any) => (
-                  <div key={tenant._id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                  <div key={tenant._id} className="border border-gray-200 rounded-lg p-3 lg:p-4 hover:border-blue-300 transition-colors touch-manipulation">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                          {tenant.name?.charAt(0).toUpperCase() || 'T'}
-                        </div>
+                        <TenantAvatar 
+                          tenant={tenant} 
+                          size="lg" 
+                        />
                         <div>
                           <div className="font-medium text-gray-900">{tenant.name}</div>
                           <div className="text-sm text-gray-600">Unit {tenant.unit}</div>
@@ -182,7 +184,7 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
                     
                     <Link
                       to={`/dashboard/tenants/${tenant._id}`}
-                      className="mt-3 w-full bg-blue-50 text-blue-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                      className="mt-3 w-full bg-blue-50 text-blue-600 py-2 px-3 rounded-lg text-xs lg:text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 touch-manipulation"
                     >
                       <Eye size={14} />
                       View Details
@@ -321,7 +323,7 @@ const RelatedDataSections: React.FC<RelatedDataSectionsProps> = ({
             </div>
             
             {/* Monthly Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <div className="text-sm text-green-700 mb-1">Total Income</div>
                 <div className="text-2xl font-bold text-green-600">

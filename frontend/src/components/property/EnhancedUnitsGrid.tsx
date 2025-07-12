@@ -211,11 +211,11 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
   }
 
   return (
-    <div className="app-surface rounded-3xl p-8 border border-app-border">
-      <div className="flex items-center justify-between mb-6">
+    <div className="app-surface rounded-2xl lg:rounded-3xl p-4 lg:p-8 border border-app-border">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 lg:mb-6 gap-3 lg:gap-0">
         <div>
-          <h2 className="text-xl font-bold text-text-primary">Unit-Wise Breakdown ({unitsData.length})</h2>
-          <div className="flex items-center gap-4 text-sm text-text-secondary mt-1">
+          <h2 className="text-lg lg:text-xl font-bold text-text-primary">Unit-Wise Breakdown ({unitsData.length})</h2>
+          <div className="flex items-center gap-3 lg:gap-4 text-xs lg:text-sm text-text-secondary mt-1">
             <span className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               {unitsData.filter(u => !u.isOccupied).length} Available
@@ -260,11 +260,11 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
       </div>
       
       {/* Grid View */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 lg:gap-4">
         {unitsData.map((unit: any) => (
           <div
             key={unit.unitNumber}
-            className={`relative p-4 border-2 rounded-2xl hover:shadow-lg transition-all cursor-pointer ${getStatusColor(unit)}`}
+            className={`relative p-3 lg:p-4 border-2 rounded-xl lg:rounded-2xl hover:shadow-lg transition-all cursor-pointer touch-manipulation ${getStatusColor(unit)}`}
             onClick={() => handleUnitClick(unit)}
           >
             {/* Unit Number */}
