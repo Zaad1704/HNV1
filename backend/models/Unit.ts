@@ -15,6 +15,17 @@ export interface IUnit extends Document {
   bedrooms?: number;
   bathrooms?: number;
   amenities?: string[];
+  historyTracking: {
+    totalTenants: number;
+    averageStayDuration: number; // in months
+    lastOccupiedDate?: Date;
+    lastVacatedDate?: Date;
+    rentHistory: Array<{
+      amount: number;
+      effectiveDate: Date;
+      tenantId?: Schema.Types.ObjectId;
+    }>;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,6 +86,17 @@ const UnitSchema = new Schema<IUnit>({
   amenities: [{
     type: String,
   }],
+  historyTracking: {
+    totalTenants: { type: Number, default: 0 },
+    averageStayDuration: { type: Number, default: 0 },
+    lastOccupiedDate: { type: Date },
+    lastVacatedDate: { type: Date },
+    rentHistory: [{
+      amount: { type: Number },
+      effectiveDate: { type: Date },
+      tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant' },
+    }],
+  },
 }, { timestamps: true });
 
 // Index for efficient queries
