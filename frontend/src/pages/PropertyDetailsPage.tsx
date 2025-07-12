@@ -263,7 +263,7 @@ const PropertyDetailsPage = () => {
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         property={property}
-        onUpdate={handleDataUpdate}
+        onPropertyUpdated={handleDataUpdate}
       />
 
       <MonthlyCollectionSheet
