@@ -60,11 +60,11 @@ const TenantProfileDashboard: React.FC<TenantProfileDashboardProps> = ({ tenantI
   }
 
   return (
-    <div className={`space-y-8 ${className}`}>
-      {/* Tenant Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center overflow-hidden">
+    <div className={`mobile-space-y ${className}`}>
+      {/* Mobile-Optimized Tenant Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl md:rounded-2xl p-6 md:p-8 text-white">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center overflow-hidden flex-shrink-0">
             {tenant.imageUrl || tenant.tenantImage ? (
               <img
                 src={tenant.imageUrl || tenant.tenantImage}
@@ -102,8 +102,8 @@ const TenantProfileDashboard: React.FC<TenantProfileDashboardProps> = ({ tenantI
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Mobile-Optimized Quick Stats */}
+      <div className="mobile-grid-4">
         <div className="bg-white rounded-xl p-6 border border-gray-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -157,8 +157,8 @@ const TenantProfileDashboard: React.FC<TenantProfileDashboardProps> = ({ tenantI
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Mobile-Optimized Main Content */}
+      <div className="mobile-grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Left Column - Contact & Details */}
         <div className="space-y-6">
           {/* Contact Information */}
