@@ -11,7 +11,7 @@ import SwipeableCard from '../components/mobile/SwipeableCard';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
-import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles, Search, CheckSquare, Square, Calendar } from 'lucide-react';
+import { Building2, Plus, MapPin, Users, Edit, Trash2, Eye, Download, Mail, DollarSign, Archive, ArchiveRestore, EyeOff, Sparkles, Search, CheckSquare, Square, Calendar, Filter } from 'lucide-react';
 import AddPropertyModal from '../components/common/AddPropertyModal';
 import EditPropertyModal from '../components/common/EditPropertyModal';
 import SearchFilter from '../components/common/SearchFilter';
@@ -200,7 +200,7 @@ const PropertiesPage = () => {
     });
 
     return filtered;
-  }, [properties, searchQuery, filters, searchFilters, showArchived]);
+  }, [properties, searchQuery, filters, searchFilters, showArchived, showVacant, allTenants]);
 
   const handleUniversalSearch = (filters: SearchFilters) => {
     setSearchFilters(filters);
@@ -484,11 +484,11 @@ const PropertiesPage = () => {
     }
   };
 
+  // Optimistic updates - must be called before other hooks
+  const { addOptimistic, updateOptimistic, removeOptimistic } = useOptimisticUpdate(['properties'], properties);
+  
   // Background refresh
   useBackgroundRefresh([['properties']], 60000);
-
-  // Optimistic updates
-  const { addOptimistic, updateOptimistic, removeOptimistic } = useOptimisticUpdate(['properties'], properties);
 
   if (isLoading) {
     return <SkeletonLoader type="card" count={6} />;
@@ -673,7 +673,7 @@ const PropertiesPage = () => {
                 </SwipeableCard>
               </div>
               <div className="hidden md:block">
-                <UniversalCard delay={index * 0.1} gradient="blue">
+                <UniversalCard delay={index * 0.1} gradient="blue" section="property">
                   <EnhancedPropertyCard 
                     property={property} 
                     index={index}
