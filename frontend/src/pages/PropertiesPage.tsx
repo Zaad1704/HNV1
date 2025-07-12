@@ -8,6 +8,11 @@ import { useWorkflowTriggers } from '../hooks/useWorkflowTriggers';
 import LazyLoader from '../components/common/LazyLoader';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import SwipeableCard from '../components/mobile/SwipeableCard';
+import Phase3MobileHeader from '../components/mobile/Phase3MobileHeader';
+import Phase3TabFilters, { getPropertyFilterTabs } from '../components/mobile/Phase3TabFilters';
+import Phase3SwipeableCard from '../components/mobile/Phase3SwipeableCard';
+import Phase3BottomSheet from '../components/mobile/Phase3BottomSheet';
+import Phase3RightSidebar, { createSmartFiltersSection, createAIInsightsSection } from '../components/mobile/Phase3RightSidebar';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
@@ -69,6 +74,8 @@ const PropertiesPage = () => {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showVacant, setShowVacant] = useState(false);
   const [showBulkLeaseActions, setShowBulkLeaseActions] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
   
   // Check URL params for filters
   React.useEffect(() => {
@@ -563,219 +570,68 @@ const PropertiesPage = () => {
         />
       </div>
 
-      {/* Mobile Header - minimal and clean */}
-      <div className="md:hidden sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Properties ({filteredProperties.length})</h1>
-            <div className="flex items-center gap-3 text-xs text-gray-600">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                {properties.filter(p => p.status !== 'Archived').length} Active
-              </span>
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                {stats?.occupancyRate || 0}% Occupied
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowBulkPayment(true)}
-              className="p-2 bg-green-500 text-white rounded-lg"
-            >
-              <DollarSign size={16} />
-            </button>
-            <button
-              onClick={() => setShowUniversalExport(true)}
-              className="p-2 bg-blue-500 text-white rounded-lg"
-            >
-              <Download size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop Layout with Left Sidebar */}
-      <div className="hidden md:flex gap-6">
-        {/* Left Sidebar - Filters and Suggestions */}
-        <div className="w-80 space-y-4 flex-shrink-0">
-          {/* Smart Filters */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
-            <button
-              onClick={() => setShowGlobalSearch(!showGlobalSearch)}
-              className="w-full flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 universal-gradient-property rounded-lg flex items-center justify-center">
-                  <Filter size={16} className="text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold text-text-primary text-sm">Smart Filters</h3>
-                  <p className="text-xs text-text-secondary">Filter properties</p>
-                </div>
-              </div>
-              <div className={`transform transition-transform ${showGlobalSearch ? 'rotate-180' : ''}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
-            
-            {showGlobalSearch && (
-              <div className="border-t border-blue-200 p-4 space-y-2">
-                <button
-                  onClick={() => {
-                    setShowBulkMode(!showBulkMode);
-                    if (showBulkMode) setSelectedProperties([]);
-                  }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showBulkMode 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
-                  }`}
-                >
-                  {showBulkMode ? <CheckSquare size={14} /> : <Square size={14} />}
-                  {showBulkMode ? 'Exit Bulk Select' : 'Bulk Select'}
-                </button>
-                
-                <button
-                  onClick={() => setShowVacant(!showVacant)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showVacant 
-                      ? 'bg-orange-500 text-white' 
-                      : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'
-                  }`}
-                >
-                  <EyeOff size={14} />
-                  {showVacant ? 'Show All Properties' : 'Vacant Units Only'}
-                </button>
-                
-                <button
-                  onClick={() => setShowArchived(!showArchived)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showArchived 
-                      ? 'bg-gray-500 text-white' 
-                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
-                  {showArchived ? 'Show Active Only' : 'Show Archived'}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Smart Suggestions */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border border-green-100">
-            <button
-              onClick={() => setShowVacant(!showVacant)}
-              className="w-full flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Sparkles size={16} className="text-white" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold text-text-primary text-sm">AI Insights</h3>
-                  <p className="text-xs text-text-secondary">Smart suggestions</p>
-                </div>
-              </div>
-              <div className={`transform transition-transform ${showVacant ? 'rotate-180' : ''}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
-            
-            {showVacant && (
-              <div className="border-t border-green-200 p-4">
-                <SmartSuggestions />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 space-y-6">
-
-      {/* Mobile Collapsible Filters */}
+      {/* Phase 3 Mobile Header */}
       <div className="md:hidden">
-        <div className="bg-white rounded-xl border border-gray-200">
-          <button
-            onClick={() => setShowGlobalSearch(!showGlobalSearch)}
-            className="w-full flex items-center justify-between p-4"
-          >
-            <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-600" />
-              <span className="font-medium text-gray-900">Filters</span>
-              {(showBulkMode || showVacant || showArchived) && (
-                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                  {[showBulkMode, showVacant, showArchived].filter(Boolean).length}
-                </span>
-              )}
-            </div>
-            <div className={`transform transition-transform ${showGlobalSearch ? 'rotate-180' : ''}`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-          
-          {showGlobalSearch && (
-            <div className="border-t border-gray-200 p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setShowVacant(!showVacant)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showVacant 
-                      ? 'bg-orange-500 text-white' 
-                      : 'bg-orange-50 text-orange-600 border border-orange-200'
-                  }`}
-                >
-                  <EyeOff size={14} />
-                  Vacant
-                </button>
-                
-                <button
-                  onClick={() => setShowArchived(!showArchived)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showArchived 
-                      ? 'bg-gray-500 text-white' 
-                      : 'bg-gray-50 text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  <Archive size={14} />
-                  Archived
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowBulkMode(!showBulkMode);
-                    if (showBulkMode) setSelectedProperties([]);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showBulkMode 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-blue-50 text-blue-600 border border-blue-200'
-                  }`}
-                >
-                  <CheckSquare size={14} />
-                  Bulk
-                </button>
-                
-                <button
-                  onClick={() => setShowBulkLeaseActions(true)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-purple-50 text-purple-600 border border-purple-200"
-                >
-                  <Calendar size={14} />
-                  Lease
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <Phase3MobileHeader
+          title="Properties"
+          count={filteredProperties.length}
+          stats={[
+            { label: 'Active', value: properties.filter(p => p.status !== 'Archived').length, color: 'green' },
+            { label: 'Occupied', value: `${stats?.occupancyRate || 0}%`, color: 'purple' }
+          ]}
+          onExport={() => setShowUniversalExport(true)}
+          onQuickAction={() => setShowBulkPayment(true)}
+          onFilter={() => setShowMobileFilters(!showMobileFilters)}
+          showFilters={showMobileFilters}
+          activeFiltersCount={[showVacant, showArchived, showBulkMode].filter(Boolean).length}
+        />
       </div>
+
+      {/* Phase 3 Mobile Tab Filters */}
+      <div className="md:hidden">
+        <Phase3TabFilters
+          tabs={getPropertyFilterTabs(
+            showVacant,
+            showArchived,
+            showBulkMode,
+            allTenants.filter(t => {
+              const propertyTenants = allTenants.filter(tenant => tenant.propertyId === t.propertyId && tenant.status === 'Active');
+              return propertyTenants.length === 0;
+            }).length,
+            properties.filter(p => p.status === 'Archived').length
+          )}
+          onTabClick={(key) => {
+            switch (key) {
+              case 'all':
+                setShowVacant(false);
+                setShowArchived(false);
+                setShowBulkMode(false);
+                setSelectedProperties([]);
+                break;
+              case 'vacant':
+                setShowVacant(!showVacant);
+                setShowArchived(false);
+                break;
+              case 'archived':
+                setShowArchived(!showArchived);
+                setShowVacant(false);
+                break;
+              case 'bulk':
+                setShowBulkMode(!showBulkMode);
+                if (showBulkMode) setSelectedProperties([]);
+                break;
+            }
+          }}
+        />
+      </div>
+
+      {/* Desktop Layout with Right Sidebar */}
+      <div className="hidden md:block">
+        <div className="phase3-desktop-layout">
+          {/* Main Content Area */}
+          <div className="phase3-main-content space-y-6">
+
+
 
           {/* Universal Search */}
           <UniversalSearch
@@ -799,47 +655,28 @@ const PropertiesPage = () => {
             filterOptions={filterOptions}
           />
 
-          {/* Properties Grid */}
-          {filteredProperties && filteredProperties.length > 0 ? (
-        <div className="universal-grid universal-grid-3">
-          {filteredProperties.map((property: any, index: number) => (
-            <LazyLoader key={property._id}>
-              <div className="md:hidden">
-                <SwipeableCard
-                  onEdit={() => handleEditProperty(property)}
-                  onDelete={() => handleDeleteProperty(property._id)}
-                  onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
-                >
-                  <UniversalCard delay={index * 0.1} gradient="blue" section="property">
-                    <EnhancedPropertyCard 
-                      property={property} 
-                      index={index}
-                      onEdit={handleEditProperty}
-                      onDelete={handleDeleteProperty}
-                      showCheckbox={showBulkMode}
-                      isSelected={selectedProperties.includes(property._id)}
-                      onSelect={handlePropertySelect}
-                    />
-                  </UniversalCard>
-                </SwipeableCard>
+            {/* Properties Grid */}
+            {filteredProperties && filteredProperties.length > 0 ? (
+              <div className="phase3-card-grid">
+                {filteredProperties.map((property: any, index: number) => (
+                  <LazyLoader key={property._id}>
+                    <div className="phase3-card-wider">
+                      <UniversalCard delay={index * 0.1} gradient="blue" section="property">
+                        <EnhancedPropertyCard 
+                          property={property} 
+                          index={index}
+                          onEdit={handleEditProperty}
+                          onDelete={handleDeleteProperty}
+                          showCheckbox={showBulkMode}
+                          isSelected={selectedProperties.includes(property._id)}
+                          onSelect={handlePropertySelect}
+                        />
+                      </UniversalCard>
+                    </div>
+                  </LazyLoader>
+                ))}
               </div>
-              <div className="hidden md:block">
-                <UniversalCard delay={index * 0.1} gradient="blue" section="property">
-                  <EnhancedPropertyCard 
-                    property={property} 
-                    index={index}
-                    onEdit={handleEditProperty}
-                    onDelete={handleDeleteProperty}
-                    showCheckbox={showBulkMode}
-                    isSelected={selectedProperties.includes(property._id)}
-                    onSelect={handlePropertySelect}
-                  />
-                </UniversalCard>
-              </div>
-            </LazyLoader>
-          ))}
-          </div>
-          ) : (
+            ) : (
             <div className="text-center py-20">
           <div className="relative">
             <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
@@ -869,62 +706,107 @@ const PropertiesPage = () => {
               {t('property.add_first_property')}
             </button>
           )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+          
+          {/* Phase 3 Right Sidebar */}
+          <Phase3RightSidebar
+            sections={[
+              createSmartFiltersSection(
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setShowBulkMode(!showBulkMode);
+                      if (showBulkMode) setSelectedProperties([]);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      showBulkMode 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
+                    }`}
+                  >
+                    {showBulkMode ? <CheckSquare size={14} /> : <Square size={14} />}
+                    {showBulkMode ? 'Exit Bulk Select' : 'Bulk Select'}
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowVacant(!showVacant)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      showVacant 
+                        ? 'bg-orange-500 text-white' 
+                        : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'
+                    }`}
+                  >
+                    <EyeOff size={14} />
+                    {showVacant ? 'Show All Properties' : 'Vacant Units Only'}
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowArchived(!showArchived)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      showArchived 
+                        ? 'bg-gray-500 text-white' 
+                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                    {showArchived ? 'Show Active Only' : 'Show Archived'}
+                  </button>
+                </div>,
+                true
+              ),
+              createAIInsightsSection(
+                <SmartSuggestions />,
+                false
+              )
+            ]}
+          />
         </div>
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden space-y-6">
+      <div className="md:hidden space-y-4">
         {/* Universal Search */}
-        <UniversalSearch
-          onSearch={handleUniversalSearch}
-          placeholder="Search properties by name or address..."
-          showStatusFilter={true}
-          statusOptions={[
-            { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
-            { value: 'Under Renovation', label: 'Under Renovation' },
-            { value: 'Archived', label: 'Archived' }
-          ]}
-        />
-        
-        {/* Legacy Search & Filter */}
-        <SearchFilter
-          onSearch={setSearchQuery}
-          onFilter={setFilters}
-          filters={filters}
-          placeholder="Additional filters..."
-          filterOptions={filterOptions}
-        />
+        <div className="px-4">
+          <UniversalSearch
+            onSearch={handleUniversalSearch}
+            placeholder="Search properties by name or address..."
+            showStatusFilter={true}
+            statusOptions={[
+              { value: 'Active', label: 'Active' },
+              { value: 'Inactive', label: 'Inactive' },
+              { value: 'Under Renovation', label: 'Under Renovation' },
+              { value: 'Archived', label: 'Archived' }
+            ]}
+          />
+        </div>
 
         {/* Properties Grid */}
         {filteredProperties && filteredProperties.length > 0 ? (
-          <div className="universal-grid universal-grid-3">
+          <div className="phase3-card-grid px-4">
             {filteredProperties.map((property: any, index: number) => (
               <LazyLoader key={property._id}>
-                <SwipeableCard
+                <Phase3SwipeableCard
                   onEdit={() => handleEditProperty(property)}
                   onDelete={() => handleDeleteProperty(property._id)}
                   onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
                 >
-                  <UniversalCard delay={index * 0.1} gradient="blue" section="property">
-                    <EnhancedPropertyCard 
-                      property={property} 
-                      index={index}
-                      onEdit={handleEditProperty}
-                      onDelete={handleDeleteProperty}
-                      showCheckbox={showBulkMode}
-                      isSelected={selectedProperties.includes(property._id)}
-                      onSelect={handlePropertySelect}
-                    />
-                  </UniversalCard>
-                </SwipeableCard>
+                  <EnhancedPropertyCard 
+                    property={property} 
+                    index={index}
+                    onEdit={handleEditProperty}
+                    onDelete={handleDeleteProperty}
+                    showCheckbox={showBulkMode}
+                    isSelected={selectedProperties.includes(property._id)}
+                    onSelect={handlePropertySelect}
+                  />
+                </Phase3SwipeableCard>
               </LazyLoader>
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-center py-20 px-4">
             <div className="relative">
               <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
                 <Building2 size={64} className="text-white" />
@@ -933,26 +815,15 @@ const PropertiesPage = () => {
                 <Sparkles size={16} className="text-yellow-900" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
               {showArchived ? 'No Archived Properties' : t('property.no_properties_yet')}
             </h3>
-            <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+            <p className="text-text-secondary mb-8 max-w-lg mx-auto leading-relaxed">
               {showArchived 
                 ? 'No properties have been archived yet. Archived properties are those no longer in active use.'
                 : 'Start building your property portfolio by adding your first property. Manage tenants, payments, and maintenance all in one place.'
               }
             </p>
-            {!showArchived && (
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="group relative btn-gradient px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
-              >
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-                  <Plus size={16} className="text-white" />
-                </div>
-                {t('property.add_first_property')}
-              </button>
-            )}
           </div>
         )}
       </div>
@@ -1072,15 +943,59 @@ const PropertiesPage = () => {
         }}
       />
       
-      {/* Universal Mobile FAB */}
-      <div className="universal-mobile-fab-property">
+      {/* Phase 3 Mobile FAB */}
+      <div className="phase3-mobile-fab-property md:hidden">
         <button
           onClick={() => setShowAddModal(true)}
           className="w-full h-full flex items-center justify-center group"
+          aria-label="Add Property"
         >
           <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
         </button>
       </div>
+      
+      {/* Mobile Bottom Sheet for Actions */}
+      <Phase3BottomSheet
+        isOpen={showMobileActions}
+        onClose={() => setShowMobileActions(false)}
+        title="Quick Actions"
+        height="auto"
+      >
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              setShowBulkPayment(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-primary w-full"
+          >
+            <DollarSign size={20} />
+            <span className="ml-2">Bulk Payment</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              setShowBulkLeaseActions(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-secondary w-full"
+          >
+            <Calendar size={20} />
+            <span className="ml-2">Bulk Lease Actions</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              setShowUniversalExport(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-secondary w-full"
+          >
+            <Download size={20} />
+            <span className="ml-2">Export Properties</span>
+          </button>
+        </div>
+      </Phase3BottomSheet>
       
       {/* Modern Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">

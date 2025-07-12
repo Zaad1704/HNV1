@@ -5,10 +5,15 @@ import apiClient from '../api/client';
 import LazyLoader from '../components/common/LazyLoader';
 import SkeletonLoader from '../components/common/SkeletonLoader';
 import SwipeableCard from '../components/mobile/SwipeableCard';
+import Phase3MobileHeader from '../components/mobile/Phase3MobileHeader';
+import Phase3TabFilters, { getTenantFilterTabs } from '../components/mobile/Phase3TabFilters';
+import Phase3SwipeableCard from '../components/mobile/Phase3SwipeableCard';
+import Phase3BottomSheet from '../components/mobile/Phase3BottomSheet';
+import Phase3RightSidebar, { createSmartFiltersSection, createAIInsightsSection } from '../components/mobile/Phase3RightSidebar';
 import { useBackgroundRefresh } from '../hooks/useBackgroundRefresh';
 import { useOptimisticUpdate } from '../hooks/useOptimisticUpdate';
 import { motion } from 'framer-motion';
-import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Mail, Phone, MapPin, Calendar, DollarSign, Download, FileText, Search, Filter, Archive, ArchiveRestore, Eye, EyeOff, AlertTriangle, Sparkles, CheckSquare, Square } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SearchFilter from '../components/common/SearchFilter';
 import BulkActions from '../components/common/BulkActions';
@@ -84,6 +89,9 @@ const TenantsPage = () => {
   const [advancedSearchCriteria, setAdvancedSearchCriteria] = useState<any>({});
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showAutomation, setShowAutomation] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
+  const [showMobileInsights, setShowMobileInsights] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
@@ -400,356 +408,292 @@ const TenantsPage = () => {
         />
       </div>
 
-      {/* Mobile Header - minimal and clean */}
-      <div className="md:hidden sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Tenants ({filteredTenants.length})</h1>
-            <div className="flex items-center gap-3 text-xs text-gray-600">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                {filteredTenants.filter(t => t.status !== 'Archived').length} Active
-              </span>
-              {tenants.filter(t => t.status === 'Late').length > 0 && (
-                <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  {tenants.filter(t => t.status === 'Late').length} Late
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowQuickPayment(true)}
-              className="p-2 bg-green-500 text-white rounded-lg"
-            >
-              <DollarSign size={16} />
-            </button>
-            <button
-              onClick={() => setShowCollectionSheet(true)}
-              className="p-2 bg-purple-500 text-white rounded-lg"
-            >
-              <FileText size={16} />
-            </button>
-          </div>
-        </div>
+      {/* Phase 3 Mobile Header */}
+      <div className="md:hidden">
+        <Phase3MobileHeader
+          title="Tenants"
+          count={filteredTenants.length}
+          stats={[
+            { label: 'Active', value: filteredTenants.filter(t => t.status !== 'Archived').length, color: 'green' },
+            { label: 'Late', value: tenants.filter(t => t.status === 'Late').length, color: 'red' }
+          ]}
+          onExport={() => setShowUniversalExport(true)}
+          onQuickAction={() => setShowQuickPayment(true)}
+          onFilter={() => setShowMobileFilters(!showMobileFilters)}
+          showFilters={showMobileFilters}
+          activeFiltersCount={[showLateOnly, showExpiringLeases, showArchived, showBulkMode, selectedProperty].filter(Boolean).length}
+        />
       </div>
 
-      {/* Enhanced Smart Filter Bar - Desktop */}
-      <div className="hidden md:block bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-            <Filter size={20} className="text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-text-primary">Smart Filters</h3>
-            <p className="text-sm text-text-secondary">Filter tenants by status, lease expiry, and property</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button
-            onClick={() => setShowLateOnly(!showLateOnly)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
-              showLateOnly 
-                ? 'bg-red-500 text-white shadow-lg scale-105' 
-                : 'bg-white text-red-600 hover:bg-red-50 border border-red-200'
-            }`}
-          >
-            <AlertTriangle size={16} />
-            <span className="text-sm font-medium">{showLateOnly ? 'All Tenants' : 'Late Payments'}</span>
-          </button>
-          
-          <button
-            onClick={() => setShowExpiringLeases(!showExpiringLeases)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
-              showExpiringLeases 
-                ? 'bg-orange-500 text-white shadow-lg scale-105' 
-                : 'bg-white text-orange-600 hover:bg-orange-50 border border-orange-200'
-            }`}
-          >
-            <Calendar size={16} />
-            <span className="text-sm font-medium">{showExpiringLeases ? 'All Leases' : 'Expiring Soon'}</span>
-          </button>
-          
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 ${
-              showArchived 
-                ? 'bg-gray-500 text-white shadow-lg scale-105' 
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-            }`}
-          >
-            {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-            <span className="text-sm font-medium">{showArchived ? 'Active Only' : 'Show Archived'}</span>
-          </button>
-          
-          <select
-            value={selectedProperty}
-            onChange={(e) => setSelectedProperty(e.target.value)}
-            className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium"
-          >
-            <option value="">All Properties ({properties.length})</option>
-            {properties.map((property: any) => (
-              <option key={property._id} value={property._id}>
-                {property.name} ({tenants.filter((t: any) => t.propertyId?._id === property._id).length})
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        {/* Active Filters Display */}
-        {(showLateOnly || showExpiringLeases || showArchived || selectedProperty) && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="text-sm text-text-secondary">Active filters:</span>
-            {showLateOnly && (
-              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium flex items-center gap-1">
-                Late Payments
-                <button onClick={() => setShowLateOnly(false)} className="ml-1 hover:bg-red-200 rounded-full p-0.5">
-                  ×
-                </button>
-              </span>
-            )}
-            {showExpiringLeases && (
-              <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium flex items-center gap-1">
-                Expiring Leases
-                <button onClick={() => setShowExpiringLeases(false)} className="ml-1 hover:bg-orange-200 rounded-full p-0.5">
-                  ×
-                </button>
-              </span>
-            )}
-            {showArchived && (
-              <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium flex items-center gap-1">
-                Archived
-                <button onClick={() => setShowArchived(false)} className="ml-1 hover:bg-gray-200 rounded-full p-0.5">
-                  ×
-                </button>
-              </span>
-            )}
-            {selectedProperty && (
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium flex items-center gap-1">
-                {properties.find((p: any) => p._id === selectedProperty)?.name}
-                <button onClick={() => setSelectedProperty('')} className="ml-1 hover:bg-blue-200 rounded-full p-0.5">
-                  ×
-                </button>
-              </span>
-            )}
-            <button
-              onClick={() => {
+      {/* Phase 3 Mobile Tab Filters */}
+      <div className="md:hidden">
+        <Phase3TabFilters
+          tabs={getTenantFilterTabs(
+            showLateOnly,
+            showExpiringLeases,
+            showArchived,
+            showBulkMode,
+            tenants.filter(t => t.status === 'Late').length,
+            tenants.filter(t => {
+              if (!t.leaseEndDate) return false;
+              const daysUntilExpiry = Math.ceil((new Date(t.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+            }).length,
+            tenants.filter(t => t.status === 'Archived').length
+          )}
+          onTabClick={(key) => {
+            switch (key) {
+              case 'all':
                 setShowLateOnly(false);
                 setShowExpiringLeases(false);
                 setShowArchived(false);
-                setSelectedProperty('');
-              }}
-              className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200"
-            >
-              Clear All
-            </button>
-          </div>
-        )}
+                setShowBulkMode(false);
+                setSelectedTenants([]);
+                break;
+              case 'late':
+                setShowLateOnly(!showLateOnly);
+                setShowExpiringLeases(false);
+                setShowArchived(false);
+                break;
+              case 'expiring':
+                setShowExpiringLeases(!showExpiringLeases);
+                setShowLateOnly(false);
+                setShowArchived(false);
+                break;
+              case 'archived':
+                setShowArchived(!showArchived);
+                setShowLateOnly(false);
+                setShowExpiringLeases(false);
+                break;
+              case 'bulk':
+                setShowBulkMode(!showBulkMode);
+                if (showBulkMode) setSelectedTenants([]);
+                break;
+            }
+          }}
+        />
       </div>
 
-      {/* Mobile Collapsible Filters */}
-      <div className="md:hidden">
-        <div className="bg-white rounded-xl border border-gray-200">
-          <button
-            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-            className="w-full flex items-center justify-between p-4"
-          >
-            <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-600" />
-              <span className="font-medium text-gray-900">Filters</span>
-              {(showLateOnly || showExpiringLeases || showArchived || selectedProperty) && (
-                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                  {[showLateOnly, showExpiringLeases, showArchived, selectedProperty].filter(Boolean).length}
-                </span>
-              )}
-            </div>
-            <div className={`transform transition-transform ${showAdvancedSearch ? 'rotate-180' : ''}`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-          
-          {showAdvancedSearch && (
-            <div className="border-t border-gray-200 p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setShowLateOnly(!showLateOnly)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showLateOnly 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-red-50 text-red-600 border border-red-200'
-                  }`}
-                >
-                  <AlertTriangle size={14} />
-                  Late
-                </button>
-                
-                <button
-                  onClick={() => setShowExpiringLeases(!showExpiringLeases)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showExpiringLeases 
-                      ? 'bg-orange-500 text-white' 
-                      : 'bg-orange-50 text-orange-600 border border-orange-200'
-                  }`}
-                >
-                  <Calendar size={14} />
-                  Expiring
-                </button>
-                
-                <button
-                  onClick={() => setShowArchived(!showArchived)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showArchived 
-                      ? 'bg-gray-500 text-white' 
-                      : 'bg-gray-50 text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  <Archive size={14} />
-                  Archived
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowBulkMode(!showBulkMode);
-                    if (showBulkMode) setSelectedTenants([]);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showBulkMode 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-blue-50 text-blue-600 border border-blue-200'
-                  }`}
-                >
-                  <Eye size={14} />
-                  Bulk
-                </button>
-              </div>
-              
-              {properties.length > 0 && (
-                <select
-                  value={selectedProperty}
-                  onChange={(e) => setSelectedProperty(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="">All Properties</option>
-                  {properties.map((property: any) => (
-                    <option key={property._id} value={property._id}>
-                      {property.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Tenant Insights Panel - Desktop */}
+
+      {/* Desktop Layout with Right Sidebar */}
       <div className="hidden md:block">
-        {filteredTenants.length > 0 && (
-          <TenantInsightsPanel tenants={filteredTenants} />
-        )}
-      </div>
+        <div className="phase3-desktop-layout">
+          {/* Main Content Area */}
+          <div className="phase3-main-content space-y-6">
 
-      {/* Mobile Collapsible Insights */}
-      <div className="md:hidden">
-        {filteredTenants.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200">
-            <button
-              onClick={() => setShowAutomation(!showAutomation)}
-              className="w-full flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Insights</div>
-                  <div className="text-xs text-gray-600">Portfolio analysis</div>
-                </div>
+            {/* Desktop Only - Predictive Search and Advanced Search */}
+            <div className="space-y-6">
+              <TenantPredictiveSearch
+                tenants={tenants}
+                onTenantSelect={(tenant) => {
+                  window.location.href = `/dashboard/tenants/${tenant._id}`;
+                }}
+              />
+
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                    showAdvancedSearch
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+                  }`}
+                >
+                  <Search size={16} />
+                  {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
+                </button>
               </div>
-              <div className={`transform transition-transform ${showAutomation ? 'rotate-180' : ''}`}>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+
+              {showAdvancedSearch && (
+                <TenantAdvancedSearch
+                  onSearch={setAdvancedSearchCriteria}
+                  tenants={tenants}
+                />
+              )}
+            </div>
+
+            {/* Tenants Grid */}
+            {filteredTenants && filteredTenants.length > 0 ? (
+              <div className="phase3-card-grid">
+                {filteredTenants.map((tenant: any, index: number) => (
+                  <LazyLoader key={tenant._id}>
+                    <div className="phase3-card-wider">
+                      <UniversalCard delay={index * 0.1} gradient="green" section="tenant">
+                        <EnhancedTenantCard 
+                          tenant={tenant} 
+                          index={index}
+                          onEdit={(t) => console.log('Edit tenant', t._id)}
+                          onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
+                          showCheckbox={showBulkMode}
+                          isSelected={selectedTenants.includes(tenant._id)}
+                          onSelect={(tenantId, selected) => {
+                            if (selected) {
+                              setSelectedTenants(prev => [...prev, tenantId]);
+                            } else {
+                              setSelectedTenants(prev => prev.filter(id => id !== tenantId));
+                            }
+                          }}
+                        />
+                      </UniversalCard>
+                    </div>
+                  </LazyLoader>
+                ))}
               </div>
-            </button>
-            
-            {showAutomation && (
-              <div className="border-t border-gray-200">
-                <TenantInsightsPanel tenants={filteredTenants} className="border-0 bg-transparent" />
+            ) : (
+              <div className="text-center py-20">
+                <div className="relative">
+                  <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                    <Users size={64} className="text-white" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+                  No Tenants Found
+                </h3>
+                <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+                  Start by adding your first tenant to begin managing your rental properties.
+                </p>
               </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Desktop Only - Predictive Search and Advanced Search */}
-      <div className="hidden md:block space-y-8">
-        <TenantPredictiveSearch
-          tenants={tenants}
-          onTenantSelect={(tenant) => {
-            window.location.href = `/dashboard/tenants/${tenant._id}`;
-          }}
-        />
-
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-              showAdvancedSearch
-                ? 'bg-purple-500 text-white'
-                : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-            }`}
-          >
-            <Search size={16} />
-            {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
-          </button>
-        </div>
-
-        {showAdvancedSearch && (
-          <TenantAdvancedSearch
-            onSearch={setAdvancedSearchCriteria}
-            tenants={tenants}
+          
+          {/* Phase 3 Right Sidebar */}
+          <Phase3RightSidebar
+            sections={[
+              createSmartFiltersSection(
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setShowLateOnly(!showLateOnly)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        showLateOnly 
+                          ? 'bg-red-500 text-white' 
+                          : 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
+                      }`}
+                    >
+                      <AlertTriangle size={14} />
+                      {showLateOnly ? 'All Tenants' : 'Late Payments'}
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowExpiringLeases(!showExpiringLeases)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        showExpiringLeases 
+                          ? 'bg-orange-500 text-white' 
+                          : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'
+                      }`}
+                    >
+                      <Calendar size={14} />
+                      {showExpiringLeases ? 'All Leases' : 'Expiring Soon'}
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowArchived(!showArchived)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        showArchived 
+                          ? 'bg-gray-500 text-white' 
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                      {showArchived ? 'Active Only' : 'Show Archived'}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        setShowBulkMode(!showBulkMode);
+                        if (showBulkMode) setSelectedTenants([]);
+                      }}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        showBulkMode 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
+                      }`}
+                    >
+                      {showBulkMode ? <CheckSquare size={14} /> : <Square size={14} />}
+                      {showBulkMode ? 'Exit Bulk' : 'Bulk Select'}
+                    </button>
+                  </div>
+                  
+                  {properties.length > 0 && (
+                    <select
+                      value={selectedProperty}
+                      onChange={(e) => setSelectedProperty(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Properties ({properties.length})</option>
+                      {properties.map((property: any) => (
+                        <option key={property._id} value={property._id}>
+                          {property.name} ({tenants.filter((t: any) => t.propertyId?._id === property._id).length})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>,
+                true
+              ),
+              createAIInsightsSection(
+                filteredTenants.length > 0 ? (
+                  <TenantInsightsPanel tenants={filteredTenants} className="border-0 bg-transparent p-0" />
+                ) : (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    Add tenants to see AI insights
+                  </div>
+                ),
+                false
+              )
+            ]}
           />
-        )}
+        </div>
       </div>
 
-      {filteredTenants && filteredTenants.length > 0 ? (
-        <div className="universal-grid universal-grid-3">
-          {filteredTenants.map((tenant: any, index: number) => (
-            <LazyLoader key={tenant._id}>
-              <div className="md:hidden">
-                <SwipeableCard
+
+
+      {/* Mobile Layout */}
+      <div className="md:hidden space-y-4">
+        {/* Mobile Collapsible Insights */}
+        {filteredTenants.length > 0 && (
+          <div className="px-4">
+            <div className="bg-white rounded-xl border border-gray-200">
+              <button
+                onClick={() => setShowMobileInsights(!showMobileInsights)}
+                className="w-full flex items-center justify-between p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <Sparkles size={16} className="text-white" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-900">AI Insights</div>
+                    <div className="text-xs text-gray-600">Portfolio analysis</div>
+                  </div>
+                </div>
+                <div className={`transform transition-transform ${showMobileInsights ? 'rotate-180' : ''}`}>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+              
+              {showMobileInsights && (
+                <div className="border-t border-gray-200">
+                  <TenantInsightsPanel tenants={filteredTenants} className="border-0 bg-transparent" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tenants Grid */}
+        {filteredTenants && filteredTenants.length > 0 ? (
+          <div className="phase3-card-grid px-4">
+            {filteredTenants.map((tenant: any, index: number) => (
+              <LazyLoader key={tenant._id}>
+                <Phase3SwipeableCard
                   onEdit={() => console.log('Edit tenant', tenant._id)}
                   onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
                   onView={() => window.open(`/dashboard/tenants/${tenant._id}`, '_blank')}
                 >
-                  <UniversalCard delay={index * 0.1} gradient="green" section="tenant">
-                    <EnhancedTenantCard 
-                      tenant={tenant} 
-                      index={index}
-                      onEdit={(t) => console.log('Edit tenant', t._id)}
-                      onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
-                      showCheckbox={showBulkMode}
-                      isSelected={selectedTenants.includes(tenant._id)}
-                      onSelect={(tenantId, selected) => {
-                        if (selected) {
-                          setSelectedTenants(prev => [...prev, tenantId]);
-                        } else {
-                          setSelectedTenants(prev => prev.filter(id => id !== tenantId));
-                        }
-                      }}
-                    />
-                  </UniversalCard>
-                </SwipeableCard>
-              </div>
-              <div className="hidden md:block">
-                <UniversalCard delay={index * 0.1} gradient="green">
                   <EnhancedTenantCard 
                     tenant={tenant} 
                     index={index}
@@ -765,28 +709,26 @@ const TenantsPage = () => {
                       }
                     }}
                   />
-                </UniversalCard>
-              </div>
-            </LazyLoader>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-20">
-          <div className="relative">
-            <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-              <Users size={64} className="text-white" />
-            </div>
+                </Phase3SwipeableCard>
+              </LazyLoader>
+            ))}
           </div>
-          <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
-            No Tenants Found
-          </h3>
-          <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
-            Start by adding your first tenant to begin managing your rental properties.
-          </p>
-        </div>
-      )}
-
-
+        ) : (
+          <div className="text-center py-20 px-4">
+            <div className="relative">
+              <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                <Users size={64} className="text-white" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+              No Tenants Found
+            </h3>
+            <p className="text-text-secondary mb-8 max-w-lg mx-auto leading-relaxed">
+              Start by adding your first tenant to begin managing your rental properties.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Desktop Only - Bulk Actions and Automation */}
       <div className="hidden md:block space-y-8">
@@ -923,17 +865,61 @@ const TenantsPage = () => {
         />
       )}
       
-      {/* Universal Mobile FAB */}
-      <div className={`md:hidden fixed z-30 w-14 h-14 bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
-        selectedTenants.length > 0 ? 'bottom-24 right-4' : 'bottom-6 right-4'
+      {/* Phase 3 Mobile FAB */}
+      <div className={`phase3-mobile-fab-tenant ${
+        selectedTenants.length > 0 ? 'bottom-24' : 'bottom-6'
       }`}>
         <button
           onClick={() => setShowAddModal(true)}
           className="w-full h-full flex items-center justify-center group"
+          aria-label="Add Tenant"
         >
           <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
         </button>
       </div>
+      
+      {/* Mobile Bottom Sheet for Actions */}
+      <Phase3BottomSheet
+        isOpen={showMobileActions}
+        onClose={() => setShowMobileActions(false)}
+        title="Quick Actions"
+        height="auto"
+      >
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              setShowQuickPayment(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-primary w-full"
+          >
+            <DollarSign size={20} />
+            <span className="ml-2">Quick Payment</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              setShowCollectionSheet(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-secondary w-full"
+          >
+            <FileText size={20} />
+            <span className="ml-2">Collection Sheet</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              setShowUniversalExport(true);
+              setShowMobileActions(false);
+            }}
+            className="phase3-touch-btn-secondary w-full"
+          >
+            <Download size={20} />
+            <span className="ml-2">Export Tenants</span>
+          </button>
+        </div>
+      </Phase3BottomSheet>
       
       {/* Modern Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
