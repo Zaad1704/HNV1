@@ -259,9 +259,9 @@ export const getTenantJourney = async (req: Request, res: Response) => {
 
     // Add current status
     if (currentUnit) {
-      journey.push({
+      (journey as any).push({
         date: new Date(),
-        type: 'current' as any,
+        type: 'current',
         to: {
           propertyId: (currentUnit.propertyId as any)._id,
           propertyName: (currentUnit.propertyId as any).name,
