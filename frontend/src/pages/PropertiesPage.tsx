@@ -514,142 +514,293 @@ const PropertiesPage = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <UniversalHeader
-        title={t('dashboard.properties')}
-        subtitle={`${t('property.manage_portfolio')} (${filteredProperties.length} properties)`}
-        icon={Building2}
-        stats={[
-          { label: 'Total', value: stats?.totalProperties || 0, color: 'blue' },
-          { label: 'Active', value: properties.filter(p => p.status !== 'Archived').length, color: 'green' },
-          { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, color: 'purple' },
-          { label: 'Archived', value: properties.filter(p => p.status === 'Archived').length, color: 'yellow' }
-        ]}
-        actions={
-          <div className="flex gap-3">
-          <button
-            onClick={() => setShowBulkPayment(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
-          >
-            <DollarSign size={16} />
-            Bulk Payment
-          </button>
-          <button
-            onClick={() => setShowBulkLeaseActions(true)}
-            className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
-          >
-            <Calendar size={16} />
-            Bulk Lease Actions
-          </button>
-          <button
-            onClick={() => setShowUniversalExport(true)}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-          >
-            <Download size={16} />
-            Export
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 touch-feedback"
-          >
-            <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-              <Plus size={14} className="text-white" />
+      {/* Desktop Header - unchanged */}
+      <div className="hidden md:block">
+        <UniversalHeader
+          title={t('dashboard.properties')}
+          subtitle={`${t('property.manage_portfolio')} (${filteredProperties.length} properties)`}
+          icon={Building2}
+          stats={[
+            { label: 'Total', value: stats?.totalProperties || 0, color: 'blue' },
+            { label: 'Active', value: properties.filter(p => p.status !== 'Archived').length, color: 'green' },
+            { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, color: 'purple' },
+            { label: 'Archived', value: properties.filter(p => p.status === 'Archived').length, color: 'yellow' }
+          ]}
+          actions={
+            <div className="flex gap-3">
+            <button
+              onClick={() => setShowBulkPayment(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
+            >
+              <DollarSign size={16} />
+              Bulk Payment
+            </button>
+            <button
+              onClick={() => setShowBulkLeaseActions(true)}
+              className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
+            >
+              <Calendar size={16} />
+              Bulk Lease Actions
+            </button>
+            <button
+              onClick={() => setShowUniversalExport(true)}
+              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+            >
+              <Download size={16} />
+              Export
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="group btn-gradient px-8 py-4 rounded-3xl flex items-center gap-3 font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 touch-feedback"
+            >
+              <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+                <Plus size={14} className="text-white" />
+              </div>
+              {t('property.add_property')}
+            </button>
             </div>
-            {t('property.add_property')}
-          </button>
-          </div>
-        }
-      />
+          }
+        />
+      </div>
 
-      {/* Mobile-Optimized Filter Buttons */}
-      <div className="universal-mobile-filter-bar">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 universal-gradient-property rounded-xl flex items-center justify-center">
-            <Filter size={20} className="text-white" />
-          </div>
+      {/* Mobile Header - minimal and clean */}
+      <div className="md:hidden sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-text-primary">Smart Filters</h3>
-            <p className="text-sm text-text-secondary">Filter properties by status, occupancy, and type</p>
+            <h1 className="text-lg font-bold text-gray-900">Properties ({filteredProperties.length})</h1>
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                {properties.filter(p => p.status !== 'Archived').length} Active
+              </span>
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                {stats?.occupancyRate || 0}% Occupied
+              </span>
+            </div>
           </div>
-        </div>
-        
-        <div className="universal-mobile-filter-grid">
-          <button
-            onClick={() => {
-              setShowBulkMode(!showBulkMode);
-              if (showBulkMode) {
-                setSelectedProperties([]);
-              }
-            }}
-            className={`${
-              showBulkMode 
-                ? 'universal-mobile-filter-btn-active bg-blue-500' 
-                : 'universal-mobile-filter-btn-inactive border-blue-200 text-blue-600 hover:bg-blue-50'
-            }`}
-          >
-            {showBulkMode ? <CheckSquare size={16} /> : <Square size={16} />}
-            <span className="text-sm font-medium">{showBulkMode ? 'Exit Bulk' : 'Bulk Select'}</span>
-          </button>
-          <button
-            onClick={() => setShowGlobalSearch(true)}
-            className="universal-mobile-filter-btn-inactive border-purple-200 text-purple-600 hover:bg-purple-50"
-          >
-            <Search size={16} />
-            <span className="text-sm font-medium hidden md:inline">Global Search</span>
-            <span className="text-sm font-medium md:hidden">Search</span>
-          </button>
-          <button
-            onClick={() => setShowVacant(!showVacant)}
-            className={`${
-              showVacant 
-                ? 'universal-mobile-filter-btn-active bg-orange-500' 
-                : 'universal-mobile-filter-btn-inactive border-orange-200 text-orange-600 hover:bg-orange-50'
-            }`}
-          >
-            <EyeOff size={16} />
-            <span className="text-sm font-medium">{showVacant ? 'Show All' : 'Vacant Only'}</span>
-          </button>
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className={`${
-              showArchived 
-                ? 'universal-mobile-filter-btn-active bg-gray-500' 
-                : 'universal-mobile-filter-btn-inactive border-gray-200 text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-            <span className="text-sm font-medium">{showArchived ? 'Active Only' : 'Show Archived'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowBulkPayment(true)}
+              className="p-2 bg-green-500 text-white rounded-lg"
+            >
+              <DollarSign size={16} />
+            </button>
+            <button
+              onClick={() => setShowUniversalExport(true)}
+              className="p-2 bg-blue-500 text-white rounded-lg"
+            >
+              <Download size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Smart Suggestions */}
-      <SmartSuggestions />
+      {/* Desktop Layout with Left Sidebar */}
+      <div className="hidden md:flex gap-6">
+        {/* Left Sidebar - Filters and Suggestions */}
+        <div className="w-80 space-y-4 flex-shrink-0">
+          {/* Smart Filters */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border border-blue-100">
+            <button
+              onClick={() => setShowGlobalSearch(!showGlobalSearch)}
+              className="w-full flex items-center justify-between p-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 universal-gradient-property rounded-lg flex items-center justify-center">
+                  <Filter size={16} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-text-primary text-sm">Smart Filters</h3>
+                  <p className="text-xs text-text-secondary">Filter properties</p>
+                </div>
+              </div>
+              <div className={`transform transition-transform ${showGlobalSearch ? 'rotate-180' : ''}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            
+            {showGlobalSearch && (
+              <div className="border-t border-blue-200 p-4 space-y-2">
+                <button
+                  onClick={() => {
+                    setShowBulkMode(!showBulkMode);
+                    if (showBulkMode) setSelectedProperties([]);
+                  }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showBulkMode 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'
+                  }`}
+                >
+                  {showBulkMode ? <CheckSquare size={14} /> : <Square size={14} />}
+                  {showBulkMode ? 'Exit Bulk Select' : 'Bulk Select'}
+                </button>
+                
+                <button
+                  onClick={() => setShowVacant(!showVacant)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showVacant 
+                      ? 'bg-orange-500 text-white' 
+                      : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'
+                  }`}
+                >
+                  <EyeOff size={14} />
+                  {showVacant ? 'Show All Properties' : 'Vacant Units Only'}
+                </button>
+                
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showArchived 
+                      ? 'bg-gray-500 text-white' 
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                  {showArchived ? 'Show Active Only' : 'Show Archived'}
+                </button>
+              </div>
+            )}
+          </div>
 
-      {/* Universal Search */}
-      <UniversalSearch
-        onSearch={handleUniversalSearch}
-        placeholder="Search properties by name or address..."
-        showStatusFilter={true}
-        statusOptions={[
-          { value: 'Active', label: 'Active' },
-          { value: 'Inactive', label: 'Inactive' },
-          { value: 'Under Renovation', label: 'Under Renovation' },
-          { value: 'Archived', label: 'Archived' }
-        ]}
-      />
-      
-      {/* Legacy Search & Filter */}
-      <SearchFilter
-        onSearch={setSearchQuery}
-        onFilter={setFilters}
-        filters={filters}
-        placeholder="Additional filters..."
-        filterOptions={filterOptions}
-      />
+          {/* Smart Suggestions */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border border-green-100">
+            <button
+              onClick={() => setShowVacant(!showVacant)}
+              className="w-full flex items-center justify-between p-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                  <Sparkles size={16} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-text-primary text-sm">AI Insights</h3>
+                  <p className="text-xs text-text-secondary">Smart suggestions</p>
+                </div>
+              </div>
+              <div className={`transform transition-transform ${showVacant ? 'rotate-180' : ''}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            
+            {showVacant && (
+              <div className="border-t border-green-200 p-4">
+                <SmartSuggestions />
+              </div>
+            )}
+          </div>
+        </div>
 
-      {/* Properties Grid */}
-      {filteredProperties && filteredProperties.length > 0 ? (
+        {/* Main Content Area */}
+        <div className="flex-1 space-y-6">
+
+      {/* Mobile Collapsible Filters */}
+      <div className="md:hidden">
+        <div className="bg-white rounded-xl border border-gray-200">
+          <button
+            onClick={() => setShowGlobalSearch(!showGlobalSearch)}
+            className="w-full flex items-center justify-between p-4"
+          >
+            <div className="flex items-center gap-2">
+              <Filter size={16} className="text-gray-600" />
+              <span className="font-medium text-gray-900">Filters</span>
+              {(showBulkMode || showVacant || showArchived) && (
+                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  {[showBulkMode, showVacant, showArchived].filter(Boolean).length}
+                </span>
+              )}
+            </div>
+            <div className={`transform transition-transform ${showGlobalSearch ? 'rotate-180' : ''}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+          
+          {showGlobalSearch && (
+            <div className="border-t border-gray-200 p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setShowVacant(!showVacant)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showVacant 
+                      ? 'bg-orange-500 text-white' 
+                      : 'bg-orange-50 text-orange-600 border border-orange-200'
+                  }`}
+                >
+                  <EyeOff size={14} />
+                  Vacant
+                </button>
+                
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showArchived 
+                      ? 'bg-gray-500 text-white' 
+                      : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  }`}
+                >
+                  <Archive size={14} />
+                  Archived
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowBulkMode(!showBulkMode);
+                    if (showBulkMode) setSelectedProperties([]);
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showBulkMode 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-blue-50 text-blue-600 border border-blue-200'
+                  }`}
+                >
+                  <CheckSquare size={14} />
+                  Bulk
+                </button>
+                
+                <button
+                  onClick={() => setShowBulkLeaseActions(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-purple-50 text-purple-600 border border-purple-200"
+                >
+                  <Calendar size={14} />
+                  Lease
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+          {/* Universal Search */}
+          <UniversalSearch
+            onSearch={handleUniversalSearch}
+            placeholder="Search properties by name or address..."
+            showStatusFilter={true}
+            statusOptions={[
+              { value: 'Active', label: 'Active' },
+              { value: 'Inactive', label: 'Inactive' },
+              { value: 'Under Renovation', label: 'Under Renovation' },
+              { value: 'Archived', label: 'Archived' }
+            ]}
+          />
+          
+          {/* Legacy Search & Filter */}
+          <SearchFilter
+            onSearch={setSearchQuery}
+            onFilter={setFilters}
+            filters={filters}
+            placeholder="Additional filters..."
+            filterOptions={filterOptions}
+          />
+
+          {/* Properties Grid */}
+          {filteredProperties && filteredProperties.length > 0 ? (
         <div className="universal-grid universal-grid-3">
           {filteredProperties.map((property: any, index: number) => (
             <LazyLoader key={property._id}>
@@ -687,9 +838,9 @@ const PropertiesPage = () => {
               </div>
             </LazyLoader>
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-20">
+          </div>
+          ) : (
+            <div className="text-center py-20">
           <div className="relative">
             <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
               <Building2 size={64} className="text-white" />
@@ -718,8 +869,93 @@ const PropertiesPage = () => {
               {t('property.add_first_property')}
             </button>
           )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="md:hidden space-y-6">
+        {/* Universal Search */}
+        <UniversalSearch
+          onSearch={handleUniversalSearch}
+          placeholder="Search properties by name or address..."
+          showStatusFilter={true}
+          statusOptions={[
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+            { value: 'Under Renovation', label: 'Under Renovation' },
+            { value: 'Archived', label: 'Archived' }
+          ]}
+        />
+        
+        {/* Legacy Search & Filter */}
+        <SearchFilter
+          onSearch={setSearchQuery}
+          onFilter={setFilters}
+          filters={filters}
+          placeholder="Additional filters..."
+          filterOptions={filterOptions}
+        />
+
+        {/* Properties Grid */}
+        {filteredProperties && filteredProperties.length > 0 ? (
+          <div className="universal-grid universal-grid-3">
+            {filteredProperties.map((property: any, index: number) => (
+              <LazyLoader key={property._id}>
+                <SwipeableCard
+                  onEdit={() => handleEditProperty(property)}
+                  onDelete={() => handleDeleteProperty(property._id)}
+                  onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
+                >
+                  <UniversalCard delay={index * 0.1} gradient="blue" section="property">
+                    <EnhancedPropertyCard 
+                      property={property} 
+                      index={index}
+                      onEdit={handleEditProperty}
+                      onDelete={handleDeleteProperty}
+                      showCheckbox={showBulkMode}
+                      isSelected={selectedProperties.includes(property._id)}
+                      onSelect={handlePropertySelect}
+                    />
+                  </UniversalCard>
+                </SwipeableCard>
+              </LazyLoader>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <div className="relative">
+              <div className="w-32 h-32 gradient-dark-orange-blue rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                <Building2 size={64} className="text-white" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+                <Sparkles size={16} className="text-yellow-900" />
+              </div>
+            </div>
+            <h3 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent mb-4">
+              {showArchived ? 'No Archived Properties' : t('property.no_properties_yet')}
+            </h3>
+            <p className="text-text-secondary mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+              {showArchived 
+                ? 'No properties have been archived yet. Archived properties are those no longer in active use.'
+                : 'Start building your property portfolio by adding your first property. Manage tenants, payments, and maintenance all in one place.'
+              }
+            </p>
+            {!showArchived && (
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="group relative btn-gradient px-10 py-5 rounded-3xl font-bold text-lg flex items-center gap-3 mx-auto shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+              >
+                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
+                  <Plus size={16} className="text-white" />
+                </div>
+                {t('property.add_first_property')}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Add Property Modal */}
       <AddPropertyModal

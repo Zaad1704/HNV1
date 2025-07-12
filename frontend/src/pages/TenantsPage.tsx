@@ -334,71 +334,109 @@ const TenantsPage = () => {
 
   return (
     <div className="space-y-8">
-      <UniversalHeader
-        title="Tenants"
-        subtitle={propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
-        icon={Users}
-        stats={[
-          { label: 'Total', value: stats?.totalTenants || 0, color: 'blue' },
-          { label: 'Active', value: filteredTenants.filter(t => t.status !== 'Archived').length, color: 'green' },
-          { label: 'Late', value: tenants.filter(t => t.status === 'Late').length, color: 'red' },
-          { label: 'Archived', value: tenants.filter(t => t.status === 'Archived').length, color: 'yellow' }
-        ]}
-        actions={
-          <div className="flex gap-3">
-          <button
-            onClick={() => {
-              setShowBulkMode(!showBulkMode);
-              if (showBulkMode) {
-                setSelectedTenants([]);
-              }
-            }}
-            className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
-              showBulkMode 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
-          >
-            <Eye size={16} />
-            {showBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
-          </button>
-          <button
-            onClick={() => setShowQuickPayment(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
-          >
-            <DollarSign size={16} />
-            Quick Payment
-          </button>
-          <button
-            onClick={() => setShowCollectionSheet(true)}
-            className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
-          >
-            <FileText size={16} />
-            Collection Sheet
-          </button>
-          <button
-            onClick={() => setShowUniversalExport(true)}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
-          >
-            <Download size={16} />
-            Export
-          </button>
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowAddModal(true);
-            }}
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600"
-          >
-            Add Tenant
-          </button>
-          </div>
-        }
-      />
+      {/* Desktop Header - unchanged */}
+      <div className="hidden md:block">
+        <UniversalHeader
+          title="Tenants"
+          subtitle={propertyId ? 'Tenants for selected property' : 'Manage your tenant relationships'}
+          icon={Users}
+          stats={[
+            { label: 'Total', value: stats?.totalTenants || 0, color: 'blue' },
+            { label: 'Active', value: filteredTenants.filter(t => t.status !== 'Archived').length, color: 'green' },
+            { label: 'Late', value: tenants.filter(t => t.status === 'Late').length, color: 'red' },
+            { label: 'Archived', value: tenants.filter(t => t.status === 'Archived').length, color: 'yellow' }
+          ]}
+          actions={
+            <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setShowBulkMode(!showBulkMode);
+                if (showBulkMode) {
+                  setSelectedTenants([]);
+                }
+              }}
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+                showBulkMode 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+              }`}
+            >
+              <Eye size={16} />
+              {showBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
+            </button>
+            <button
+              onClick={() => setShowQuickPayment(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
+            >
+              <DollarSign size={16} />
+              Quick Payment
+            </button>
+            <button
+              onClick={() => setShowCollectionSheet(true)}
+              className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
+            >
+              <FileText size={16} />
+              Collection Sheet
+            </button>
+            <button
+              onClick={() => setShowUniversalExport(true)}
+              className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
+            >
+              <Download size={16} />
+              Export
+            </button>
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowAddModal(true);
+              }}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600"
+            >
+              Add Tenant
+            </button>
+            </div>
+          }
+        />
+      </div>
 
-      {/* Enhanced Smart Filter Bar */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+      {/* Mobile Header - minimal and clean */}
+      <div className="md:hidden sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">Tenants ({filteredTenants.length})</h1>
+            <div className="flex items-center gap-3 text-xs text-gray-600">
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                {filteredTenants.filter(t => t.status !== 'Archived').length} Active
+              </span>
+              {tenants.filter(t => t.status === 'Late').length > 0 && (
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  {tenants.filter(t => t.status === 'Late').length} Late
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowQuickPayment(true)}
+              className="p-2 bg-green-500 text-white rounded-lg"
+            >
+              <DollarSign size={16} />
+            </button>
+            <button
+              onClick={() => setShowCollectionSheet(true)}
+              className="p-2 bg-purple-500 text-white rounded-lg"
+            >
+              <FileText size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Smart Filter Bar - Desktop */}
+      <div className="hidden md:block bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
             <Filter size={20} className="text-white" />
@@ -511,43 +549,175 @@ const TenantsPage = () => {
         )}
       </div>
 
-      {/* Tenant Insights Panel */}
-      {filteredTenants.length > 0 && (
-        <TenantInsightsPanel tenants={filteredTenants} />
-      )}
-
-      {/* Predictive Search */}
-      <TenantPredictiveSearch
-        tenants={tenants}
-        onTenantSelect={(tenant) => {
-          window.location.href = `/dashboard/tenants/${tenant._id}`;
-        }}
-      />
-
-
-
-      {/* Advanced Search Toggle */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showAdvancedSearch
-              ? 'bg-purple-500 text-white'
-              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-          }`}
-        >
-          <Search size={16} />
-          {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
-        </button>
+      {/* Mobile Collapsible Filters */}
+      <div className="md:hidden">
+        <div className="bg-white rounded-xl border border-gray-200">
+          <button
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+            className="w-full flex items-center justify-between p-4"
+          >
+            <div className="flex items-center gap-2">
+              <Filter size={16} className="text-gray-600" />
+              <span className="font-medium text-gray-900">Filters</span>
+              {(showLateOnly || showExpiringLeases || showArchived || selectedProperty) && (
+                <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  {[showLateOnly, showExpiringLeases, showArchived, selectedProperty].filter(Boolean).length}
+                </span>
+              )}
+            </div>
+            <div className={`transform transition-transform ${showAdvancedSearch ? 'rotate-180' : ''}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+          
+          {showAdvancedSearch && (
+            <div className="border-t border-gray-200 p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setShowLateOnly(!showLateOnly)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showLateOnly 
+                      ? 'bg-red-500 text-white' 
+                      : 'bg-red-50 text-red-600 border border-red-200'
+                  }`}
+                >
+                  <AlertTriangle size={14} />
+                  Late
+                </button>
+                
+                <button
+                  onClick={() => setShowExpiringLeases(!showExpiringLeases)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showExpiringLeases 
+                      ? 'bg-orange-500 text-white' 
+                      : 'bg-orange-50 text-orange-600 border border-orange-200'
+                  }`}
+                >
+                  <Calendar size={14} />
+                  Expiring
+                </button>
+                
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showArchived 
+                      ? 'bg-gray-500 text-white' 
+                      : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  }`}
+                >
+                  <Archive size={14} />
+                  Archived
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowBulkMode(!showBulkMode);
+                    if (showBulkMode) setSelectedTenants([]);
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    showBulkMode 
+                      ? 'bg-blue-500 text-white' 
+                      : 'bg-blue-50 text-blue-600 border border-blue-200'
+                  }`}
+                >
+                  <Eye size={14} />
+                  Bulk
+                </button>
+              </div>
+              
+              {properties.length > 0 && (
+                <select
+                  value={selectedProperty}
+                  onChange={(e) => setSelectedProperty(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="">All Properties</option>
+                  {properties.map((property: any) => (
+                    <option key={property._id} value={property._id}>
+                      {property.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Advanced Search */}
-      {showAdvancedSearch && (
-        <TenantAdvancedSearch
-          onSearch={setAdvancedSearchCriteria}
+      {/* Tenant Insights Panel - Desktop */}
+      <div className="hidden md:block">
+        {filteredTenants.length > 0 && (
+          <TenantInsightsPanel tenants={filteredTenants} />
+        )}
+      </div>
+
+      {/* Mobile Collapsible Insights */}
+      <div className="md:hidden">
+        {filteredTenants.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200">
+            <button
+              onClick={() => setShowAutomation(!showAutomation)}
+              className="w-full flex items-center justify-between p-4"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Insights</div>
+                  <div className="text-xs text-gray-600">Portfolio analysis</div>
+                </div>
+              </div>
+              <div className={`transform transition-transform ${showAutomation ? 'rotate-180' : ''}`}>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            
+            {showAutomation && (
+              <div className="border-t border-gray-200">
+                <TenantInsightsPanel tenants={filteredTenants} className="border-0 bg-transparent" />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Only - Predictive Search and Advanced Search */}
+      <div className="hidden md:block space-y-8">
+        <TenantPredictiveSearch
           tenants={tenants}
+          onTenantSelect={(tenant) => {
+            window.location.href = `/dashboard/tenants/${tenant._id}`;
+          }}
         />
-      )}
+
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+              showAdvancedSearch
+                ? 'bg-purple-500 text-white'
+                : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+            }`}
+          >
+            <Search size={16} />
+            {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
+          </button>
+        </div>
+
+        {showAdvancedSearch && (
+          <TenantAdvancedSearch
+            onSearch={setAdvancedSearchCriteria}
+            tenants={tenants}
+          />
+        )}
+      </div>
 
       {filteredTenants && filteredTenants.length > 0 ? (
         <div className="universal-grid universal-grid-3">
@@ -618,76 +788,104 @@ const TenantsPage = () => {
 
 
 
-      {/* Enhanced Bulk Actions */}
-      {selectedTenants.length > 0 && (
-        <TenantBulkActions
-          selectedTenants={selectedTenants}
-          tenants={tenants}
-          onAction={async (action, data) => {
-            console.log('Bulk action:', action, data);
-            // Handle bulk actions here
-            switch (action) {
-              case 'rent_increase':
-                alert(`Rent increase applied to ${data.tenantIds.length} tenants`);
-                break;
-              case 'lease_renewal':
-                alert(`Lease renewal notices sent to ${data.tenantIds.length} tenants`);
-                break;
-              case 'payment_reminder':
-                alert(`Payment reminders sent to ${data.tenantIds.length} tenants`);
-                break;
-              default:
-                console.log('Unhandled action:', action);
-            }
-          }}
-          onClearSelection={() => setSelectedTenants([])}
-        />
-      )}
+      {/* Desktop Only - Bulk Actions and Automation */}
+      <div className="hidden md:block space-y-8">
+        {selectedTenants.length > 0 && (
+          <TenantBulkActions
+            selectedTenants={selectedTenants}
+            tenants={tenants}
+            onAction={async (action, data) => {
+              console.log('Bulk action:', action, data);
+              switch (action) {
+                case 'rent_increase':
+                  alert(`Rent increase applied to ${data.tenantIds.length} tenants`);
+                  break;
+                case 'lease_renewal':
+                  alert(`Lease renewal notices sent to ${data.tenantIds.length} tenants`);
+                  break;
+                case 'payment_reminder':
+                  alert(`Payment reminders sent to ${data.tenantIds.length} tenants`);
+                  break;
+                default:
+                  console.log('Unhandled action:', action);
+              }
+            }}
+            onClearSelection={() => setSelectedTenants([])}
+          />
+        )}
 
-      {/* Automation Toggle */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setShowAutomation(!showAutomation)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showAutomation
-              ? 'bg-purple-500 text-white'
-              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-          }`}
-        >
-          <span>{showAutomation ? 'Hide Automation' : 'Show Automation'}</span>
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowAutomation(!showAutomation)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+              showAutomation
+                ? 'bg-purple-500 text-white'
+                : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+            }`}
+          >
+            <span>{showAutomation ? 'Hide Automation' : 'Show Automation'}</span>
+          </button>
+        </div>
+
+        {showAutomation && (
+          <div className="space-y-6">
+            <TenantAutomationRules
+              tenants={tenants}
+              onRuleCreate={(rule) => {
+                console.log('Create rule:', rule);
+                alert('Automation rule created successfully!');
+              }}
+              onRuleUpdate={(id, rule) => {
+                console.log('Update rule:', id, rule);
+                alert('Automation rule updated successfully!');
+              }}
+              onRuleDelete={(id) => {
+                console.log('Delete rule:', id);
+                alert('Automation rule deleted successfully!');
+              }}
+            />
+            
+            <TenantWorkflowManager
+              tenants={tenants}
+              onWorkflowCreate={(workflow) => {
+                console.log('Create workflow:', workflow);
+                alert('Workflow created successfully!');
+              }}
+              onWorkflowUpdate={(id, workflow) => {
+                console.log('Update workflow:', id, workflow);
+                alert('Workflow updated successfully!');
+              }}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Automation Components */}
-      {showAutomation && (
-        <div className="space-y-6">
-          <TenantAutomationRules
-            tenants={tenants}
-            onRuleCreate={(rule) => {
-              console.log('Create rule:', rule);
-              alert('Automation rule created successfully!');
-            }}
-            onRuleUpdate={(id, rule) => {
-              console.log('Update rule:', id, rule);
-              alert('Automation rule updated successfully!');
-            }}
-            onRuleDelete={(id) => {
-              console.log('Delete rule:', id);
-              alert('Automation rule deleted successfully!');
-            }}
-          />
-          
-          <TenantWorkflowManager
-            tenants={tenants}
-            onWorkflowCreate={(workflow) => {
-              console.log('Create workflow:', workflow);
-              alert('Workflow created successfully!');
-            }}
-            onWorkflowUpdate={(id, workflow) => {
-              console.log('Update workflow:', id, workflow);
-              alert('Workflow updated successfully!');
-            }}
-          />
+      {/* Mobile Bulk Actions Bottom Sheet */}
+      {selectedTenants.length > 0 && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-20">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-medium text-gray-900">{selectedTenants.length} selected</span>
+            <button
+              onClick={() => setSelectedTenants([])}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowUniversalExport(true)}
+              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg text-sm font-medium"
+            >
+              Export
+            </button>
+            <button
+              onClick={() => alert('Send notice to selected tenants')}
+              className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-medium"
+            >
+              Message
+            </button>
+          </div>
         </div>
       )}
 
@@ -726,7 +924,9 @@ const TenantsPage = () => {
       )}
       
       {/* Universal Mobile FAB */}
-      <div className="universal-mobile-fab-tenant">
+      <div className={`md:hidden fixed z-30 w-14 h-14 bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
+        selectedTenants.length > 0 ? 'bottom-24 right-4' : 'bottom-6 right-4'
+      }`}>
         <button
           onClick={() => setShowAddModal(true)}
           className="w-full h-full flex items-center justify-center group"
