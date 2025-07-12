@@ -207,7 +207,7 @@ export const generateLeaseDocument = async (req: Request, res: Response) => {
     lease.documents.push({
       type: 'lease_agreement',
       url: `/documents/lease_${lease._id}_${Date.now()}.pdf`,
-      filename: `Lease_Agreement_${lease.tenantId.name}.pdf`,
+      filename: `Lease_Agreement_${(lease.tenantId as any).name}.pdf`,
       generatedAt: new Date(),
       templateUsed: templateType
     });
