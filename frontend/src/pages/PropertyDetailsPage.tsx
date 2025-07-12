@@ -39,50 +39,57 @@ const PropertyDetailsPage = () => {
   const { data: property, isLoading: propertyLoading, error: propertyError } = useQuery({
     queryKey: ['property', propertyId],
     queryFn: async () => {
+      if (!propertyId || typeof propertyId !== 'string') {
+        throw new Error('Invalid property ID');
+      }
       const { data } = await apiClient.get(`/properties/${propertyId}`);
       return data.data;
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   // Fetch tenants for this property
   const { data: tenants = [], isLoading: tenantsLoading } = useQuery({
     queryKey: ['propertyTenants', propertyId],
     queryFn: async () => {
+      if (!propertyId || typeof propertyId !== 'string') return [];
       const { data } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
       return data.data || [];
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   // Fetch payments for this property
   const { data: payments = [] } = useQuery({
     queryKey: ['propertyPayments', propertyId],
     queryFn: async () => {
+      if (!propertyId || typeof propertyId !== 'string') return [];
       const { data } = await apiClient.get(`/payments?propertyId=${propertyId}`);
       return data.data || [];
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   // Fetch expenses for this property
   const { data: expenses = [] } = useQuery({
     queryKey: ['propertyExpenses', propertyId],
     queryFn: async () => {
+      if (!propertyId || typeof propertyId !== 'string') return [];
       const { data } = await apiClient.get(`/expenses?propertyId=${propertyId}`);
       return data.data || [];
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   // Fetch maintenance requests for this property
   const { data: maintenanceRequests = [] } = useQuery({
     queryKey: ['propertyMaintenance', propertyId],
     queryFn: async () => {
+      if (!propertyId || typeof propertyId !== 'string') return [];
       const { data } = await apiClient.get(`/maintenance?propertyId=${propertyId}`);
       return data.data || [];
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   // Fetch units for this property
@@ -90,13 +97,14 @@ const PropertyDetailsPage = () => {
     queryKey: ['propertyUnits', propertyId],
     queryFn: async () => {
       try {
+        if (!propertyId || typeof propertyId !== 'string') return [];
         const { data } = await apiClient.get(`/units/property/${propertyId}`);
         return data.data || [];
       } catch (error) {
         return [];
       }
     },
-    enabled: !!propertyId
+    enabled: !!propertyId && typeof propertyId === 'string'
   });
 
   const handleDataUpdate = () => {
