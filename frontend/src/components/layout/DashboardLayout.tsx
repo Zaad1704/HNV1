@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
+// import { useTheme } from '../../contexts/ThemeContext';
 import GlobalLanguageSwitcher from '../common/GlobalLanguageSwitcher';
 import LocalLanguageToggle from '../common/LocalLanguageToggle';
 import LanguageDropdown from '../LanguageDropdown';
@@ -29,7 +29,8 @@ const DashboardLayout = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const { lang, setLang, getNextToggleLanguage } = useLang();
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState('light');
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
