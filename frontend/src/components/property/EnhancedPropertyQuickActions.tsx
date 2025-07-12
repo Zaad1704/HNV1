@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Users, Plus, DollarSign, FileText, TrendingUp, Archive, 
   Calendar, Mail, Download, Settings, Wrench, Bell 
 } from 'lucide-react';
+import BulkCommunicationModal from './BulkCommunicationModal';
+import PropertyReportModal from './PropertyReportModal';
 
 interface EnhancedPropertyQuickActionsProps {
   propertyId: string;
@@ -22,6 +24,8 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
   onCollectionSheet,
   onArchive
 }) => {
+  const [showCommunicationModal, setShowCommunicationModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const activeTenants = tenants.filter(t => t.status === 'Active');
   const expiringLeases = tenants.filter(t => {
     if (!t.leaseEndDate) return false;
@@ -39,6 +43,21 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
       {/* Property Overview Card */}
       <div className="app-surface rounded-3xl p-6 border border-app-border">
         <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
+        
+        {/* Property Image */}
+        {property.imageUrl && (
+          <div className="mb-4">
+            <img
+              src={property.imageUrl.startsWith('/') ? `${window.location.origin}${property.imageUrl}` : property.imageUrl}
+              alt={property.name}
+              className="w-full h-48 object-cover rounded-xl"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+        
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-text-secondary">Type</span>
@@ -166,7 +185,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
         <h3 className="text-lg font-bold text-text-primary mb-4">Communication & Reports</h3>
         <div className="space-y-3">
           <button
-            onClick={() => alert('Bulk tenant communication coming soon!')}
+            onClick={() => setShowCommunicationModal(true)}
             className="w-full bg-teal-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-teal-600 transition-colors flex items-center gap-2"
           >
             <Mail size={16} />
@@ -174,7 +193,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
           </button>
 
           <button
-            onClick={() => alert('Property report generation coming soon!')}
+            onClick={() => setShowReportModal(true)}
             className="w-full bg-cyan-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-cyan-600 transition-colors flex items-center gap-2"
           >
             <Download size={16} />
@@ -204,6 +223,21 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
           This will hide the property from active listings
         </p>
       </div>
+
+      {/* Modals */}
+      <BulkCommunicationModal
+        isOpen={showCommunicationModal}
+        onClose={() => setShowCommunicationModal(false)}
+        tenants={tenants.filter(t => t.status === 'Active')}
+        propertyName={property.name}
+      />
+
+      <PropertyReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        property={property}
+        tenants={tenants}
+      />
     </div>
   );
 };

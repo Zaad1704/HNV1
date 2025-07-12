@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import UnitDataModal from './UnitDataModal';
 import EnhancedUnitNicknameModal from './EnhancedUnitNicknameModal';
 import UnitQuickActions from './UnitQuickActions';
+import TenantAvatar from '../common/TenantAvatar';
 
 interface EnhancedUnitsGridProps {
   propertyId: string;
@@ -35,6 +36,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
         return {
           ...unit,
           isOccupied: !!tenant,
+          tenant: tenant || null,
           tenantName: tenant?.name || null,
           tenantId: tenant?._id || null,
           rentAmount: tenant?.rentAmount || unit.rentAmount || 0,
@@ -56,6 +58,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
       return {
         unitNumber,
         isOccupied: !!tenant,
+        tenant: tenant || null,
         tenantName: tenant?.name || null,
         tenantId: tenant?._id || null,
         rentAmount: tenant?.rentAmount || 0,
@@ -168,7 +171,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (unit.isOccupied && unit.tenantId) {
-                      window.open(`/dashboard/tenants/${unit.tenantId}`, '_blank');
+                      window.location.href = `/dashboard/tenants/${unit.tenantId}`;
                     } else {
                       onAddTenant(unit.unitNumber);
                     }
@@ -235,7 +238,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
       </div>
       
       {/* Grid View */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {unitsData.map((unit: any) => (
           <div
             key={unit.unitNumber}
@@ -262,17 +265,21 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
             {/* Tenant Info */}
             {unit.isOccupied && unit.tenantName ? (
               <div className="text-center mb-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold mx-auto mb-1">
-                  {unit.tenantName.charAt(0).toUpperCase()}
-                </div>
+                <TenantAvatar 
+                  tenant={unit.tenant} 
+                  size="md" 
+                  className="mx-auto mb-1" 
+                />
                 <div className="text-xs font-medium truncate">{unit.tenantName}</div>
                 <div className="text-xs text-gray-600">${unit.rentAmount}/mo</div>
               </div>
             ) : (
               <div className="text-center mb-3">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-1">
-                  <Home size={12} className="text-gray-600" />
-                </div>
+                <TenantAvatar 
+                  tenant={undefined} 
+                  size="md" 
+                  className="mx-auto mb-1" 
+                />
                 <div className="text-xs text-gray-600">Available</div>
               </div>
             )}
@@ -295,7 +302,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 if (unit.isOccupied && unit.tenantId) {
-                  window.open(`/dashboard/tenants/${unit.tenantId}`, '_blank');
+                  window.location.href = `/dashboard/tenants/${unit.tenantId}`;
                 } else {
                   onAddTenant(unit.unitNumber);
                 }

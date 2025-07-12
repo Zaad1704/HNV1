@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Edit, Trash2, Share2, Eye, Users, DollarSign, AlertTriangle, Wrench, Check, Edit3 } from 'lucide-react';
+import { Building2, Edit, Trash2, Share2, Eye, Users, DollarSign, AlertTriangle, Wrench, Check, Edit3, Archive } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
 import UniversalCard from './UniversalCard';
 import UniversalStatusBadge from './UniversalStatusBadge';
 import ShareButton from './ShareButton';
+import TenantAvatar from './TenantAvatar';
 // import UnitNicknameModal from '../property/UnitNicknameModal';
 
 interface EnhancedPropertyCardProps {
@@ -218,12 +219,13 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
                   className="flex items-center gap-1 bg-blue-50 rounded-lg px-2 py-1 text-xs"
                   title={`${tenant.name} - Unit ${tenant.unit}`}
                 >
-                  <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                    {tenant.name?.charAt(0).toUpperCase() || 'T'}
-                  </div>
+                  <TenantAvatar 
+                    tenant={tenant} 
+                    size="sm" 
+                  />
                   <span className="text-blue-700 font-medium">{tenant.unit}</span>
                 </div>
-              ))}
+              ))
               {activeTenants.length > 4 && (
                 <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2 py-1 text-xs">
                   <span className="text-gray-600">+{activeTenants.length - 4} more</span>
@@ -243,7 +245,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             View Details
           </Link>
           
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -254,25 +256,29 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
               <Edit size={12} />
               Edit
             </button>
-            <button
+            <Link
+              to={`/dashboard/properties/${property._id}/units`}
               onClick={(e) => {
                 e.preventDefault();
-                alert('Unit management coming soon!');
+                // Navigate to units management
+                window.location.href = `/dashboard/properties/${property._id}#units`;
               }}
               className="bg-purple-100 text-purple-800 py-2 px-3 rounded-xl text-xs font-medium hover:bg-purple-200 transition-colors flex items-center justify-center gap-1"
             >
               <Edit3 size={12} />
               Units
-            </button>
+            </Link>
             <button
               onClick={(e) => {
                 e.preventDefault();
-                onDelete?.(property._id);
+                if (confirm(`Archive ${property.name}? This will hide it from active listings but preserve all data.`)) {
+                  onDelete?.(property._id);
+                }
               }}
               className="bg-red-100 text-red-800 py-2 px-3 rounded-xl text-xs font-medium hover:bg-red-200 transition-colors flex items-center justify-center gap-1"
             >
-              <Trash2 size={12} />
-              Delete
+              <Archive size={12} />
+              Archive
             </button>
             <ShareButton
               data={{

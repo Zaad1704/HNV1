@@ -177,16 +177,6 @@ const PropertyDetailsPage = () => {
               maintenanceRequests={maintenanceRequests}
             />
 
-            {/* Enhanced Units Grid */}
-            <EnhancedUnitsGrid
-              propertyId={propertyId!}
-              property={property}
-              tenants={tenants}
-              units={units}
-              onAddTenant={handleAddTenant}
-              onEditNicknames={() => alert('Unit nickname editing coming soon!')}
-            />
-
             {/* Related Data Sections with Unit-Centric Filtering */}
             <RelatedDataSections
               propertyId={propertyId!}
@@ -196,6 +186,24 @@ const PropertyDetailsPage = () => {
               expenses={expenses}
               maintenanceRequests={maintenanceRequests}
             />
+
+            {/* Enhanced Units Grid */}
+            <div data-section="units">
+            <EnhancedUnitsGrid
+              propertyId={propertyId!}
+              property={property}
+              tenants={tenants}
+              units={units}
+              onAddTenant={handleAddTenant}
+              onEditNicknames={() => {
+                // Scroll to units section
+                const unitsSection = document.querySelector('[data-section="units"]');
+                if (unitsSection) {
+                  unitsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            />
+            </div>
           </div>
 
           {/* Enhanced Sidebar */}
