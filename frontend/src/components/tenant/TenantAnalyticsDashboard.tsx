@@ -1,286 +1,231 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { TrendingUp, DollarSign, Calendar, AlertTriangle, CheckCircle, Clock, BarChart3 } from 'lucide-react';
 import apiClient from '../../api/client';
-import { BarChart3, TrendingUp, Calendar, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
 
-interface TenantAnalyticsProps {
+interface TenantAnalyticsDashboardProps {
   tenantId: string;
-  tenant?: any;
+  className?: string;
 }
 
-const TenantAnalyticsDashboard: React.FC<TenantAnalyticsProps> = ({ tenantId, tenant }) => {
-  const [timeRange, setTimeRange] = useState('12months');
-
+const TenantAnalyticsDashboard: React.FC<TenantAnalyticsDashboardProps> = ({ tenantId, className = '' }) => {
   const { data: analytics } = useQuery({
-    queryKey: ['tenantAnalytics', tenantId, timeRange],
+    queryKey: ['tenantAnalytics', tenantId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/tenants/${tenantId}/analytics?range=${timeRange}`);
+      const { data } = await apiClient.get(`/tenants/${tenantId}/analytics`);
       return data.data;
-    }
+    },
+    staleTime: 300000
   });
 
-  const { data: paymentHistory } = useQuery({
-    queryKey: ['tenantPaymentHistory', tenantId],
+  const { data: stats } = useQuery({
+    queryKey: ['tenantStats', tenantId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/payments?tenantId=${tenantId}`);
-      return data.data || [];
-    }
+      const { data } = await apiClient.get(`/tenants/${tenantId}/stats`);
+      return data.data;
+    },
+    staleTime: 300000
   });
 
-  const { data: maintenanceHistory } = useQuery({
-    queryKey: ['tenantMaintenanceHistory', tenantId],
-    queryFn: async () => {
-      const { data } = await apiClient.get(`/maintenance?tenantId=${tenantId}`);
-      return data.data || [];
-    }
-  });
+  if (!analytics || !stats) {
+    return (
+      <div className={`animate-pulse space-y-4 ${className}`}>
+        <div className="h-32 bg-gray-200 rounded-xl"></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-24 bg-gray-200 rounded-lg"></div>
+          <div className="h-24 bg-gray-200 rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
 
-  // Calculate payment history chart data
-  const getPaymentChartData = () => {
-    if (!paymentHistory) return [];
-    
-    const last12Months = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      return {
-        month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        payments: paymentHistory.filter((p: any) => {
-          const paymentDate = new Date(p.paymentDate);
-          return paymentDate.getMonth() === date.getMonth() && 
-                 paymentDate.getFullYear() === date.getFullYear();
-        }).reduce((sum: number, p: any) => sum + (p.amount || 0), 0)
-      };
-    }).reverse();
-    
-    return last12Months;
+  const paymentScore = Math.round((stats.payments.paymentRate || 0));
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'green';
+    if (score >= 70) return 'yellow';
+    return 'red';
   };
-
-  // Calculate maintenance trends
-  const getMaintenanceTrends = () => {
-    if (!maintenanceHistory) return { total: 0, open: 0, avgResolutionTime: 0 };
-    
-    const total = maintenanceHistory.length;
-    const open = maintenanceHistory.filter((m: any) => m.status === 'Open').length;
-    
-    const resolved = maintenanceHistory.filter((m: any) => m.status === 'Closed' && m.resolvedAt);
-    const avgResolutionTime = resolved.length > 0 
-      ? resolved.reduce((sum: number, m: any) => {
-          const created = new Date(m.createdAt);
-          const resolved = new Date(m.resolvedAt);
-          return sum + (resolved.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
-        }, 0) / resolved.length
-      : 0;
-    
-    return { total, open, avgResolutionTime: Math.round(avgResolutionTime) };
-  };
-
-  // Calculate lease renewal prediction
-  const getLeaseRenewalData = () => {
-    if (!tenant?.leaseEndDate) return null;
-    
-    const daysUntilExpiry = Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-    const paymentRate = paymentHistory ? 
-      (paymentHistory.length / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30)))) * 100 : 0;
-    
-    const maintenanceScore = maintenanceHistory ? 
-      Math.max(0, 100 - (maintenanceHistory.filter((m: any) => m.status === 'Open').length * 20)) : 100;
-    
-    const renewalScore = Math.round((paymentRate * 0.7) + (maintenanceScore * 0.3));
-    
-    return {
-      daysUntilExpiry,
-      renewalScore,
-      recommendation: renewalScore >= 80 ? 'High' : renewalScore >= 60 ? 'Medium' : 'Low'
-    };
-  };
-
-  const chartData = getPaymentChartData();
-  const maintenanceTrends = getMaintenanceTrends();
-  const leaseRenewalData = getLeaseRenewalData();
 
   return (
-    <div className="space-y-6">
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-text-primary">Analytics Dashboard</h3>
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="3months">Last 3 Months</option>
-          <option value="6months">Last 6 Months</option>
-          <option value="12months">Last 12 Months</option>
-          <option value="all">All Time</option>
-        </select>
-      </div>
-
-      {/* Payment History Chart */}
-      <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200">
+    <div className={`space-y-6 ${className}`}>
+      {/* Financial Overview */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
-            <BarChart3 size={20} className="text-white" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-text-primary">Payment History</h4>
-            <p className="text-sm text-text-secondary">Monthly payment trends</p>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          {chartData.map((month, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <span className="text-sm font-medium w-16">{month.month}</span>
-              <div className="flex-1 bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-green-500 h-3 rounded-full transition-all duration-500"
-                  style={{ 
-                    width: `${Math.min(100, (month.payments / (tenant?.rentAmount || 1000)) * 100)}%` 
-                  }}
-                ></div>
-              </div>
-              <span className="text-sm font-semibold text-green-600 w-16 text-right">
-                ${month.payments}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Maintenance Trends */}
-      <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-200">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-            <TrendingUp size={20} className="text-white" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-text-primary">Maintenance Trends</h4>
-            <p className="text-sm text-text-secondary">Request patterns and resolution</p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-2xl font-bold text-orange-600">{maintenanceTrends.total}</p>
-            <p className="text-sm text-gray-600">Total Requests</p>
-          </div>
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-2xl font-bold text-red-600">{maintenanceTrends.open}</p>
-            <p className="text-sm text-gray-600">Open Issues</p>
-          </div>
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-2xl font-bold text-blue-600">{maintenanceTrends.avgResolutionTime}</p>
-            <p className="text-sm text-gray-600">Avg Days</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Lease Renewal Tracking */}
-      {leaseRenewalData && (
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
-              <Calendar size={20} className="text-white" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-text-primary">Lease Renewal Prediction</h4>
-              <p className="text-sm text-text-secondary">AI-powered renewal likelihood</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-white rounded-xl">
-              <p className={`text-2xl font-bold ${
-                leaseRenewalData.daysUntilExpiry <= 30 ? 'text-red-600' : 
-                leaseRenewalData.daysUntilExpiry <= 90 ? 'text-orange-600' : 'text-green-600'
-              }`}>
-                {leaseRenewalData.daysUntilExpiry}
-              </p>
-              <p className="text-sm text-gray-600">Days Until Expiry</p>
-            </div>
-            
-            <div className="text-center p-4 bg-white rounded-xl">
-              <p className={`text-2xl font-bold ${
-                leaseRenewalData.renewalScore >= 80 ? 'text-green-600' :
-                leaseRenewalData.renewalScore >= 60 ? 'text-yellow-600' : 'text-red-600'
-              }`}>
-                {leaseRenewalData.renewalScore}%
-              </p>
-              <p className="text-sm text-gray-600">Renewal Score</p>
-            </div>
-            
-            <div className="text-center p-4 bg-white rounded-xl">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
-                leaseRenewalData.recommendation === 'High' ? 'bg-green-100 text-green-800' :
-                leaseRenewalData.recommendation === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {leaseRenewalData.recommendation === 'High' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
-                {leaseRenewalData.recommendation}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">Likelihood</p>
-            </div>
-          </div>
-          
-          {leaseRenewalData.daysUntilExpiry <= 60 && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle size={16} className="text-yellow-600" />
-                <span className="font-medium text-yellow-800">Action Required</span>
-              </div>
-              <p className="text-sm text-yellow-700">
-                Lease expires in {leaseRenewalData.daysUntilExpiry} days. 
-                {leaseRenewalData.recommendation === 'High' 
-                  ? ' Consider initiating renewal discussions.'
-                  : leaseRenewalData.recommendation === 'Medium'
-                  ? ' Review tenant performance before renewal.'
-                  : ' Evaluate tenant relationship and consider alternatives.'
-                }
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Financial Performance Summary */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
             <DollarSign size={20} className="text-white" />
           </div>
           <div>
-            <h4 className="font-semibold text-text-primary">Financial Performance</h4>
-            <p className="text-sm text-text-secondary">Revenue and payment metrics</p>
+            <h3 className="font-bold text-lg text-gray-900">Financial Overview</h3>
+            <p className="text-sm text-gray-600">Payment history and trends</p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-xl font-bold text-green-600">
-              ${paymentHistory?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0}
-            </p>
-            <p className="text-sm text-gray-600">Total Revenue</p>
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className="text-2xl font-bold text-green-600">${stats.payments.totalAmount.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Total Paid</div>
+            <div className="text-xs text-gray-500">{stats.payments.total} payments</div>
           </div>
           
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-xl font-bold text-blue-600">
-              {paymentHistory?.length || 0}
-            </p>
-            <p className="text-sm text-gray-600">Payments Made</p>
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className="text-2xl font-bold text-blue-600">${stats.payments.monthlyPaid.toLocaleString()}</div>
+            <div className="text-sm text-gray-600">This Month</div>
+            <div className="text-xs text-gray-500">Current period</div>
           </div>
           
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-xl font-bold text-purple-600">
-              {Math.round((paymentHistory?.length || 0) / Math.max(1, Math.ceil((new Date().getTime() - new Date(tenant?.createdAt || Date.now()).getTime()) / (1000 * 60 * 60 * 24 * 30))) * 100)}%
-            </p>
-            <p className="text-sm text-gray-600">Payment Rate</p>
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className={`text-2xl font-bold ${stats.payments.outstanding > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              ${stats.payments.outstanding.toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-600">Outstanding</div>
+            <div className="text-xs text-gray-500">Current balance</div>
           </div>
           
-          <div className="text-center p-4 bg-white rounded-xl">
-            <p className="text-xl font-bold text-orange-600">
-              ${tenant?.rentAmount || 0}
-            </p>
-            <p className="text-sm text-gray-600">Monthly Rent</p>
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className={`text-2xl font-bold text-${getScoreColor(paymentScore)}-600`}>
+              {paymentScore}%
+            </div>
+            <div className="text-sm text-gray-600">Payment Score</div>
+            <div className="text-xs text-gray-500">Punctuality rate</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Payment Timeline */}
+      {analytics.monthlyPayments && (
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <BarChart3 size={20} className="text-blue-600" />
+            <h3 className="font-bold text-lg text-gray-900">Payment Timeline</h3>
+          </div>
+          
+          <div className="flex items-end gap-2 h-32">
+            {analytics.monthlyPayments.map((month: any, index: number) => {
+              const maxAmount = Math.max(...analytics.monthlyPayments.map((m: any) => m.payments));
+              const height = maxAmount > 0 ? (month.payments / maxAmount) * 100 : 0;
+              
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div 
+                    className="w-full bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg transition-all duration-500 hover:from-blue-600 hover:to-purple-600"
+                    style={{ height: `${height}%`, minHeight: height > 0 ? '8px' : '2px' }}
+                    title={`${month.month}: $${month.payments}`}
+                  ></div>
+                  <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
+                    {month.month}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Behavioral Insights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <TrendingUp size={20} className="text-green-600" />
+            <h3 className="font-bold text-lg text-gray-900">Payment Behavior</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">On-time Payments</span>
+              <div className="flex items-center gap-2">
+                <div className="w-20 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                    style={{ width: `${paymentScore}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{paymentScore}%</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Avg Days Late</span>
+              <span className="text-sm font-medium">
+                {stats.payments.total > 0 ? Math.round((stats.lease.monthsSinceStart - stats.payments.total) * 30 / stats.payments.total) : 0} days
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Communication</span>
+              <div className="flex items-center gap-1">
+                <CheckCircle size={16} className="text-green-500" />
+                <span className="text-sm font-medium">Responsive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <Calendar size={20} className="text-purple-600" />
+            <h3 className="font-bold text-lg text-gray-900">Lease Insights</h3>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Tenure</span>
+              <span className="text-sm font-medium">{stats.lease.monthsSinceStart} months</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Renewal Probability</span>
+              <div className="flex items-center gap-2">
+                <div className="w-20 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all duration-1000"
+                    style={{ width: `${Math.min(paymentScore + 10, 100)}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium">{Math.min(paymentScore + 10, 100)}%</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Maintenance Requests</span>
+              <span className="text-sm font-medium">{stats.maintenance.total} total</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Risk Assessment */}
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle size={20} className="text-orange-600" />
+          <h3 className="font-bold text-lg text-gray-900">Risk Assessment</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl p-4">
+            <div className="text-center">
+              <div className={`text-2xl font-bold ${paymentScore >= 80 ? 'text-green-600' : paymentScore >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                {paymentScore >= 80 ? 'Low' : paymentScore >= 60 ? 'Medium' : 'High'}
+              </div>
+              <div className="text-sm text-gray-600">Payment Risk</div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {stats.maintenance.open === 0 ? 'Low' : stats.maintenance.open <= 2 ? 'Medium' : 'High'}
+              </div>
+              <div className="text-sm text-gray-600">Maintenance Risk</div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.lease.monthsSinceStart >= 12 ? 'Low' : 'Medium'}
+              </div>
+              <div className="text-sm text-gray-600">Turnover Risk</div>
+            </div>
           </div>
         </div>
       </div>

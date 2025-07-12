@@ -695,12 +695,37 @@ export const getTenantAnalytics = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Calculate behavioral insights
+    const totalPayments = payments.length;
+    const onTimePayments = payments.filter((p: any) => {
+      const paymentDate = new Date(p.paymentDate);
+      const expectedDate = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 1);
+      return paymentDate.getTime() <= expectedDate.getTime() + (5 * 24 * 60 * 60 * 1000); // 5 days grace
+    }).length;
+    
+    const paymentScore = totalPayments > 0 ? Math.round((onTimePayments / totalPayments) * 100) : 100;
+    const avgDaysLate = totalPayments > 0 ? 
+      payments.reduce((sum: number, p: any) => {
+        const paymentDate = new Date(p.paymentDate);
+        const expectedDate = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 1);
+        const daysLate = Math.max(0, Math.floor((paymentDate.getTime() - expectedDate.getTime()) / (1000 * 60 * 60 * 24)));
+        return sum + daysLate;
+      }, 0) / totalPayments : 0;
+
     res.status(200).json({
       success: true,
       data: {
         monthlyPayments: monthlyData,
         totalRevenue: payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
-        paymentCount: payments.length
+        paymentCount: payments.length,
+        paymentScore,
+        avgDaysLate: Math.round(avgDaysLate),
+        maintenanceRequests: maintenance.length,
+        behaviorInsights: {
+          punctuality: paymentScore,
+          responsiveness: paymentScore > 80 ? 'High' : paymentScore > 60 ? 'Medium' : 'Low',
+          riskLevel: paymentScore > 80 ? 'Low' : paymentScore > 60 ? 'Medium' : 'High'
+        }
       }
     });
   } catch (error) {

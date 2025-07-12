@@ -23,6 +23,7 @@ import ComprehensiveTenantModal from '../components/common/ComprehensiveTenantMo
 import EnhancedTenantCard from '../components/common/EnhancedTenantCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalCard from '../components/common/UniversalCard';
+import TenantInsightsPanel from '../components/tenant/TenantInsightsPanel';
 import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
@@ -441,6 +442,11 @@ const TenantsPage = () => {
           </div>
         )}
       </div>
+
+      {/* Tenant Insights Panel */}
+      {filteredTenants.length > 0 && (
+        <TenantInsightsPanel tenants={filteredTenants} />
+      )}
 
       {/* Universal Search */}
       <UniversalSearch

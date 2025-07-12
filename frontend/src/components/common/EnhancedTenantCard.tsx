@@ -107,6 +107,32 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({
   const paymentHistory = payments.slice(0, 6).reverse();
   const lastPayment = payments[0];
   const daysSinceLastPayment = lastPayment ? Math.floor((Date.now() - new Date(lastPayment.paymentDate).getTime()) / (1000 * 60 * 60 * 24)) : null;
+  
+  // Calculate tenant score
+  const calculateTenantScore = () => {
+    if (payments.length === 0) return 85; // Default score for new tenants
+    
+    const recentPayments = payments.slice(0, 6); // Last 6 payments
+    const onTimePayments = recentPayments.filter((p: any) => {
+      const paymentDate = new Date(p.paymentDate);
+      const expectedDate = new Date(paymentDate.getFullYear(), paymentDate.getMonth(), 5);
+      return paymentDate <= expectedDate;
+    }).length;
+    
+    const punctualityScore = recentPayments.length > 0 ? (onTimePayments / recentPayments.length) * 100 : 100;
+    const statusBonus = tenant.status === 'Active' ? 10 : tenant.status === 'Late' ? -20 : 0;
+    
+    return Math.min(100, Math.max(0, Math.round(punctualityScore + statusBonus)));
+  };
+  
+  const tenantScore = calculateTenantScore();
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'green';
+    if (score >= 80) return 'blue';
+    if (score >= 70) return 'yellow';
+    return 'red';
+  };
+  const scoreColor = getScoreColor(tenantScore);
 
   return (
     <UniversalCard delay={index * 0.1} gradient="green" className={`relative group hover:scale-105 transition-all duration-300 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
@@ -330,16 +356,22 @@ const EnhancedTenantCard: React.FC<EnhancedTenantCardProps> = ({
           <div className="bg-purple-50 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={14} className="text-purple-600" />
-              <span className="text-xs text-purple-800 font-medium">Occupancy</span>
+              <span className="text-xs text-purple-800 font-medium">Tenant Score</span>
             </div>
-            <div className="text-sm font-semibold text-purple-900">
-              {tenant.numberOfOccupants || 1} {(tenant.numberOfOccupants || 1) === 1 ? 'person' : 'people'}
-            </div>
-            {tenant.leaseStartDate && (
-              <div className="text-xs text-purple-700">
-                Since {new Date(tenant.leaseStartDate).toLocaleDateString()}
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-bold text-purple-900">{tenantScore}</div>
+              <div className="flex-1">
+                <div className="w-full bg-purple-200 rounded-full h-1.5">
+                  <div 
+                    className={`bg-${scoreColor}-500 h-1.5 rounded-full transition-all duration-500`}
+                    style={{ width: `${tenantScore}%` }}
+                  ></div>
+                </div>
               </div>
-            )}
+            </div>
+            <div className="text-xs text-purple-700">
+              {tenantScore >= 90 ? 'Excellent' : tenantScore >= 80 ? 'Good' : tenantScore >= 70 ? 'Fair' : 'Poor'} tenant
+            </div>
           </div>
         </div>
 
