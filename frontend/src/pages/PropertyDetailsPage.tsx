@@ -24,6 +24,7 @@ import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet'
 import PropertyAnalyticsDashboard from '../components/property/PropertyAnalyticsDashboard';
 import EnhancedUnitsGrid from '../components/property/EnhancedUnitsGrid';
 import EnhancedPropertyQuickActions from '../components/property/EnhancedPropertyQuickActions';
+import RelatedDataSections from '../components/property/RelatedDataSections';
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -186,9 +187,10 @@ const PropertyDetailsPage = () => {
               onEditNicknames={() => alert('Unit nickname editing coming soon!')}
             />
 
-            {/* Data Preview Sections */}
-            <DataPreviewSections
+            {/* Related Data Sections with Unit-Centric Filtering */}
+            <RelatedDataSections
               propertyId={propertyId!}
+              property={property}
               tenants={tenants}
               payments={payments}
               expenses={expenses}
