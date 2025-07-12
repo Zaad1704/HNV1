@@ -9,9 +9,12 @@ interface DataPreviewProps {
   selectedUnit?: string;
   property?: any;
   tenants?: any[];
+  payments?: any[];
+  expenses?: any[];
+  maintenanceRequests?: any[];
 }
 
-const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedUnit, property, tenants }) => {
+const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedUnit, property, tenants, payments, expenses, maintenanceRequests }) => {
   const [unitFilter, setUnitFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('');

@@ -133,7 +133,7 @@ const PropertyDetailsPage = () => {
               <h1 className="text-2xl font-bold text-text-primary">{property.name}</h1>
               <div className="flex items-center gap-2 text-text-secondary mt-1">
                 <MapPin size={16} />
-                <span>{property.address}</span>
+                <span>{property.address?.street || property.address?.formattedAddress || 'No address'}</span>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@ const PropertyDetailsPage = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-text-secondary">Type</span>
-                  <span className="font-medium text-text-primary">{property.type}</span>
+                  <span className="font-medium text-text-primary">{property.propertyType || 'N/A'}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-secondary">Units</span>

@@ -61,7 +61,7 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         isOccupied: !!tenant,
         tenantName: tenant?.name || null,
         tenantId: tenant?._id || null,
-        rentAmount: tenant?.rentAmount || property.rentAmount || 0,
+        rentAmount: tenant?.rentAmount || 0,
         displayName: unitNumber
       };
     });
