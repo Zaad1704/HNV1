@@ -24,6 +24,9 @@ import EnhancedTenantCard from '../components/common/EnhancedTenantCard';
 import UniversalHeader from '../components/common/UniversalHeader';
 import UniversalCard from '../components/common/UniversalCard';
 import TenantInsightsPanel from '../components/tenant/TenantInsightsPanel';
+import TenantSmartFilters from '../components/tenant/TenantSmartFilters';
+import TenantPredictiveSearch from '../components/tenant/TenantPredictiveSearch';
+import TenantAdvancedSearch from '../components/tenant/TenantAdvancedSearch';
 import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
@@ -74,6 +77,9 @@ const TenantsPage = () => {
   const [showExpiringLeases, setShowExpiringLeases] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
   const [showBulkMode, setShowBulkMode] = useState(false);
+  const [smartFilters, setSmartFilters] = useState<any>({});
+  const [advancedSearchCriteria, setAdvancedSearchCriteria] = useState<any>({});
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
@@ -158,7 +164,7 @@ const TenantsPage = () => {
   const filteredTenants = useMemo(() => {
     if (!tenants) return [];
     
-    return tenants.filter((tenant: any) => {
+    let filtered = tenants.filter((tenant: any) => {
       if (!tenant) return false;
       
       // Archive filter
@@ -166,20 +172,43 @@ const TenantsPage = () => {
       if (showArchived && !isArchived) return false;
       if (!showArchived && isArchived) return false;
       
-      // Late payment filter
+      // Quick filters
       if (showLateOnly && tenant.status !== 'Late') return false;
-      
-      // Expiring lease filter
       if (showExpiringLeases) {
         if (!tenant.leaseEndDate) return false;
         const daysUntilExpiry = Math.ceil((new Date(tenant.leaseEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
         if (daysUntilExpiry > 30) return false;
       }
-      
-      // Property filter
       if (selectedProperty && tenant.propertyId?._id !== selectedProperty) return false;
       
-      // Universal search
+      // Smart filters
+      if (smartFilters.paymentStatus?.length > 0) {
+        const tenantPaymentStatus = tenant.status === 'Active' ? 'current' : 
+                                   tenant.status === 'Late' ? 'late' : 'partial';
+        if (!smartFilters.paymentStatus.includes(tenantPaymentStatus)) return false;
+      }
+      
+      if (smartFilters.property?.length > 0) {
+        if (!smartFilters.property.includes(tenant.propertyId?.name)) return false;
+      }
+      
+      // Advanced search criteria
+      if (advancedSearchCriteria.query) {
+        const query = advancedSearchCriteria.query.toLowerCase();
+        const matches = (tenant.name?.toLowerCase().includes(query)) ||
+                       (tenant.email?.toLowerCase().includes(query)) ||
+                       (tenant.phone?.includes(query)) ||
+                       (tenant.unit?.toLowerCase().includes(query)) ||
+                       (tenant.propertyId?.name?.toLowerCase().includes(query));
+        if (!matches) return false;
+      }
+      
+      if (advancedSearchCriteria.rentRange) {
+        const rent = tenant.rentAmount || 0;
+        if (rent < advancedSearchCriteria.rentRange.min || rent > advancedSearchCriteria.rentRange.max) return false;
+      }
+      
+      // Legacy filters
       const matchesUniversalSearch = !searchFilters.query || 
         (tenant.name && tenant.name.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
         (tenant.email && tenant.email.toLowerCase().includes(searchFilters.query.toLowerCase())) ||
@@ -197,7 +226,42 @@ const TenantsPage = () => {
       
       return matchesUniversalSearch && matchesSearch && matchesStatus && matchesProperty;
     });
-  }, [tenants, searchQuery, filters, searchFilters, showArchived, showLateOnly, showExpiringLeases, selectedProperty]);
+    
+    // Apply sorting from advanced search
+    if (advancedSearchCriteria.sortBy) {
+      filtered.sort((a, b) => {
+        let aValue, bValue;
+        switch (advancedSearchCriteria.sortBy) {
+          case 'name':
+            aValue = a.name || '';
+            bValue = b.name || '';
+            break;
+          case 'rentAmount':
+            aValue = a.rentAmount || 0;
+            bValue = b.rentAmount || 0;
+            break;
+          case 'leaseStartDate':
+            aValue = new Date(a.leaseStartDate || 0);
+            bValue = new Date(b.leaseStartDate || 0);
+            break;
+          case 'status':
+            aValue = a.status || '';
+            bValue = b.status || '';
+            break;
+          default:
+            aValue = a.name || '';
+            bValue = b.name || '';
+        }
+        
+        if (advancedSearchCriteria.sortOrder === 'desc') {
+          return aValue < bValue ? 1 : -1;
+        }
+        return aValue > bValue ? 1 : -1;
+      });
+    }
+    
+    return filtered;
+  }, [tenants, searchQuery, filters, searchFilters, showArchived, showLateOnly, showExpiringLeases, selectedProperty, smartFilters, advancedSearchCriteria]);
 
   const filterOptions = [
     {
@@ -448,18 +512,43 @@ const TenantsPage = () => {
         <TenantInsightsPanel tenants={filteredTenants} />
       )}
 
-      {/* Universal Search */}
-      <UniversalSearch
-        onSearch={setSearchFilters}
-        placeholder="Search tenants by name, email, unit, or property..."
-        showStatusFilter={true}
-        statusOptions={[
-          { value: 'Active', label: 'Active' },
-          { value: 'Inactive', label: 'Inactive' },
-          { value: 'Late', label: 'Late Payment' },
-          { value: 'Archived', label: 'Archived' }
-        ]}
+      {/* Predictive Search */}
+      <TenantPredictiveSearch
+        tenants={tenants}
+        onTenantSelect={(tenant) => {
+          window.location.href = `/dashboard/tenants/${tenant._id}`;
+        }}
       />
+
+      {/* Smart Filters */}
+      <TenantSmartFilters
+        tenants={tenants}
+        onFiltersChange={setSmartFilters}
+        activeFilters={smartFilters}
+      />
+
+      {/* Advanced Search Toggle */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showAdvancedSearch
+              ? 'bg-purple-500 text-white'
+              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+          }`}
+        >
+          <Search size={16} />
+          {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
+        </button>
+      </div>
+
+      {/* Advanced Search */}
+      {showAdvancedSearch && (
+        <TenantAdvancedSearch
+          onSearch={setAdvancedSearchCriteria}
+          tenants={tenants}
+        />
+      )}
 
       {filteredTenants && filteredTenants.length > 0 ? (
         <div className="universal-grid universal-grid-3">
