@@ -151,11 +151,7 @@ const PropertyDetailsPage = () => {
           <div className="lg:col-span-3 space-y-8">
             {/* Property Stats */}
             <PropertyStatsSection 
-              property={property}
-              tenants={tenants}
-              payments={payments}
-              expenses={expenses}
-              maintenanceRequests={maintenanceRequests}
+              propertyId={propertyId!}
             />
 
             {/* Units Section */}

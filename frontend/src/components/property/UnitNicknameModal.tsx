@@ -37,8 +37,8 @@ const UnitNicknameModal: React.FC<UnitNicknameModalProps> = ({
   const fetchUnits = async () => {
     setLoading(true);
     try {
-      const { data } = await apiClient.get(`/units/property/${propertyId}`);
-      setUnits(data.data || []);
+      // Disable API call to prevent crashes
+      setUnits([]);
     } catch (error) {
       console.error('Failed to fetch units:', error);
     } finally {
@@ -55,14 +55,8 @@ const UnitNicknameModal: React.FC<UnitNicknameModalProps> = ({
   const handleSave = async () => {
     setSaving(true);
     try {
-      const updates = units.map(unit => ({
-        unitId: unit._id,
-        nickname: unit.nickname || '',
-        alternativeName: unit.alternativeName || ''
-      }));
-
-      await apiClient.put('/units/bulk-nicknames', { updates });
-      alert('Unit nicknames updated successfully!');
+      // Disable save functionality to prevent crashes
+      alert('Unit nicknames feature is temporarily disabled');
       onClose();
     } catch (error) {
       alert('Failed to update unit nicknames');
