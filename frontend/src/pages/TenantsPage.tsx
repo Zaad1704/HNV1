@@ -730,13 +730,13 @@ const TenantsPage = () => {
         />
       )}
       
-      {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+      {/* Universal Mobile FAB */}
+      <div className="universal-mobile-fab-tenant">
         <button
           onClick={() => setShowAddModal(true)}
-          className="w-16 h-16 bg-blue-500 rounded-full shadow-lg flex items-center justify-center"
+          className="w-full h-full flex items-center justify-center group"
         >
-          <Plus size={24} className="text-white" />
+          <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
         </button>
       </div>
       

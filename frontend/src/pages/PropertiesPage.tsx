@@ -561,53 +561,66 @@ const PropertiesPage = () => {
         }
       />
 
-      {/* Filter Buttons */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <button
-          onClick={() => {
-            setShowBulkMode(!showBulkMode);
-            if (showBulkMode) {
-              setSelectedProperties([]);
-            }
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showBulkMode 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-          }`}
-        >
-          {showBulkMode ? <CheckSquare size={16} /> : <Square size={16} />}
-          {showBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
-        </button>
-        <button
-          onClick={() => setShowGlobalSearch(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
-        >
-          <Search size={16} />
-          Global Search (Ctrl+K)
-        </button>
-        <button
-          onClick={() => setShowVacant(!showVacant)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showVacant 
-              ? 'bg-orange-500 text-white' 
-              : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-          }`}
-        >
-          <EyeOff size={16} />
-          {showVacant ? 'Show All' : 'Vacant Only'}
-        </button>
-        <button
-          onClick={() => setShowArchived(!showArchived)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            showArchived 
-              ? 'bg-gray-500 text-white' 
-              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-          {showArchived ? 'Show Active' : 'Show Archived'}
-        </button>
+      {/* Mobile-Optimized Filter Buttons */}
+      <div className="universal-mobile-filter-bar">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 universal-gradient-property rounded-xl flex items-center justify-center">
+            <Filter size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-text-primary">Smart Filters</h3>
+            <p className="text-sm text-text-secondary">Filter properties by status, occupancy, and type</p>
+          </div>
+        </div>
+        
+        <div className="universal-mobile-filter-grid">
+          <button
+            onClick={() => {
+              setShowBulkMode(!showBulkMode);
+              if (showBulkMode) {
+                setSelectedProperties([]);
+              }
+            }}
+            className={`${
+              showBulkMode 
+                ? 'universal-mobile-filter-btn-active bg-blue-500' 
+                : 'universal-mobile-filter-btn-inactive border-blue-200 text-blue-600 hover:bg-blue-50'
+            }`}
+          >
+            {showBulkMode ? <CheckSquare size={16} /> : <Square size={16} />}
+            <span className="text-sm font-medium">{showBulkMode ? 'Exit Bulk' : 'Bulk Select'}</span>
+          </button>
+          <button
+            onClick={() => setShowGlobalSearch(true)}
+            className="universal-mobile-filter-btn-inactive border-purple-200 text-purple-600 hover:bg-purple-50"
+          >
+            <Search size={16} />
+            <span className="text-sm font-medium hidden md:inline">Global Search</span>
+            <span className="text-sm font-medium md:hidden">Search</span>
+          </button>
+          <button
+            onClick={() => setShowVacant(!showVacant)}
+            className={`${
+              showVacant 
+                ? 'universal-mobile-filter-btn-active bg-orange-500' 
+                : 'universal-mobile-filter-btn-inactive border-orange-200 text-orange-600 hover:bg-orange-50'
+            }`}
+          >
+            <EyeOff size={16} />
+            <span className="text-sm font-medium">{showVacant ? 'Show All' : 'Vacant Only'}</span>
+          </button>
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`${
+              showArchived 
+                ? 'universal-mobile-filter-btn-active bg-gray-500' 
+                : 'universal-mobile-filter-btn-inactive border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            {showArchived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+            <span className="text-sm font-medium">{showArchived ? 'Active Only' : 'Show Archived'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Smart Suggestions */}
@@ -823,11 +836,11 @@ const PropertiesPage = () => {
         }}
       />
       
-      {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 z-40 md:hidden">
+      {/* Universal Mobile FAB */}
+      <div className="universal-mobile-fab-property">
         <button
           onClick={() => setShowAddModal(true)}
-          className="w-16 h-16 gradient-dark-orange-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+          className="w-full h-full flex items-center justify-center group"
         >
           <Plus size={24} className="text-white group-hover:rotate-90 transition-transform duration-300" />
         </button>

@@ -542,4 +542,4 @@ select:focus-visible {
   .dark select:focus-visible {
     outline: 4px solid #ffffff;
   }
-}@import "./mobile-tenant.css";
+}@import "./mobile-universal.css";
