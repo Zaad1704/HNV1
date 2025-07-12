@@ -225,7 +225,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
                   />
                   <span className="text-blue-700 font-medium">{tenant.unit}</span>
                 </div>
-              ))
+              ))}
               {activeTenants.length > 4 && (
                 <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2 py-1 text-xs">
                   <span className="text-gray-600">+{activeTenants.length - 4} more</span>
