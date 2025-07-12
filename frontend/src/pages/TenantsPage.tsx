@@ -72,6 +72,7 @@ const TenantsPage = () => {
   const [showLateOnly, setShowLateOnly] = useState(false);
   const [showExpiringLeases, setShowExpiringLeases] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<string>('');
+  const [showBulkMode, setShowBulkMode] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
@@ -277,6 +278,22 @@ const TenantsPage = () => {
         actions={
           <div className="flex gap-3">
           <button
+            onClick={() => {
+              setShowBulkMode(!showBulkMode);
+              if (showBulkMode) {
+                setSelectedTenants([]);
+              }
+            }}
+            className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-colors ${
+              showBulkMode 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+            }`}
+          >
+            <Eye size={16} />
+            {showBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
+          </button>
+          <button
             onClick={() => setShowQuickPayment(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center gap-2"
           >
@@ -449,13 +466,41 @@ const TenantsPage = () => {
                   onView={() => window.open(`/dashboard/tenants/${tenant._id}`, '_blank')}
                 >
                   <UniversalCard delay={index * 0.1} gradient="green">
-                    <EnhancedTenantCard tenant={tenant} index={index} />
+                    <EnhancedTenantCard 
+                      tenant={tenant} 
+                      index={index}
+                      onEdit={(t) => console.log('Edit tenant', t._id)}
+                      onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
+                      showCheckbox={showBulkMode}
+                      isSelected={selectedTenants.includes(tenant._id)}
+                      onSelect={(tenantId, selected) => {
+                        if (selected) {
+                          setSelectedTenants(prev => [...prev, tenantId]);
+                        } else {
+                          setSelectedTenants(prev => prev.filter(id => id !== tenantId));
+                        }
+                      }}
+                    />
                   </UniversalCard>
                 </SwipeableCard>
               </div>
               <div className="hidden md:block">
                 <UniversalCard delay={index * 0.1} gradient="green">
-                  <EnhancedTenantCard tenant={tenant} index={index} />
+                  <EnhancedTenantCard 
+                    tenant={tenant} 
+                    index={index}
+                    onEdit={(t) => console.log('Edit tenant', t._id)}
+                    onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
+                    showCheckbox={showBulkMode}
+                    isSelected={selectedTenants.includes(tenant._id)}
+                    onSelect={(tenantId, selected) => {
+                      if (selected) {
+                        setSelectedTenants(prev => [...prev, tenantId]);
+                      } else {
+                        setSelectedTenants(prev => prev.filter(id => id !== tenantId));
+                      }
+                    }}
+                  />
                 </UniversalCard>
               </div>
             </LazyLoader>
