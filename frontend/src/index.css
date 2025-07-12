@@ -1,12 +1,11 @@
-@import './styles/mobile-fixes.css';
+/* Import styles in correct order - base first, then specific */
 @import './styles/ui-consistency.css';
 @import './styles/dashboard.css';
-@import './styles/phase4-mobile.css';
-@import './styles/phase5-performance.css';
-
-/* Import styles first */
 @import './styles/mobile.css';
 @import './styles/accessibility.css';
+@import './styles/mobile-fixes.css';
+@import './styles/phase4-mobile.css';
+@import './styles/phase5-performance.css';
 
 @tailwind base;
 @tailwind components;
@@ -269,7 +268,7 @@ body {
   color: var(--text-muted, #9CA3AF);
 }
 
-/* Gradients */
+/* Unified Gradient System */
 .app-gradient {
   background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-blue) 100%);
 }
@@ -281,12 +280,46 @@ body {
   transition: all 0.3s ease;
 }
 
+/* Theme-aware gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-blue) 100%);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
 .gradient-orange-blue {
   background: linear-gradient(135deg, var(--brand-light-orange) 0%, var(--brand-light-blue) 100%);
 }
 
 .gradient-dark-orange-blue {
   background: linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-blue) 100%);
+}
+
+.gradient-dark-green-blue {
+  background: linear-gradient(135deg, #059669 0%, #1E40AF 100%);
+}
+
+/* Universal gradient classes for components */
+.universal-gradient-property {
+  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+}
+
+.universal-gradient-tenant {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.universal-gradient-payment {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+
+.universal-gradient-maintenance {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
 }
 
 .btn-gradient:hover {
@@ -543,3 +576,56 @@ select:focus-visible {
     outline: 4px solid #ffffff;
   }
 }@import "./mobile-universal.css";
+
+/* Universal Mobile FAB System */
+.universal-mobile-fab {
+  @apply fixed bottom-6 right-6 z-40;
+  @apply w-14 h-14 md:w-16 md:h-16;
+  @apply rounded-full shadow-lg;
+  @apply flex items-center justify-center;
+  @apply touch-manipulation;
+  @apply transition-all duration-200;
+  @apply active:scale-95;
+  @apply md:hidden;
+}
+
+.universal-mobile-fab-property {
+  @apply universal-mobile-fab;
+  @apply bg-blue-500 text-white;
+  @apply hover:bg-blue-600;
+}
+
+.universal-mobile-fab-tenant {
+  @apply universal-mobile-fab;
+  @apply bg-green-500 text-white;
+  @apply hover:bg-green-600;
+}
+
+.universal-mobile-fab-payment {
+  @apply universal-mobile-fab;
+  @apply bg-orange-500 text-white;
+  @apply hover:bg-orange-600;
+}
+
+.universal-mobile-fab-maintenance {
+  @apply universal-mobile-fab;
+  @apply bg-red-500 text-white;
+  @apply hover:bg-red-600;
+}
+
+/* Universal Mobile Filter Bar */
+.universal-mobile-filter-bar {
+  @apply bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100;
+}
+
+.universal-mobile-filter-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-3;
+}
+
+.universal-mobile-filter-btn-active {
+  @apply flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 text-white shadow-lg scale-105;
+}
+
+.universal-mobile-filter-btn-inactive {
+  @apply flex items-center gap-2 px-4 py-3 rounded-xl transition-all duration-200 bg-white hover:shadow-md;
+}

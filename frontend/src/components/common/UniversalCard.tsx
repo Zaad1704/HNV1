@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface UniversalCardProps {
   children: React.ReactNode;
@@ -7,6 +8,7 @@ interface UniversalCardProps {
   className?: string;
   delay?: number;
   gradient?: 'blue' | 'green' | 'red' | 'purple' | 'orange';
+  section?: 'property' | 'tenant' | 'payment' | 'maintenance';
 }
 
 const UniversalCard: React.FC<UniversalCardProps> = ({ 
@@ -14,8 +16,10 @@ const UniversalCard: React.FC<UniversalCardProps> = ({
   onClick, 
   className = '', 
   delay = 0,
-  gradient = 'blue'
+  gradient = 'blue',
+  section
 }) => {
+  const { getGradientClass } = useTheme();
   const gradientClasses = {
     blue: 'from-brand-blue/5 via-purple-500/5 to-brand-orange/5',
     green: 'from-green-500/5 via-emerald-500/5 to-green-600/5',
@@ -33,7 +37,7 @@ const UniversalCard: React.FC<UniversalCardProps> = ({
       onClick={onClick}
     >
       {/* Background Gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClasses[gradient]} opacity-0 group-hover:opacity-100 transition-all duration-500`}></div>
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClasses[gradient]} opacity-0 group-hover:opacity-100 transition-all duration-500 ${section ? getGradientClass(section) : ''}`}></div>
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
       
       {/* Content */}

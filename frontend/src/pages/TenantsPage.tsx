@@ -564,7 +564,7 @@ const TenantsPage = () => {
                   onDelete={() => handleDeleteTenant(tenant._id, tenant.name)}
                   onView={() => window.open(`/dashboard/tenants/${tenant._id}`, '_blank')}
                 >
-                  <UniversalCard delay={index * 0.1} gradient="green">
+                  <UniversalCard delay={index * 0.1} gradient="green" section="tenant">
                     <EnhancedTenantCard 
                       tenant={tenant} 
                       index={index}

@@ -659,7 +659,7 @@ const PropertiesPage = () => {
                   onDelete={() => handleDeleteProperty(property._id)}
                   onView={() => window.open(`/dashboard/properties/${property._id}`, '_blank')}
                 >
-                  <UniversalCard delay={index * 0.1} gradient="blue">
+                  <UniversalCard delay={index * 0.1} gradient="blue" section="property">
                     <EnhancedPropertyCard 
                       property={property} 
                       index={index}
