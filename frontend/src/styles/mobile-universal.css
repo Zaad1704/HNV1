@@ -235,16 +235,21 @@
 /* Universal Mobile Animations */
 @media (prefers-reduced-motion: no-preference) {
   .universal-mobile-animate-in {
-    @apply animate-in slide-in-from-bottom-4 duration-300;
+    animation: slideInFromBottom 0.3s ease-out;
   }
   
   .universal-mobile-animate-out {
-    @apply animate-out slide-out-to-bottom-4 duration-200;
+    animation: slideOutToBottom 0.2s ease-out;
   }
   
   .universal-mobile-fade-in {
-    @apply animate-in fade-in duration-200;
+    animation: fadeIn 0.2s ease-out;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Universal Mobile Safe Areas */
@@ -268,7 +273,7 @@
 .universal-mobile-touch-target {
   @apply min-h-[44px] min-w-[44px];
   @apply touch-manipulation;
-  @apply -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Universal Mobile Gradients */

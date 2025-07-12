@@ -1,1 +1,109 @@
-import React, { useState } from 'react';\nimport { ChevronDown, ChevronUp, Filter, Sparkles } from 'lucide-react';\n\ninterface SidebarSection {\n  id: string;\n  title: string;\n  subtitle: string;\n  icon: React.ComponentType<{ size?: number }>;\n  content: React.ReactNode;\n  defaultExpanded?: boolean;\n  gradient?: string;\n}\n\ninterface Phase3RightSidebarProps {\n  sections: SidebarSection[];\n  className?: string;\n}\n\nconst Phase3RightSidebar: React.FC<Phase3RightSidebarProps> = ({\n  sections,\n  className = ''\n}) => {\n  const [expandedSections, setExpandedSections] = useState<Set<string>>(\n    new Set(sections.filter(s => s.defaultExpanded).map(s => s.id))\n  );\n\n  const toggleSection = (sectionId: string) => {\n    setExpandedSections(prev => {\n      const newSet = new Set(prev);\n      if (newSet.has(sectionId)) {\n        newSet.delete(sectionId);\n      } else {\n        newSet.add(sectionId);\n      }\n      return newSet;\n    });\n  };\n\n  return (\n    <div className={`phase3-right-sidebar ${className}`}>\n      {sections.map((section) => {\n        const IconComponent = section.icon;\n        const isExpanded = expandedSections.has(section.id);\n        \n        return (\n          <div key={section.id} className=\"phase3-sidebar-section\">\n            <button\n              onClick={() => toggleSection(section.id)}\n              className=\"phase3-sidebar-header w-full text-left\"\n            >\n              <div className=\"flex items-center gap-3\">\n                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${\n                  section.gradient || 'bg-gradient-to-r from-blue-500 to-purple-500'\n                }`}>\n                  <IconComponent size={16} className=\"text-white\" />\n                </div>\n                <div className=\"flex-1\">\n                  <h3 className=\"font-semibold text-gray-900 text-sm\">{section.title}</h3>\n                  <p className=\"text-xs text-gray-600\">{section.subtitle}</p>\n                </div>\n                <div className={`transform transition-transform duration-200 ${\n                  isExpanded ? 'rotate-180' : ''\n                }`}>\n                  <ChevronDown size={16} className=\"text-gray-400\" />\n                </div>\n              </div>\n            </button>\n            \n            <div className={`phase3-collapsible-content ${\n              isExpanded ? 'expanded' : 'collapsed'\n            }`}>\n              <div className=\"phase3-sidebar-content\">\n                {section.content}\n              </div>\n            </div>\n          </div>\n        );\n      })}\n    </div>\n  );\n};\n\n// Helper function to create smart filters section\nexport const createSmartFiltersSection = (\n  filters: React.ReactNode,\n  isExpanded: boolean = true\n): SidebarSection => ({\n  id: 'smart-filters',\n  title: 'Smart Filters',\n  subtitle: 'Filter and search',\n  icon: Filter,\n  content: filters,\n  defaultExpanded: isExpanded,\n  gradient: 'bg-gradient-to-r from-blue-500 to-purple-500'\n});\n\n// Helper function to create AI insights section\nexport const createAIInsightsSection = (\n  insights: React.ReactNode,\n  isExpanded: boolean = false\n): SidebarSection => ({\n  id: 'ai-insights',\n  title: 'AI Insights',\n  subtitle: 'Smart suggestions',\n  icon: Sparkles,\n  content: insights,\n  defaultExpanded: isExpanded,\n  gradient: 'bg-gradient-to-r from-green-500 to-blue-500'\n});\n\nexport default Phase3RightSidebar;
+import React, { useState } from 'react';
+import { ChevronDown, Filter, Sparkles } from 'lucide-react';
+
+interface SidebarSection {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<{ size?: number }>;
+  content: React.ReactNode;
+  defaultExpanded?: boolean;
+  gradient?: string;
+}
+
+interface Phase3RightSidebarProps {
+  sections: SidebarSection[];
+  className?: string;
+}
+
+const Phase3RightSidebar: React.FC<Phase3RightSidebarProps> = ({
+  sections,
+  className = ''
+}) => {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(sections.filter(s => s.defaultExpanded).map(s => s.id))
+  );
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <div className={`phase3-right-sidebar ${className}`}>
+      {sections.map((section) => {
+        const IconComponent = section.icon;
+        const isExpanded = expandedSections.has(section.id);
+        
+        return (
+          <div key={section.id} className="phase3-sidebar-section">
+            <button
+              onClick={() => toggleSection(section.id)}
+              className="phase3-sidebar-header w-full text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  section.gradient || 'bg-gradient-to-r from-blue-500 to-purple-500'
+                }`}>
+                  <IconComponent size={16} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm">{section.title}</h3>
+                  <p className="text-xs text-gray-600">{section.subtitle}</p>
+                </div>
+                <div className={`transform transition-transform duration-200 ${
+                  isExpanded ? 'rotate-180' : ''
+                }`}>
+                  <ChevronDown size={16} className="text-gray-400" />
+                </div>
+              </div>
+            </button>
+            
+            <div className={`phase3-collapsible-content ${
+              isExpanded ? 'expanded' : 'collapsed'
+            }`}>
+              <div className="phase3-sidebar-content">
+                {section.content}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export const createSmartFiltersSection = (
+  filters: React.ReactNode,
+  isExpanded: boolean = true
+): SidebarSection => ({
+  id: 'smart-filters',
+  title: 'Smart Filters',
+  subtitle: 'Filter and search',
+  icon: Filter,
+  content: filters,
+  defaultExpanded: isExpanded,
+  gradient: 'bg-gradient-to-r from-blue-500 to-purple-500'
+});
+
+export const createAIInsightsSection = (
+  insights: React.ReactNode,
+  isExpanded: boolean = false
+): SidebarSection => ({
+  id: 'ai-insights',
+  title: 'AI Insights',
+  subtitle: 'Smart suggestions',
+  icon: Sparkles,
+  content: insights,
+  defaultExpanded: isExpanded,
+  gradient: 'bg-gradient-to-r from-green-500 to-blue-500'
+});
+
+export default Phase3RightSidebar;

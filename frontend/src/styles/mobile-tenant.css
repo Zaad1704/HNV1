@@ -25,19 +25,47 @@
 }
 
 .mobile-optimized .text-lg {
-  @apply text-base md:text-lg;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-optimized .text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
 }
 
 .mobile-optimized .text-2xl {
-  @apply text-xl md:text-2xl;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-optimized .text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
 }
 
 .mobile-optimized .p-6 {
-  @apply p-4 md:p-6;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-optimized .p-6 {
+    padding: 1.5rem;
+  }
 }
 
 .mobile-optimized .gap-6 {
-  @apply gap-4 md:gap-6;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-optimized .gap-6 {
+    gap: 1.5rem;
+  }
 }
 
 /* Mobile card optimizations */
@@ -173,7 +201,15 @@
 }
 
 .mobile-text-lg {
-  @apply text-lg md:text-xl;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .mobile-text-lg {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
 }
 
 .mobile-text-xl {
@@ -251,11 +287,33 @@
 /* Mobile optimized animations */
 @media (prefers-reduced-motion: no-preference) {
   .mobile-animate-in {
-    @apply animate-in slide-in-from-bottom-4 duration-300;
+    animation: slideInFromBottom 0.3s ease-out;
   }
   
   .mobile-animate-out {
-    @apply animate-out slide-out-to-bottom-4 duration-200;
+    animation: slideOutToBottom 0.2s ease-out;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
   }
 }
 
