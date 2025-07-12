@@ -72,14 +72,14 @@ export const processTenantTransfer = async (req: Request, res: Response) => {
       movementType: 'transfer',
       movementDate: new Date(transferDate),
       fromProperty: {
-        propertyId: fromUnit.propertyId._id,
+        propertyId: (fromUnit.propertyId as any)._id,
         propertyName: (fromUnit.propertyId as any).name,
         unitId: fromUnit._id,
         unitNumber: fromUnit.unitNumber,
         unitNickname: fromUnit.nickname
       },
       toProperty: {
-        propertyId: toUnit.propertyId._id,
+        propertyId: (toUnit.propertyId as any)._id,
         propertyName: (toUnit.propertyId as any).name,
         unitId: toUnit._id,
         unitNumber: toUnit.unitNumber,
@@ -114,7 +114,7 @@ export const processTenantTransfer = async (req: Request, res: Response) => {
       }),
       // Update tenant
       Tenant.findByIdAndUpdate(tenantId, {
-        propertyId: toUnit.propertyId._id,
+        propertyId: (toUnit.propertyId as any)._id,
         unit: toUnit.unitNumber,
         unitNickname: toUnit.nickname,
         rentAmount: toUnit.rentAmount || tenant.rentAmount
@@ -126,7 +126,7 @@ export const processTenantTransfer = async (req: Request, res: Response) => {
       // From unit history
       new UnitHistory({
         unitId: fromUnitId,
-        propertyId: fromUnit.propertyId._id,
+        propertyId: (fromUnit.propertyId as any)._id,
         organizationId,
         eventType: 'tenant_moved_out',
         eventDate: new Date(transferDate),
@@ -144,7 +144,7 @@ export const processTenantTransfer = async (req: Request, res: Response) => {
       // To unit history
       new UnitHistory({
         unitId: toUnitId,
-        propertyId: toUnit.propertyId._id,
+        propertyId: (toUnit.propertyId as any)._id,
         organizationId,
         eventType: 'tenant_moved_in',
         eventDate: new Date(transferDate),
@@ -261,16 +261,19 @@ export const getTenantJourney = async (req: Request, res: Response) => {
     if (currentUnit) {
       journey.push({
         date: new Date(),
-        type: 'current',
+        type: 'current' as any,
         to: {
-          propertyId: currentUnit.propertyId._id,
+          propertyId: (currentUnit.propertyId as any)._id,
           propertyName: (currentUnit.propertyId as any).name,
           unitId: currentUnit._id,
           unitNumber: currentUnit.unitNumber,
           unitNickname: currentUnit.nickname
         },
         rentChange: {
-          newRent: tenant.rentAmount
+          oldRent: 0,
+          newRent: tenant.rentAmount,
+          changeAmount: 0,
+          changePercentage: 0
         }
       });
     }
