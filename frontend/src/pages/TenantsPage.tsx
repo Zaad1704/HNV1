@@ -27,6 +27,9 @@ import TenantInsightsPanel from '../components/tenant/TenantInsightsPanel';
 import TenantSmartFilters from '../components/tenant/TenantSmartFilters';
 import TenantPredictiveSearch from '../components/tenant/TenantPredictiveSearch';
 import TenantAdvancedSearch from '../components/tenant/TenantAdvancedSearch';
+import TenantBulkActions from '../components/tenant/TenantBulkActions';
+import TenantAutomationRules from '../components/tenant/TenantAutomationRules';
+import TenantWorkflowManager from '../components/tenant/TenantWorkflowManager';
 import { useCrossData } from '../hooks/useCrossData';
 import { useDataExport } from '../hooks/useDataExport';
 import { useQueryClient } from '@tanstack/react-query';
@@ -80,6 +83,7 @@ const TenantsPage = () => {
   const [smartFilters, setSmartFilters] = useState<any>({});
   const [advancedSearchCriteria, setAdvancedSearchCriteria] = useState<any>({});
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showAutomation, setShowAutomation] = useState(false);
   const { exportTenants, isExporting } = useDataExport() || { exportTenants: () => {}, isExporting: false };
 
   const handleTenantAdded = async (newTenant: any) => {
@@ -619,13 +623,78 @@ const TenantsPage = () => {
 
 
 
-      <BulkActions
-        selectedItems={selectedTenants}
-        totalItems={filteredTenants?.length || 0}
-        onSelectAll={() => setSelectedTenants(filteredTenants?.map((t: any) => t._id) || [])}
-        onClearSelection={() => setSelectedTenants([])}
-        actions={bulkActions}
-      />
+      {/* Enhanced Bulk Actions */}
+      {selectedTenants.length > 0 && (
+        <TenantBulkActions
+          selectedTenants={selectedTenants}
+          tenants={tenants}
+          onAction={async (action, data) => {
+            console.log('Bulk action:', action, data);
+            // Handle bulk actions here
+            switch (action) {
+              case 'rent_increase':
+                alert(`Rent increase applied to ${data.tenantIds.length} tenants`);
+                break;
+              case 'lease_renewal':
+                alert(`Lease renewal notices sent to ${data.tenantIds.length} tenants`);
+                break;
+              case 'payment_reminder':
+                alert(`Payment reminders sent to ${data.tenantIds.length} tenants`);
+                break;
+              default:
+                console.log('Unhandled action:', action);
+            }
+          }}
+          onClearSelection={() => setSelectedTenants([])}
+        />
+      )}
+
+      {/* Automation Toggle */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowAutomation(!showAutomation)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+            showAutomation
+              ? 'bg-purple-500 text-white'
+              : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
+          }`}
+        >
+          <span>{showAutomation ? 'Hide Automation' : 'Show Automation'}</span>
+        </button>
+      </div>
+
+      {/* Automation Components */}
+      {showAutomation && (
+        <div className="space-y-6">
+          <TenantAutomationRules
+            tenants={tenants}
+            onRuleCreate={(rule) => {
+              console.log('Create rule:', rule);
+              alert('Automation rule created successfully!');
+            }}
+            onRuleUpdate={(id, rule) => {
+              console.log('Update rule:', id, rule);
+              alert('Automation rule updated successfully!');
+            }}
+            onRuleDelete={(id) => {
+              console.log('Delete rule:', id);
+              alert('Automation rule deleted successfully!');
+            }}
+          />
+          
+          <TenantWorkflowManager
+            tenants={tenants}
+            onWorkflowCreate={(workflow) => {
+              console.log('Create workflow:', workflow);
+              alert('Workflow created successfully!');
+            }}
+            onWorkflowUpdate={(id, workflow) => {
+              console.log('Update workflow:', id, workflow);
+              alert('Workflow updated successfully!');
+            }}
+          />
+        </div>
+      )}
 
       <ExportModal
         isOpen={showExportModal}

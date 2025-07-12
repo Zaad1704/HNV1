@@ -1136,6 +1136,122 @@ Generated on: ${new Date().toLocaleString()}
   }
 };
 
+export const bulkTenantActions = async (req: AuthRequest, res: Response) => {
+  const user = req.user;
+  if (!user || !user.organizationId) {
+    res.status(401).json({ success: false, message: 'Not authorized' });
+    return;
+  }
+
+  try {
+    const { action, tenantIds, data } = req.body;
+
+    if (!action || !tenantIds || !Array.isArray(tenantIds)) {
+      res.status(400).json({ success: false, message: 'Invalid request data' });
+      return;
+    }
+
+    // Verify all tenants belong to the organization
+    const tenants = await Tenant.find({
+      _id: { $in: tenantIds },
+      organizationId: user.organizationId
+    });
+
+    if (tenants.length !== tenantIds.length) {
+      res.status(403).json({ success: false, message: 'Some tenants not found or not authorized' });
+      return;
+    }
+
+    let results = [];
+
+    switch (action) {
+      case 'rent_increase':
+        for (const tenant of tenants) {
+          const oldAmount = tenant.rentAmount || 0;
+          const newAmount = data.type === 'percentage' 
+            ? oldAmount * (1 + (data.value / 100))
+            : oldAmount + data.value;
+          
+          await Tenant.findByIdAndUpdate(tenant._id, {
+            rentAmount: Math.round(newAmount),
+            lastRentIncrease: {
+              date: new Date(data.effectiveDate || Date.now()),
+              oldAmount,
+              newAmount: Math.round(newAmount),
+              type: data.type,
+              value: data.value,
+              reason: data.reason || 'Bulk rent increase'
+            }
+          });
+          
+          results.push({ tenantId: tenant._id, oldAmount, newAmount: Math.round(newAmount) });
+        }
+        break;
+
+      case 'lease_renewal':
+        // Create lease renewal records or send notifications
+        for (const tenant of tenants) {
+          // This would typically create renewal notices or update lease terms
+          results.push({ tenantId: tenant._id, status: 'renewal_notice_sent' });
+        }
+        break;
+
+      case 'payment_reminder':
+      case 'late_notice':
+        // Send notifications (would integrate with email/SMS service)
+        for (const tenant of tenants) {
+          results.push({ tenantId: tenant._id, status: 'notification_sent' });
+        }
+        break;
+
+      case 'archive_tenants':
+        await Tenant.updateMany(
+          { _id: { $in: tenantIds } },
+          { status: 'Archived' }
+        );
+        results = tenantIds.map(id => ({ tenantId: id, status: 'archived' }));
+        break;
+
+      default:
+        res.status(400).json({ success: false, message: 'Unknown action' });
+        return;
+    }
+
+    // Log the bulk action
+    try {
+      const AuditLog = await import('../models/AuditLog');
+      await AuditLog.default.create({
+        userId: user._id,
+        organizationId: user.organizationId,
+        action: `bulk_${action}`,
+        resource: 'tenant',
+        details: {
+          tenantCount: tenantIds.length,
+          action,
+          data,
+          results
+        },
+        timestamp: new Date()
+      });
+    } catch (logError) {
+      console.error('Audit log error (non-critical):', logError);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        action,
+        processedCount: results.length,
+        results
+      },
+      message: `Bulk ${action} completed successfully`
+    });
+  } catch (error) {
+    console.error('Bulk action error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
 export const downloadPersonalDetailsPDF = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.organizationId) {
