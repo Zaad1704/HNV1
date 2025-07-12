@@ -224,7 +224,7 @@ const TenantAdvancedSearch: React.FC<TenantAdvancedSearchProps> = ({
                 <option value="expired">Expired</option>
                 <option value="expiring_30">Expiring in 30 days</option>
                 <option value="expiring_90">Expiring in 90 days</option>
-                <option value="active">Active (>90 days)</option>
+                <option value="active">Active (&gt;90 days)</option>
               </select>
             </div>
 
@@ -240,7 +240,7 @@ const TenantAdvancedSearch: React.FC<TenantAdvancedSearchProps> = ({
                 <option value="excellent">Excellent (90-100)</option>
                 <option value="good">Good (80-89)</option>
                 <option value="fair">Fair (70-79)</option>
-                <option value="poor">Poor (<70)</option>
+                <option value="poor">Poor (&lt;70)</option>
               </select>
             </div>
 
