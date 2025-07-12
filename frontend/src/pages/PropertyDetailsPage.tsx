@@ -156,7 +156,7 @@ const PropertyDetailsPage = () => {
             <ArrowLeft size={20} className="text-gray-600" />
           </Link>
           <div className="flex-1 mx-4">
-            <h1 className="text-lg font-bold text-gray-900 truncate">{property.name}</h1>
+            <h1 className="text-lg font-bold text-gray-900 truncate">{property?.name || 'Property'}</h1>
           </div>
           <button
             onClick={() => setShowEditModal(true)}
@@ -178,7 +178,7 @@ const PropertyDetailsPage = () => {
               <ArrowLeft size={20} className="text-text-muted" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">{property.name}</h1>
+              <h1 className="text-2xl font-bold text-text-primary">{property?.name || 'Property'}</h1>
               <div className="flex items-center gap-2 text-text-secondary mt-1">
                 <MapPin size={16} />
                 <span>{property.address?.street || property.address?.formattedAddress || 'No address'}</span>
@@ -206,62 +206,70 @@ const PropertyDetailsPage = () => {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-4 lg:space-y-8 order-2 lg:order-1">
             {/* Property Analytics Dashboard */}
-            <PropertyAnalyticsDashboard
-              propertyId={propertyId!}
-              property={property}
-              tenants={tenants}
-              payments={payments}
-              expenses={expenses}
-              maintenanceRequests={maintenanceRequests}
-            />
+            {propertyId && (
+              <PropertyAnalyticsDashboard
+                propertyId={propertyId}
+                property={property}
+                tenants={tenants}
+                payments={payments}
+                expenses={expenses}
+                maintenanceRequests={maintenanceRequests}
+              />
+            )}
 
             {/* Related Data Sections with Unit-Centric Filtering */}
-            <RelatedDataSections
-              propertyId={propertyId!}
-              property={property}
-              tenants={tenants}
-              payments={payments}
-              expenses={expenses}
-              maintenanceRequests={maintenanceRequests}
-            />
+            {propertyId && (
+              <RelatedDataSections
+                propertyId={propertyId}
+                property={property}
+                tenants={tenants}
+                payments={payments}
+                expenses={expenses}
+                maintenanceRequests={maintenanceRequests}
+              />
+            )}
 
             {/* Enhanced Units Grid */}
             <div data-section="units">
-            <EnhancedUnitsGrid
-              propertyId={propertyId!}
-              property={property}
-              tenants={tenants}
-              units={units}
-              onAddTenant={handleAddTenant}
-              onEditNicknames={() => {
-                // Open the enhanced unit nickname modal
-                const unitsGrid = document.querySelector('[data-units-grid]');
-                if (unitsGrid) {
-                  // Trigger the manage units modal from the units grid
-                  const manageButton = unitsGrid.querySelector('[data-manage-units-btn]') as HTMLButtonElement;
-                  if (manageButton) {
-                    manageButton.click();
+            {propertyId && (
+              <EnhancedUnitsGrid
+                propertyId={propertyId}
+                property={property}
+                tenants={tenants}
+                units={units}
+                onAddTenant={handleAddTenant}
+                onEditNicknames={() => {
+                  // Open the enhanced unit nickname modal
+                  const unitsGrid = document.querySelector('[data-units-grid]');
+                  if (unitsGrid) {
+                    // Trigger the manage units modal from the units grid
+                    const manageButton = unitsGrid.querySelector('[data-manage-units-btn]') as HTMLButtonElement;
+                    if (manageButton) {
+                      manageButton.click();
+                    }
                   }
-                }
-              }}
-            />
+                }}
+              />
+            )}
             </div>
           </div>
 
           {/* Enhanced Sidebar */}
           <div className="order-1 lg:order-2">
-            <EnhancedPropertyQuickActions
-              propertyId={propertyId!}
-              property={property}
-              tenants={tenants}
-              onRentIncrease={() => setShowRentIncrease(true)}
-              onCollectionSheet={() => setShowCollectionSheet(true)}
-              onArchive={() => {
-                if (confirm(`Archive ${property.name}? This will hide it from active listings.`)) {
-                  alert('Archive functionality coming soon');
-                }
-              }}
-            />
+            {propertyId && (
+              <EnhancedPropertyQuickActions
+                propertyId={propertyId}
+                property={property}
+                tenants={tenants}
+                onRentIncrease={() => setShowRentIncrease(true)}
+                onCollectionSheet={() => setShowCollectionSheet(true)}
+                onArchive={() => {
+                  if (confirm(`Archive ${property?.name || 'this property'}? This will hide it from active listings.`)) {
+                    alert('Archive functionality coming soon');
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -274,13 +282,15 @@ const PropertyDetailsPage = () => {
         onPropertyUpdated={handleDataUpdate}
       />
 
-      <MonthlyCollectionSheet
-        isOpen={showCollectionSheet}
-        onClose={() => setShowCollectionSheet(false)}
-        propertyId={propertyId!}
-        propertyName={property.name}
-        tenants={activeTenants}
-      />
+      {propertyId && (
+        <MonthlyCollectionSheet
+          isOpen={showCollectionSheet}
+          onClose={() => setShowCollectionSheet(false)}
+          propertyId={propertyId}
+          propertyName={property?.name || ''}
+          tenants={activeTenants}
+        />
+      )}
 
       <RentIncreaseModal
         isOpen={showRentIncrease}
