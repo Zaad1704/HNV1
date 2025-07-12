@@ -524,12 +524,7 @@ const TenantsPage = () => {
         }}
       />
 
-      {/* Smart Filters */}
-      <TenantSmartFilters
-        tenants={tenants}
-        onFiltersChange={setSmartFilters}
-        activeFilters={smartFilters}
-      />
+
 
       {/* Advanced Search Toggle */}
       <div className="flex items-center justify-between">

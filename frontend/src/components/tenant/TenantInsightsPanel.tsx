@@ -9,14 +9,34 @@ interface TenantInsightsPanelProps {
 }
 
 const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, className = '' }) => {
-  // Calculate insights from tenant data
+  // Fetch properties data to calculate accurate occupancy
+  const { data: properties = [] } = useQuery({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/properties');
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
+    }
+  });
+  // Calculate insights from tenant data with accurate occupancy
   const insights = React.useMemo(() => {
-    if (!tenants.length) return null;
+    if (!tenants.length || !properties.length) return null;
 
     const totalTenants = tenants.length;
     const activeTenants = tenants.filter(t => t.status === 'Active').length;
     const lateTenants = tenants.filter(t => t.status === 'Late').length;
     const totalRent = tenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0);
+    
+    // Calculate total available units across all properties
+    const totalUnits = properties.reduce((sum, property) => {
+      return sum + (property.numberOfUnits || 1);
+    }, 0);
+    
+    // Calculate occupied units (active tenants)
+    const occupiedUnits = activeTenants;
     
     // Lease expiry analysis
     const expiringLeases = tenants.filter(t => {
@@ -25,7 +45,7 @@ const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, clas
       return daysUntil <= 90 && daysUntil > 0;
     }).length;
 
-    // Occupancy insights
+    // Long-term tenant analysis
     const longTermTenants = tenants.filter(t => {
       if (!t.leaseStartDate) return false;
       const monthsSince = (new Date().getTime() - new Date(t.leaseStartDate).getTime()) / (1000 * 60 * 60 * 24 * 30);
@@ -39,12 +59,15 @@ const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, clas
       totalRent,
       expiringLeases,
       longTermTenants,
-      occupancyRate: Math.round((activeTenants / totalTenants) * 100),
-      latePaymentRate: Math.round((lateTenants / totalTenants) * 100),
+      totalUnits,
+      occupiedUnits,
+      vacantUnits: totalUnits - occupiedUnits,
+      occupancyRate: totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0,
+      latePaymentRate: totalTenants > 0 ? Math.round((lateTenants / totalTenants) * 100) : 0,
       renewalOpportunities: expiringLeases,
-      retentionRate: Math.round((longTermTenants / totalTenants) * 100)
+      retentionRate: totalTenants > 0 ? Math.round((longTermTenants / totalTenants) * 100) : 0
     };
-  }, [tenants]);
+  }, [tenants, properties]);
 
   if (!insights) {
     return (
@@ -95,7 +118,13 @@ const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, clas
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">{insights.occupancyRate}%</div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div className="text-xs text-gray-500 mb-2">
+                {insights.occupiedUnits} occupied / {insights.totalUnits} total units
+                {insights.vacantUnits > 0 && (
+                  <span className="text-orange-600 font-medium"> • {insights.vacantUnits} vacant</span>
+                )}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className={`bg-${occupancyInsight.color}-500 h-2 rounded-full transition-all duration-1000`}
                   style={{ width: `${insights.occupancyRate}%` }}
@@ -154,6 +183,21 @@ const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, clas
               </div>
             )}
 
+            {insights.vacantUnits > 0 && (
+              <div className="bg-white rounded-xl p-4 border border-orange-200 border-l-4 border-l-orange-500">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertCircle size={16} className="text-orange-600" />
+                  <span className="font-medium text-gray-900">Vacant Units</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {insights.vacantUnits} units available for rent
+                </p>
+                <button className="text-xs text-orange-700 hover:text-orange-800 mt-2">
+                  Market vacant units →
+                </button>
+              </div>
+            )}
+
             <div className="bg-white rounded-xl p-4 border border-green-200 border-l-4 border-l-green-500">
               <div className="flex items-center gap-2 mb-1">
                 <Star size={16} className="text-green-600" />
@@ -205,7 +249,9 @@ const TenantInsightsPanel: React.FC<TenantInsightsPanelProps> = ({ tenants, clas
             <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-4 text-white">
               <div className="text-sm opacity-90 mb-1">Next Action</div>
               <div className="font-medium">
-                {insights.renewalOpportunities > 0 
+                {insights.vacantUnits > 0
+                  ? `Market ${insights.vacantUnits} vacant units to increase occupancy`
+                  : insights.renewalOpportunities > 0 
                   ? `Contact ${insights.renewalOpportunities} tenants for lease renewal`
                   : insights.latePaymentRate > 10
                   ? `Follow up on ${insights.lateTenants} late payments`
