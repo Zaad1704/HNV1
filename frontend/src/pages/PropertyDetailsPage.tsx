@@ -21,6 +21,9 @@ import PropertyStatsSection from '../components/property/PropertyStatsSection';
 import DataPreviewSections from '../components/property/DataPreviewSections';
 import PropertyQuickActions from '../components/property/PropertyQuickActions';
 import MonthlyCollectionSheet from '../components/common/MonthlyCollectionSheet';
+import PropertyAnalyticsDashboard from '../components/property/PropertyAnalyticsDashboard';
+import EnhancedUnitsGrid from '../components/property/EnhancedUnitsGrid';
+import EnhancedPropertyQuickActions from '../components/property/EnhancedPropertyQuickActions';
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -76,6 +79,20 @@ const PropertyDetailsPage = () => {
     queryFn: async () => {
       const { data } = await apiClient.get(`/maintenance?propertyId=${propertyId}`);
       return data.data || [];
+    },
+    enabled: !!propertyId
+  });
+
+  // Fetch units for this property
+  const { data: units = [] } = useQuery({
+    queryKey: ['propertyUnits', propertyId],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get(`/units/property/${propertyId}`);
+        return data.data || [];
+      } catch (error) {
+        return [];
+      }
     },
     enabled: !!propertyId
   });
@@ -149,18 +166,24 @@ const PropertyDetailsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            {/* Property Stats */}
-            <PropertyStatsSection 
-              propertyId={propertyId!}
-            />
-
-            {/* Units Section */}
-            <UnitsSection
+            {/* Property Analytics Dashboard */}
+            <PropertyAnalyticsDashboard
               propertyId={propertyId!}
               property={property}
               tenants={tenants}
+              payments={payments}
+              expenses={expenses}
+              maintenanceRequests={maintenanceRequests}
+            />
+
+            {/* Enhanced Units Grid */}
+            <EnhancedUnitsGrid
+              propertyId={propertyId!}
+              property={property}
+              tenants={tenants}
+              units={units}
               onAddTenant={handleAddTenant}
-              onDataUpdate={handleDataUpdate}
+              onEditNicknames={() => alert('Unit nickname editing coming soon!')}
             />
 
             {/* Data Preview Sections */}
@@ -173,33 +196,9 @@ const PropertyDetailsPage = () => {
             />
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Property Info */}
-            <div className="app-surface rounded-3xl p-6 border border-app-border">
-              <h3 className="text-lg font-bold text-text-primary mb-4">Property Overview</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-text-secondary">Type</span>
-                  <span className="font-medium text-text-primary">{property.propertyType || 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-text-secondary">Units</span>
-                  <span className="font-medium text-text-primary">{property.numberOfUnits}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-text-secondary">Occupancy</span>
-                  <span className="font-medium text-text-primary">{occupancyRate.toFixed(1)}%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-text-secondary">Monthly Rent</span>
-                  <span className="font-medium text-text-primary">${totalRent.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Quick Actions */}
-            <PropertyQuickActions
+          {/* Enhanced Sidebar */}
+          <div>
+            <EnhancedPropertyQuickActions
               propertyId={propertyId!}
               property={property}
               tenants={tenants}
