@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, User, DollarSign, Plus, Edit3, Grid3X3, List } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
-// import UnitNicknameModal from './UnitNicknameModal'; // Disabled to prevent crashes
+import UnitNicknameModal from './UnitNicknameModal';
 
 interface UnitsSectionProps {
   propertyId: string;
@@ -17,7 +17,7 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showUnitModal, setShowUnitModal] = useState(false);
   
-  // Fetch units with nicknames - disable for now to prevent crashes
+  // Fetch units with nicknames
   const { data: units = [] } = useQuery({
     queryKey: ['propertyUnits', propertyId],
     queryFn: async () => {
@@ -29,7 +29,7 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         return [];
       }
     },
-    enabled: false, // Disable until units are properly initialized
+    enabled: !!propertyId,
     retry: false
   });
   
@@ -101,9 +101,8 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => alert('Unit nicknames feature coming soon!')}
-            className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg cursor-not-allowed flex items-center gap-2 text-sm"
-            disabled
+            onClick={() => setShowUnitModal(true)}
+            className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2 text-sm"
           >
             <Edit3 size={14} />
             Edit Nicknames
@@ -208,12 +207,12 @@ const UnitsSection: React.FC<UnitsSectionProps> = ({ propertyId, property, tenan
         ))}
       </div>
       
-      {/* <UnitNicknameModal
+      <UnitNicknameModal
         isOpen={showUnitModal}
         onClose={() => setShowUnitModal(false)}
         propertyId={propertyId}
         propertyName={property?.name || 'Property'}
-      /> */}
+      />
     </div>
   );
 };

@@ -18,9 +18,14 @@ const UnitDataModal: React.FC<UnitDataModalProps> = ({
   unitNumber, 
   unitName 
 }) => {
-  // Disable unit data API call to prevent crashes
-  const unitData = null;
-  const isLoading = false;
+  const { data: unitData, isLoading } = useQuery({
+    queryKey: ['unitData', propertyId, unitNumber],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/properties/${propertyId}/units/${unitNumber}/data`);
+      return data.data;
+    },
+    enabled: isOpen
+  });
 
   if (!isOpen) return null;
 

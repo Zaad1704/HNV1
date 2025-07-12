@@ -19,18 +19,32 @@ const DataPreviewSections: React.FC<DataPreviewProps> = ({ propertyId, selectedU
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [dateFilter, setDateFilter] = useState<string>('');
 
-  // Disable data previews API call to prevent crashes
-  const previews = {
-    payments: [],
-    receipts: [],
-    expenses: [],
-    maintenance: [],
-    reminders: [],
-    approvals: [],
-    auditLogs: []
-  };
-  const isLoading = false;
-  const error = null;
+  const { data: previews, isLoading, error } = useQuery({
+    queryKey: ['propertyDataPreviews', propertyId, unitFilter, statusFilter, dateFilter],
+    queryFn: async () => {
+      try {
+        const params = new URLSearchParams();
+        if (unitFilter) params.append('unit', unitFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        if (dateFilter) params.append('date', dateFilter);
+        const queryString = params.toString();
+        const { data } = await apiClient.get(`/properties/${propertyId}/data-previews${queryString ? `?${queryString}` : ''}`);
+        return data.data;
+      } catch (error) {
+        console.error('Failed to fetch data previews:', error);
+        return {
+          payments: [],
+          receipts: [],
+          expenses: [],
+          maintenance: [],
+          reminders: [],
+          approvals: [],
+          auditLogs: []
+        };
+      }
+    },
+    retry: false
+  });
 
   // Generate unit options from property data
   const getUnitOptions = () => {
