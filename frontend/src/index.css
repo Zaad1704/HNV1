@@ -6,6 +6,8 @@
 @import './styles/mobile-fixes.css';
 @import './styles/phase4-mobile.css';
 @import './styles/phase5-performance.css';
+@import "./styles/mobile-universal.css";
+@import "./styles/phase3-mobile.css";
 
 @tailwind base;
 @tailwind components;
@@ -575,8 +577,7 @@ select:focus-visible {
   .dark select:focus-visible {
     outline: 4px solid #ffffff;
   }
-}@import "./mobile-universal.css";
-@import "./phase3-mobile.css";
+}
 
 /* Universal Mobile FAB System */
 .universal-mobile-fab {
