@@ -10,6 +10,7 @@ router.route('/')
     .get(expenseController_1.getExpenses)
     .post((0, approvalMiddleware_1.requireApproval)('expense'), expenseController_1.createExpense);
 router.route('/:id')
+    .get(expenseController_1.getExpenseById)
     .put((0, approvalMiddleware_1.requireApproval)('expense'), expenseController_1.updateExpense)
     .delete((0, approvalMiddleware_1.requireApproval)('expense'), expenseController_1.deleteExpense);
 exports.default = router;

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteExpense = exports.updateExpense = exports.createExpense = exports.getExpenses = void 0;
+exports.deleteExpense = exports.getExpenseById = exports.updateExpense = exports.createExpense = exports.getExpenses = void 0;
 const Expense_1 = __importDefault(require("../models/Expense"));
 const Property_1 = __importDefault(require("../models/Property"));
 const getExpenses = async (req, res) => {
@@ -83,6 +83,28 @@ const updateExpense = async (req, res) => {
     }
 };
 exports.updateExpense = updateExpense;
+const getExpenseById = async (req, res) => {
+    try {
+        if (!req.user?.organizationId && req.user?.role !== 'Super Admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+        const expense = await Expense_1.default.findById(req.params.id)
+            .populate('propertyId', 'name address')
+            .populate('organizationId', 'name');
+        if (!expense) {
+            return res.status(404).json({ success: false, message: 'Expense not found' });
+        }
+        if (req.user.role !== 'Super Admin' && expense.organizationId.toString() !== req.user.organizationId.toString()) {
+            return res.status(403).json({ success: false, message: 'Not authorized to view this expense' });
+        }
+        res.status(200).json({ success: true, data: expense });
+    }
+    catch (error) {
+        console.error('Get expense by ID error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+exports.getExpenseById = getExpenseById;
 const deleteExpense = async (req, res) => {
     try {
         if (!req.user?.organizationId) {

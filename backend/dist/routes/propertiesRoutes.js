@@ -19,7 +19,7 @@ router.route('/:id')
     .put(uploadMiddleware_1.default.single('image'), propertyController_1.updateProperty)
     .delete(async (req, res) => {
     try {
-        await (0, cascadeMiddleware_1.cascadePropertyChanges)(req.params.id, 'delete', req.user?.organizationId);
+        await (0, cascadeMiddleware_1.cascadePropertyChanges)(req.params.id, 'delete', req.user?.organizationId?.toString());
         (0, propertyController_1.deleteProperty)(req, res);
     }
     catch (error) {
@@ -28,7 +28,7 @@ router.route('/:id')
 });
 router.patch('/:id/archive', async (req, res) => {
     try {
-        await (0, cascadeMiddleware_1.cascadePropertyChanges)(req.params.id, 'archive', req.user?.organizationId);
+        await (0, cascadeMiddleware_1.cascadePropertyChanges)(req.params.id, 'archive', req.user?.organizationId?.toString());
         const Property = require('../models/Property').default;
         await Property.findByIdAndUpdate(req.params.id, { status: 'Archived' });
         res.status(200).json({ success: true, message: 'Property and related data archived' });

@@ -9,6 +9,7 @@ router.route('/')
     .get(maintenanceController_1.getMaintenanceRequests)
     .post(maintenanceController_1.createMaintenanceRequest);
 router.route('/:id')
+    .get(maintenanceController_1.getMaintenanceRequestById)
     .put(maintenanceController_1.updateMaintenanceRequest)
     .delete(maintenanceController_1.deleteMaintenanceRequest);
 exports.default = router;
