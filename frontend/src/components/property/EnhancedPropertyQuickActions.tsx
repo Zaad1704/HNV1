@@ -7,6 +7,7 @@ import {
 import BulkCommunicationModal from './BulkCommunicationModal';
 import PropertyReportModal from './PropertyReportModal';
 import ScheduleMaintenanceModal from './ScheduleMaintenanceModal';
+import BulkLeaseRenewalModal from './BulkLeaseRenewalModal';
 
 interface EnhancedPropertyQuickActionsProps {
   propertyId: string;
@@ -28,6 +29,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
   const [showCommunicationModal, setShowCommunicationModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [showLeaseRenewalModal, setShowLeaseRenewalModal] = useState(false);
   const activeTenants = tenants.filter(t => t.status === 'Active');
   const expiringLeases = tenants.filter(t => {
     if (!t.leaseEndDate) return false;
@@ -156,7 +158,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
 
           {hasExpiringLeases && (
             <button
-              onClick={() => alert('Bulk lease renewal for expiring leases coming soon!')}
+              onClick={() => setShowLeaseRenewalModal(true)}
               className="w-full bg-yellow-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-yellow-600 transition-colors flex items-center gap-2"
             >
               <Calendar size={16} />
@@ -277,6 +279,19 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
           console.log('Maintenance scheduled successfully');
         }}
       />
+
+      {hasExpiringLeases && (
+        <BulkLeaseRenewalModal
+          isOpen={showLeaseRenewalModal}
+          onClose={() => setShowLeaseRenewalModal(false)}
+          expiringLeases={expiringLeases}
+          property={property}
+          onSuccess={() => {
+            // Refresh data
+            console.log('Leases renewed successfully');
+          }}
+        />
+      )}
     </div>
   );
 };

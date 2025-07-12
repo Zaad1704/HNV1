@@ -39,16 +39,86 @@ const BulkCommunicationModal: React.FC<BulkCommunicationModalProps> = ({
 
     setSending(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const selectedTenantData = tenants.filter(t => selectedTenants.includes(t._id));
       
-      alert(`Message sent via ${selectedMethod} to ${selectedTenants.length} tenant(s)!`);
+      if (selectedMethod === 'email') {
+        handleEmailSend(selectedTenantData);
+      } else if (selectedMethod === 'whatsapp') {
+        handleWhatsAppSend(selectedTenantData);
+      } else if (selectedMethod === 'telegram') {
+        handleTelegramSend(selectedTenantData);
+      } else {
+        handleCopyToClipboard(selectedTenantData);
+      }
+      
+      alert(`Message prepared for ${selectedTenants.length} tenant(s) via ${selectedMethod}!`);
       onClose();
     } catch (error) {
-      alert('Failed to send message');
+      alert('Failed to prepare message');
     } finally {
       setSending(false);
     }
+  };
+
+  const handleEmailSend = (selectedTenantData: any[]) => {
+    const emails = selectedTenantData.map(t => t.email).filter(Boolean).join(';');
+    const subject = `Important Notice - ${propertyName}`;
+    const body = encodeURIComponent(message);
+    
+    if (emails) {
+      // Open default email client
+      window.open(`mailto:${emails}?subject=${encodeURIComponent(subject)}&body=${body}`);
+    } else {
+      // Fallback: copy email list to clipboard
+      const emailList = selectedTenantData.map(t => `${t.name}: ${t.email || 'No email'}`).join('\n');
+      navigator.clipboard.writeText(`Subject: ${subject}\n\nMessage:\n${message}\n\nRecipients:\n${emailList}`);
+      alert('Email content copied to clipboard!');
+    }
+  };
+
+  const handleWhatsAppSend = (selectedTenantData: any[]) => {
+    const phones = selectedTenantData.filter(t => t.whatsappNumber || t.phone);
+    
+    if (phones.length === 1) {
+      // Single recipient - open WhatsApp directly
+      const phone = phones[0].whatsappNumber || phones[0].phone;
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const whatsappMessage = encodeURIComponent(`*${propertyName} - Important Notice*\n\n${message}`);
+      window.open(`https://wa.me/${cleanPhone}?text=${whatsappMessage}`);
+    } else {
+      // Multiple recipients - copy formatted message
+      const phoneList = phones.map(t => `${t.name}: ${t.whatsappNumber || t.phone || 'No phone'}`).join('\n');
+      const whatsappContent = `*${propertyName} - Bulk Message*\n\n${message}\n\nRecipients:\n${phoneList}`;
+      navigator.clipboard.writeText(whatsappContent);
+      alert('WhatsApp message copied to clipboard! Send individually to each tenant.');
+    }
+  };
+
+  const handleTelegramSend = (selectedTenantData: any[]) => {
+    const telegramUsers = selectedTenantData.filter(t => t.telegramUsername);
+    
+    if (telegramUsers.length > 0) {
+      const userList = telegramUsers.map(t => `@${t.telegramUsername}: ${t.name}`).join('\n');
+      const telegramContent = `*${propertyName} - Important Notice*\n\n${message}\n\nRecipients:\n${userList}`;
+      navigator.clipboard.writeText(telegramContent);
+      alert('Telegram message copied to clipboard!');
+    } else {
+      alert('No Telegram usernames found for selected tenants.');
+    }
+  };
+
+  const handleCopyToClipboard = (selectedTenantData: any[]) => {
+    const contactList = selectedTenantData.map(t => {
+      const contacts = [];
+      if (t.email) contacts.push(`Email: ${t.email}`);
+      if (t.phone) contacts.push(`Phone: ${t.phone}`);
+      if (t.whatsappNumber) contacts.push(`WhatsApp: ${t.whatsappNumber}`);
+      return `${t.name} (Unit ${t.unit})\n${contacts.join(', ')}`;
+    }).join('\n\n');
+    
+    const fullMessage = `${propertyName} - Bulk Communication\n\nMessage:\n${message}\n\nRecipients:\n${contactList}`;
+    navigator.clipboard.writeText(fullMessage);
+    alert('Message and contact list copied to clipboard!');
   };
 
   const toggleTenant = (tenantId: string) => {
