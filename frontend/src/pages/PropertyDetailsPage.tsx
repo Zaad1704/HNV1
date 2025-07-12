@@ -25,6 +25,7 @@ import PropertyAnalyticsDashboard from '../components/property/PropertyAnalytics
 import EnhancedUnitsGrid from '../components/property/EnhancedUnitsGrid';
 import EnhancedPropertyQuickActions from '../components/property/EnhancedPropertyQuickActions';
 import RelatedDataSections from '../components/property/RelatedDataSections';
+import RentIncreaseModal from '../components/property/RentIncreaseModal';
 
 const PropertyDetailsPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
@@ -240,30 +241,13 @@ const PropertyDetailsPage = () => {
         tenants={activeTenants}
       />
 
-      {showRentIncrease && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold mb-4">Rent Increase</h3>
-            <p className="text-gray-600 mb-4">
-              Rent increase functionality is coming soon. This will allow you to:
-            </p>
-            <ul className="list-disc list-inside text-sm text-gray-600 mb-6 space-y-1">
-              <li>Set new rent amounts for all units</li>
-              <li>Schedule increases for future dates</li>
-              <li>Generate tenant notifications</li>
-              <li>Track increase history</li>
-            </ul>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowRentIncrease(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RentIncreaseModal
+        isOpen={showRentIncrease}
+        onClose={() => setShowRentIncrease(false)}
+        property={property}
+        tenants={activeTenants}
+        onSuccess={handleDataUpdate}
+      />
     </div>
   );
 };

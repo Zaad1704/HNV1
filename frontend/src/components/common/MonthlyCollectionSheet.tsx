@@ -61,74 +61,255 @@ const MonthlyCollectionSheet: React.FC<MonthlyCollectionSheetProps> = ({ isOpen,
         <html>
           <head>
             <title>Collection Sheet - ${monthName} ${selectedYear}</title>
+            <meta charset="UTF-8">
             <style>
-              body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.4; }
-              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-              .footer { text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; font-style: italic; }
-              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
-              th { background-color: #f2f2f2; font-weight: bold; }
-              .summary { background-color: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px; }
-              .paid { color: green; font-weight: bold; }
-              .pending { color: orange; font-weight: bold; }
-              .overdue { color: red; font-weight: bold; }
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                margin: 0; 
+                padding: 20px; 
+                line-height: 1.6; 
+                color: #333;
+                background: #fff;
+              }
+              .container { max-width: 1200px; margin: 0 auto; }
+              .header { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 10px;
+                margin-bottom: 30px;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+              }
+              .header h1 { font-size: 28px; margin-bottom: 10px; font-weight: 300; }
+              .header h2 { font-size: 22px; margin-bottom: 15px; font-weight: 600; }
+              .header p { font-size: 14px; opacity: 0.9; margin: 5px 0; }
+              .report-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin-bottom: 30px;
+              }
+              .info-card {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+              }
+              .info-card h3 { color: #667eea; margin-bottom: 10px; font-size: 16px; }
+              .summary {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                padding: 25px;
+                border-radius: 10px;
+                margin: 20px 0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+              }
+              .summary h3 { margin-bottom: 15px; font-size: 20px; }
+              .summary-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+              }
+              .summary-item {
+                background: rgba(255,255,255,0.2);
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+              }
+              .summary-item .label { font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
+              .summary-item .value { font-size: 18px; font-weight: bold; }
+              .table-container {
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                margin: 20px 0;
+              }
+              table { width: 100%; border-collapse: collapse; }
+              th {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 12px;
+                text-align: left;
+                font-size: 13px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+              td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+                font-size: 13px;
+                vertical-align: middle;
+              }
+              tr:hover { background-color: #f8f9fa; }
+              tr:nth-child(even) { background-color: #fafafa; }
+              .status-badge {
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+              .paid { background: #d4edda; color: #155724; }
+              .pending { background: #fff3cd; color: #856404; }
+              .overdue { background: #f8d7da; color: #721c24; }
+              .footer {
+                margin-top: 40px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                text-align: center;
+                border-top: 3px solid #667eea;
+              }
+              .footer-stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 20px;
+                margin-bottom: 20px;
+              }
+              .footer-stat {
+                text-align: center;
+              }
+              .footer-stat .number {
+                font-size: 24px;
+                font-weight: bold;
+                color: #667eea;
+              }
+              .footer-stat .label {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+              .branding {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+                font-size: 12px;
+                color: #888;
+              }
+              @media print {
+                body { margin: 0; padding: 15px; }
+                .container { max-width: none; }
+                .header, .summary { break-inside: avoid; }
+                table { break-inside: auto; }
+                tr { break-inside: avoid; break-after: auto; }
+              }
             </style>
           </head>
           <body>
-            <div class="header">
-              <h1>${organizationName}</h1>
-              <h2>Monthly Collection Sheet</h2>
-              <p><strong>${monthName} ${selectedYear} - ${propertyName}</strong></p>
-              <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
-              <p><strong>Powered by HNV Property Management Solutions</strong></p>
-            </div>
+            <div class="container">
+              <div class="header">
+                <h1>${organizationName}</h1>
+                <h2>Monthly Collection Sheet</h2>
+                <p><strong>${monthName} ${selectedYear} - ${propertyName}</strong></p>
+                <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+              </div>
+              
+              <div class="report-info">
+                <div class="info-card">
+                  <h3>Report Details</h3>
+                  <p><strong>Period:</strong> ${monthName} ${selectedYear}</p>
+                  <p><strong>Property:</strong> ${propertyName}</p>
+                  <p><strong>Generated By:</strong> ${user?.name || 'System'}</p>
+                </div>
+                <div class="info-card">
+                  <h3>Organization</h3>
+                  <p><strong>Name:</strong> ${organizationName}</p>
+                  <p><strong>Report Type:</strong> Monthly Collection</p>
+                  <p><strong>Status:</strong> Active</p>
+                </div>
+              </div>
+              
+              <div class="summary">
+                <h3>Collection Summary</h3>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <div class="label">Total Expected</div>
+                    <div class="value">${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.rentAmount || 0), 0).toLocaleString()}</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="label">Total Collected</div>
+                    <div class="value">${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.paidAmount || 0), 0).toLocaleString()}</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="label">Outstanding</div>
+                    <div class="value">${currency}${collectionData.reduce((sum: number, item: any) => sum + ((item.rentAmount || 0) - (item.paidAmount || 0)), 0).toLocaleString()}</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="label">Collection Rate</div>
+                    <div class="value">${Math.round((collectionData.reduce((sum: number, item: any) => sum + (item.paidAmount || 0), 0) / Math.max(collectionData.reduce((sum: number, item: any) => sum + (item.rentAmount || 0), 0), 1)) * 100)}%</div>
+                  </div>
+                </div>
+              </div>
             
-            <div class="summary">
-              <h3>Collection Summary</h3>
-              <p><strong>Total Expected:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.rentAmount || 0), 0).toLocaleString()}</p>
-              <p><strong>Total Collected:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + (item.paidAmount || 0), 0).toLocaleString()}</p>
-              <p><strong>Outstanding:</strong> ${currency}${collectionData.reduce((sum: number, item: any) => sum + ((item.rentAmount || 0) - (item.paidAmount || 0)), 0).toLocaleString()}</p>
-            </div>
-            
-            <table>
-              <thead>
-                <tr>
-                  <th>Tenant Name</th>
-                  <th>Property</th>
-                  <th>Unit</th>
-                  <th>Rent Amount</th>
-                  <th>Paid Amount</th>
-                  <th>Outstanding</th>
-                  <th>Status</th>
-                  <th>Payment Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${collectionData.map((item: any) => {
-                  const outstanding = (item.rentAmount || 0) - (item.paidAmount || 0);
-                  const status = outstanding === 0 ? 'Paid' : outstanding > 0 ? 'Pending' : 'Overpaid';
-                  const statusClass = status === 'Paid' ? 'paid' : status === 'Pending' ? 'pending' : 'overdue';
-                  
-                  return `
+              <div class="table-container">
+                <table>
+                  <thead>
                     <tr>
-                      <td>${item.tenantName || 'N/A'}</td>
-                      <td>${item.propertyName || 'N/A'}</td>
-                      <td>${item.unit || 'N/A'}</td>
-                      <td>${currency}${(item.rentAmount || 0).toLocaleString()}</td>
-                      <td>${currency}${(item.paidAmount || 0).toLocaleString()}</td>
-                      <td>${currency}${outstanding.toLocaleString()}</td>
-                      <td class="${statusClass}">${status}</td>
-                      <td>${item.paymentDate ? new Date(item.paymentDate).toLocaleDateString() : 'N/A'}</td>
+                      <th>Tenant Name</th>
+                      <th>Property</th>
+                      <th>Unit</th>
+                      <th>Rent Amount</th>
+                      <th>Paid Amount</th>
+                      <th>Outstanding</th>
+                      <th>Status</th>
+                      <th>Payment Date</th>
                     </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    ${collectionData.map((item: any) => {
+                      const outstanding = (item.rentAmount || 0) - (item.paidAmount || 0);
+                      const status = outstanding === 0 ? 'Paid' : outstanding > 0 ? 'Pending' : 'Overpaid';
+                      const statusClass = status === 'Paid' ? 'paid' : status === 'Pending' ? 'pending' : 'overdue';
+                      
+                      return `
+                        <tr>
+                          <td><strong>${item.tenantName || 'N/A'}</strong></td>
+                          <td>${item.propertyName || 'N/A'}</td>
+                          <td><strong>${item.unit || 'N/A'}</strong></td>
+                          <td><strong>${currency}${(item.rentAmount || 0).toLocaleString()}</strong></td>
+                          <td><strong>${currency}${(item.paidAmount || 0).toLocaleString()}</strong></td>
+                          <td><strong>${currency}${outstanding.toLocaleString()}</strong></td>
+                          <td><span class="status-badge ${statusClass}">${status}</span></td>
+                          <td>${item.paymentDate ? new Date(item.paymentDate).toLocaleDateString() : 'Pending'}</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
             
-            <div class="footer">
-              <p><strong>Total Records: ${collectionData.length}</strong></p>
-              <p>Report generated by HNV Property Management Solutions</p>
-              <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
+              <div class="footer">
+                <div class="footer-stats">
+                  <div class="footer-stat">
+                    <div class="number">${collectionData.length}</div>
+                    <div class="label">Total Records</div>
+                  </div>
+                  <div class="footer-stat">
+                    <div class="number">${collectionData.filter((item: any) => (item.rentAmount || 0) - (item.paidAmount || 0) === 0).length}</div>
+                    <div class="label">Paid</div>
+                  </div>
+                  <div class="footer-stat">
+                    <div class="number">${collectionData.filter((item: any) => (item.rentAmount || 0) - (item.paidAmount || 0) > 0).length}</div>
+                    <div class="label">Pending</div>
+                  </div>
+                  <div class="footer-stat">
+                    <div class="number">${Math.round((collectionData.reduce((sum: number, item: any) => sum + (item.paidAmount || 0), 0) / Math.max(collectionData.reduce((sum: number, item: any) => sum + (item.rentAmount || 0), 0), 1)) * 100)}%</div>
+                    <div class="label">Collection Rate</div>
+                  </div>
+                </div>
+                
+                <div class="branding">
+                  <p><strong>Report generated by HNV Property Management Solutions</strong></p>
+                  <p>© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
+                  <p>Professional Property Management Software - www.hnvpm.com</p>
+                </div>
+              </div>
             </div>
             
             <script>

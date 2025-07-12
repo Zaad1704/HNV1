@@ -114,6 +114,13 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
               <Edit3 size={14} />
               Manage Units
             </button>
+            <button
+              onClick={onEditNicknames}
+              className="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm"
+            >
+              <Edit3 size={14} />
+              Edit Nicknames
+            </button>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
@@ -192,6 +199,13 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
           unitNumber={selectedUnit || ''}
           unitName={unitsData.find(u => u.unitNumber === selectedUnit)?.displayName}
         />
+        
+        <EnhancedUnitNicknameModal
+          isOpen={showEnhancedNicknameModal}
+          onClose={() => setShowEnhancedNicknameModal(false)}
+          propertyId={propertyId}
+          propertyName={property?.name || 'Property'}
+        />
       </div>
     );
   }
@@ -214,8 +228,15 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={onEditNicknames}
+            onClick={() => setShowEnhancedNicknameModal(true)}
             className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2 text-sm"
+          >
+            <Edit3 size={14} />
+            Manage Units
+          </button>
+          <button
+            onClick={onEditNicknames}
+            className="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm"
           >
             <Edit3 size={14} />
             Edit Nicknames
