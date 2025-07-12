@@ -44,14 +44,17 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
     staleTime: 300000 // 5 minutes
   });
 
-  // Calculate metrics
+  // Calculate enhanced metrics
   const totalUnits = property.numberOfUnits || 1;
-  const occupiedUnits = tenants.filter((t: any) => t.status === 'Active').length;
+  const activeTenants = tenants.filter((t: any) => t.status === 'Active');
+  const occupiedUnits = activeTenants.length;
   const occupancyRate = Math.round((occupiedUnits / totalUnits) * 100);
   const vacantUnits = totalUnits - occupiedUnits;
-  const monthlyRevenue = tenants.reduce((sum: number, t: any) => sum + (t.rentAmount || 0), 0);
+  const monthlyRevenue = activeTenants.reduce((sum: number, t: any) => sum + (t.rentAmount || 0), 0);
   const maintenanceIssues = 0; // TODO: Fetch from maintenance API
   const hasIssues = maintenanceIssues > 0;
+  const lastActivity = property.updatedAt || property.createdAt;
+  const daysAgo = Math.floor((Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <UniversalCard delay={index * 0.1} gradient="blue" className={`relative ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
@@ -150,25 +153,40 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
 
         {/* Enhanced Property Metrics */}
         <div className="bg-app-bg/50 rounded-xl p-4 space-y-3">
-          {/* Revenue Display */}
+          {/* Revenue Display with Growth Indicator */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign size={16} className="text-green-600" />
               <span className="text-sm text-text-secondary">Monthly Revenue</span>
             </div>
-            <span className="font-bold text-green-600">${monthlyRevenue.toLocaleString()}</span>
-          </div>
-          
-          {/* Occupancy Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users size={16} className="text-blue-600" />
-              <span className="text-sm text-text-secondary">Occupancy</span>
+            <div className="text-right">
+              <span className="font-bold text-green-600">${monthlyRevenue.toLocaleString()}</span>
+              <div className="text-xs text-gray-500">{occupiedUnits} paying tenants</div>
             </div>
-            <span className="font-semibold text-text-primary">{occupiedUnits}/{totalUnits} units</span>
           </div>
           
-          {/* Property Type */}
+          {/* Enhanced Occupancy with Visual Bar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-blue-600" />
+                <span className="text-sm text-text-secondary">Occupancy</span>
+              </div>
+              <span className="font-semibold text-text-primary">{occupiedUnits}/{totalUnits} units</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  occupancyRate >= 90 ? 'bg-green-500' :
+                  occupancyRate >= 70 ? 'bg-blue-500' :
+                  occupancyRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${occupancyRate}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          {/* Property Type & Last Activity */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building2 size={16} className="text-purple-600" />
@@ -176,25 +194,39 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             </div>
             <span className="font-semibold text-text-primary">{property.propertyType || 'Apartment'}</span>
           </div>
+          
+          {/* Last Activity */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-text-muted">Last updated</span>
+            <span className="text-text-muted">
+              {daysAgo === 0 ? 'Today' : daysAgo === 1 ? '1 day ago' : `${daysAgo} days ago`}
+            </span>
+          </div>
         </div>
         
-        {/* Tenant Avatars */}
-        {tenants.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-text-secondary">Tenants:</span>
-            <div className="flex -space-x-2">
-              {tenants.slice(0, 3).map((tenant: any, idx: number) => (
+        {/* Enhanced Tenant Avatars with Unit Info */}
+        {activeTenants.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">Active Tenants:</span>
+              <span className="text-xs text-text-muted">{activeTenants.length} of {totalUnits}</span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {activeTenants.slice(0, 4).map((tenant: any, idx: number) => (
                 <div
                   key={tenant._id}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold border-2 border-white"
-                  title={tenant.name}
+                  className="flex items-center gap-1 bg-blue-50 rounded-lg px-2 py-1 text-xs"
+                  title={`${tenant.name} - Unit ${tenant.unit}`}
                 >
-                  {tenant.name?.charAt(0).toUpperCase() || 'T'}
+                  <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                    {tenant.name?.charAt(0).toUpperCase() || 'T'}
+                  </div>
+                  <span className="text-blue-700 font-medium">{tenant.unit}</span>
                 </div>
               ))}
-              {tenants.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-bold border-2 border-white">
-                  +{tenants.length - 3}
+              {activeTenants.length > 4 && (
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-2 py-1 text-xs">
+                  <span className="text-gray-600">+{activeTenants.length - 4} more</span>
                 </div>
               )}
             </div>

@@ -31,6 +31,7 @@ import { useAuthStore } from '../store/authStore';
 import ExportModal from '../components/common/ExportModal';
 import MessageButtons from '../components/common/MessageButtons';
 import ShareButton from '../components/common/ShareButton';
+import BulkLeaseActions from '../components/property/BulkLeaseActions';
 
 const fetchProperties = async () => {
   try {
@@ -67,6 +68,7 @@ const PropertiesPage = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showVacant, setShowVacant] = useState(false);
+  const [showBulkLeaseActions, setShowBulkLeaseActions] = useState(false);
   
   // Check URL params for filters
   React.useEffect(() => {
@@ -533,6 +535,13 @@ const PropertiesPage = () => {
             Bulk Payment
           </button>
           <button
+            onClick={() => setShowBulkLeaseActions(true)}
+            className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 flex items-center gap-2"
+          >
+            <Calendar size={16} />
+            Bulk Lease Actions
+          </button>
+          <button
             onClick={() => setShowUniversalExport(true)}
             className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center gap-2"
           >
@@ -750,6 +759,68 @@ const PropertiesPage = () => {
       <UniversalGlobalSearch
         isOpen={showGlobalSearch}
         onClose={() => setShowGlobalSearch(false)}
+      />
+      
+      <BulkLeaseActions
+        isOpen={showBulkLeaseActions}
+        onClose={() => setShowBulkLeaseActions(false)}
+        selectedProperties={filteredProperties.filter(p => selectedProperties.includes(p._id))}
+        onAction={async (action, data) => {
+          try {
+            if (action === 'bulk_renewal') {
+              // Handle bulk lease renewal
+              await Promise.all(data.properties.map(async (propertyId: string) => {
+                const { data: tenantsData } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+                const tenants = tenantsData.data || [];
+                return Promise.all(tenants.map((tenant: any) => {
+                  const currentEndDate = tenant.leaseEndDate ? new Date(tenant.leaseEndDate) : new Date();
+                  const newEndDate = new Date(data.startDate || currentEndDate);
+                  newEndDate.setMonth(newEndDate.getMonth() + parseInt(data.duration));
+                  const rentIncrease = parseFloat(data.rentIncrease) / 100;
+                  const newRent = tenant.rentAmount * (1 + rentIncrease);
+                  return apiClient.put(`/tenants/${tenant._id}`, {
+                    leaseEndDate: newEndDate.toISOString().split('T')[0],
+                    rentAmount: newRent
+                  });
+                }));
+              }));
+              alert(`Leases renewed for ${data.properties.length} properties!`);
+            } else if (action === 'bulk_increase') {
+              // Handle bulk rent increase
+              await Promise.all(data.properties.map(async (propertyId: string) => {
+                const { data: tenantsData } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+                const tenants = tenantsData.data || [];
+                return Promise.all(tenants.map((tenant: any) => {
+                  const increase = parseFloat(data.percentage) / 100;
+                  const newRent = tenant.rentAmount * (1 + increase);
+                  return apiClient.put(`/tenants/${tenant._id}`, {
+                    rentAmount: newRent,
+                    rentIncreaseDate: data.effectiveDate
+                  });
+                }));
+              }));
+              alert(`Rent increased by ${data.percentage}% for ${data.properties.length} properties!`);
+            } else if (action === 'bulk_termination') {
+              // Handle bulk lease termination
+              await Promise.all(data.properties.map(async (propertyId: string) => {
+                const { data: tenantsData } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+                const tenants = tenantsData.data || [];
+                return Promise.all(tenants.map((tenant: any) => 
+                  apiClient.put(`/tenants/${tenant._id}`, {
+                    status: 'Inactive',
+                    leaseEndDate: data.terminationDate
+                  })
+                ));
+              }));
+              alert(`Leases terminated for ${data.properties.length} properties!`);
+            }
+            queryClient.invalidateQueries({ queryKey: ['properties'] });
+            queryClient.invalidateQueries({ queryKey: ['tenants'] });
+            setShowBulkLeaseActions(false);
+          } catch (error) {
+            alert('Failed to complete bulk lease action');
+          }
+        }}
       />
       
       {/* Floating Action Button for Mobile */}
