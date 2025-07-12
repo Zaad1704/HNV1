@@ -56,12 +56,53 @@ const EnhancedUnitNicknameModal: React.FC<EnhancedUnitNicknameModalProps> = ({
   const fetchUnits = async () => {
     setLoading(true);
     try {
+      // Try to fetch units from API first
       const { data } = await apiClient.get(`/units/property/${propertyId}`);
-      setUnits(data.data || []);
+      if (data.data && data.data.length > 0) {
+        setUnits(data.data);
+      } else {
+        // Fallback: create units based on property numberOfUnits
+        await createFallbackUnits();
+      }
     } catch (error) {
-      console.error('Failed to fetch units:', error);
+      console.error('Failed to fetch units, creating fallback units:', error);
+      // If API fails, create fallback units
+      await createFallbackUnits();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createFallbackUnits = async () => {
+    try {
+      // Get property details to know number of units
+      const { data: propertyData } = await apiClient.get(`/properties/${propertyId}`);
+      const property = propertyData.data;
+      const numberOfUnits = property?.numberOfUnits || 1;
+      
+      // Get tenants to match with units
+      const { data: tenantsData } = await apiClient.get(`/tenants?propertyId=${propertyId}`);
+      const tenants = tenantsData.data || [];
+      
+      // Create fallback units
+      const fallbackUnits = Array.from({ length: numberOfUnits }, (_, i) => {
+        const unitNumber = (i + 1).toString();
+        const tenant = tenants.find((t: any) => t.unit === unitNumber && t.status === 'Active');
+        
+        return {
+          _id: `fallback-${propertyId}-${unitNumber}`,
+          unitNumber,
+          nickname: '',
+          alternativeName: '',
+          status: tenant ? 'Occupied' : 'Available',
+          tenantId: tenant || null
+        };
+      });
+      
+      setUnits(fallbackUnits);
+    } catch (error) {
+      console.error('Failed to create fallback units:', error);
+      setUnits([]);
     }
   };
 

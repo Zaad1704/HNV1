@@ -230,6 +230,7 @@ const EnhancedUnitsGrid: React.FC<EnhancedUnitsGridProps> = ({
           <button
             onClick={() => setShowEnhancedNicknameModal(true)}
             className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-2 text-sm"
+            data-manage-units-btn
           >
             <Edit3 size={14} />
             Manage Units

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Users, Plus, DollarSign, FileText, TrendingUp, Archive, 
-  Calendar, Mail, Download, Settings, Wrench, Bell 
+  Calendar, Mail, Download, Settings, Wrench, Bell, AlertTriangle, Trash2 
 } from 'lucide-react';
 import BulkCommunicationModal from './BulkCommunicationModal';
 import PropertyReportModal from './PropertyReportModal';
+import ScheduleMaintenanceModal from './ScheduleMaintenanceModal';
 
 interface EnhancedPropertyQuickActionsProps {
   propertyId: string;
@@ -26,6 +27,7 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
 }) => {
   const [showCommunicationModal, setShowCommunicationModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const activeTenants = tenants.filter(t => t.status === 'Active');
   const expiringLeases = tenants.filter(t => {
     if (!t.leaseEndDate) return false;
@@ -170,13 +172,13 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
             Apply Rent Increase
           </button>
 
-          <Link
-            to={`/dashboard/maintenance?propertyId=${propertyId}`}
+          <button
+            onClick={() => setShowMaintenanceModal(true)}
             className="w-full bg-amber-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-amber-600 transition-colors flex items-center gap-2"
           >
             <Wrench size={16} />
             Schedule Maintenance
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -210,18 +212,45 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
         </div>
       </div>
 
-      {/* Archive Action */}
+      {/* Danger Zone */}
       <div className="app-surface rounded-3xl p-6 border border-red-200 bg-red-50">
-        <button
-          onClick={onArchive}
-          className="w-full bg-red-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-red-600 transition-colors flex items-center gap-2"
-        >
-          <Archive size={16} />
-          Archive Property
-        </button>
-        <p className="text-xs text-red-600 mt-2 text-center">
-          This will hide the property from active listings
-        </p>
+        <h3 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2">
+          <AlertTriangle size={20} />
+          Danger Zone
+        </h3>
+        <div className="space-y-3">
+          <button
+            onClick={onArchive}
+            className="w-full bg-yellow-500 text-white py-3 px-4 rounded-xl font-medium hover:bg-yellow-600 transition-colors flex items-center gap-2"
+          >
+            <Archive size={16} />
+            Archive Property
+          </button>
+          <p className="text-xs text-yellow-700 text-center">
+            Hide from active listings but preserve all data
+          </p>
+          
+          <button
+            onClick={() => {
+              if (confirm(`⚠️ PERMANENT DELETE WARNING ⚠️\n\nThis will permanently delete "${property.name}" and ALL associated data including:\n\n• All tenant records\n• Payment history\n• Maintenance records\n• Unit information\n• Documents and files\n\nThis action CANNOT be undone!\n\nType "DELETE" to confirm:`)) {
+                const confirmation = prompt('Type "DELETE" to confirm permanent deletion:');
+                if (confirmation === 'DELETE') {
+                  alert('Delete functionality will be implemented with proper backend integration');
+                  // TODO: Implement actual delete with cascading data removal
+                } else {
+                  alert('Deletion cancelled - confirmation text did not match');
+                }
+              }
+            }}
+            className="w-full bg-red-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
+          >
+            <Trash2 size={16} />
+            Permanently Delete Property
+          </button>
+          <p className="text-xs text-red-700 text-center font-medium">
+            ⚠️ PERMANENT - This cannot be undone!
+          </p>
+        </div>
       </div>
 
       {/* Modals */}
@@ -237,6 +266,16 @@ const EnhancedPropertyQuickActions: React.FC<EnhancedPropertyQuickActionsProps> 
         onClose={() => setShowReportModal(false)}
         property={property}
         tenants={tenants}
+      />
+
+      <ScheduleMaintenanceModal
+        isOpen={showMaintenanceModal}
+        onClose={() => setShowMaintenanceModal(false)}
+        property={property}
+        onSuccess={() => {
+          // Refresh data or show success message
+          console.log('Maintenance scheduled successfully');
+        }}
       />
     </div>
   );

@@ -197,10 +197,14 @@ const PropertyDetailsPage = () => {
               units={units}
               onAddTenant={handleAddTenant}
               onEditNicknames={() => {
-                // Scroll to units section
-                const unitsSection = document.querySelector('[data-section="units"]');
-                if (unitsSection) {
-                  unitsSection.scrollIntoView({ behavior: 'smooth' });
+                // Open the enhanced unit nickname modal
+                const unitsGrid = document.querySelector('[data-units-grid]');
+                if (unitsGrid) {
+                  // Trigger the manage units modal from the units grid
+                  const manageButton = unitsGrid.querySelector('[data-manage-units-btn]') as HTMLButtonElement;
+                  if (manageButton) {
+                    manageButton.click();
+                  }
                 }
               }}
             />

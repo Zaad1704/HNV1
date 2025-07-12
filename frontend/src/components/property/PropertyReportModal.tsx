@@ -57,37 +57,21 @@ const PropertyReportModal: React.FC<PropertyReportModalProps> = ({
     setGenerating(true);
     try {
       // Simulate report generation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Create mock report data
-      const reportData = {
-        property: property.name,
-        reportType,
-        dateRange,
-        generatedAt: new Date().toISOString(),
-        data: {
-          totalUnits: property.numberOfUnits,
-          occupiedUnits: tenants.filter(t => t.status === 'Active').length,
-          totalRevenue: tenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0),
-          tenants: tenants.map(t => ({
-            name: t.name,
-            unit: t.unit,
-            rentAmount: t.rentAmount,
-            status: t.status
-          }))
-        }
-      };
-
-      // Create and download file
-      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${property.name}_${reportType}_report_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const activeTenants = tenants.filter(t => t.status === 'Active');
+      const totalUnits = property.numberOfUnits || 0;
+      const occupiedUnits = activeTenants.length;
+      const totalRevenue = activeTenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0);
+      const occupancyRate = totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0;
+      
+      if (format === 'pdf') {
+        generatePDFReport();
+      } else if (format === 'excel') {
+        generateExcelReport();
+      } else if (format === 'csv') {
+        generateCSVReport();
+      }
 
       alert('Report generated and downloaded successfully!');
       onClose();
@@ -96,6 +80,207 @@ const PropertyReportModal: React.FC<PropertyReportModalProps> = ({
     } finally {
       setGenerating(false);
     }
+  };
+
+  const generatePDFReport = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const activeTenants = tenants.filter(t => t.status === 'Active');
+    const totalUnits = property.numberOfUnits || 0;
+    const occupiedUnits = activeTenants.length;
+    const totalRevenue = activeTenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0);
+    const occupancyRate = totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0;
+    
+    const reportTypeData = reportTypes.find(t => t.id === reportType);
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${reportTypeData?.name} - ${property.name}</title>
+          <meta charset="UTF-8">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              margin: 0; padding: 20px; line-height: 1.6; color: #333;
+            }
+            .header {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white; padding: 30px; border-radius: 10px;
+              margin-bottom: 30px; text-align: center;
+            }
+            .header h1 { font-size: 28px; margin-bottom: 10px; }
+            .header h2 { font-size: 22px; margin-bottom: 15px; }
+            .summary {
+              display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 20px; margin: 20px 0;
+            }
+            .summary-card {
+              background: #f8f9fa; padding: 20px; border-radius: 8px;
+              border-left: 4px solid #667eea; text-align: center;
+            }
+            .summary-card .number { font-size: 24px; font-weight: bold; color: #667eea; }
+            .summary-card .label { font-size: 12px; color: #666; text-transform: uppercase; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white; padding: 15px 12px; text-align: left;
+              font-size: 13px; font-weight: 600;
+            }
+            td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+            tr:nth-child(even) { background-color: #fafafa; }
+            .status-badge {
+              padding: 4px 8px; border-radius: 12px; font-size: 11px;
+              font-weight: bold; text-transform: uppercase;
+            }
+            .active { background: #d4edda; color: #155724; }
+            .inactive { background: #f8d7da; color: #721c24; }
+            .footer {
+              margin-top: 40px; padding: 20px; background: #f8f9fa;
+              border-radius: 8px; text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${property.name}</h1>
+            <h2>${reportTypeData?.name}</h2>
+            <p>Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+            <p>Period: ${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}</p>
+          </div>
+          
+          <div class="summary">
+            <div class="summary-card">
+              <div class="number">${totalUnits}</div>
+              <div class="label">Total Units</div>
+            </div>
+            <div class="summary-card">
+              <div class="number">${occupiedUnits}</div>
+              <div class="label">Occupied Units</div>
+            </div>
+            <div class="summary-card">
+              <div class="number">${occupancyRate.toFixed(1)}%</div>
+              <div class="label">Occupancy Rate</div>
+            </div>
+            <div class="summary-card">
+              <div class="number">$${totalRevenue.toLocaleString()}</div>
+              <div class="label">Monthly Revenue</div>
+            </div>
+          </div>
+          
+          ${reportType === 'tenant' || reportType === 'comprehensive' ? `
+            <h3>Tenant Information</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tenant Name</th>
+                  <th>Unit</th>
+                  <th>Rent Amount</th>
+                  <th>Status</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tenants.map(tenant => `
+                  <tr>
+                    <td><strong>${tenant.name}</strong></td>
+                    <td>${tenant.unit || 'N/A'}</td>
+                    <td><strong>$${(tenant.rentAmount || 0).toLocaleString()}</strong></td>
+                    <td><span class="status-badge ${tenant.status === 'Active' ? 'active' : 'inactive'}">${tenant.status}</span></td>
+                    <td>${tenant.email || 'N/A'}</td>
+                    <td>${tenant.phone || 'N/A'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : ''}
+          
+          <div class="footer">
+            <p><strong>Report generated by HNV Property Management Solutions</strong></p>
+            <p>© ${new Date().getFullYear()} HNV Property Management Solutions. All rights reserved.</p>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
+  const generateExcelReport = () => {
+    const activeTenants = tenants.filter(t => t.status === 'Active');
+    const totalUnits = property.numberOfUnits || 0;
+    const occupiedUnits = activeTenants.length;
+    const totalRevenue = activeTenants.reduce((sum, t) => sum + (t.rentAmount || 0), 0);
+    
+    // Create CSV content that Excel can open
+    const csvContent = [
+      [`${reportTypes.find(t => t.id === reportType)?.name} - ${property.name}`],
+      [`Generated: ${new Date().toLocaleDateString()}`],
+      [`Period: ${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}`],
+      [],
+      ['SUMMARY'],
+      ['Total Units', totalUnits],
+      ['Occupied Units', occupiedUnits],
+      ['Occupancy Rate', `${((occupiedUnits / Math.max(totalUnits, 1)) * 100).toFixed(1)}%`],
+      ['Monthly Revenue', `$${totalRevenue.toLocaleString()}`],
+      [],
+      ['TENANT DETAILS'],
+      ['Tenant Name', 'Unit', 'Rent Amount', 'Status', 'Email', 'Phone'],
+      ...tenants.map(tenant => [
+        tenant.name,
+        tenant.unit || 'N/A',
+        `$${(tenant.rentAmount || 0).toLocaleString()}`,
+        tenant.status,
+        tenant.email || 'N/A',
+        tenant.phone || 'N/A'
+      ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${property.name}_${reportType}_report_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const generateCSVReport = () => {
+    const csvContent = [
+      ['Tenant Name', 'Unit', 'Rent Amount', 'Status', 'Email', 'Phone', 'Lease Start', 'Lease End'],
+      ...tenants.map(tenant => [
+        tenant.name,
+        tenant.unit || 'N/A',
+        (tenant.rentAmount || 0).toString(),
+        tenant.status,
+        tenant.email || 'N/A',
+        tenant.phone || 'N/A',
+        tenant.leaseStartDate ? new Date(tenant.leaseStartDate).toLocaleDateString() : 'N/A',
+        tenant.leaseEndDate ? new Date(tenant.leaseEndDate).toLocaleDateString() : 'N/A'
+      ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${property.name}_${reportType}_data_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (!isOpen) return null;
